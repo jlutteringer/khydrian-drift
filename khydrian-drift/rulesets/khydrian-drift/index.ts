@@ -2,6 +2,7 @@ import { Ruleset } from '@khydrian-drift/common/ruleset'
 import {
   AdvancedOperations,
   Arsenal,
+  BaselineQuickGuy,
   CommandoClass,
   CommandoTraining,
   Momentum,
@@ -18,7 +19,7 @@ export const KhydrianDrift: Ruleset = {
   reference: References.reference('fc4174ae-4496-42bb-9775-f77dc7f20101', 'Ruleset', 'Khydrian Drift'),
   name: 'Khydrian Drift',
   classes: [CommandoClass],
-  traits: [BasicCombatTraining, CommandoTraining, Arsenal, SoldiersStamina, Momentum, OfficerTrait, AdvancedOperations, SentinelTrait],
+  traits: [BasicCombatTraining, CommandoTraining, Arsenal, SoldiersStamina, Momentum, OfficerTrait, AdvancedOperations, SentinelTrait, BaselineQuickGuy],
   resourcePools: [TacticPoints],
   loadoutTypes: [GeneralLoadoutSlot, AdvancedHardpointLoadoutSlot],
 }

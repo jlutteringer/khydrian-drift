@@ -1,7 +1,7 @@
 import {
-  CurriedExpression,
   Expression,
   ExpressionContext,
+  ExpressionReference,
   ExpressionType,
   ExpressionValue,
   ExpressionVariable,
@@ -50,20 +50,19 @@ export const buildVariable = <T>(variable: ExpressionVariable<T>, value: T): Rec
   return { [variable.name]: value }
 }
 
-export const curry = <ArgumentType, ReturnType>(expression: ReducingExpression<ArgumentType, ReturnType>): CurriedExpression<ArgumentType, ReturnType> => {
+export const reference = <ArgumentType, ReturnType>(
+  expression: ReducingExpression<ArgumentType, ReturnType>
+): ExpressionReference<ArgumentType, ReturnType> => {
   return {
-    type: 'Curry',
     expression,
   }
 }
 
-export const unCurry = <ArgumentType, ReturnType>(
-  curried: CurriedExpression<ArgumentType, ReturnType>,
-  additionalOperands: Array<Expression<ArgumentType>>
+export const invoke = <ArgumentType, ReturnType>(
+  reference: ExpressionReference<ArgumentType, ReturnType>,
+  operands: Array<Expression<ArgumentType>>
 ): IExpression<ReturnType> => {
-  const curriedExpression = curried.expression
-  const operands = [...curriedExpression.operands, ...additionalOperands.map(valuate)]
-  return { ...curried.expression, operands } as IExpression<ReturnType>
+  return { ...reference.expression, operands: operands.map(valuate) } as IExpression<ReturnType>
 }
 
 export interface CustomExpression<T> extends IExpression<T> {

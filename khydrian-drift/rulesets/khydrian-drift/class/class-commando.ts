@@ -50,9 +50,18 @@ export const Momentum = Traits.defineTrait('7a3e377a-f2d4-41ce-b7f2-866538a517ce
     ),
     Effects.modifyAttribute(
       CharacterAttributes.MovementSpeed.reference,
-      1,
+      7, // TODO this should be 1
       Expressions.not(NumericExpressions.lessThan(CharacterProperties.VitalityPoints, NumericExpressions.multiply([CharacterProperties.VitalityPool, 0.5])))
     ),
+  ],
+})
+
+export const BaselineQuickGuy = Traits.defineTrait('asdasdaSDasdasDasdasDd', {
+  name: 'BaselineQuickGuy',
+  description: '',
+  prerequisites: [Traits.classPrerequisite(Commando)],
+  effects: [
+    Effects.assignAttribute(CharacterAttributes.MovementSpeed.reference, 6, NumericExpressions.lessThan(CharacterAttributes.MovementSpeed.variable, 6)),
   ],
 })
 
@@ -71,8 +80,8 @@ export const AdvancedOperations = Traits.defineTrait('cf015d5a-f427-4eea-9798-ca
   description: '',
   prerequisites: [Traits.classPrerequisite(Commando), Traits.traitPrerequisite(Officer)],
   effects: [
-    // JOHN i don't like this solution
-    Effects.modifyResourcePool({ resource: TacticPoints.reference, size: Expressions.curry(NumericExpressions.sum([2])) }),
+    // JOHN this solution doesn't work - its supposed to add 2 not set 2
+    Effects.modifyResourcePool({ resource: TacticPoints.reference, size: 2 }),
     Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot.reference, 2),
   ],
 })

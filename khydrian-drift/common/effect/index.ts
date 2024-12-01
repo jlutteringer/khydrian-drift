@@ -2,13 +2,16 @@ import { TraitReference } from '@khydrian-drift/common/trait'
 import { LoadoutTypeReference } from '@khydrian-drift/common/loadout'
 import { ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
 import { Expression, ExpressionContext, Expressions } from '@khydrian-drift/util/expression'
-import { Objects } from '@khydrian-drift/util'
+import { Arrays, Comparators, Objects } from '@khydrian-drift/util'
 import { Attribute, AttributeReference, AttributeValue, Modifier } from '@khydrian-drift/common/attribute'
 
 export interface Effect {
   type: string
   condition: Expression<boolean> | null
+  source?: EffectSource
 }
+
+export type EffectSource = TraitReference
 
 export type EffectType<T extends Effect> = { type: string }
 
@@ -24,11 +27,18 @@ export type GainTraitEffect = Effect & {
   trait: TraitReference
 }
 
+export const AssignAttribute: EffectType<ModifyAttributeEffect> = { type: 'AssignAttribute' }
+export type AssignAttributeEffect = Effect & {
+  type: 'AssignAttribute'
+  attribute: AttributeReference<unknown>
+  modifier: Expression<unknown>
+}
+
 export const ModifyAttribute: EffectType<ModifyAttributeEffect> = { type: 'ModifyAttribute' }
 export type ModifyAttributeEffect = Effect & {
   type: 'ModifyAttribute'
-  attribute: AttributeReference<number>
-  modifier: Expression<number>
+  attribute: AttributeReference<unknown>
+  modifier: Expression<unknown>
 }
 
 export const ModifyLoadoutSlotQuantity: EffectType<ModifyLoadoutSlotQuantityEffect> = { type: 'ModifyLoadoutSlotQuantity' }
@@ -91,24 +101,53 @@ export const evaluateEffects = <T extends Effect>(
   return { activeEffects, inactiveEffects }
 }
 
-const buildModifier = <T>(effect: ModifyAttributeEffect, context: ExpressionContext): Modifier<number> => {
+const buildModifier = <T>(effect: ModifyAttributeEffect | AssignAttributeEffect, context: ExpressionContext): Modifier<T> => {
   return {
-    value: Expressions.evaluate(effect.modifier, context),
-    expression: effect.modifier,
+    value: Expressions.evaluate(effect.modifier, context) as T,
+    expression: effect.modifier as Expression<T>,
     condition: effect.condition,
-    context: null,
+    source: effect.source ?? null,
   }
 }
 
-// JOHN only works for numbers
-export const evaluateAttribute = (attribute: Attribute<number>, initialEffects: Array<Effect>, context: ExpressionContext): AttributeValue<number> => {
+// TODO is there a way to back off of the fact that attributes must be numbers
+export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, initialEffects: Array<Effect>, context: ExpressionContext): AttributeValue<T> => {
   const effects = filterEffectsByType(initialEffects, ModifyAttribute).filter((it) => it.attribute.id === attribute.reference.id)
   const { activeEffects, inactiveEffects } = evaluateEffects(effects, ModifyAttribute, context)
-  const activeModifiers = activeEffects.map((it) => buildModifier(it, context))
-  const inactiveModifiers = inactiveEffects.map((it) => buildModifier(it, context))
 
-  // JOHN this doesn't obey the attribute reduction function... we just use SUM...
-  const value = [attribute.base, ...activeModifiers.map((it) => it.value)].reduce((x, y) => x + y, 0)
+  const activeModifiers = activeEffects.map((it) => buildModifier<T>(it, context))
+  const inactiveModifiers = inactiveEffects.map((it) => buildModifier<T>(it, context))
+  const operands = [attribute.base, ...activeModifiers.map((it) => it.value)]
+  const value = Expressions.evaluate(Expressions.invoke(attribute.reducer, operands), context)
+
+  const setEffects = filterEffectsByType(initialEffects, AssignAttribute).filter((it) => it.attribute.id === attribute.reference.id)
+
+  const updatedVariables = {
+    ...context.variables,
+    ...Expressions.buildVariable(attribute.variable, value),
+  }
+
+  const { activeEffects: activeAssignmentEffects, inactiveEffects: inactiveAssignmentEffects } = evaluateEffects(setEffects, AssignAttribute, {
+    ...context,
+    variables: updatedVariables,
+  })
+
+  const activeAssignments = activeAssignmentEffects.map((it) => buildModifier<T>(it, context))
+  const inactiveAssignments = inactiveAssignmentEffects.map((it) => buildModifier<T>(it, context))
+
+  if (!Arrays.isEmpty(activeAssignments)) {
+    activeAssignments.sort(Comparators.compareBy((it) => it.value, Comparators.reverse(Comparators.natural())))
+    const bestAssignment = Arrays.first(activeAssignments)!
+    return {
+      attribute: attribute.reference,
+      value: bestAssignment.value,
+      base: attribute.base,
+      activeModifiers: [],
+      inactiveModifiers: [...activeModifiers, ...inactiveModifiers],
+      activeAssignment: bestAssignment,
+      inactiveAssignments: [...Arrays.rest(activeAssignments), ...inactiveAssignments],
+    }
+  }
 
   return {
     attribute: attribute.reference,
@@ -116,6 +155,8 @@ export const evaluateAttribute = (attribute: Attribute<number>, initialEffects: 
     base: attribute.base,
     activeModifiers,
     inactiveModifiers,
+    activeAssignment: null,
+    inactiveAssignments: [...activeAssignments, ...inactiveAssignments],
   }
 }
 
@@ -131,6 +172,19 @@ export const gainTrait = (trait: TraitReference, condition: Expression<boolean> 
   return {
     type: 'GainTrait',
     trait,
+    condition,
+  }
+}
+
+export const assignAttribute = (
+  attribute: AttributeReference<number>,
+  modifier: Expression<number>,
+  condition: Expression<boolean> | null = null
+): AssignAttributeEffect => {
+  return {
+    type: 'AssignAttribute',
+    attribute,
+    modifier,
     condition,
   }
 }

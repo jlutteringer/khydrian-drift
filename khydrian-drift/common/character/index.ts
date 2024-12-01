@@ -6,7 +6,6 @@ import { ExpressionContext, Expressions, ExpressionVariable, NumericExpressions 
 import { ApplicationContext } from '@khydrian-drift/common/context'
 import { Attribute, AttributeValue } from '@khydrian-drift/common/attribute'
 
-// JOHN the property vs. attribute distinction makes no sense - we need a way to consolidate
 export namespace CharacterProperties {
   export const Agility: ExpressionVariable<number> = Expressions.variable('Agility')
   export const Presence: ExpressionVariable<number> = Expressions.variable('Presence')
@@ -22,8 +21,7 @@ export namespace CharacterAttributes {
   export const MovementSpeed: Attribute<number> = Attributes.defineAttribute('04f7a8c0-df43-441d-8936-4c22c56808d4', {
     name: 'MovementSpeed',
     base: 4,
-    // JOHN we need a way to structure expression references just like function references... also this is not being taken into account at all
-    reducer: NumericExpressions.sum([]),
+    reducer: Expressions.reference(NumericExpressions.sum([])),
   })
 }
 
@@ -91,7 +89,7 @@ export const buildCharacterDefinition = (options: CharacterOptions, context: App
 const getAdditionalTraits = (options: CharacterOptions, context: ApplicationContext): Array<TraitReference> => {
   const clazz = Classes.getClass(options.class, context)
   const traits = Traits.getTraits([...clazz.startingTraits, ...options.traits], context)
-  const { activeEffects } = Traits.evaluateEffects(traits, Effects.GainTrait, buildExpressionContext(options))
+  const { activeEffects } = Effects.evaluateEffects(Traits.getEffects(traits), Effects.GainTrait, buildExpressionContext(options))
   return [...traits.map((it) => it.reference), ...activeEffects.map((it) => it.trait)]
 }
 
@@ -110,14 +108,8 @@ const calculateSoakRating = (options: CharacterOptions, context: ApplicationCont
 }
 
 const calculateMovementSpeed = (options: CharacterOptions, context: ApplicationContext): AttributeValue<number> => {
-  const traits = Traits.getTraits(options.traits, context)
   const expressionContext = buildExpressionContext(options)
-
-  return Effects.evaluateAttribute(
-    CharacterAttributes.MovementSpeed,
-    traits.flatMap((it) => it.effects),
-    expressionContext
-  )
+  return Effects.evaluateAttribute(CharacterAttributes.MovementSpeed, Traits.getEffects(Traits.getTraits(options.traits, context)), expressionContext)
 }
 
 const calculateHitDiceMaximum = (options: CharacterOptions, context: ApplicationContext): number => {

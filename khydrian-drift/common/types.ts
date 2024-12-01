@@ -1,4 +1,4 @@
-import { CurriedExpression, Expression } from '@khydrian-drift/util/expression'
+import { Expression } from '@khydrian-drift/util/expression'
 
 export enum TimeUnit {
   Day = 'Day',
@@ -16,5 +16,5 @@ export type CooldownRate = {
 
 export type CooldownRateMutation = {
   period?: TimeUnit
-  amount?: Expression<number> | CurriedExpression<number, number>
+  amount?: Expression<number>
 }

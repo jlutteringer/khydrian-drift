@@ -6,7 +6,7 @@ import { ApplicationContext } from '@khydrian-drift/common/context'
 import { KhydrianDrift } from '@khydrian-drift/rulesets/khydrian-drift'
 import { Characters } from '@khydrian-drift/common'
 import { CharacterOptions } from '@khydrian-drift/common/character'
-import { Commando, Momentum } from '@khydrian-drift/rulesets/khydrian-drift/class/class-commando'
+import { BaselineQuickGuy, Commando, Momentum } from '@khydrian-drift/rulesets/khydrian-drift/class/class-commando'
 
 export default function Home() {
   const context: ApplicationContext = { ruleset: KhydrianDrift }
@@ -21,7 +21,7 @@ export default function Home() {
       intelligence: 1,
       presence: 1,
     },
-    traits: [Momentum.reference],
+    traits: [Momentum.reference, BaselineQuickGuy.reference],
   }
   console.log('buildCharacterDefinition', Characters.buildCharacterDefinition(character, context))
 

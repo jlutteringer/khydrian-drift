@@ -1,6 +1,6 @@
 import { Referencable, Reference } from '@khydrian-drift/util/reference'
 import { CooldownRate, CooldownRateMutation } from '@khydrian-drift/common/types'
-import { CurriedExpression, Expression } from '@khydrian-drift/util/expression'
+import { Expression } from '@khydrian-drift/util/expression'
 import { References } from '@khydrian-drift/util'
 
 export type ResourcePoolReference = Reference<'ResourcePool'>
@@ -18,7 +18,7 @@ export type ResourcePool = Referencable<ResourcePoolReference> & ResourcePoolPro
 export type ResourcePoolMutation = {
   resource: ResourcePoolReference
 
-  size?: Expression<number> | CurriedExpression<number, number>
+  size?: Expression<number>
   refresh?: CooldownRateMutation
 }
 

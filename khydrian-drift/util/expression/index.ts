@@ -43,8 +43,8 @@ export type ReducingExpression<ArgumentType, ReturnType> = IExpression<ReturnTyp
   operands: Array<IExpression<ArgumentType>>
 }
 
-export type CurriedExpression<ArgumentType, ReturnType> = {
-  type: 'Curry'
+// TODO this could probably be made more robust... right now we only support references for 'reducing expressions'... generalizing is kinda hard tho
+export type ExpressionReference<ArgumentType, ReturnType> = {
   expression: ReducingExpression<ArgumentType, ReturnType>
 }
 

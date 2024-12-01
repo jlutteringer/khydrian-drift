@@ -1,11 +1,10 @@
 import { Referencable, Reference } from '@khydrian-drift/util/reference'
-import { Effect, EffectType, EvaluateEffectsResponse } from '@khydrian-drift/common/effect'
+import { Effect } from '@khydrian-drift/common/effect'
 import { Preconditions, References } from '@khydrian-drift/util'
 import { ClassReference } from '@khydrian-drift/common/class'
-import { Expression, ExpressionContext, Expressions } from '@khydrian-drift/util/expression'
+import { Expression, Expressions } from '@khydrian-drift/util/expression'
 import { CharacterProperties } from '@khydrian-drift/common/character'
 import { ApplicationContext } from '@khydrian-drift/common/context'
-import { Effects } from '@khydrian-drift/common'
 
 export type TraitReference = Reference<'Trait'>
 
@@ -32,17 +31,19 @@ export const defineTrait = (reference: TraitReference | string, props: TraitProp
 export const getTraits = (traits: Array<TraitReference>, context: ApplicationContext): Array<Trait> => {
   return traits.map((trait) => {
     const matchingTrait = context.ruleset.traits.find((it) => it.reference.id === trait.id)
-    Preconditions.isPresent(matchingTrait)
+    Preconditions.isPresent(matchingTrait, () => `Unable to find Trait for Reference: ${JSON.stringify(trait)}`)
     return matchingTrait
   })
 }
 
-export const evaluateEffects = <T extends Effect>(traits: Array<Trait>, type: EffectType<T>, context: ExpressionContext): EvaluateEffectsResponse<T> => {
-  return Effects.evaluateEffects(
-    traits.flatMap((it) => it.effects),
-    type,
-    context
+export const getEffects = (traits: Array<Trait>): Array<Effect> => {
+  const effects = traits.flatMap((trait) =>
+    trait.effects.map((effect) => {
+      const sourcedEffect: Effect = { ...effect, source: trait.reference }
+      return sourcedEffect
+    })
   )
+  return effects
 }
 
 export const classPrerequisite = (clazz: ClassReference): Expression<boolean> => {

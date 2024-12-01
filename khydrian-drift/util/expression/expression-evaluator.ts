@@ -117,7 +117,6 @@ export class ExpressionEvaluator {
   }
 
   private evaluateMultiplyExpression(expression: MultiplyExpression): number {
-    console.log('evaluateMultiplyExpression', expression.operands)
     const values = expression.operands.map((it) => this.evaluate(it))
     return values.reduce((x, y) => x * y, 1)
   }
