@@ -1,11 +1,9 @@
-export enum CreatureValue {
-  VitalityPoints = 'VitalityPoints',
-}
+import { AttributeValue } from '@khydrian-drift/common/attribute'
 
 export type CreatureDefinition = {
   vitalityPool: number
   soakRating: number
-  movementSpeed: number
+  movementSpeed: AttributeValue<number>
   initiative: number
 }
 

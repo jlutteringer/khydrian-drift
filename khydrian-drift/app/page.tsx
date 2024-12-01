@@ -1,7 +1,30 @@
+'use client'
+
 import Image from 'next/image'
 import styles from './page.module.css'
+import { ApplicationContext } from '@khydrian-drift/common/context'
+import { KhydrianDrift } from '@khydrian-drift/rulesets/khydrian-drift'
+import { Characters } from '@khydrian-drift/common'
+import { CharacterOptions } from '@khydrian-drift/common/character'
+import { Commando, Momentum } from '@khydrian-drift/rulesets/khydrian-drift/class/class-commando'
 
 export default function Home() {
+  const context: ApplicationContext = { ruleset: KhydrianDrift }
+  const character: CharacterOptions = {
+    name: 'Bob the Commando',
+    level: 5,
+    class: Commando,
+    attributes: {
+      brawn: 1,
+      agility: 1,
+      willpower: 1,
+      intelligence: 1,
+      presence: 1,
+    },
+    traits: [Momentum.reference],
+  }
+  console.log('buildCharacterDefinition', Characters.buildCharacterDefinition(character, context))
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>

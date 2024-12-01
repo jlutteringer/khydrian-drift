@@ -3,11 +3,11 @@ import { Expressions, NumericExpressions, StringExpressions } from '@khydrian-dr
 test('TODO', () => {
   NumericExpressions.sum([Expressions.variable('VitalityPoints'), 10])
 
-  Expressions.equals(NumericExpressions.sum([Expressions.variable('VitalityPoints'), 10]), 5)
+  Expressions.equals([NumericExpressions.sum([Expressions.variable('VitalityPoints'), 10]), 5])
 
   Expressions.and([
     NumericExpressions.lessThan(NumericExpressions.sum([Expressions.variable('VitalityPoints'), 10]), 15),
-    StringExpressions.contains('one', 'two'),
+    StringExpressions.substring('one', 'two'),
   ])
 
   Expressions.unCurry(Expressions.curry(NumericExpressions.sum([2])), [2])

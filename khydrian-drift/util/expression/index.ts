@@ -1,21 +1,12 @@
 import * as NumericExpressions from '@khydrian-drift/util/expression/numeric-expression'
-import {
-  BoundsExpression,
-  GreaterThanExpression,
-  LessThanExpression,
-  MultiplyExpression,
-  SumExpression,
-} from '@khydrian-drift/util/expression/numeric-expression'
 import * as StringExpressions from '@khydrian-drift/util/expression/string-expression'
-import { ConcatenateExpression, ContainsExpression, UppercaseExpression } from '@khydrian-drift/util/expression/string-expression'
 import * as Expressions from '@khydrian-drift/util/expression/expression'
-import { AndExpression, CustomExpression, EqualsExpression, NotExpression, OrExpression } from '@khydrian-drift/util/expression/expression'
 
 export { Expressions, NumericExpressions, StringExpressions }
 
 export enum ExpressionType {
+  Value = 'Value',
   Variable = 'Variable',
-  Curry = 'Curry',
   Custom = 'Custom',
   Not = 'Not',
   And = 'And',
@@ -29,35 +20,34 @@ export enum ExpressionType {
   Concatenate = 'Concatenate',
   Uppercase = 'Uppercase',
   Bounds = 'Bounds',
+  Substring = 'Substring',
 }
 
-export type ExpressionVariable<T> = {
+export interface IExpression<T> {
+  type: ExpressionType
+}
+
+export type Expression<T> = T | IExpression<T>
+
+export interface ExpressionValue<T> extends IExpression<T> {
+  type: ExpressionType.Value
+  value: T
+}
+
+export interface ExpressionVariable<T> extends IExpression<T> {
   type: ExpressionType.Variable
   name: string
 }
 
-export type Expression<T> =
-  | T
-  | ExpressionVariable<T>
-  | CustomExpression
-  | NotExpression
-  | AndExpression
-  | OrExpression
-  | EqualsExpression
-  | SumExpression
-  | MultiplyExpression
-  | LessThanExpression
-  | GreaterThanExpression
-  | ConcatenateExpression
-  | UppercaseExpression
-  | ContainsExpression
-  | BoundsExpression
-
-export type CurryableExpression<ArgumentType, ReturnType> = Expression<ReturnType> & {
-  operands: Array<Expression<ArgumentType>>
+export type ReducingExpression<ArgumentType, ReturnType> = IExpression<ReturnType> & {
+  operands: Array<IExpression<ArgumentType>>
 }
 
 export type CurriedExpression<ArgumentType, ReturnType> = {
-  type: ExpressionType.Curry
-  expression: CurryableExpression<ArgumentType, ReturnType>
+  type: 'Curry'
+  expression: ReducingExpression<ArgumentType, ReturnType>
+}
+
+export type ExpressionContext = {
+  variables: Record<string, unknown>
 }

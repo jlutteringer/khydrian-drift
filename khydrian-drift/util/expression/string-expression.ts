@@ -1,41 +1,41 @@
-import { Expression, ExpressionType } from '@khydrian-drift/util/expression/index'
+import { Expression, Expressions, ExpressionType, IExpression } from '@khydrian-drift/util/expression/index'
 
-export type ConcatenateExpression = {
+export interface ConcatenateExpression extends IExpression<string> {
   type: ExpressionType.Concatenate
-  first: Expression<string>
-  second: Expression<string>
+  first: IExpression<string>
+  second: IExpression<string>
 }
 
-export const concatenate = (first: Expression<string>, second: Expression<string>): Expression<string> => {
+export const concatenate = (first: Expression<string>, second: Expression<string>): ConcatenateExpression => {
   return {
     type: ExpressionType.Concatenate,
-    first,
-    second,
+    first: Expressions.valuate(first),
+    second: Expressions.valuate(second),
   }
 }
 
-export type UppercaseExpression = {
+export interface UppercaseExpression extends IExpression<string> {
   type: ExpressionType.Uppercase
-  value: Expression<string>
+  value: IExpression<string>
 }
 
-export const uppercase = (value: Expression<string>): Expression<string> => {
+export const uppercase = (value: Expression<string>): UppercaseExpression => {
   return {
     type: ExpressionType.Uppercase,
-    value,
+    value: Expressions.valuate(value),
   }
 }
 
-export type ContainsExpression = {
-  type: ExpressionType.Contains
-  string: Expression<string>
-  substring: Expression<string>
+export interface SubstringExpression extends IExpression<boolean> {
+  type: ExpressionType.Substring
+  string: IExpression<string>
+  substring: IExpression<string>
 }
 
-export const contains = (string: Expression<string>, substring: Expression<string>): Expression<boolean> => {
+export const substring = (string: Expression<string>, substring: Expression<string>): SubstringExpression => {
   return {
-    type: ExpressionType.Contains,
-    string,
-    substring,
+    type: ExpressionType.Substring,
+    string: Expressions.valuate(string),
+    substring: Expressions.valuate(substring),
   }
 }
