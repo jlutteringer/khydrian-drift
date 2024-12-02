@@ -4,8 +4,7 @@ import { ResourcePool, ResourcePoolMutation, ResourcePoolReference } from '../re
 import { Expression, ExpressionContext, Expressions } from '@khydrian-drift/util/expression'
 import { Arrays, Comparators, Objects, References } from '@khydrian-drift/util'
 import { Attribute, AttributeReference, AttributeValue, Modifier } from '@khydrian-drift/common/attribute'
-import { Attributes } from '@khydrian-drift/common'
-import { ClassLevel } from '@khydrian-drift/common/character'
+import { Attributes, Traits } from '@khydrian-drift/common'
 
 export interface Effect {
   type: string
@@ -13,13 +12,7 @@ export interface Effect {
   source?: EffectSource
 }
 
-// JOHN probably needs a new data structure for this...
-enum EffectSourceType {
-  Trait = 'Trait',
-  Class = 'Class',
-}
-
-export type EffectSource = TraitReference | ClassLevel
+export type EffectSource = TraitReference
 
 export type EffectType<T extends Effect> = { type: string }
 
@@ -181,7 +174,7 @@ export const descriptive = (description: string, condition: Expression<boolean> 
 }
 
 export const gainSpecificTrait = (trait: TraitReference | Trait, condition: Expression<boolean> | null = null): GainTraitEffect => {
-  return gainTrait(TraitFilter.build({ specificOptions: [References.getReference(trait)] }), condition)
+  return gainTrait(Traits.filter({ specificOptions: [References.getReference(trait)] }), condition)
 }
 
 export const gainTrait = (filter: TraitFilter, condition: Expression<boolean> | null = null): GainTraitEffect => {

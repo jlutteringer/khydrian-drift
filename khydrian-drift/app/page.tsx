@@ -6,13 +6,12 @@ import { ApplicationContext } from '@khydrian-drift/common/context'
 import { KhydrianDrift } from '@khydrian-drift/rulesets/khydrian-drift'
 import { Characters } from '@khydrian-drift/common'
 import { CharacterOptions } from '@khydrian-drift/common/character'
-import { Commando } from '@khydrian-drift/rulesets/khydrian-drift/class/class-commando'
 
 export default function Home() {
   const context: ApplicationContext = { ruleset: KhydrianDrift }
   const character: CharacterOptions = {
     name: 'Bob the Commando',
-    classes: [{ class: Commando, level: 2 }],
+    level: 1,
     baseAttributes: {
       brawn: 2,
       agility: 2,

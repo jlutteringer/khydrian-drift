@@ -1,34 +1,29 @@
 import { Referencable, Reference } from '@khydrian-drift/util/reference'
 import { Effect } from '@khydrian-drift/common/effect'
 import { Preconditions, References } from '@khydrian-drift/util'
-import { Class, ClassReference } from '@khydrian-drift/common/class'
 import { Expression, Expressions } from '@khydrian-drift/util/expression'
 import { CharacterOptions } from '@khydrian-drift/common/character'
 import { ApplicationContext } from '@khydrian-drift/common/context'
+import { Archetype, ArchetypeReference } from '@khydrian-drift/common/archetype'
 
 export type TraitReference = Reference<'Trait'>
 
 export type TraitProps = {
   name: string
   description: string
-  prerequisites: Array<Expression<boolean>>
   effects: Array<Effect>
+
+  archetypes?: Array<ArchetypeReference | Archetype>
+  prerequisites?: Array<Expression<boolean>>
 }
 
-export type Trait = Referencable<TraitReference> & TraitProps & {}
+export type Trait = Referencable<TraitReference> & {
+  name: string
+  description: string
+  effects: Array<Effect>
 
-export type TraitFilter = {
-  specificOptions: Array<TraitReference>
-}
-
-export namespace TraitFilter {
-  export const build = (props: Partial<TraitFilter>): TraitFilter => {
-    return {
-      specificOptions: props.specificOptions ?? [],
-    }
-  }
-
-  export const Any: TraitFilter = build({})
+  archetypes: Array<ArchetypeReference>
+  prerequisites: Array<Expression<boolean>>
 }
 
 export const reference = (id: string, name: string): TraitReference => {
@@ -39,6 +34,8 @@ export const defineTrait = (reference: TraitReference | string, props: TraitProp
   return {
     reference: References.reference(reference, 'Trait', props.name),
     ...props,
+    archetypes: (props.archetypes ?? []).map(References.getReference),
+    prerequisites: props.prerequisites ?? [],
   }
 }
 
@@ -60,10 +57,27 @@ export const getEffects = (traits: Array<Trait>): Array<Effect> => {
   return effects
 }
 
-export const classPrerequisite = (clazz: ClassReference | Class): Expression<boolean> => {
-  return Expressions.contains(CharacterOptions.Classes, [References.getReference(clazz)])
-}
-
 export const traitPrerequisite = (trait: TraitReference | Trait): Expression<boolean> => {
   return Expressions.contains(CharacterOptions.Traits, [References.getReference(trait)])
+}
+
+export type TraitFilterProps = {
+  archetypes?: Array<ArchetypeReference | Archetype>
+  specificOptions?: Array<TraitReference | Trait>
+}
+
+export type TraitFilter = {
+  archetypes: Array<ArchetypeReference>
+  specificOptions: Array<TraitReference>
+}
+
+export const filter = (props: TraitFilterProps): TraitFilter => {
+  return {
+    archetypes: (props.archetypes ?? []).map(References.getReference),
+    specificOptions: (props.specificOptions ?? []).map(References.getReference),
+  }
+}
+
+export const filterNone = (): TraitFilter => {
+  return filter({})
 }

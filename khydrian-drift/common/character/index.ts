@@ -1,18 +1,15 @@
-import { ClassReference } from '@khydrian-drift/common/class'
-import { Attributes, Classes, Effects, Traits } from '@khydrian-drift/common'
+import { Attributes, Effects, Traits } from '@khydrian-drift/common'
 import { TraitFilter, TraitReference } from '@khydrian-drift/common/trait'
 import { CreatureDefinition } from '@khydrian-drift/common/creature'
-import { ExpressionContext, Expressions, ExpressionVariable, NumericExpressions, ParameterizedVariable } from '@khydrian-drift/util/expression'
+import { ExpressionContext, Expressions, ExpressionVariable, NumericExpressions } from '@khydrian-drift/util/expression'
 import { ApplicationContext } from '@khydrian-drift/common/context'
 import { Attribute, AttributeValue } from '@khydrian-drift/common/attribute'
-import { Arrays, Objects } from '@khydrian-drift/util'
+import { Arrays } from '@khydrian-drift/util'
 import { Effect, GainTraitEffect } from '@khydrian-drift/common/effect'
 import { Reference } from '@khydrian-drift/util/reference'
 
 export namespace CharacterOptions {
   export const Level: ExpressionVariable<number> = Expressions.variable('Level')
-  export const Classes: ExpressionVariable<Array<ClassReference>> = Expressions.variable('Classes')
-  export const ClassLevel: ParameterizedVariable<number, [ClassReference]> = Expressions.parameterizedVariable('ClassLevel')
   export const Traits: ExpressionVariable<Array<TraitReference>> = Expressions.variable('Traits')
 
   export const BaseBrawn: ExpressionVariable<number> = Expressions.variable('BaseBrawn')
@@ -25,15 +22,9 @@ export namespace CharacterOptions {
   export const VitalityPoints: ExpressionVariable<number> = Expressions.variable('VitalityPoints')
 }
 
-export type ClassLevel = {
-  class: ClassReference
-  level: number
-}
-
 export type CharacterOptions = {
   name: string
-  classes: Array<ClassLevel>
-  selections: Array<TraitSelection>
+  level: number
   baseAttributes: {
     brawn: number
     agility: number
@@ -41,6 +32,7 @@ export type CharacterOptions = {
     intelligence: number
     presence: number
   }
+  selections: Array<TraitSelection>
 }
 
 export namespace CharacterAttributes {
@@ -136,11 +128,6 @@ export type TraitSelection = {
 export const buildExpressionContext = (character: CharacterState): ExpressionContext => {
   const variables: Record<string, unknown> = {
     ...Expressions.buildVariable(CharacterOptions.Level, character.level),
-    ...Expressions.buildVariable(
-      CharacterOptions.Classes,
-      character.classes.map((it) => it.class)
-    ),
-    ...Objects.mergeAll(character.classes.map((it) => Expressions.buildVariable(CharacterOptions.ClassLevel.apply(it.class), it.level))),
     ...Expressions.buildVariable(CharacterOptions.Traits, character.traits),
 
     ...Expressions.buildVariable(CharacterOptions.BaseBrawn, character.baseAttributes.brawn),
@@ -165,7 +152,6 @@ export const buildExpressionContext = (character: CharacterState): ExpressionCon
 export const buildInitialCharacterState = (options: CharacterOptions): CharacterState => {
   return {
     ...options,
-    level: options.classes.map((it) => it.level).reduce((x, y) => x + y, 0),
     traits: options.selections.map((it) => it.trait),
     attributes: {
       brawn: Attributes.baseValue(0, CharacterAttributes.Brawn),
@@ -193,9 +179,8 @@ export const buildCharacterDefinition = (options: CharacterOptions, context: App
 
 const getEffects = (character: CharacterState, context: ApplicationContext): Array<Effect> => {
   const globalEffects = Arrays.range(1, character.level + 1).flatMap((index) => context.ruleset.progressionTable[index] ?? [])
-  const classEffects = Classes.getEffects(character.classes, context)
   const traitEffects = Traits.getEffects(Traits.getTraits(character.traits, context))
-  return [...globalEffects, ...classEffects, ...traitEffects]
+  return [...globalEffects, ...traitEffects]
 }
 
 const applyAdditionalTraits = (character: CharacterState, context: ApplicationContext) => {
