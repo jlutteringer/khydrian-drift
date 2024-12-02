@@ -1,9 +1,11 @@
-import { TraitReference } from '@khydrian-drift/common/trait'
-import { LoadoutTypeReference } from '@khydrian-drift/common/loadout'
-import { ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
+import { Trait, TraitFilter, TraitReference } from '@khydrian-drift/common/trait'
+import { LoadoutType, LoadoutTypeReference } from '@khydrian-drift/common/loadout'
+import { ResourcePool, ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
 import { Expression, ExpressionContext, Expressions } from '@khydrian-drift/util/expression'
-import { Arrays, Comparators, Objects } from '@khydrian-drift/util'
+import { Arrays, Comparators, Objects, References } from '@khydrian-drift/util'
 import { Attribute, AttributeReference, AttributeValue, Modifier } from '@khydrian-drift/common/attribute'
+import { Attributes } from '@khydrian-drift/common'
+import { ClassLevel } from '@khydrian-drift/common/character'
 
 export interface Effect {
   type: string
@@ -11,7 +13,13 @@ export interface Effect {
   source?: EffectSource
 }
 
-export type EffectSource = TraitReference
+// JOHN probably needs a new data structure for this...
+enum EffectSourceType {
+  Trait = 'Trait',
+  Class = 'Class',
+}
+
+export type EffectSource = TraitReference | ClassLevel
 
 export type EffectType<T extends Effect> = { type: string }
 
@@ -24,7 +32,7 @@ export type DescriptiveEffect = Effect & {
 export const GainTrait: EffectType<GainTraitEffect> = { type: 'GainTrait' }
 export type GainTraitEffect = Effect & {
   type: 'GainTrait'
-  trait: TraitReference
+  filter: TraitFilter
 }
 
 export const AssignAttribute: EffectType<ModifyAttributeEffect> = { type: 'AssignAttribute' }
@@ -138,26 +146,30 @@ export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, ini
   if (!Arrays.isEmpty(activeAssignments)) {
     activeAssignments.sort(Comparators.compareBy((it) => it.value, Comparators.reverse(Comparators.natural())))
     const bestAssignment = Arrays.first(activeAssignments)!
-    return {
-      attribute: attribute.reference,
-      value: bestAssignment.value,
-      base: attribute.base,
-      activeModifiers: [],
-      inactiveModifiers: [...activeModifiers, ...inactiveModifiers],
-      activeAssignment: bestAssignment,
-      inactiveAssignments: [...Arrays.rest(activeAssignments), ...inactiveAssignments],
-    }
+
+    return Attributes.buildValue(
+      {
+        value: bestAssignment.value,
+        baseValue: Expressions.evaluate(attribute.base, context),
+        inactiveModifiers: [...activeModifiers, ...inactiveModifiers],
+        activeAssignment: bestAssignment,
+        inactiveAssignments: [...Arrays.rest(activeAssignments), ...inactiveAssignments],
+      },
+      attribute
+    )
   }
 
-  return {
-    attribute: attribute.reference,
-    value: value,
-    base: attribute.base,
-    activeModifiers,
-    inactiveModifiers,
-    activeAssignment: null,
-    inactiveAssignments: [...activeAssignments, ...inactiveAssignments],
-  }
+  return Attributes.buildValue(
+    {
+      value: value,
+      baseValue: Expressions.evaluate(attribute.base, context),
+      activeModifiers,
+      inactiveModifiers,
+      activeAssignment: null,
+      inactiveAssignments: [...activeAssignments, ...inactiveAssignments],
+    },
+    attribute
+  )
 }
 
 export const descriptive = (description: string, condition: Expression<boolean> | null = null): DescriptiveEffect => {
@@ -168,48 +180,52 @@ export const descriptive = (description: string, condition: Expression<boolean> 
   }
 }
 
-export const gainTrait = (trait: TraitReference, condition: Expression<boolean> | null = null): GainTraitEffect => {
+export const gainSpecificTrait = (trait: TraitReference | Trait, condition: Expression<boolean> | null = null): GainTraitEffect => {
+  return gainTrait(TraitFilter.build({ specificOptions: [References.getReference(trait)] }), condition)
+}
+
+export const gainTrait = (filter: TraitFilter, condition: Expression<boolean> | null = null): GainTraitEffect => {
   return {
     type: 'GainTrait',
-    trait,
+    filter,
     condition,
   }
 }
 
 export const assignAttribute = (
-  attribute: AttributeReference<number>,
+  attribute: AttributeReference<number> | Attribute<number>,
   modifier: Expression<number>,
   condition: Expression<boolean> | null = null
 ): AssignAttributeEffect => {
   return {
     type: 'AssignAttribute',
-    attribute,
+    attribute: References.getReference(attribute),
     modifier,
     condition,
   }
 }
 
 export const modifyAttribute = (
-  attribute: AttributeReference<number>,
+  attribute: AttributeReference<number> | Attribute<number>,
   modifier: Expression<number>,
   condition: Expression<boolean> | null = null
 ): ModifyAttributeEffect => {
   return {
     type: 'ModifyAttribute',
-    attribute,
+    attribute: References.getReference(attribute),
     modifier,
     condition,
   }
 }
 
 export const modifyLoadoutSlotQuantity = (
-  loadoutType: LoadoutTypeReference,
+  loadoutType: LoadoutTypeReference | LoadoutType,
   amount: Expression<number>,
   condition: Expression<boolean> | null = null
 ): ModifyLoadoutSlotQuantityEffect => {
   return {
     type: 'ModifyLoadoutSlotQuantity',
-    loadoutType,
+    loadoutType: References.getReference(loadoutType),
     amount,
     condition,
   }
@@ -223,10 +239,10 @@ export const modifyHealingSurgeQuantity = (amount: Expression<number>, condition
   }
 }
 
-export const gainResourcePool = (resourcePool: ResourcePoolReference, condition: Expression<boolean> | null = null): GainResourcePoolEffect => {
+export const gainResourcePool = (resourcePool: ResourcePoolReference | ResourcePool, condition: Expression<boolean> | null = null): GainResourcePoolEffect => {
   return {
     type: 'GainResourcePool',
-    resourcePool,
+    resourcePool: References.getReference(resourcePool),
     condition,
   }
 }

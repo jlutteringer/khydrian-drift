@@ -1,6 +1,6 @@
 import { ExpressionContext, ExpressionType, ExpressionValue, ExpressionVariable, IExpression } from '@khydrian-drift/util/expression/index'
 import { AndExpression, ContainsExpression, CustomExpression, EqualsExpression, NotExpression, OrExpression } from '@khydrian-drift/util/expression/expression'
-import { Arrays, Objects, Preconditions } from '@khydrian-drift/util'
+import { Arrays, Objects, Preconditions, Signatures } from '@khydrian-drift/util'
 import {
   BoundsExpression,
   GreaterThanExpression,
@@ -13,7 +13,7 @@ export class ExpressionEvaluator {
   constructor(private readonly context: ExpressionContext) {}
 
   evaluate<T>(expression: IExpression<T>): T {
-    switch (expression.type) {
+    switch (expression.expressionKey) {
       case ExpressionType.Value:
         return this.evaluateExpressionValue(expression as ExpressionValue<T>)
       case ExpressionType.Variable:
@@ -48,7 +48,7 @@ export class ExpressionEvaluator {
         break // TODO implement me
     }
 
-    throw new Error(`Unknown Expression Type: ${expression.type}`)
+    throw new Error(`Unknown Expression Type: ${expression.expressionKey}`)
   }
 
   private evaluateExpressionValue<T>(value: ExpressionValue<T>): T {
@@ -83,7 +83,7 @@ export class ExpressionEvaluator {
   }
 
   private evaluateEqualsExpression(expression: EqualsExpression): boolean {
-    const values = expression.operands.map((it) => this.evaluate(it))
+    const values = expression.operands.map((it) => this.evaluate(it)).map(Signatures.sign)
 
     if (values.length === 0) {
       return true
@@ -96,7 +96,7 @@ export class ExpressionEvaluator {
   private evaluateContainsExpression(expression: ContainsExpression): boolean {
     const collection = this.evaluate(expression.collection)
     const values = expression.operands.map((it) => this.evaluate(it))
-    return Arrays.difference(collection, values).length === 0
+    return Arrays.difference(collection.map(Signatures.sign), values.map(Signatures.sign)).length === 0
   }
 
   private evaluateLessThanExpression(expression: LessThanExpression): boolean {

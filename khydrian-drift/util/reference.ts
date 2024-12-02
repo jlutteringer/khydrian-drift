@@ -1,4 +1,4 @@
-import { Strings } from '@khydrian-drift/util/index'
+import { Objects, Strings } from '@khydrian-drift/util/index'
 
 export type Reference<T extends string> = {
   id: string
@@ -11,7 +11,7 @@ export type Referencable<T> = {
   reference: T
 }
 
-export const reference = <T extends string>(reference: Reference<T> | string, type: T, note?: string): Reference<typeof type> => {
+export const reference = <T extends string>(reference: string | Reference<T>, type: T, note?: string): Reference<typeof type> => {
   if (!Strings.isString(reference)) {
     return reference
   }
@@ -20,5 +20,14 @@ export const reference = <T extends string>(reference: Reference<T> | string, ty
     id: reference,
     type,
     note: note ?? null,
+  }
+}
+
+export const getReference = <T extends string, N extends Reference<T>>(reference: N | Referencable<N>): N => {
+  const referencable = reference as Referencable<N>
+  if (Objects.isPresent(referencable.reference)) {
+    return referencable.reference
+  } else {
+    return reference as N
   }
 }

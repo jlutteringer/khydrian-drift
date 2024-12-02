@@ -1,6 +1,7 @@
 import * as NumericExpressions from '@khydrian-drift/util/expression/numeric-expression'
 import * as StringExpressions from '@khydrian-drift/util/expression/string-expression'
 import * as Expressions from '@khydrian-drift/util/expression/expression'
+import { Signable } from '@khydrian-drift/util/signature'
 
 export { Expressions, NumericExpressions, StringExpressions }
 
@@ -24,19 +25,23 @@ export enum ExpressionType {
 }
 
 export interface IExpression<T> {
-  type: ExpressionType
+  expressionKey: ExpressionType
 }
 
 export type Expression<T> = T | IExpression<T>
 
 export interface ExpressionValue<T> extends IExpression<T> {
-  type: ExpressionType.Value
+  expressionKey: ExpressionType.Value
   value: T
 }
 
 export interface ExpressionVariable<T> extends IExpression<T> {
-  type: ExpressionType.Variable
+  expressionKey: ExpressionType.Variable
   name: string
+}
+
+export interface ParameterizedVariable<ValueType, ParameterType extends Array<Signable>> {
+  apply(...parameters: ParameterType): ExpressionVariable<ValueType>
 }
 
 export type ReducingExpression<ArgumentType, ReturnType> = IExpression<ReturnType> & {

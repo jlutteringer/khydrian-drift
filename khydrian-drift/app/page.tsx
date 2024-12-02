@@ -6,22 +6,21 @@ import { ApplicationContext } from '@khydrian-drift/common/context'
 import { KhydrianDrift } from '@khydrian-drift/rulesets/khydrian-drift'
 import { Characters } from '@khydrian-drift/common'
 import { CharacterOptions } from '@khydrian-drift/common/character'
-import { BaselineQuickGuy, Commando, Momentum } from '@khydrian-drift/rulesets/khydrian-drift/class/class-commando'
+import { Commando } from '@khydrian-drift/rulesets/khydrian-drift/class/class-commando'
 
 export default function Home() {
   const context: ApplicationContext = { ruleset: KhydrianDrift }
   const character: CharacterOptions = {
     name: 'Bob the Commando',
-    level: 5,
-    class: Commando,
-    attributes: {
-      brawn: 1,
-      agility: 1,
-      willpower: 1,
-      intelligence: 1,
-      presence: 1,
+    classes: [{ class: Commando, level: 2 }],
+    baseAttributes: {
+      brawn: 2,
+      agility: 2,
+      willpower: 0,
+      intelligence: 0,
+      presence: 0,
     },
-    traits: [Momentum.reference, BaselineQuickGuy.reference],
+    selections: [],
   }
   console.log('buildCharacterDefinition', Characters.buildCharacterDefinition(character, context))
 

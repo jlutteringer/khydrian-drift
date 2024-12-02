@@ -1,9 +1,9 @@
 import { Referencable, Reference } from '@khydrian-drift/util/reference'
 import { Effect } from '@khydrian-drift/common/effect'
 import { Preconditions, References } from '@khydrian-drift/util'
-import { ClassReference } from '@khydrian-drift/common/class'
+import { Class, ClassReference } from '@khydrian-drift/common/class'
 import { Expression, Expressions } from '@khydrian-drift/util/expression'
-import { CharacterProperties } from '@khydrian-drift/common/character'
+import { CharacterOptions } from '@khydrian-drift/common/character'
 import { ApplicationContext } from '@khydrian-drift/common/context'
 
 export type TraitReference = Reference<'Trait'>
@@ -16,6 +16,20 @@ export type TraitProps = {
 }
 
 export type Trait = Referencable<TraitReference> & TraitProps & {}
+
+export type TraitFilter = {
+  specificOptions: Array<TraitReference>
+}
+
+export namespace TraitFilter {
+  export const build = (props: Partial<TraitFilter>): TraitFilter => {
+    return {
+      specificOptions: props.specificOptions ?? [],
+    }
+  }
+
+  export const Any: TraitFilter = build({})
+}
 
 export const reference = (id: string, name: string): TraitReference => {
   return References.reference(id, 'Trait', name)
@@ -46,10 +60,10 @@ export const getEffects = (traits: Array<Trait>): Array<Effect> => {
   return effects
 }
 
-export const classPrerequisite = (clazz: ClassReference): Expression<boolean> => {
-  return Expressions.contains(CharacterProperties.Classes, [clazz])
+export const classPrerequisite = (clazz: ClassReference | Class): Expression<boolean> => {
+  return Expressions.contains(CharacterOptions.Classes, [References.getReference(clazz)])
 }
 
-export const traitPrerequisite = (trait: TraitReference): Expression<boolean> => {
-  return Expressions.contains(CharacterProperties.Traits, [trait.id])
+export const traitPrerequisite = (trait: TraitReference | Trait): Expression<boolean> => {
+  return Expressions.contains(CharacterOptions.Traits, [References.getReference(trait)])
 }

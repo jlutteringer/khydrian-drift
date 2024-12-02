@@ -7,7 +7,7 @@ export type AttributeReference<T> = Reference<'Attribute'>
 
 export type AttributeProps<T> = {
   name: string
-  base: T
+  base: Expression<T>
   reducer: ExpressionReference<T, T>
 }
 
@@ -17,18 +17,19 @@ export type Attribute<T> = Referencable<AttributeReference<T>> &
   }
 
 export type AttributeValue<T> = {
-  attribute: AttributeReference<T>
+  name: string
   value: T
-  base: T
+  baseValue: T
+  base: Expression<T>
 
   activeModifiers: Array<Modifier<T>>
   inactiveModifiers: Array<Modifier<T>>
 
   activeAssignment: Modifier<T> | null
   inactiveAssignments: Array<Modifier<T>>
+  attribute: AttributeReference<T>
 }
 
-// JOHN... better name? this is being used for modifiers and assignments
 export type Modifier<T> = {
   value: T
   expression: Expression<T>
@@ -44,4 +45,33 @@ export const defineAttribute = <T>(id: AttributeReference<T> | string, props: At
     ...props,
     variable: Expressions.variable(reference.id),
   }
+}
+
+export type AttributeValueBuilder<T> = {
+  value: T
+  baseValue: T
+
+  activeModifiers?: Array<Modifier<T>>
+  inactiveModifiers?: Array<Modifier<T>>
+
+  activeAssignment?: Modifier<T> | null
+  inactiveAssignments?: Array<Modifier<T>>
+}
+
+export const buildValue = <T>(builder: AttributeValueBuilder<T>, attribute: Attribute<T>): AttributeValue<T> => {
+  return {
+    name: attribute.name,
+    value: builder.value,
+    baseValue: builder.baseValue,
+    base: attribute.base,
+    activeModifiers: builder.activeModifiers ?? [],
+    inactiveModifiers: builder.inactiveModifiers ?? [],
+    activeAssignment: builder.activeAssignment ?? null,
+    inactiveAssignments: builder.inactiveAssignments ?? [],
+    attribute: attribute.reference,
+  }
+}
+
+export const baseValue = <T>(value: T, attribute: Attribute<T>): AttributeValue<T> => {
+  return buildValue({ value: value, baseValue: value }, attribute)
 }

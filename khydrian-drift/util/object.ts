@@ -5,6 +5,7 @@ import {
   isObject as _isObject,
   isPlainObject as _isPlainObject,
   mapValues as _mapValues,
+  merge as unsafeMerge,
 } from 'lodash-es'
 
 export type ObjectDiffResult = {
@@ -22,6 +23,14 @@ export const isPlainObject = _isPlainObject
 export const deepEqual = _isEqual
 export const invert = _invert
 export const mapValues = _mapValues
+
+export const mergeAll = <T>(objects: Array<T>): T => {
+  return objects.reduce((x, y) => merge(x, y))
+}
+
+export function merge<Source1, Source2>(obj1: Source1, obj2: Source2): Source1 & Source2 {
+  return unsafeMerge({}, obj1, obj2)
+}
 
 export const isPromise = <T>(element: T | Promise<T>): element is Promise<T> => {
   return typeof (element as Promise<T>).then === 'function'

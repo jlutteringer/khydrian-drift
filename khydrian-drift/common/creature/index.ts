@@ -1,10 +1,10 @@
 import { AttributeValue } from '@khydrian-drift/common/attribute'
 
 export type CreatureDefinition = {
-  vitalityPool: number
-  soakRating: number
+  vitalityPool: AttributeValue<number>
+  soakRating: AttributeValue<number>
   movementSpeed: AttributeValue<number>
-  initiative: number
+  initiative: AttributeValue<number>
 }
 
 export type CreatureState = {
