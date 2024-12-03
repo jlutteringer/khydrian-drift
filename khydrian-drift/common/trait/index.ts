@@ -1,10 +1,10 @@
 import { Referencable, Reference } from '@khydrian-drift/util/reference'
 import { Effect } from '@khydrian-drift/common/effect'
-import { Preconditions, References } from '@khydrian-drift/util'
+import { Arrays, Preconditions, References } from '@khydrian-drift/util'
 import { Expression, Expressions } from '@khydrian-drift/util/expression'
-import { CharacterOptions } from '@khydrian-drift/common/character'
 import { ApplicationContext } from '@khydrian-drift/common/context'
 import { Archetype, ArchetypeReference } from '@khydrian-drift/common/archetype'
+import { CharacterOptions } from '@khydrian-drift/common/character'
 
 export type TraitReference = Reference<'Trait'>
 
@@ -41,7 +41,7 @@ export const defineTrait = (reference: TraitReference | string, props: TraitProp
 
 export const getTraits = (traits: Array<TraitReference>, context: ApplicationContext): Array<Trait> => {
   return traits.map((trait) => {
-    const matchingTrait = context.ruleset.traits.find((it) => it.reference.id === trait.id)
+    const matchingTrait = context.ruleset.traits.find((it) => References.equals(it.reference, trait))
     Preconditions.isPresent(matchingTrait, () => `Unable to find Trait for Reference: ${JSON.stringify(trait)}`)
     return matchingTrait
   })
@@ -71,7 +71,16 @@ export type TraitFilter = {
   specificOptions: Array<TraitReference>
 }
 
-export const filter = (props: TraitFilterProps): TraitFilter => {
+export type TraitFilterArgument = TraitFilterProps | TraitReference | Trait
+
+export const filter = (props: TraitFilterArgument): TraitFilter => {
+  if (References.isReferencable(props) || References.isReference(props)) {
+    return {
+      archetypes: [],
+      specificOptions: [References.getReference(props)],
+    }
+  }
+
   return {
     archetypes: (props.archetypes ?? []).map(References.getReference),
     specificOptions: (props.specificOptions ?? []).map(References.getReference),
@@ -80,4 +89,16 @@ export const filter = (props: TraitFilterProps): TraitFilter => {
 
 export const filterNone = (): TraitFilter => {
   return filter({})
+}
+
+export const applyFilter = (traits: Array<Trait>, filter: TraitFilter): Array<Trait> => {
+  let filteredTraits = traits
+  if (!Arrays.isEmpty(filter.archetypes)) {
+    filteredTraits = filteredTraits.filter((it) => Arrays.containsAllWith(filter.archetypes, it.archetypes, References.equalitor()))
+  }
+  if (!Arrays.isEmpty(filter.specificOptions)) {
+    filteredTraits = filteredTraits.filter((it) => Arrays.containsWith(filter.specificOptions, it.reference, References.equalitor()))
+  }
+
+  return filteredTraits
 }

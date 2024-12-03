@@ -3,15 +3,15 @@
 import Image from 'next/image'
 import styles from './page.module.css'
 import { ApplicationContext } from '@khydrian-drift/common/context'
-import { KhydrianDrift } from '@khydrian-drift/rulesets/khydrian-drift'
 import { Characters } from '@khydrian-drift/common'
-import { CharacterOptions } from '@khydrian-drift/common/character'
+import { CharacterBlueprint } from '@khydrian-drift/common/character'
+import { Dnd5e } from '@khydrian-drift/rulesets/dnd-5e'
 
 export default function Home() {
-  const context: ApplicationContext = { ruleset: KhydrianDrift }
-  const character: CharacterOptions = {
-    name: 'Bob the Commando',
-    level: 1,
+  const context: ApplicationContext = { ruleset: Dnd5e }
+  const character: CharacterBlueprint = {
+    name: 'Bob the Fighter',
+    level: 2,
     baseAttributes: {
       brawn: 2,
       agility: 2,

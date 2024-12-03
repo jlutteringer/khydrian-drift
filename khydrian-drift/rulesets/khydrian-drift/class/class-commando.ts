@@ -12,7 +12,7 @@ export const Commando = Traits.defineTrait('e0b5ad7e-6e8b-4416-8a7c-41bab05993d3
   archetypes: [Class],
   effects: [
     Effects.modifyAttribute(CharacterAttributes.VitalityPool, NumericExpressions.multiply([CharacterOptions.Level, 2])),
-    Effects.gainSpecificTrait(BasicCombatTraining),
+    Effects.gainTrait('6a0b8109-ecea-478b-9d2f-6af81ecd0025', BasicCombatTraining),
     Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
     Effects.modifyLoadoutSlotQuantity(AdvancedHardpointLoadoutSlot, 1),
   ],

@@ -4,16 +4,12 @@ import {
   isNil as _isNil,
   isObject as _isObject,
   isPlainObject as _isPlainObject,
+  isUndefined as _isUndefined,
   mapValues as _mapValues,
   merge as unsafeMerge,
 } from 'lodash-es'
 
-export type ObjectDiffResult = {
-  elementsUpdated: Record<string, { originalValue: unknown; updatedValue: unknown }>
-  elementsAdded: Record<string, unknown>
-  elementsRemoved: Record<string, unknown>
-}
-
+export const isUndefined = _isUndefined
 export const isNil = _isNil
 export const isPresent = <T>(value: T): value is NonNullable<T> => {
   return !isNil(value)
@@ -28,8 +24,12 @@ export const mergeAll = <T>(objects: Array<T>): T => {
   return objects.reduce((x, y) => merge(x, y))
 }
 
-export function merge<Source1, Source2>(obj1: Source1, obj2: Source2): Source1 & Source2 {
+export const merge = <Source1, Source2>(obj1: Source1, obj2: Source2): Source1 & Source2 => {
   return unsafeMerge({}, obj1, obj2)
+}
+
+export function mergeInto<Source1, Source2>(source: Source1, values: Source2): asserts source is Source1 & Source2 {
+  unsafeMerge(source, values)
 }
 
 export const isPromise = <T>(element: T | Promise<T>): element is Promise<T> => {
@@ -41,7 +41,13 @@ export const parsePath = (path: string): ObjectPath => {
   return new ObjectPath(pathArray)
 }
 
-export function diffShallow(original: Record<string, unknown>, updated: Record<string, unknown>) {
+export type ObjectDiffResult = {
+  elementsUpdated: Record<string, { originalValue: unknown; updatedValue: unknown }>
+  elementsAdded: Record<string, unknown>
+  elementsRemoved: Record<string, unknown>
+}
+
+export function diffShallow(original: Record<string, unknown>, updated: Record<string, unknown>): ObjectDiffResult {
   const result: ObjectDiffResult = {
     elementsUpdated: {},
     elementsAdded: {},

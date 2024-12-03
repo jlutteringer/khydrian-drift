@@ -9,3 +9,7 @@ export const sign = (value: Signable): string | number => {
 
   return value
 }
+
+export const signAll = (values: Array<Signable>): Array<string | number> => {
+  return values.map(sign)
+}

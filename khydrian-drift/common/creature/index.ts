@@ -1,6 +1,6 @@
 import { AttributeValue } from '@khydrian-drift/common/attribute'
 
-export type CreatureDefinition = {
+export type CreatureAttributes = {
   vitalityPool: AttributeValue<number>
   soakRating: AttributeValue<number>
   movementSpeed: AttributeValue<number>

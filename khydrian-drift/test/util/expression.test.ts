@@ -9,6 +9,4 @@ test('TODO', () => {
     NumericExpressions.lessThan(NumericExpressions.sum([Expressions.variable('VitalityPoints'), 10]), 15),
     StringExpressions.substring('one', 'two'),
   ])
-
-  Expressions.unCurry(Expressions.curry(NumericExpressions.sum([2])), [2])
 })

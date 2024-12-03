@@ -96,7 +96,7 @@ export class ExpressionEvaluator {
   private evaluateContainsExpression(expression: ContainsExpression): boolean {
     const collection = this.evaluate(expression.collection)
     const values = expression.operands.map((it) => this.evaluate(it))
-    return Arrays.difference(collection.map(Signatures.sign), values.map(Signatures.sign)).length === 0
+    return Arrays.containsAll(collection, values)
   }
 
   private evaluateLessThanExpression(expression: LessThanExpression): boolean {

@@ -1,3 +1,5 @@
+import { Numbers, Strings } from '@khydrian-drift/util/index'
+
 export type Comparator<T> = (first: T, second: T) => number
 
 export const aggregate = <T>(comparators: Array<Comparator<T>>): Comparator<T> => {
@@ -29,9 +31,22 @@ export const trueFirst = (): Comparator<boolean> => {
   return (first, second) => natural()(first ? 1 : 0, second ? 1 : 0)
 }
 
-export const natural = (): Comparator<number | null> => {
+export const natural = (): Comparator<string | number | null> => {
   // Comparing by nulls first allows us to assume the elements are non-null for future comparisons
-  return aggregate([nullsLast(), (first, second) => first! - second!])
+  return aggregate([
+    nullsLast(),
+    (first, second) => {
+      if (Strings.isString(first) && Strings.isString(second)) {
+        return first.localeCompare(second)
+      } else if (Numbers.isNumber(first) && Numbers.isNumber(second)) {
+        return first! - second!
+      } else if (Numbers.isNumber(first)) {
+        return -1
+      } else {
+        return 1
+      }
+    },
+  ])
 }
 
 export function matchedFirst<T>(target: T): Comparator<T | null> {

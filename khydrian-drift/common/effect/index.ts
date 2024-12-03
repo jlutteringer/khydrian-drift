@@ -1,4 +1,4 @@
-import { Trait, TraitFilter, TraitReference } from '@khydrian-drift/common/trait'
+import { Trait, TraitFilter, TraitFilterProps, TraitReference } from '@khydrian-drift/common/trait'
 import { LoadoutType, LoadoutTypeReference } from '@khydrian-drift/common/loadout'
 import { ResourcePool, ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
 import { Expression, ExpressionContext, Expressions } from '@khydrian-drift/util/expression'
@@ -25,6 +25,7 @@ export type DescriptiveEffect = Effect & {
 export const GainTrait: EffectType<GainTraitEffect> = { type: 'GainTrait' }
 export type GainTraitEffect = Effect & {
   type: 'GainTrait'
+  id: string
   filter: TraitFilter
 }
 
@@ -67,7 +68,7 @@ export type ModifyResourcePoolEffect = Effect & {
   resourcePoolModification: ResourcePoolMutation
 }
 
-const filterEffectsByType = <T extends Effect>(effects: Array<Effect>, type: EffectType<T>): Array<T> => {
+export const filter = <T extends Effect>(effects: Array<Effect>, type: EffectType<T>): Array<T> => {
   const matchingEffects = effects.filter((it) => it.type === type.type)
   return matchingEffects as Array<T>
 }
@@ -82,7 +83,7 @@ export const evaluateEffects = <T extends Effect>(
   type: EffectType<T>,
   context: ExpressionContext
 ): EvaluateEffectsResponse<T> => {
-  const effects = filterEffectsByType(initialEffects, type)
+  const effects = filter(initialEffects, type)
   const activeEffects: Array<T> = []
   const inactiveEffects: Array<T> = []
 
@@ -113,7 +114,7 @@ const buildModifier = <T>(effect: ModifyAttributeEffect | AssignAttributeEffect,
 
 // TODO is there a way to back off of the fact that attributes must be numbers
 export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, initialEffects: Array<Effect>, context: ExpressionContext): AttributeValue<T> => {
-  const effects = filterEffectsByType(initialEffects, ModifyAttribute).filter((it) => it.attribute.id === attribute.reference.id)
+  const effects = filter(initialEffects, ModifyAttribute).filter((it) => References.equals(it.attribute, attribute.reference))
   const { activeEffects, inactiveEffects } = evaluateEffects(effects, ModifyAttribute, context)
 
   const activeModifiers = activeEffects.map((it) => buildModifier<T>(it, context))
@@ -121,7 +122,7 @@ export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, ini
   const operands = [attribute.base, ...activeModifiers.map((it) => it.value)]
   const value = Expressions.evaluate(Expressions.invoke(attribute.reducer, operands), context)
 
-  const setEffects = filterEffectsByType(initialEffects, AssignAttribute).filter((it) => it.attribute.id === attribute.reference.id)
+  const setEffects = filter(initialEffects, AssignAttribute).filter((it) => References.equals(it.attribute, attribute.reference))
 
   const updatedVariables = {
     ...context.variables,
@@ -173,14 +174,11 @@ export const descriptive = (description: string, condition: Expression<boolean> 
   }
 }
 
-export const gainSpecificTrait = (trait: TraitReference | Trait, condition: Expression<boolean> | null = null): GainTraitEffect => {
-  return gainTrait(Traits.filter({ specificOptions: [References.getReference(trait)] }), condition)
-}
-
-export const gainTrait = (filter: TraitFilter, condition: Expression<boolean> | null = null): GainTraitEffect => {
+export const gainTrait = (id: string, filter: TraitFilterProps | TraitReference | Trait, condition: Expression<boolean> | null = null): GainTraitEffect => {
   return {
     type: 'GainTrait',
-    filter,
+    id,
+    filter: Traits.filter(filter),
     condition,
   }
 }
