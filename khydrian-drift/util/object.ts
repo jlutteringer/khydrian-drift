@@ -8,6 +8,9 @@ import {
   mapValues as _mapValues,
   merge as unsafeMerge,
 } from 'lodash-es'
+import { produce } from 'immer'
+
+export const update = produce
 
 export const isUndefined = _isUndefined
 export const isNil = _isNil

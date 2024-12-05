@@ -5,6 +5,5 @@ import * as Loadout from './loadout'
 import * as Effects from './effect'
 import * as ResourcePools from './resource-pool'
 import * as ProgressionTables from './progression-table'
-import * as Characters from './character'
 
-export { Attributes, Archetypes, Traits, Loadout, Effects, ResourcePools, ProgressionTables, Characters }
+export { Attributes, Archetypes, Traits, Loadout, Effects, ResourcePools, ProgressionTables }

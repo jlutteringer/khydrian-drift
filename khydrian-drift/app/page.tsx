@@ -3,15 +3,18 @@
 import Image from 'next/image'
 import styles from './page.module.css'
 import { ApplicationContext } from '@khydrian-drift/common/context'
-import { Characters } from '@khydrian-drift/common'
-import { CharacterBlueprint } from '@khydrian-drift/common/character'
-import { Dnd5e } from '@khydrian-drift/rulesets/dnd-5e'
+import { Dnd5e, SelectClassLevel } from '@khydrian-drift/rulesets/dnd-5e'
+import { CharacterBlueprint } from '@khydrian-drift/common/character/character'
+import { CharacterOptions, Characters } from '@khydrian-drift/common/character'
+import { Fighter, Fighter2, Fighter3 } from '@khydrian-drift/rulesets/dnd-5e/class/class-fighter'
+import { ProgressionTables } from '@khydrian-drift/common'
+import { Archery, SelectFightingStyle } from '@khydrian-drift/rulesets/dnd-5e/archetype/fighting-style'
 
 export default function Home() {
   const context: ApplicationContext = { ruleset: Dnd5e }
-  const character: CharacterBlueprint = {
+  let character: CharacterBlueprint = {
     name: 'Bob the Fighter',
-    level: 2,
+    level: 3,
     baseAttributes: {
       brawn: 2,
       agility: 2,
@@ -19,9 +22,14 @@ export default function Home() {
       intelligence: 0,
       presence: 0,
     },
-    selections: [],
+    selections: ProgressionTables.empty(3),
   }
-  console.log('buildCharacterDefinition', Characters.buildCharacterDefinition(character, context))
+  character = Characters.buildCharacterDefinition(character, context)
+  character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), context)
+  character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectFightingStyle, Archery), context)
+  character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter2), context)
+  character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter3), context)
+  console.log('character', character)
 
   return (
     <div className={styles.page}>

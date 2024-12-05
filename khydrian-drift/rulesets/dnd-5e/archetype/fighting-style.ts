@@ -1,6 +1,9 @@
 import { Archetypes, Effects, Traits } from '@khydrian-drift/common'
+import { CharacterOptions } from '@khydrian-drift/common/character'
 
 export const FightingStyle = Archetypes.defineArchetype('81126abc-71f9-4586-9c92-8272a9d2cff1', { name: 'Fighting Style' })
+
+export const SelectFightingStyle = CharacterOptions.selectTraitOption('0dc1e769-c1a7-42aa-bb9b-67972b6e2216', { archetypes: [FightingStyle] })
 
 export const Archery = Traits.defineTrait('c34e35a7-4753-4e6b-8138-70708c622597', {
   name: 'Archery Fighting Style',

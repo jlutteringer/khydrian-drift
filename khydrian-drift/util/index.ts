@@ -8,5 +8,6 @@ import * as Equalitors from './equalitor'
 import * as Preconditions from './precondition'
 import * as References from './reference'
 import * as Signatures from './signature'
+import * as Eithers from './either'
 
-export { Objects, Arrays, Strings, Numbers, Comparators, Equalitors, Preconditions, References, Signatures }
+export { Objects, Arrays, Strings, Numbers, Comparators, Equalitors, Preconditions, References, Signatures, Eithers }

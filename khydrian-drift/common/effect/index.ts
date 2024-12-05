@@ -1,10 +1,11 @@
-import { Trait, TraitFilter, TraitFilterProps, TraitReference } from '@khydrian-drift/common/trait'
+import { Trait, TraitReference } from '@khydrian-drift/common/trait'
 import { LoadoutType, LoadoutTypeReference } from '@khydrian-drift/common/loadout'
 import { ResourcePool, ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
 import { Expression, ExpressionContext, Expressions } from '@khydrian-drift/util/expression'
 import { Arrays, Comparators, Objects, References } from '@khydrian-drift/util'
 import { Attribute, AttributeReference, AttributeValue, Modifier } from '@khydrian-drift/common/attribute'
-import { Attributes, Traits } from '@khydrian-drift/common'
+import { Attributes } from '@khydrian-drift/common'
+import { CharacterOption } from '@khydrian-drift/common/character/character-option'
 
 export interface Effect {
   type: string
@@ -22,11 +23,16 @@ export type DescriptiveEffect = Effect & {
   description: string
 }
 
+export const GainCharacterOption: EffectType<GainCharacterOptionEffect> = { type: 'GainCharacterOption' }
+export type GainCharacterOptionEffect = Effect & {
+  type: 'GainCharacterOption'
+  option: CharacterOption
+}
+
 export const GainTrait: EffectType<GainTraitEffect> = { type: 'GainTrait' }
 export type GainTraitEffect = Effect & {
   type: 'GainTrait'
-  id: string
-  filter: TraitFilter
+  trait: TraitReference
 }
 
 export const AssignAttribute: EffectType<ModifyAttributeEffect> = { type: 'AssignAttribute' }
@@ -174,11 +180,18 @@ export const descriptive = (description: string, condition: Expression<boolean> 
   }
 }
 
-export const gainTrait = (id: string, filter: TraitFilterProps | TraitReference | Trait, condition: Expression<boolean> | null = null): GainTraitEffect => {
+export const gainCharacterOption = (option: CharacterOption, condition: Expression<boolean> | null = null): GainCharacterOptionEffect => {
+  return {
+    type: 'GainCharacterOption',
+    option,
+    condition,
+  }
+}
+
+export const gainTrait = (trait: TraitReference | Trait, condition: Expression<boolean> | null = null): GainTraitEffect => {
   return {
     type: 'GainTrait',
-    id,
-    filter: Traits.filter(filter),
+    trait: References.getReference(trait),
     condition,
   }
 }

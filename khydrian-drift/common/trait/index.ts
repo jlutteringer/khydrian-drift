@@ -4,7 +4,7 @@ import { Arrays, Preconditions, References } from '@khydrian-drift/util'
 import { Expression, Expressions } from '@khydrian-drift/util/expression'
 import { ApplicationContext } from '@khydrian-drift/common/context'
 import { Archetype, ArchetypeReference } from '@khydrian-drift/common/archetype'
-import { CharacterOptions } from '@khydrian-drift/common/character'
+import { CharacterValues } from '@khydrian-drift/common/character/character'
 
 export type TraitReference = Reference<'Trait'>
 
@@ -39,26 +39,29 @@ export const defineTrait = (reference: TraitReference | string, props: TraitProp
   }
 }
 
+export const getTrait = (trait: TraitReference, context: ApplicationContext): Trait => {
+  const matchingTrait = context.ruleset.traits.find((it) => References.equals(it.reference, trait))
+  Preconditions.isPresent(matchingTrait, () => `Unable to find Trait for Reference: ${JSON.stringify(trait)}`)
+  return matchingTrait
+}
+
 export const getTraits = (traits: Array<TraitReference>, context: ApplicationContext): Array<Trait> => {
-  return traits.map((trait) => {
-    const matchingTrait = context.ruleset.traits.find((it) => References.equals(it.reference, trait))
-    Preconditions.isPresent(matchingTrait, () => `Unable to find Trait for Reference: ${JSON.stringify(trait)}`)
-    return matchingTrait
+  return traits.map((trait) => getTrait(trait, context))
+}
+
+export const getEffectsForTrait = (trait: Trait): Array<Effect> => {
+  return trait.effects.map((effect) => {
+    const sourcedEffect: Effect = { ...effect, source: trait.reference }
+    return sourcedEffect
   })
 }
 
-export const getEffects = (traits: Array<Trait>): Array<Effect> => {
-  const effects = traits.flatMap((trait) =>
-    trait.effects.map((effect) => {
-      const sourcedEffect: Effect = { ...effect, source: trait.reference }
-      return sourcedEffect
-    })
-  )
-  return effects
+export const getEffectsForTraits = (traits: Array<Trait>): Array<Effect> => {
+  return traits.flatMap(getEffectsForTrait)
 }
 
 export const traitPrerequisite = (trait: TraitReference | Trait): Expression<boolean> => {
-  return Expressions.contains(CharacterOptions.Traits, [References.getReference(trait)])
+  return Expressions.contains(CharacterValues.Traits, [References.getReference(trait)])
 }
 
 export type TraitFilterProps = {
@@ -71,16 +74,7 @@ export type TraitFilter = {
   specificOptions: Array<TraitReference>
 }
 
-export type TraitFilterArgument = TraitFilterProps | TraitReference | Trait
-
-export const filter = (props: TraitFilterArgument): TraitFilter => {
-  if (References.isReferencable(props) || References.isReference(props)) {
-    return {
-      archetypes: [],
-      specificOptions: [References.getReference(props)],
-    }
-  }
-
+export const filter = (props: TraitFilterProps): TraitFilter => {
   return {
     archetypes: (props.archetypes ?? []).map(References.getReference),
     specificOptions: (props.specificOptions ?? []).map(References.getReference),

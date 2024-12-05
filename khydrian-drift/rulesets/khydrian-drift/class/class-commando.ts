@@ -1,18 +1,18 @@
 import { Effects, Traits } from '@khydrian-drift/common'
-import { CharacterAttributes, CharacterOptions } from '@khydrian-drift/common/character'
 import { Expressions, NumericExpressions } from '@khydrian-drift/util/expression'
 import { BasicCombatTraining } from '@khydrian-drift/rulesets/khydrian-drift/archetype/archetype-combat'
 import { AdvancedHardpointLoadoutSlot, GeneralLoadoutSlot } from '@khydrian-drift/rulesets/khydrian-drift/loadout'
 import { TacticPoints } from '@khydrian-drift/rulesets/khydrian-drift/resource-pool'
 import { Class } from '@khydrian-drift/rulesets/khydrian-drift/archetype'
+import { CharacterAttributes, CharacterValues } from '@khydrian-drift/common/character/character'
 
 export const Commando = Traits.defineTrait('e0b5ad7e-6e8b-4416-8a7c-41bab05993d3', {
   name: 'Commando',
   description: '',
   archetypes: [Class],
   effects: [
-    Effects.modifyAttribute(CharacterAttributes.VitalityPool, NumericExpressions.multiply([CharacterOptions.Level, 2])),
-    Effects.gainTrait('6a0b8109-ecea-478b-9d2f-6af81ecd0025', BasicCombatTraining),
+    Effects.modifyAttribute(CharacterAttributes.VitalityPool, NumericExpressions.multiply([CharacterValues.Level, 2])),
+    Effects.gainTrait(BasicCombatTraining),
     Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
     Effects.modifyLoadoutSlotQuantity(AdvancedHardpointLoadoutSlot, 1),
   ],
@@ -40,13 +40,13 @@ export const Momentum = Traits.defineTrait('7a3e377a-f2d4-41ce-b7f2-866538a517ce
     Effects.modifyAttribute(
       CharacterAttributes.MovementSpeed,
       NumericExpressions.floor(CharacterAttributes.Agility.variable, 1),
-      NumericExpressions.lessThan(CharacterOptions.VitalityPoints, NumericExpressions.multiply([CharacterAttributes.VitalityPool.variable, 0.5]))
+      NumericExpressions.lessThan(CharacterValues.VitalityPoints, NumericExpressions.multiply([CharacterAttributes.VitalityPool.variable, 0.5]))
     ),
     Effects.modifyAttribute(
       CharacterAttributes.MovementSpeed,
       7, // TODO this should be 1
       Expressions.not(
-        NumericExpressions.lessThan(CharacterOptions.VitalityPoints, NumericExpressions.multiply([CharacterAttributes.VitalityPool.variable, 0.5]))
+        NumericExpressions.lessThan(CharacterValues.VitalityPoints, NumericExpressions.multiply([CharacterAttributes.VitalityPool.variable, 0.5]))
       )
     ),
   ],
