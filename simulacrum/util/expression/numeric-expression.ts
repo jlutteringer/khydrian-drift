@@ -1,10 +1,4 @@
-import {
-  Expression,
-  Expressions,
-  ExpressionType,
-  IExpression,
-  ReducingExpression
-} from '@simulacrum/util/expression/index'
+import { Expression, Expressions, ExpressionType, IExpression, ReducingExpression } from '@simulacrum/util/expression/index'
 import { RoundingMode } from '@simulacrum/util/math'
 
 export interface SumExpression extends ReducingExpression<number, number> {
@@ -97,6 +91,6 @@ export const round = (value: Expression<number>, scale: number, roundingMode: Ro
     expressionKey: ExpressionType.Round,
     value: Expressions.valuate(value),
     scale,
-    roundingMode
+    roundingMode,
   }
 }

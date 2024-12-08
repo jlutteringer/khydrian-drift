@@ -1,18 +1,5 @@
-import {
-  ExpressionContext,
-  ExpressionType,
-  ExpressionValue,
-  ExpressionVariable,
-  IExpression
-} from '@simulacrum/util/expression/index'
-import {
-  AndExpression,
-  ContainsExpression,
-  CustomExpression,
-  EqualsExpression,
-  NotExpression,
-  OrExpression
-} from '@simulacrum/util/expression/expression'
+import { ExpressionContext, ExpressionType, ExpressionValue, ExpressionVariable, IExpression } from '@simulacrum/util/expression/index'
+import { AndExpression, ContainsExpression, CustomExpression, EqualsExpression, NotExpression, OrExpression } from '@simulacrum/util/expression/expression'
 import { Arrays, Maths, Objects, Preconditions, Signatures } from '@simulacrum/util'
 import {
   BoundsExpression,
@@ -20,7 +7,7 @@ import {
   LessThanExpression,
   MultiplyExpression,
   RoundExpression,
-  SumExpression
+  SumExpression,
 } from '@simulacrum/util/expression/numeric-expression'
 
 export class ExpressionEvaluator {

@@ -7,7 +7,7 @@ import {
   Momentum,
   OfficerTrait,
   SentinelTrait,
-  SoldiersStamina
+  SoldiersStamina,
 } from '@simulacrum/rulesets/khydrian-drift/class/class-commando'
 import { BasicCombatTraining } from '@simulacrum/rulesets/khydrian-drift/archetype/archetype-combat'
 import { References } from '@simulacrum/util'
@@ -27,6 +27,7 @@ export const KhydrianDrift: Ruleset = {
   creatureAttributes: Object.values(CreatureAttributes),
   characterAttributes: Object.values(CharacterAttributes),
   traits: [Commando, BasicCombatTraining, Arsenal, SoldiersStamina, Momentum, OfficerTrait, AdvancedOperations, SentinelTrait, BaselineQuickGuy],
+  abilities: [],
   resourcePools: [TacticPoints],
   loadoutTypes: [GeneralLoadoutSlot, AdvancedHardpointLoadoutSlot],
   progressionTable: {

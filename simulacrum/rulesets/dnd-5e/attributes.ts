@@ -60,32 +60,32 @@ export namespace CharacterAttributes {
 
   export const StrengthModifier: Attribute<number> = Attributes.defineAttribute({
     template: Attributes.defineTemplate('ab339ba9-3ff2-4cc4-8bac-454078938c27', 'Strength Modifier', 'strengthModifier'),
-    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Strength.variable, -10]), .5]), 0, RoundingMode.Down),
+    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Strength.variable, -10]), 0.5]), 0, RoundingMode.Down),
   })
 
   export const DexterityModifier: Attribute<number> = Attributes.defineAttribute({
     template: Attributes.defineTemplate('ce1eaad3-8c00-4313-8e50-b7168246b223', 'Dexterity Modifier', 'dexterityModifier'),
-    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Dexterity.variable, -10]), .5]), 0, RoundingMode.Down),
+    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Dexterity.variable, -10]), 0.5]), 0, RoundingMode.Down),
   })
 
   export const ConstitutionModifier: Attribute<number> = Attributes.defineAttribute({
     template: Attributes.defineTemplate('5c25bfaa-0bbc-4482-aad6-951ff1fba801', 'Constitution Modifier', 'constitutionModifier'),
-    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Constitution.variable, -10]), .5]), 0, RoundingMode.Down),
+    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Constitution.variable, -10]), 0.5]), 0, RoundingMode.Down),
   })
 
   export const WisdomModifier: Attribute<number> = Attributes.defineAttribute({
     template: Attributes.defineTemplate('3b60723b-f7f7-48f6-a747-0e72f14a59fa', 'Wisdom Modifier', 'wisdomModifier'),
-    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Wisdom.variable, -10]), .5]), 0, RoundingMode.Down),
+    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Wisdom.variable, -10]), 0.5]), 0, RoundingMode.Down),
   })
 
   export const IntelligenceModifier: Attribute<number> = Attributes.defineAttribute({
     template: Attributes.defineTemplate('054fdd7c-a274-4533-929c-3a0939468bb7', 'Intelligence Modifier', 'intelligenceModifier'),
-    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Intelligence.variable, -10]), .5]), 0, RoundingMode.Down),
+    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Intelligence.variable, -10]), 0.5]), 0, RoundingMode.Down),
   })
 
   export const CharismaModifier: Attribute<number> = Attributes.defineAttribute({
     template: Attributes.defineTemplate('60f4ffa4-9486-4c23-8876-86b6a2ea5f30', 'Charisma Modifier', 'charismaModifier'),
-    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Charisma.variable, -10]), .5]), 0, RoundingMode.Down),
+    base: NumericExpressions.round(NumericExpressions.multiply([NumericExpressions.sum([Charisma.variable, -10]), 0.5]), 0, RoundingMode.Down),
   })
 
   export const HitPoints: Attribute<number> = Attributes.defineAttribute<number>({

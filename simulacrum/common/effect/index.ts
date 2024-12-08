@@ -6,6 +6,7 @@ import { Arrays, Comparators, Objects, Preconditions, References } from '@simula
 import { Attribute, AttributeReference, AttributeValue, Modifier } from '@simulacrum/common/attribute'
 import { Attributes } from '@simulacrum/common'
 import { CharacterOption } from '@simulacrum/common/character/character-option'
+import { Ability, AbilityReference } from '@simulacrum/common/ability'
 
 export interface Effect {
   type: string
@@ -33,6 +34,12 @@ export const GainTrait: EffectType<GainTraitEffect> = { type: 'GainTrait' }
 export type GainTraitEffect = Effect & {
   type: 'GainTrait'
   trait: TraitReference
+}
+
+export const GainAbility: EffectType<GainTraitEffect> = { type: 'GainAbility' }
+export type GainAbilityEffect = Effect & {
+  type: 'GainAbility'
+  ability: AbilityReference
 }
 
 export const AssignAttribute: EffectType<ModifyAttributeEffect> = { type: 'AssignAttribute' }
@@ -119,12 +126,16 @@ const buildModifier = <T>(effect: ModifyAttributeEffect | AssignAttributeEffect,
 }
 
 // TODO is there a way to back off of the fact that attributes must be numbers
-export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, initialEffects: Array<Effect>, initialValues: Record<string, unknown>, context: ExpressionContext): AttributeValue<T> => {
+export const evaluateAttribute = <T extends number>(
+  attribute: Attribute<T>,
+  initialEffects: Array<Effect>,
+  initialValues: Record<string, unknown>,
+  context: ExpressionContext
+): AttributeValue<T> => {
   let baseValue
-  if(Objects.isPresent(attribute.base)) {
+  if (Objects.isPresent(attribute.base)) {
     baseValue = Expressions.evaluate(attribute.base, context)
-  }
-  else {
+  } else {
     const initialValue = Objects.parsePath(attribute.path).getValue(initialValues)
     Preconditions.isPresent(initialValue)
     baseValue = initialValue as T
@@ -202,6 +213,14 @@ export const gainTrait = (trait: TraitReference | Trait, condition: Expression<b
   return {
     type: 'GainTrait',
     trait: References.getReference(trait),
+    condition,
+  }
+}
+
+export const gainAbility = (ability: AbilityReference | Ability, condition: Expression<boolean> | null = null): GainAbilityEffect => {
+  return {
+    type: 'GainAbility',
+    ability: References.getReference(ability),
     condition,
   }
 }

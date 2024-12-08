@@ -6,18 +6,17 @@ export const doUntilConsistent = <T>(supplier: (previous: T | null) => T, equals
   let previousValue: T | null = null
   let attempts = 0
   do {
-    Preconditions.isTrue(attempts < 10, )
+    Preconditions.isTrue(attempts < 10)
 
     const currentValue = supplier(previousValue)
 
-    if(Objects.isPresent(previousValue) && equals(previousValue, currentValue)) {
+    if (Objects.isPresent(previousValue) && equals(previousValue, currentValue)) {
       done = true
     }
 
     previousValue = currentValue
     attempts++
-  }
-  while (!done)
+  } while (!done)
 
   return previousValue
 }

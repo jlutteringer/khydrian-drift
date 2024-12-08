@@ -6,7 +6,7 @@ import {
   isPlainObject as _isPlainObject,
   isUndefined as _isUndefined,
   mapValues as _mapValues,
-  merge as unsafeMerge
+  merge as unsafeMerge,
 } from 'lodash-es'
 import { produce } from 'immer'
 import { Arrays, Preconditions } from '@simulacrum/util/index'

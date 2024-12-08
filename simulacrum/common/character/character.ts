@@ -4,11 +4,7 @@ import { ExpressionContext, Expressions, ExpressionVariable } from '@simulacrum/
 import { ApplicationContext } from '@simulacrum/common/context'
 import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@simulacrum/util'
 import { Effect } from '@simulacrum/common/effect'
-import {
-  CharacterChoice,
-  CharacterSelection,
-  EvaluateCharacterOptionsResult
-} from '@simulacrum/common/character/character-option'
+import { CharacterChoice, CharacterSelection, EvaluateCharacterOptionsResult } from '@simulacrum/common/character/character-option'
 import { CharacterOptions } from '@simulacrum/common/character/index'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { Attribute, AttributeValue } from '@simulacrum/common/attribute'
@@ -36,7 +32,6 @@ export type CharacterState = CharacterSheet & {
   // soakPoints: number
 }
 
-// JOHN this is pretty inefficient...
 export const selectOption = (character: CharacterRecord, selection: CharacterSelection, context: ApplicationContext): CharacterSheet => {
   const characterDefinition = buildCharacterDefinition(character, context)
 
@@ -56,27 +51,30 @@ export const buildCharacterDefinition = (character: CharacterRecord, context: Ap
 }
 
 const evaluateCharacterOptions = (character: CharacterRecord, context: ApplicationContext): EvaluateCharacterOptionsResult => {
-  const response = Misc.doUntilConsistent<EvaluateCharacterOptionsResult>((previous) => {
-    let validSelections = previous?.selections ?? ProgressionTables.empty<CharacterSelection>(character.level)
+  const response = Misc.doUntilConsistent<EvaluateCharacterOptionsResult>(
+    (previous) => {
+      let validSelections = previous?.selections ?? ProgressionTables.empty<CharacterSelection>(character.level)
 
-    const characterState = buildCharacterState({ ...character, selections: validSelections }, context)
-    const characterChoiceTable = getCharacterChoiceTable(characterState, context)
+      const characterState = buildCharacterState({ ...character, selections: validSelections }, context)
+      const characterChoiceTable = getCharacterChoiceTable(characterState, context)
 
-    const [selections, choices] = ProgressionTables.bisect(characterChoiceTable, (choice, level) => {
-      const selection = character.selections[level].find((it) => References.equals(it.option, choice.option))
+      const [selections, choices] = ProgressionTables.bisect(characterChoiceTable, (choice, level) => {
+        const selection = character.selections[level].find((it) => References.equals(it.option, choice.option))
 
-      if (Objects.isPresent(selection) && CharacterOptions.isAllowedValue(choice, selection.selection)) {
-        return Eithers.left(selection)
-      }
+        if (Objects.isPresent(selection) && CharacterOptions.isAllowedValue(choice, selection.selection)) {
+          return Eithers.left(selection)
+        }
 
-      return Eithers.right(choice)
-    })
+        return Eithers.right(choice)
+      })
 
-    validSelections = ProgressionTables.merge(validSelections, selections)
-    return { selections: validSelections, choices }
-  }, (first, second) => {
-    return ProgressionTables.equalBy(first.choices, second.choices, (it) => it.option)
-  })
+      validSelections = ProgressionTables.merge(validSelections, selections)
+      return { selections: validSelections, choices }
+    },
+    (first, second) => {
+      return ProgressionTables.equalBy(first.choices, second.choices, (it) => it.option)
+    }
+  )
 
   return response
 }
@@ -132,27 +130,29 @@ const getEffectTable = (character: CharacterSheet, context: ApplicationContext):
 }
 
 const buildCharacterState = (character: CharacterRecord, context: ApplicationContext) => {
-  const result = Misc.doUntilConsistent<CharacterState>((previous) => {
-    let characterState
-    if(Objects.isNil(previous)) {
-      characterState = buildInitialCharacterState(character, context)
-      characterState.traits = getCharacterTraits(character, context)
-    }
-    else {
-      characterState = {...previous}
-    }
-
-    characterState.attributes = evaluateCharacterAttributes(characterState, context)
-    return characterState
-  }, (first, second) => {
-    return Arrays.equalWith(Object.values(first.attributes), Object.values(second.attributes), (first, second) => {
-      if(!References.equals(first.attribute, second.attribute)) {
-        return false
+  const result = Misc.doUntilConsistent<CharacterState>(
+    (previous) => {
+      let characterState
+      if (Objects.isNil(previous)) {
+        characterState = buildInitialCharacterState(character, context)
+        characterState.traits = getCharacterTraits(character, context)
+      } else {
+        characterState = { ...previous }
       }
 
-      return first.value === second.value
-    })
-  })
+      characterState.attributes = evaluateCharacterAttributes(characterState, context)
+      return characterState
+    },
+    (first, second) => {
+      return Arrays.equalWith(Object.values(first.attributes), Object.values(second.attributes), (first, second) => {
+        if (!References.equals(first.attribute, second.attribute)) {
+          return false
+        }
+
+        return first.value === second.value
+      })
+    }
+  )
 
   return result
 }
@@ -174,8 +174,8 @@ const getCharacterTraits = (character: CharacterRecord, context: ApplicationCont
 const buildInitialCharacterAttributes = (context: ApplicationContext): Record<string, AttributeValue<unknown>> => {
   const characterAttributes = Object.values(context.ruleset.characterAttributes)
 
-  const attributeValues = characterAttributes.map(initialAttibute => {
-    // JOHN we don't support non-numeric attributes... not sure if we even shoud...
+  const attributeValues = characterAttributes.map((initialAttibute) => {
+    // TODO we don't support non-numeric attributes... not sure if we even should...
     const attribute = initialAttibute as Attribute<number>
     const attributeValue = Attributes.baseValue(0, attribute)
     const record = {}
@@ -191,8 +191,8 @@ const evaluateCharacterAttributes = (character: CharacterState, context: Applica
   const expressionContext = buildExpressionContext(character, context)
   const characterAttributes = Object.values(context.ruleset.characterAttributes)
 
-  const attributeValues = characterAttributes.map(initialAttibute => {
-    // JOHN we don't support non-numeric attributes... not sure if we even shoud...
+  const attributeValues = characterAttributes.map((initialAttibute) => {
+    // TODO we don't support non-numeric attributes... not sure if we even should...
     const attribute = initialAttibute as Attribute<number>
     const attributeValue = Effects.evaluateAttribute(attribute, effects, character.initialValues, expressionContext)
     const record = {}
@@ -205,7 +205,7 @@ const evaluateCharacterAttributes = (character: CharacterState, context: Applica
 
 export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {
   const characterAttributes = context.ruleset.characterAttributes
-  const attributeVariables = characterAttributes.map(it => {
+  const attributeVariables = characterAttributes.map((it) => {
     const attribute = Objects.parsePath(it.path).getValue(character.attributes)
     Preconditions.isPresent(attribute)
     return Expressions.buildVariable(it.variable, attribute.value)
@@ -214,7 +214,7 @@ export const buildExpressionContext = (character: CharacterState, context: Appli
   const variables: Record<string, unknown> = {
     ...Expressions.buildVariable(CharacterValues.Level, character.level),
     ...Expressions.buildVariable(CharacterValues.Traits, ProgressionTables.getValues(character.traits)),
-    ...Objects.mergeAll(attributeVariables)
+    ...Objects.mergeAll(attributeVariables),
   }
 
   return { variables }

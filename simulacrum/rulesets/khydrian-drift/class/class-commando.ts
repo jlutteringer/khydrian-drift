@@ -37,12 +37,7 @@ export const Momentum = Traits.defineTrait('7a3e377a-f2d4-41ce-b7f2-866538a517ce
   name: 'Momentum',
   description: '',
   prerequisites: [Traits.traitPrerequisite(Commando)],
-  effects: [
-    Effects.modifyAttribute(
-      CharacterAttributes.MovementSpeed,
-      NumericExpressions.floor(CharacterAttributes.Agility.variable, 1),
-    )
-  ],
+  effects: [Effects.modifyAttribute(CharacterAttributes.MovementSpeed, NumericExpressions.floor(CharacterAttributes.Agility.variable, 1))],
 })
 
 export const BaselineQuickGuy = Traits.defineTrait('asdasdaSDasdasDasdasDd', {

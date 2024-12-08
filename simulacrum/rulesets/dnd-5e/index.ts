@@ -2,13 +2,15 @@ import { Ruleset } from '@simulacrum/common/ruleset'
 import { References } from '@simulacrum/util'
 import { Effects } from '@simulacrum/common'
 import {
+  ActionSurge,
   BattleMaster,
   Champion,
   EldritchKnight,
   Fighter,
   Fighter2,
   Fighter3,
-  PsiWarrior
+  PsiWarrior,
+  SecondWind,
 } from '@simulacrum/rulesets/dnd-5e/class/class-fighter'
 import { Archery, BlindFighting, Defense } from '@simulacrum/rulesets/dnd-5e/archetype/fighting-style'
 import { Class } from '@simulacrum/rulesets/dnd-5e/archetype'
@@ -56,6 +58,7 @@ export const Dnd5e: Ruleset = {
     EldritchKnight,
     PsiWarrior,
   ],
+  abilities: [SecondWind, ActionSurge],
   resourcePools: [],
   loadoutTypes: [],
   progressionTable: {

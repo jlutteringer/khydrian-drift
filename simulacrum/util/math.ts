@@ -15,17 +15,17 @@ export enum RoundingMode {
   Nearest = 'Nearest',
   Down = 'Down',
   Up = 'Up',
-  HalfEven = 'HalfEven'
+  HalfEven = 'HalfEven',
 }
 
 export const round = (value: number, scale: number, roundingMode: RoundingMode): number => {
   switch (roundingMode) {
     case RoundingMode.Nearest:
-      return roundNearest(value, scale);
+      return roundNearest(value, scale)
     case RoundingMode.Down:
-      return roundDown(value, scale);
+      return roundDown(value, scale)
     case RoundingMode.Up:
-      return roundUp(value, scale);
+      return roundUp(value, scale)
     case RoundingMode.HalfEven:
       return roundHalfEven(value, scale)
   }
@@ -37,13 +37,13 @@ export const roundNearest = (value: number, scale: number): number => {
 }
 
 export const roundDown = (value: number, scale: number) => {
-  const factor = Math.pow(10, scale);
-  return Math.floor((value + + Number.EPSILON) * factor) / factor;
+  const factor = Math.pow(10, scale)
+  return Math.floor((value + +Number.EPSILON) * factor) / factor
 }
 
 export const roundUp = (value: number, scale: number) => {
-  const factor = Math.pow(10, scale);
-  return Math.ceil((value + + Number.EPSILON) * factor) / factor;
+  const factor = Math.pow(10, scale)
+  return Math.ceil((value + +Number.EPSILON) * factor) / factor
 }
 
 /**

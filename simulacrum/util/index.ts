@@ -13,4 +13,4 @@ import * as Eithers from './either'
 import * as Lazy from './lazy'
 import * as Misc from './misc'
 
-export { Objects, Functions, Arrays, Strings, Maths, Comparators, Equalitors, Preconditions, References, Signatures, Eithers, Lazy, Misc}
+export { Objects, Functions, Arrays, Strings, Maths, Comparators, Equalitors, Preconditions, References, Signatures, Eithers, Lazy, Misc }

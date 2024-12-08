@@ -1,10 +1,4 @@
-import {
-  Expression,
-  ExpressionReference,
-  Expressions,
-  ExpressionVariable,
-  NumericExpressions
-} from '@simulacrum/util/expression'
+import { Expression, ExpressionReference, Expressions, ExpressionVariable, NumericExpressions } from '@simulacrum/util/expression'
 import { Referencable, Reference } from '@simulacrum/util/reference'
 import { References } from '@simulacrum/util'
 import { EffectSource } from '@simulacrum/common/effect'

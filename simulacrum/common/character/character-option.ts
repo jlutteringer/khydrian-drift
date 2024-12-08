@@ -1,6 +1,6 @@
 import { Referencable, Reference } from '@simulacrum/util/reference'
 import { Trait, TraitFilter, TraitFilterProps, TraitReference } from '@simulacrum/common/trait'
-import { Arrays, Objects, References } from '@simulacrum/util'
+import { Arrays, Objects, Preconditions, References } from '@simulacrum/util'
 import { ProgressionTables, Traits } from '@simulacrum/common'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 
@@ -54,18 +54,18 @@ export const buildSelection = (option: CharacterOptionReference | CharacterOptio
   }
 }
 
-export const hasSelection = (selections: Array<CharacterSelection>, option: CharacterOptionReference | CharacterOption): boolean => {
-  const matchingSelection = selections.find((it) => References.equals(it.option, References.getReference(option)))
+export const hasSelection = (selections: ProgressionTable<CharacterSelection>, option: CharacterOptionReference | CharacterOption): boolean => {
+  const matchingSelection = ProgressionTables.getValues(selections).find((it) => References.equals(it.option, References.getReference(option)))
   return Objects.isPresent(matchingSelection)
 }
 
-export const isSelected = (selections: Array<CharacterSelection>, option: CharacterOptionReference, selection: CharacterOptionValue): boolean => {
-  const matchingSelection = selections.find((it) => References.equals(it.option, option))
-  if (Objects.isNil(matchingSelection)) {
-    return false
-  }
-
-  return References.equals(matchingSelection.selection, selection)
+export const isSelected = (
+  selections: ProgressionTable<CharacterSelection>,
+  option: CharacterOptionReference | CharacterOption,
+  selection: CharacterOptionValue | Trait
+): boolean => {
+  const matchingSelections = ProgressionTables.getValues(selections).filter((it) => References.equals(it.option, References.getReference(option)))
+  return Objects.isPresent(matchingSelections.find((it) => References.equals(it.selection, References.getReference(selection))))
 }
 
 export const isAllowedValue = (choice: CharacterChoice, optionValue: CharacterOptionValue) => {
@@ -74,16 +74,10 @@ export const isAllowedValue = (choice: CharacterChoice, optionValue: CharacterOp
 
 export const validateSelection = (choices: ProgressionTable<CharacterChoice>, selection: CharacterSelection): number => {
   const entry = ProgressionTables.getEntries(choices).find(([_, choice]) => References.equals(choice.option, selection.option))
-  if (Objects.isNil(entry)) {
-    // JOHN error handling
-    throw new Error('oh noes!')
-  }
+  Preconditions.isPresent(entry)
 
   const [level, choice] = entry
-  if (!isAllowedValue(choice, selection.selection)) {
-    // JOHN error handling
-    throw new Error('oh noes!')
-  }
+  Preconditions.isTrue(isAllowedValue(choice, selection.selection))
 
   return level
 }

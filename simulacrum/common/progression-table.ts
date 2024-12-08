@@ -102,5 +102,3 @@ export const equalBy = <T>(first: ProgressionTable<T>, second: ProgressionTable<
   const containsMismatchedRows = rows.some(([level, firstRow]) => !Arrays.equalBy(firstRow, second[level], mapper))
   return !containsMismatchedRows
 }
-
-export const find = <T>(table: ProgressionTable<T>, predicate: (element: T) => boolean) => {}

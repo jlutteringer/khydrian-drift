@@ -5,6 +5,7 @@ import { LoadoutType } from '@simulacrum/common/loadout'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { Effect } from '@simulacrum/common/effect'
 import { Attribute } from '@simulacrum/common/attribute'
+import { Ability } from '@simulacrum/common/ability'
 
 export type RulesetReference = Reference<'Ruleset'>
 
@@ -13,6 +14,7 @@ export type Ruleset = Referencable<RulesetReference> & {
   creatureAttributes: Array<Attribute<unknown>>
   characterAttributes: Array<Attribute<unknown>>
   traits: Array<Trait>
+  abilities: Array<Ability>
   resourcePools: Array<ResourcePool>
   loadoutTypes: Array<LoadoutType>
   progressionTable: ProgressionTable<Effect>

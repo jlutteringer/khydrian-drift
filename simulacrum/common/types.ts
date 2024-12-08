@@ -9,9 +9,21 @@ export enum TimeUnit {
   Turn = 'Turn',
 }
 
+export enum RelativeAmount {
+  All = 'All',
+  Half = 'Half',
+}
+
+export type Cooldown =
+  | {
+      size: Expression<number>
+      refresh: Array<CooldownRate>
+    }
+  | 'None'
+
 export type CooldownRate = {
   period: TimeUnit
-  amount: Expression<number>
+  amount: Expression<number> | RelativeAmount
 }
 
 export type CooldownRateMutation = {
