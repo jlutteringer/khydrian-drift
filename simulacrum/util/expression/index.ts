@@ -22,6 +22,7 @@ export enum ExpressionType {
   Uppercase = 'Uppercase',
   Bounds = 'Bounds',
   Substring = 'Substring',
+  Round = 'Round',
 }
 
 export interface IExpression<T> {

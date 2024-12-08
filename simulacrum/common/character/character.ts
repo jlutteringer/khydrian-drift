@@ -1,10 +1,8 @@
 import { Attributes, Effects, ProgressionTables, Traits } from '@simulacrum/common'
 import { TraitReference } from '@simulacrum/common/trait'
-import { CreatureAttributes } from '@simulacrum/common/creature'
-import { ExpressionContext, Expressions, ExpressionVariable, NumericExpressions } from '@simulacrum/util/expression'
+import { ExpressionContext, Expressions, ExpressionVariable } from '@simulacrum/util/expression'
 import { ApplicationContext } from '@simulacrum/common/context'
-import { Attribute, AttributeValue } from '@simulacrum/common/attribute'
-import { Arrays, Eithers, Objects, References } from '@simulacrum/util'
+import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@simulacrum/util'
 import { Effect } from '@simulacrum/common/effect'
 import {
   CharacterChoice,
@@ -13,108 +11,29 @@ import {
 } from '@simulacrum/common/character/character-option'
 import { CharacterOptions } from '@simulacrum/common/character/index'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
+import { Attribute, AttributeValue } from '@simulacrum/common/attribute'
 
 export namespace CharacterValues {
   export const Level: ExpressionVariable<number> = Expressions.variable('Level')
   export const Traits: ExpressionVariable<Array<TraitReference>> = Expressions.variable('Traits')
-
-  export const BaseBrawn: ExpressionVariable<number> = Expressions.variable('BaseBrawn')
-  export const BaseAgility: ExpressionVariable<number> = Expressions.variable('BaseAgility')
-  export const BaseWillpower: ExpressionVariable<number> = Expressions.variable('BaseWillpower')
-  export const BaseIntelligence: ExpressionVariable<number> = Expressions.variable('BaseIntelligence')
-  export const BasePresence: ExpressionVariable<number> = Expressions.variable('BasePresence')
-
-  // JOHN this is not an option
-  export const VitalityPoints: ExpressionVariable<number> = Expressions.variable('VitalityPoints')
 }
 
 export type CharacterRecord = {
   name: string
   level: number
-  baseAttributes: {
-    brawn: number
-    agility: number
-    willpower: number
-    intelligence: number
-    presence: number
-  }
+  initialValues: Record<string, unknown>
   selections: ProgressionTable<CharacterSelection>
 }
 
-export namespace CharacterAttributes {
-  export const Brawn: Attribute<number> = Attributes.defineAttribute('cd954aa9-76f1-4e39-8f74-908cadf242fa', {
-    name: 'Brawn',
-    base: CharacterValues.BaseBrawn,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
-
-  export const Agility: Attribute<number> = Attributes.defineAttribute('fcabfd7d-94b0-464b-ad6e-026c4f759fc3', {
-    name: 'Agility',
-    base: CharacterValues.BaseAgility,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
-
-  export const Willpower: Attribute<number> = Attributes.defineAttribute('0b220937-9963-4dca-b79f-64c7b744fe93', {
-    name: 'Willpower',
-    base: CharacterValues.BaseWillpower,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
-
-  export const Intelligence: Attribute<number> = Attributes.defineAttribute('8542fc4d-3cb8-4bf2-8a4d-910e03ecbba4', {
-    name: 'Intelligence',
-    base: CharacterValues.BaseIntelligence,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
-
-  export const Presence: Attribute<number> = Attributes.defineAttribute('90d88f39-3ec0-425d-8ebf-fa931eb8325b', {
-    name: 'Presence',
-    base: CharacterValues.BasePresence,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
-
-  export const VitalityPool: Attribute<number> = Attributes.defineAttribute('d907a3f7-cebf-4da0-8ec1-f07b0590d354', {
-    name: 'Vitality Pool',
-    base: 0,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
-
-  export const SoakRating: Attribute<number> = Attributes.defineAttribute('7266c938-594a-43c7-a130-cb4c8d295d06', {
-    name: 'Soak Rating',
-    base: NumericExpressions.floor(Brawn.variable, 0),
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
-
-  export const Initiative: Attribute<number> = Attributes.defineAttribute('6a142a56-08e2-4624-b716-6accd51846db', {
-    name: 'Initiative',
-    base: Agility.variable,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
-
-  export const MovementSpeed: Attribute<number> = Attributes.defineAttribute('04f7a8c0-df43-441d-8936-4c22c56808d4', {
-    name: 'Movement Speed',
-    base: 4,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
-  })
+export type CharacterSheet = CharacterRecord & {
+  attributes: Record<string, AttributeValue<unknown>>
+  traits: ProgressionTable<TraitReference>
+  choices: ProgressionTable<CharacterChoice>
 }
-
-export type CharacterAttributes = CreatureAttributes & {
-  brawn: AttributeValue<number>
-  agility: AttributeValue<number>
-  willpower: AttributeValue<number>
-  intelligence: AttributeValue<number>
-  presence: AttributeValue<number>
-}
-
-export type CharacterSheet = CharacterRecord &
-  CharacterAttributes & {
-    level: number
-    traits: ProgressionTable<TraitReference>
-    choices: ProgressionTable<CharacterChoice>
-  }
 
 export type CharacterState = CharacterSheet & {
-  vitalityPoints: number
-  soakPoints: number
+  // vitalityPoints: number
+  // soakPoints: number
 }
 
 // JOHN this is pretty inefficient...
@@ -137,13 +56,9 @@ export const buildCharacterDefinition = (character: CharacterRecord, context: Ap
 }
 
 const evaluateCharacterOptions = (character: CharacterRecord, context: ApplicationContext): EvaluateCharacterOptionsResult => {
-  let validSelections = ProgressionTables.empty<CharacterSelection>(character.level)
-  let currentChoices = ProgressionTables.empty<CharacterChoice>(character.level)
+  const response = Misc.doUntilConsistent<EvaluateCharacterOptionsResult>((previous) => {
+    let validSelections = previous?.selections ?? ProgressionTables.empty<CharacterSelection>(character.level)
 
-  // JOHN need some limit to the iterations
-  let done = false
-  let attempts = 0
-  do {
     const characterState = buildCharacterState({ ...character, selections: validSelections }, context)
     const characterChoiceTable = getCharacterChoiceTable(characterState, context)
 
@@ -158,22 +73,17 @@ const evaluateCharacterOptions = (character: CharacterRecord, context: Applicati
     })
 
     validSelections = ProgressionTables.merge(validSelections, selections)
-    done = ProgressionTables.equalBy(currentChoices, choices, (it) => it.option)
-    currentChoices = choices
-    attempts++
+    return { selections: validSelections, choices }
+  }, (first, second) => {
+    return ProgressionTables.equalBy(first.choices, second.choices, (it) => it.option)
+  })
 
-    // JOHN
-    if (attempts > 10) {
-      throw new Error('oh noes')
-    }
-  } while (!done)
-
-  return { selections: validSelections, choices: currentChoices }
+  return response
 }
 
 const getCharacterChoiceTable = (character: CharacterState, context: ApplicationContext): ProgressionTable<CharacterChoice> => {
   const selectedTraits = ProgressionTables.getValues(character.traits)
-  const expressionContext = buildExpressionContext(character)
+  const expressionContext = buildExpressionContext(character, context)
   const characterOptionTable = ProgressionTables.mapRows(getEffectTable(character, context), (effects, level) => {
     const { activeEffects } = Effects.evaluateEffects(effects, Effects.GainCharacterOption, expressionContext)
 
@@ -222,27 +132,36 @@ const getEffectTable = (character: CharacterSheet, context: ApplicationContext):
 }
 
 const buildCharacterState = (character: CharacterRecord, context: ApplicationContext) => {
-  const characterState = buildInitialCharacterState(character)
-  characterState.traits = getCharacterTraits(character, context)
-  Objects.mergeInto(characterState, evaluateCharacterAttributes(characterState, context))
-  return characterState
+  const result = Misc.doUntilConsistent<CharacterState>((previous) => {
+    let characterState
+    if(Objects.isNil(previous)) {
+      characterState = buildInitialCharacterState(character, context)
+      characterState.traits = getCharacterTraits(character, context)
+    }
+    else {
+      characterState = {...previous}
+    }
+
+    characterState.attributes = evaluateCharacterAttributes(characterState, context)
+    return characterState
+  }, (first, second) => {
+    return Arrays.equalWith(Object.values(first.attributes), Object.values(second.attributes), (first, second) => {
+      if(!References.equals(first.attribute, second.attribute)) {
+        return false
+      }
+
+      return first.value === second.value
+    })
+  })
+
+  return result
 }
 
-const buildInitialCharacterState = (character: CharacterRecord): CharacterState => {
+const buildInitialCharacterState = (character: CharacterRecord, context: ApplicationContext): CharacterState => {
   return {
     ...character,
+    attributes: buildInitialCharacterAttributes(context),
     traits: [],
-    brawn: Attributes.baseValue(0, CharacterAttributes.Brawn),
-    agility: Attributes.baseValue(0, CharacterAttributes.Agility),
-    willpower: Attributes.baseValue(0, CharacterAttributes.Willpower),
-    intelligence: Attributes.baseValue(0, CharacterAttributes.Intelligence),
-    presence: Attributes.baseValue(0, CharacterAttributes.Presence),
-    vitalityPool: Attributes.baseValue(0, CharacterAttributes.VitalityPool),
-    soakRating: Attributes.baseValue(0, CharacterAttributes.SoakRating),
-    movementSpeed: Attributes.baseValue(0, CharacterAttributes.MovementSpeed),
-    initiative: Attributes.baseValue(0, CharacterAttributes.Initiative),
-    vitalityPoints: 0,
-    soakPoints: 0,
     choices: ProgressionTables.empty(character.level),
   }
 }
@@ -252,44 +171,50 @@ const getCharacterTraits = (character: CharacterRecord, context: ApplicationCont
   return ProgressionTables.map(character.selections, (it) => it.selection)
 }
 
-const evaluateCharacterAttributes = (character: CharacterState, context: ApplicationContext): CharacterAttributes => {
-  const effects = getEffects(character, context)
+const buildInitialCharacterAttributes = (context: ApplicationContext): Record<string, AttributeValue<unknown>> => {
+  const characterAttributes = Object.values(context.ruleset.characterAttributes)
 
-  // JOHN we arent setting vitalityPoints...
-  // character.vitalityPoints = character.vitalityPool.value
+  const attributeValues = characterAttributes.map(initialAttibute => {
+    // JOHN we don't support non-numeric attributes... not sure if we even shoud...
+    const attribute = initialAttibute as Attribute<number>
+    const attributeValue = Attributes.baseValue(0, attribute)
+    const record = {}
+    Objects.parsePath(attribute.path).applyValue(record, attributeValue)
+    return record
+  })
 
-  return {
-    brawn: Effects.evaluateAttribute(CharacterAttributes.Brawn, effects, buildExpressionContext(character)),
-    agility: Effects.evaluateAttribute(CharacterAttributes.Agility, effects, buildExpressionContext(character)),
-    willpower: Effects.evaluateAttribute(CharacterAttributes.Willpower, effects, buildExpressionContext(character)),
-    intelligence: Effects.evaluateAttribute(CharacterAttributes.Intelligence, effects, buildExpressionContext(character)),
-    presence: Effects.evaluateAttribute(CharacterAttributes.Presence, effects, buildExpressionContext(character)),
-    vitalityPool: Effects.evaluateAttribute(CharacterAttributes.VitalityPool, effects, buildExpressionContext(character)),
-    soakRating: Effects.evaluateAttribute(CharacterAttributes.SoakRating, effects, buildExpressionContext(character)),
-    initiative: Effects.evaluateAttribute(CharacterAttributes.Initiative, effects, buildExpressionContext(character)),
-    movementSpeed: Effects.evaluateAttribute(CharacterAttributes.MovementSpeed, effects, buildExpressionContext(character)),
-  }
+  return Objects.mergeAll(attributeValues)
 }
 
-export const buildExpressionContext = (character: CharacterState): ExpressionContext => {
+const evaluateCharacterAttributes = (character: CharacterState, context: ApplicationContext): Record<string, AttributeValue<unknown>> => {
+  const effects = getEffects(character, context)
+  const expressionContext = buildExpressionContext(character, context)
+  const characterAttributes = Object.values(context.ruleset.characterAttributes)
+
+  const attributeValues = characterAttributes.map(initialAttibute => {
+    // JOHN we don't support non-numeric attributes... not sure if we even shoud...
+    const attribute = initialAttibute as Attribute<number>
+    const attributeValue = Effects.evaluateAttribute(attribute, effects, character.initialValues, expressionContext)
+    const record = {}
+    Objects.parsePath(attribute.path).applyValue(record, attributeValue)
+    return record
+  })
+
+  return Objects.mergeAll(attributeValues)
+}
+
+export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {
+  const characterAttributes = context.ruleset.characterAttributes
+  const attributeVariables = characterAttributes.map(it => {
+    const attribute = Objects.parsePath(it.path).getValue(character.attributes)
+    Preconditions.isPresent(attribute)
+    return Expressions.buildVariable(it.variable, attribute.value)
+  })
+
   const variables: Record<string, unknown> = {
     ...Expressions.buildVariable(CharacterValues.Level, character.level),
     ...Expressions.buildVariable(CharacterValues.Traits, ProgressionTables.getValues(character.traits)),
-
-    ...Expressions.buildVariable(CharacterValues.BaseBrawn, character.baseAttributes.brawn),
-    ...Expressions.buildVariable(CharacterValues.BaseAgility, character.baseAttributes.agility),
-    ...Expressions.buildVariable(CharacterValues.BaseWillpower, character.baseAttributes.willpower),
-    ...Expressions.buildVariable(CharacterValues.BaseIntelligence, character.baseAttributes.intelligence),
-    ...Expressions.buildVariable(CharacterValues.BasePresence, character.baseAttributes.presence),
-
-    ...Expressions.buildVariable(CharacterAttributes.Brawn.variable, character.brawn.value),
-    ...Expressions.buildVariable(CharacterAttributes.Agility.variable, character.agility.value),
-    ...Expressions.buildVariable(CharacterAttributes.Willpower.variable, character.willpower.value),
-    ...Expressions.buildVariable(CharacterAttributes.Intelligence.variable, character.intelligence.value),
-    ...Expressions.buildVariable(CharacterAttributes.Presence.variable, character.presence.value),
-
-    ...Expressions.buildVariable(CharacterAttributes.VitalityPool.variable, character.vitalityPool.value),
-    ...Expressions.buildVariable(CharacterValues.VitalityPoints, character.vitalityPoints),
+    ...Objects.mergeAll(attributeVariables)
   }
 
   return { variables }

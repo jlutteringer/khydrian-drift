@@ -4,7 +4,8 @@ import { BasicCombatTraining } from '@simulacrum/rulesets/khydrian-drift/archety
 import { AdvancedHardpointLoadoutSlot, GeneralLoadoutSlot } from '@simulacrum/rulesets/khydrian-drift/loadout'
 import { TacticPoints } from '@simulacrum/rulesets/khydrian-drift/resource-pool'
 import { Class } from '@simulacrum/rulesets/khydrian-drift/archetype'
-import { CharacterAttributes, CharacterValues } from '@simulacrum/common/character/character'
+import { CharacterAttributes } from '@simulacrum/rulesets/khydrian-drift/attributes'
+import { CharacterValues } from '@simulacrum/common/character/character'
 
 export const Commando = Traits.defineTrait('e0b5ad7e-6e8b-4416-8a7c-41bab05993d3', {
   name: 'Commando',
@@ -40,15 +41,7 @@ export const Momentum = Traits.defineTrait('7a3e377a-f2d4-41ce-b7f2-866538a517ce
     Effects.modifyAttribute(
       CharacterAttributes.MovementSpeed,
       NumericExpressions.floor(CharacterAttributes.Agility.variable, 1),
-      NumericExpressions.lessThan(CharacterValues.VitalityPoints, NumericExpressions.multiply([CharacterAttributes.VitalityPool.variable, 0.5]))
-    ),
-    Effects.modifyAttribute(
-      CharacterAttributes.MovementSpeed,
-      7, // TODO this should be 1
-      Expressions.not(
-        NumericExpressions.lessThan(CharacterValues.VitalityPoints, NumericExpressions.multiply([CharacterAttributes.VitalityPool.variable, 0.5]))
-      )
-    ),
+    )
   ],
 })
 

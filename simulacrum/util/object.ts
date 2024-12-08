@@ -6,9 +6,10 @@ import {
   isPlainObject as _isPlainObject,
   isUndefined as _isUndefined,
   mapValues as _mapValues,
-  merge as unsafeMerge,
+  merge as unsafeMerge
 } from 'lodash-es'
 import { produce } from 'immer'
+import { Arrays, Preconditions } from '@simulacrum/util/index'
 
 export const update = produce
 
@@ -90,7 +91,13 @@ export function fieldsPresent<T extends object, K extends keyof T>(
 export class ObjectPath {
   constructor(readonly path: Array<string>) {}
 
-  getValue = (object: Record<string, unknown>): unknown | undefined => {
+  applyValue = <T>(object: Record<string, T>, value: T) => {
+    // JOHN we are not supporting multiple paths here yet... but we should
+    Preconditions.isFalse(Arrays.isEmpty(this.path))
+    object[Arrays.first(this.path)!] = value
+  }
+
+  getValue = <T>(object: Record<string, T>): T | undefined => {
     let root = object
 
     let nextElement: any = root

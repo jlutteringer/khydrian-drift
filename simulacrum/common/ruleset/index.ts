@@ -4,11 +4,14 @@ import { ResourcePool } from '@simulacrum/common/resource-pool'
 import { LoadoutType } from '@simulacrum/common/loadout'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { Effect } from '@simulacrum/common/effect'
+import { Attribute } from '@simulacrum/common/attribute'
 
 export type RulesetReference = Reference<'Ruleset'>
 
 export type Ruleset = Referencable<RulesetReference> & {
   name: string
+  creatureAttributes: Array<Attribute<unknown>>
+  characterAttributes: Array<Attribute<unknown>>
   traits: Array<Trait>
   resourcePools: Array<ResourcePool>
   loadoutTypes: Array<LoadoutType>

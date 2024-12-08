@@ -1,12 +1,26 @@
-import { ExpressionContext, ExpressionType, ExpressionValue, ExpressionVariable, IExpression } from '@simulacrum/util/expression/index'
-import { AndExpression, ContainsExpression, CustomExpression, EqualsExpression, NotExpression, OrExpression } from '@simulacrum/util/expression/expression'
-import { Arrays, Objects, Preconditions, Signatures } from '@simulacrum/util'
+import {
+  ExpressionContext,
+  ExpressionType,
+  ExpressionValue,
+  ExpressionVariable,
+  IExpression
+} from '@simulacrum/util/expression/index'
+import {
+  AndExpression,
+  ContainsExpression,
+  CustomExpression,
+  EqualsExpression,
+  NotExpression,
+  OrExpression
+} from '@simulacrum/util/expression/expression'
+import { Arrays, Maths, Objects, Preconditions, Signatures } from '@simulacrum/util'
 import {
   BoundsExpression,
   GreaterThanExpression,
   LessThanExpression,
   MultiplyExpression,
-  SumExpression,
+  RoundExpression,
+  SumExpression
 } from '@simulacrum/util/expression/numeric-expression'
 
 export class ExpressionEvaluator {
@@ -40,6 +54,8 @@ export class ExpressionEvaluator {
         return this.evaluateMultiplyExpression(expression as MultiplyExpression) as T
       case ExpressionType.Bounds:
         return this.evaluateBoundsExpression(expression as BoundsExpression) as T
+      case ExpressionType.Round:
+        return this.evaluateRoundExpression(expression as RoundExpression) as T
       case ExpressionType.Concatenate:
         break // TODO implement me
       case ExpressionType.Uppercase:
@@ -133,5 +149,10 @@ export class ExpressionEvaluator {
     }
 
     return value
+  }
+
+  private evaluateRoundExpression(expression: RoundExpression): number {
+    const value = this.evaluate(expression.value)
+    return Maths.round(value, expression.scale, expression.roundingMode)
   }
 }

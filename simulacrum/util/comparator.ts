@@ -1,4 +1,4 @@
-import { Numbers, Strings } from '@simulacrum/util/index'
+import { Maths, Strings } from '@simulacrum/util/index'
 
 export type Comparator<T> = (first: T, second: T) => number
 
@@ -38,9 +38,9 @@ export const natural = (): Comparator<string | number | null> => {
     (first, second) => {
       if (Strings.isString(first) && Strings.isString(second)) {
         return first.localeCompare(second)
-      } else if (Numbers.isNumber(first) && Numbers.isNumber(second)) {
+      } else if (Maths.isNumber(first) && Maths.isNumber(second)) {
         return first! - second!
-      } else if (Numbers.isNumber(first)) {
+      } else if (Maths.isNumber(first)) {
         return -1
       } else {
         return 1

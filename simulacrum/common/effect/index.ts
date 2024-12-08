@@ -2,7 +2,7 @@ import { Trait, TraitReference } from '@simulacrum/common/trait'
 import { LoadoutType, LoadoutTypeReference } from '@simulacrum/common/loadout'
 import { ResourcePool, ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
 import { Expression, ExpressionContext, Expressions } from '@simulacrum/util/expression'
-import { Arrays, Comparators, Objects, References } from '@simulacrum/util'
+import { Arrays, Comparators, Objects, Preconditions, References } from '@simulacrum/util'
 import { Attribute, AttributeReference, AttributeValue, Modifier } from '@simulacrum/common/attribute'
 import { Attributes } from '@simulacrum/common'
 import { CharacterOption } from '@simulacrum/common/character/character-option'
@@ -119,13 +119,23 @@ const buildModifier = <T>(effect: ModifyAttributeEffect | AssignAttributeEffect,
 }
 
 // TODO is there a way to back off of the fact that attributes must be numbers
-export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, initialEffects: Array<Effect>, context: ExpressionContext): AttributeValue<T> => {
+export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, initialEffects: Array<Effect>, initialValues: Record<string, unknown>, context: ExpressionContext): AttributeValue<T> => {
+  let baseValue
+  if(Objects.isPresent(attribute.base)) {
+    baseValue = Expressions.evaluate(attribute.base, context)
+  }
+  else {
+    const initialValue = Objects.parsePath(attribute.path).getValue(initialValues)
+    Preconditions.isPresent(initialValue)
+    baseValue = initialValue as T
+  }
+
   const effects = filter(initialEffects, ModifyAttribute).filter((it) => References.equals(it.attribute, attribute.reference))
   const { activeEffects, inactiveEffects } = evaluateEffects(effects, ModifyAttribute, context)
 
   const activeModifiers = activeEffects.map((it) => buildModifier<T>(it, context))
   const inactiveModifiers = inactiveEffects.map((it) => buildModifier<T>(it, context))
-  const operands = [attribute.base, ...activeModifiers.map((it) => it.value)]
+  const operands = [baseValue, ...activeModifiers.map((it) => it.value)]
   const value = Expressions.evaluate(Expressions.invoke(attribute.reducer, operands), context)
 
   const setEffects = filter(initialEffects, AssignAttribute).filter((it) => References.equals(it.attribute, attribute.reference))
@@ -150,7 +160,7 @@ export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, ini
     return Attributes.buildValue(
       {
         value: bestAssignment.value,
-        baseValue: Expressions.evaluate(attribute.base, context),
+        baseValue: baseValue,
         inactiveModifiers: [...activeModifiers, ...inactiveModifiers],
         activeAssignment: bestAssignment,
         inactiveAssignments: [...Arrays.rest(activeAssignments), ...inactiveAssignments],
@@ -162,7 +172,7 @@ export const evaluateAttribute = <T extends number>(attribute: Attribute<T>, ini
   return Attributes.buildValue(
     {
       value: value,
-      baseValue: Expressions.evaluate(attribute.base, context),
+      baseValue: baseValue,
       activeModifiers,
       inactiveModifiers,
       activeAssignment: null,

@@ -15,12 +15,13 @@ export default function Home() {
   let character: CharacterRecord = {
     name: 'Bob the Fighter',
     level: 3,
-    baseAttributes: {
-      brawn: 2,
-      agility: 2,
-      willpower: 0,
-      intelligence: 0,
-      presence: 0,
+    initialValues: {
+      strength: 16,
+      dexterity: 14,
+      constitution: 15,
+      wisdom: 11,
+      intelligence: 12,
+      charisma: 8,
     },
     selections: ProgressionTables.empty(3),
   }

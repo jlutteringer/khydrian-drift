@@ -2,15 +2,16 @@ import { Archetypes, Effects, Traits } from '@simulacrum/common'
 import { Class } from '@simulacrum/rulesets/dnd-5e/archetype'
 import { Expressions } from '@simulacrum/util/expression'
 import { SelectFightingStyle } from '@simulacrum/rulesets/dnd-5e/archetype/fighting-style'
-import { CharacterAttributes, CharacterValues } from '@simulacrum/common/character/character'
 import { CharacterOptions } from '@simulacrum/common/character'
+import { CharacterAttributes } from '@simulacrum/rulesets/dnd-5e/attributes'
+import { CharacterValues } from '@simulacrum/common/character/character'
 
 export const Fighter = Traits.defineTrait('143dad4d-9496-4a73-927c-c77c6b008282', {
   name: 'Fighter',
   description: '',
   archetypes: [Class],
   effects: [
-    Effects.modifyAttribute(CharacterAttributes.VitalityPool, 10),
+    Effects.modifyAttribute(CharacterAttributes.HitPoints, 10),
     Effects.gainCharacterOption(SelectFightingStyle),
     Effects.descriptive('Second Wind!'),
   ],
@@ -21,7 +22,7 @@ export const Fighter2 = Traits.defineTrait('da3e0304-f824-4231-9329-05c8889aa0cd
   description: '',
   prerequisites: [Expressions.contains(CharacterValues.Traits, [Fighter.reference])],
   archetypes: [Class],
-  effects: [Effects.modifyAttribute(CharacterAttributes.VitalityPool, 6), Effects.descriptive('Action Surge!'), Effects.descriptive('Tactical Mind')],
+  effects: [Effects.modifyAttribute(CharacterAttributes.HitPoints, 6), Effects.descriptive('Action Surge!'), Effects.descriptive('Tactical Mind')],
 })
 
 export const FighterSubclass = Archetypes.defineArchetype('5a40dddd-84a9-4de3-ae23-575f85e265cb', { name: 'Fighter Subclass' })
@@ -32,7 +33,7 @@ export const Fighter3 = Traits.defineTrait('a9fb4e9c-78b6-4067-b4f6-db6e831c53dc
   description: '',
   prerequisites: [Expressions.contains(CharacterValues.Traits, [Fighter2.reference])],
   archetypes: [Class],
-  effects: [Effects.modifyAttribute(CharacterAttributes.VitalityPool, 6), Effects.gainCharacterOption(SelectFighterSubclass)],
+  effects: [Effects.modifyAttribute(CharacterAttributes.HitPoints, 6), Effects.gainCharacterOption(SelectFighterSubclass)],
 })
 
 export const BattleMaster = Traits.defineTrait('c2cfc67d-e22d-4343-9806-00dc1427e6a2', {

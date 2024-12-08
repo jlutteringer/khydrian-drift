@@ -1,4 +1,11 @@
-import { Expression, Expressions, ExpressionType, IExpression, ReducingExpression } from '@simulacrum/util/expression/index'
+import {
+  Expression,
+  Expressions,
+  ExpressionType,
+  IExpression,
+  ReducingExpression
+} from '@simulacrum/util/expression/index'
+import { RoundingMode } from '@simulacrum/util/math'
 
 export interface SumExpression extends ReducingExpression<number, number> {
   expressionKey: ExpressionType.Sum
@@ -75,5 +82,21 @@ export const bounds = (value: Expression<number>, minimumThreshold: Expression<n
     value: Expressions.valuate(value),
     minimumThreshold: Expressions.valuate(minimumThreshold),
     maximumThreshold: Expressions.valuate(maximumThreshold),
+  }
+}
+
+export interface RoundExpression extends IExpression<number> {
+  expressionKey: ExpressionType.Round
+  value: IExpression<number>
+  scale: number
+  roundingMode: RoundingMode
+}
+
+export const round = (value: Expression<number>, scale: number, roundingMode: RoundingMode): RoundExpression => {
+  return {
+    expressionKey: ExpressionType.Round,
+    value: Expressions.valuate(value),
+    scale,
+    roundingMode
   }
 }
