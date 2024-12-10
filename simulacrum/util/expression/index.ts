@@ -2,11 +2,11 @@ import * as NumericExpressions from '@simulacrum/util/expression/numeric-express
 import * as StringExpressions from '@simulacrum/util/expression/string-expression'
 import * as Expressions from '@simulacrum/util/expression/expression'
 import { Signable } from '@simulacrum/util/signature'
-import { Flavor } from '@simulacrum/util/types'
+import { NominalType } from '@simulacrum/util/types'
 
 export { Expressions, NumericExpressions, StringExpressions }
 
-export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = Flavor<string, ['ExpressionKey', ReturnType, ArgumentType]>
+export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = NominalType<string, ['ExpressionKey', ReturnType, ArgumentType]>
 
 export interface IExpression<ReturnType> {
   expressionKey: ExpressionKey<ReturnType, Array<unknown>>

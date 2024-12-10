@@ -33,14 +33,20 @@ test('Test Character Choices and Selections', () => {
   expect(character.attributes.movementSpeed.value).toBe(30)
   expect(character.attributes.initiative.value).toBe(2)
 
+  expect(character.abilities.length).toBe(4)
+
   character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), context)
   expect(CharacterOptions.isSelected(character.selections, SelectClassLevel, Fighter)).toBe(true)
+
+  expect(character.abilities.length).toBe(5)
 
   character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectFightingStyle, Archery), context)
   expect(CharacterOptions.isSelected(character.selections, SelectFightingStyle, Archery)).toBe(true)
 
   character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter2), context)
   expect(CharacterOptions.isSelected(character.selections, SelectClassLevel, Fighter2)).toBe(true)
+
+  expect(character.abilities.length).toBe(6)
 
   character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter3), context)
   expect(CharacterOptions.isSelected(character.selections, SelectClassLevel, Fighter3)).toBe(true)

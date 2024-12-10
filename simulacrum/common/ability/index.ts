@@ -1,14 +1,15 @@
-import { Cooldown } from '@simulacrum/common/types'
 import { LoadoutTypeReference } from '@simulacrum/common/loadout'
 import { Expression } from '@simulacrum/util/expression'
 import { Effect } from '@simulacrum/common/effect'
 import { Referencable, Reference } from '@simulacrum/util/reference'
-import { References } from '@simulacrum/util'
+import { Arrays, References } from '@simulacrum/util'
+import { ApplicationContext } from '@simulacrum/common/context'
+import { ResourceCost } from '@simulacrum/common/resource-pool'
 
 export enum ActionType {
   Free = 'Free',
   Bonus = 'Bonus',
-  Action = 'Action',
+  Standard = 'Standard',
   Reaction = 'Reaction',
 }
 
@@ -23,18 +24,16 @@ export type Ability = Referencable<AbilityReference> & {
 
   effects: Array<Effect>
   actions: Array<AbilityAction>
-
-  cooldown: Cooldown | null
+  costs: Array<ResourceCost>
 }
 
 export type AbilityAction = {
-  name: string
-  description: string
+  name: string | null
+  description: string | null
 
   action: ActionType
 
-  cost: number
-  cooldown: Cooldown | null
+  costs: Array<ResourceCost>
 }
 
 export type AbilityProps = {
@@ -46,15 +45,18 @@ export type AbilityProps = {
 
   effects?: Array<Effect>
   actions: Array<{
-    name: string
-    description: string
+    name?: string
+    description?: string
     action: ActionType
 
-    cost?: number
-    cooldown?: Cooldown
+    costs?: Array<ResourceCost>
   }>
 
-  cooldown?: Cooldown
+  costs?: Array<ResourceCost>
+}
+
+export type AbilityState = {
+  ability: AbilityReference
 }
 
 export const defineAbility = (reference: AbilityReference | string, props: AbilityProps): Ability => {
@@ -66,12 +68,28 @@ export const defineAbility = (reference: AbilityReference | string, props: Abili
     loadout: props.loadout ?? null,
     effects: props.effects ?? [],
     actions: props.actions.map((it) => ({
-      name: it.name,
-      description: it.description,
+      name: it.name ?? null,
+      description: it.description ?? null,
       action: it.action,
-      cost: it.cost ?? 1,
-      cooldown: it.cooldown ?? 'None',
+      costs: it.costs ?? [],
     })),
-    cooldown: props.cooldown ?? 'None',
+    costs: props.costs ?? [],
+  }
+}
+
+export const getAbilities = (abilities: Array<AbilityReference>, context: ApplicationContext): Array<Ability> => {
+  return context.ruleset.abilities.filter((ability) => Arrays.contains(abilities, ability.reference))
+}
+
+export const getEffectsForAbility = (ability: Ability): Array<Effect> => {
+  return ability.effects.map((effect) => {
+    const sourcedEffect: Effect = { ...effect, source: ability.reference }
+    return sourcedEffect
+  })
+}
+
+export const buildAbilityState = (ability: AbilityReference): AbilityState => {
+  return {
+    ability,
   }
 }

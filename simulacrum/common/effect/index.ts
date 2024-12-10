@@ -1,6 +1,6 @@
 import { Trait, TraitReference } from '@simulacrum/common/trait'
 import { LoadoutType, LoadoutTypeReference } from '@simulacrum/common/loadout'
-import { ResourcePool, ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
+import { ResourcePoolDefinition, ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
 import { Expression, ExpressionContext, Expressions } from '@simulacrum/util/expression'
 import { Arrays, Comparators, Objects, Preconditions, References } from '@simulacrum/util'
 import { Attribute, AttributeReference, AttributeValue, Modifier } from '@simulacrum/common/attribute'
@@ -14,7 +14,7 @@ export interface Effect {
   source?: EffectSource
 }
 
-export type EffectSource = TraitReference
+export type EffectSource = TraitReference | AbilityReference
 
 export type EffectType<T extends Effect> = { type: string }
 
@@ -36,7 +36,7 @@ export type GainTraitEffect = Effect & {
   trait: TraitReference
 }
 
-export const GainAbility: EffectType<GainTraitEffect> = { type: 'GainAbility' }
+export const GainAbility: EffectType<GainAbilityEffect> = { type: 'GainAbility' }
 export type GainAbilityEffect = Effect & {
   type: 'GainAbility'
   ability: AbilityReference
@@ -272,7 +272,10 @@ export const modifyHealingSurgeQuantity = (amount: Expression<number>, condition
   }
 }
 
-export const gainResourcePool = (resourcePool: ResourcePoolReference | ResourcePool, condition: Expression<boolean> | null = null): GainResourcePoolEffect => {
+export const gainResourcePool = (
+  resourcePool: ResourcePoolReference | ResourcePoolDefinition,
+  condition: Expression<boolean> | null = null
+): GainResourcePoolEffect => {
   return {
     type: 'GainResourcePool',
     resourcePool: References.getReference(resourcePool),

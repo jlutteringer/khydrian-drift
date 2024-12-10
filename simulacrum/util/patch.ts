@@ -1,8 +1,8 @@
-import { ExpressionReference } from '@simulacrum/util/expression'
+import { ReducingExpression } from '@simulacrum/util/expression'
 
 export type MergePatch<T> = {
   value: T
-  reducer: ExpressionReference<T, [Array<T>]>
+  reducer: ReducingExpression<T, T>
 }
 
 export type Patch<T> = T | MergePatch<T>

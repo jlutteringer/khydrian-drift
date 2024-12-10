@@ -19,6 +19,7 @@ export const CommonerLevel1: CharacterRecord = {
     charisma: 8,
   },
   selections: ProgressionTables.empty(1),
+  selectedAbilities: [],
 }
 
 export const CommonerLevel3: CharacterRecord = {
@@ -33,6 +34,7 @@ export const CommonerLevel3: CharacterRecord = {
     charisma: 8,
   },
   selections: ProgressionTables.empty(3),
+  selectedAbilities: [],
 }
 
 export const FighterLevel2: CharacterRecord = {
@@ -47,4 +49,5 @@ export const FighterLevel2: CharacterRecord = {
     charisma: 8,
   },
   selections: [],
+  selectedAbilities: [],
 }

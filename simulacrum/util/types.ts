@@ -1,5 +1,5 @@
-interface Flavoring<FlavorT> {
-  _type?: FlavorT
+interface NominalTyping<NominalTypingT> {
+  _type?: NominalTypingT
 }
 
-export type Flavor<T, FlavorT> = T & Flavoring<FlavorT>
+export type NominalType<T, NominalTypingT> = T & NominalTyping<NominalTypingT>

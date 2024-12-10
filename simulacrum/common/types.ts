@@ -14,18 +14,6 @@ export enum RelativeAmount {
   Half = 'Half',
 }
 
-export type Cooldown =
-  | {
-      size: Expression<number>
-      refresh: Array<CooldownRate>
-    }
-  | 'None'
-
-export type CooldownRate = {
-  period: TimeUnit
-  amount: Expression<number> | RelativeAmount
-}
-
 export type CooldownRateMutation = {
   period?: TimeUnit
   amount?: Expression<number>

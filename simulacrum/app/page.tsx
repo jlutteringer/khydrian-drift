@@ -24,6 +24,7 @@ export default function Home() {
       charisma: 8,
     },
     selections: ProgressionTables.empty(3),
+    selectedAbilities: [],
   }
   character = Characters.buildCharacterDefinition(character, context)
   character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), context)

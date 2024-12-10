@@ -1,6 +1,6 @@
 import { Trait } from '@simulacrum/common/trait'
 import { Referencable, Reference } from '@simulacrum/util/reference'
-import { ResourcePool } from '@simulacrum/common/resource-pool'
+import { ResourcePoolDefinition } from '@simulacrum/common/resource-pool'
 import { LoadoutType } from '@simulacrum/common/loadout'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { Effect } from '@simulacrum/common/effect'
@@ -15,7 +15,7 @@ export type Ruleset = Referencable<RulesetReference> & {
   characterAttributes: Array<Attribute<unknown>>
   traits: Array<Trait>
   abilities: Array<Ability>
-  resourcePools: Array<ResourcePool>
+  resourcePools: Array<ResourcePoolDefinition>
   loadoutTypes: Array<LoadoutType>
   progressionTable: ProgressionTable<Effect>
 }

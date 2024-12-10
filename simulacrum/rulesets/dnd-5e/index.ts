@@ -27,6 +27,7 @@ import { Sorcerer } from '@simulacrum/rulesets/dnd-5e/class/class-sorcerer'
 import { Warlock } from '@simulacrum/rulesets/dnd-5e/class/class-warlock'
 import { Wizard } from '@simulacrum/rulesets/dnd-5e/class/class-wizard'
 import { CharacterAttributes, CreatureAttributes } from '@simulacrum/rulesets/dnd-5e/attributes'
+import { Dash, Disengage, Dodge, HealingSurge } from '@simulacrum/rulesets/dnd-5e/common'
 
 export const SelectClassLevel = CharacterOptions.selectTraitOption('afbef236-17a0-464f-b2d0-cb01ecf7931a', { archetypes: [Class] })
 
@@ -58,11 +59,17 @@ export const Dnd5e: Ruleset = {
     EldritchKnight,
     PsiWarrior,
   ],
-  abilities: [SecondWind, ActionSurge],
+  abilities: [Dodge, Disengage, Dash, HealingSurge, SecondWind, ActionSurge],
   resourcePools: [],
   loadoutTypes: [],
   progressionTable: {
-    1: [Effects.gainCharacterOption(SelectClassLevel)],
+    1: [
+      Effects.gainCharacterOption(SelectClassLevel),
+      Effects.gainAbility(Dodge),
+      Effects.gainAbility(Disengage),
+      Effects.gainAbility(Dash),
+      Effects.gainAbility(HealingSurge),
+    ],
     2: [Effects.gainCharacterOption(SelectClassLevel)],
     3: [Effects.gainCharacterOption(SelectClassLevel)],
   },

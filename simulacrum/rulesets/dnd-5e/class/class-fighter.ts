@@ -16,19 +16,24 @@ export const SecondWind = Abilities.defineAbility('5783fc7f-7915-40c7-8a51-8406e
       name: 'Use Second Wind',
       description: '',
       action: ActionType.Bonus,
-      cooldown: {
-        size: 2,
-        refresh: [
-          {
-            period: TimeUnit.LongRest,
-            amount: RelativeAmount.All,
+      costs: [
+        {
+          cost: 1,
+          resource: {
+            size: 2,
+            refresh: [
+              {
+                period: TimeUnit.LongRest,
+                amount: RelativeAmount.All,
+              },
+              {
+                period: TimeUnit.ShortRest,
+                amount: 1,
+              },
+            ],
           },
-          {
-            period: TimeUnit.ShortRest,
-            amount: 1,
-          },
-        ],
-      },
+        },
+      ],
     },
   ],
 })
@@ -50,18 +55,21 @@ export const ActionSurge = Abilities.defineAbility('a781f8be-1a9b-403d-84d7-155c
   description: '',
   actions: [
     {
-      name: 'Use Action Surge',
-      description: '',
       action: ActionType.Bonus,
-      cooldown: {
-        size: 1,
-        refresh: [
-          {
-            period: TimeUnit.ShortRest,
-            amount: RelativeAmount.All,
+      costs: [
+        {
+          cost: 1,
+          resource: {
+            size: 1,
+            refresh: [
+              {
+                period: TimeUnit.ShortRest,
+                amount: RelativeAmount.All,
+              },
+            ],
           },
-        ],
-      },
+        },
+      ],
     },
   ],
 })
