@@ -1,41 +1,38 @@
-import { Expression, Expressions, ExpressionType, IExpression } from '@simulacrum/util/expression/index'
+import { Expression } from '@simulacrum/util/expression/index'
+import { defineExpression } from '@simulacrum/util/expression/internal'
 
-export interface ConcatenateExpression extends IExpression<string> {
-  expressionKey: ExpressionType.Concatenate
-  first: IExpression<string>
-  second: IExpression<string>
-}
+export const ConcatenateExpression = defineExpression({
+  expressionKey: 'Concatenate',
+  builder: (first: Expression<string>, second: Expression<string>) => {
+    return { first, second }
+  },
+  resolver: (): string => {
+    throw new Error('Not yet implemented')
+  },
+})
 
-export const concatenate = (first: Expression<string>, second: Expression<string>): ConcatenateExpression => {
-  return {
-    expressionKey: ExpressionType.Concatenate,
-    first: Expressions.valuate(first),
-    second: Expressions.valuate(second),
-  }
-}
+export const concatenate = ConcatenateExpression.builder
 
-export interface UppercaseExpression extends IExpression<string> {
-  expressionKey: ExpressionType.Uppercase
-  value: IExpression<string>
-}
+export const UppercaseExpression = defineExpression({
+  expressionKey: 'Uppercase',
+  builder: (value: Expression<string>) => {
+    return { value }
+  },
+  resolver: (): string => {
+    throw new Error('Not yet implemented')
+  },
+})
 
-export const uppercase = (value: Expression<string>): UppercaseExpression => {
-  return {
-    expressionKey: ExpressionType.Uppercase,
-    value: Expressions.valuate(value),
-  }
-}
+export const uppercase = UppercaseExpression.builder
 
-export interface SubstringExpression extends IExpression<boolean> {
-  expressionKey: ExpressionType.Substring
-  string: IExpression<string>
-  substring: IExpression<string>
-}
+export const SubstringExpression = defineExpression({
+  expressionKey: 'Substring',
+  builder: (string: Expression<string>, substring: Expression<string>) => {
+    return { string, substring }
+  },
+  resolver: (): string => {
+    throw new Error('Not yet implemented')
+  },
+})
 
-export const substring = (string: Expression<string>, substring: Expression<string>): SubstringExpression => {
-  return {
-    expressionKey: ExpressionType.Substring,
-    string: Expressions.valuate(string),
-    substring: Expressions.valuate(substring),
-  }
-}
+export const substring = SubstringExpression.builder

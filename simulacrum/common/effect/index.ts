@@ -147,7 +147,7 @@ export const evaluateAttribute = <T extends number>(
   const activeModifiers = activeEffects.map((it) => buildModifier<T>(it, context))
   const inactiveModifiers = inactiveEffects.map((it) => buildModifier<T>(it, context))
   const operands = [baseValue, ...activeModifiers.map((it) => it.value)]
-  const value = Expressions.evaluate(Expressions.invoke(attribute.reducer, operands), context)
+  const value = Expressions.evaluate(Expressions.dereference(attribute.reducer, operands), context)
 
   const setEffects = filter(initialEffects, AssignAttribute).filter((it) => References.equals(it.attribute, attribute.reference))
 

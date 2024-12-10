@@ -2,56 +2,40 @@ import * as NumericExpressions from '@simulacrum/util/expression/numeric-express
 import * as StringExpressions from '@simulacrum/util/expression/string-expression'
 import * as Expressions from '@simulacrum/util/expression/expression'
 import { Signable } from '@simulacrum/util/signature'
+import { Flavor } from '@simulacrum/util/types'
 
 export { Expressions, NumericExpressions, StringExpressions }
 
-export enum ExpressionType {
-  Value = 'Value',
-  Variable = 'Variable',
-  Custom = 'Custom',
-  Not = 'Not',
-  And = 'And',
-  Or = 'Or',
-  Equal = 'Equal',
-  LessThan = 'LessThan',
-  GreaterThan = 'GreaterThan',
-  Contains = 'Contains',
-  Sum = 'Sum',
-  Multiply = 'Multiply',
-  Concatenate = 'Concatenate',
-  Uppercase = 'Uppercase',
-  Bounds = 'Bounds',
-  Substring = 'Substring',
-  Round = 'Round',
+export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = Flavor<string, ['ExpressionKey', ReturnType, ArgumentType]>
+
+export interface IExpression<ReturnType> {
+  expressionKey: ExpressionKey<ReturnType, Array<unknown>>
 }
 
-export interface IExpression<T> {
-  expressionKey: ExpressionType
+export type Expression<ReturnType> = ReturnType | IExpression<ReturnType>
+
+export interface ExpressionReference<ReturnType, ArgumentType extends Array<unknown>> {
+  expressionKey: ExpressionKey<ReturnType, ArgumentType>
 }
 
-export type Expression<T> = T | IExpression<T>
+export interface ReducingExpression<ReturnType, ArgumentType> extends ExpressionReference<ReturnType, [Array<Expression<ArgumentType>>]> {}
 
-export interface ExpressionValue<T> extends IExpression<T> {
-  expressionKey: ExpressionType.Value
-  value: T
+export type ExpressionDefinition<ReturnType, ArgumentType extends Array<unknown>, ExpressionType extends IExpression<ReturnType>> = ExpressionReference<
+  ReturnType,
+  ArgumentType
+> & {
+  expressionKey: ExpressionKey<ReturnType, ArgumentType>
+  builder: (...parameters: ArgumentType) => ExpressionType
+  resolver: (expression: ExpressionType, evaluate: <T>(expression: Expression<T>) => T, context: ExpressionContext) => ReturnType
 }
 
 export interface ExpressionVariable<T> extends IExpression<T> {
-  expressionKey: ExpressionType.Variable
+  expressionKey: 'Variable'
   name: string
 }
 
 export interface ParameterizedVariable<ValueType, ParameterType extends Array<Signable>> {
   apply(...parameters: ParameterType): ExpressionVariable<ValueType>
-}
-
-export type ReducingExpression<ArgumentType, ReturnType> = IExpression<ReturnType> & {
-  operands: Array<IExpression<ArgumentType>>
-}
-
-// TODO this could probably be made more robust... right now we only support references for 'reducing expressions'... generalizing is kinda hard tho
-export type ExpressionReference<ArgumentType, ReturnType> = {
-  expression: ReducingExpression<ArgumentType, ReturnType>
 }
 
 export type ExpressionContext = {

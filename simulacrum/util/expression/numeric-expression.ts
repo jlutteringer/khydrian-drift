@@ -1,96 +1,124 @@
-import { Expression, Expressions, ExpressionType, IExpression, ReducingExpression } from '@simulacrum/util/expression/index'
+import { Expression } from '@simulacrum/util/expression/index'
 import { RoundingMode } from '@simulacrum/util/math'
+import { Maths, Objects } from '@simulacrum/util'
+import { defineExpression } from '@simulacrum/util/expression/internal'
 
-export interface SumExpression extends ReducingExpression<number, number> {
-  expressionKey: ExpressionType.Sum
-  operands: Array<IExpression<number>>
-}
+export const SumExpression = defineExpression({
+  expressionKey: 'Sum',
+  builder: (operands: Array<Expression<number>>) => {
+    return { operands }
+  },
+  resolver: ({ operands }, evaluate) => {
+    const values = operands.map((it) => evaluate(it))
+    return values.reduce((x, y) => x + y, 0)
+  },
+})
 
-export const sum = (operands: Array<Expression<number>>): SumExpression => {
-  return {
-    expressionKey: ExpressionType.Sum,
-    operands: operands.map(Expressions.valuate),
-  }
-}
+export const sum = SumExpression.builder
 
-export interface MultiplyExpression extends ReducingExpression<number, number> {
-  expressionKey: ExpressionType.Multiply
-  operands: Array<IExpression<number>>
-}
+export const MultiplyExpression = defineExpression({
+  expressionKey: 'Multiply',
+  builder: (operands: Array<Expression<number>>) => {
+    return { operands }
+  },
+  resolver: ({ operands }, evaluate) => {
+    const values = operands.map((it) => evaluate(it))
+    return values.reduce((x, y) => x * y, 1)
+  },
+})
 
-export const multiply = (operands: Array<Expression<number>>): MultiplyExpression => {
-  return {
-    expressionKey: ExpressionType.Multiply,
-    operands: operands.map(Expressions.valuate),
-  }
-}
+export const multiply = MultiplyExpression.builder
 
-export interface LessThanExpression extends IExpression<boolean> {
-  expressionKey: ExpressionType.LessThan
-  left: IExpression<number>
-  right: IExpression<number>
-}
+export const LessThanExpression = defineExpression({
+  expressionKey: 'LessThan',
+  builder: (left: Expression<number>, right: Expression<number>) => {
+    return { left, right }
+  },
+  resolver: ({ left, right }, evaluate) => {
+    return evaluate(left) < evaluate(right)
+  },
+})
 
-export const lessThan = (left: Expression<number>, right: Expression<number>): LessThanExpression => {
-  return {
-    expressionKey: ExpressionType.LessThan,
-    left: Expressions.valuate(left),
-    right: Expressions.valuate(right),
-  }
-}
+export const lessThan = LessThanExpression.builder
 
-export interface GreaterThanExpression extends IExpression<boolean> {
-  expressionKey: ExpressionType.GreaterThan
-  left: IExpression<number>
-  right: IExpression<number>
-}
+export const GreaterThanExpression = defineExpression({
+  expressionKey: 'GreaterThan',
+  builder: (left: Expression<number>, right: Expression<number>) => {
+    return { left, right }
+  },
+  resolver: ({ left, right }, evaluate) => {
+    return evaluate(left) > evaluate(right)
+  },
+})
 
-export interface BoundsExpression extends IExpression<number> {
-  expressionKey: ExpressionType.Bounds
-  value: IExpression<number>
-  minimumThreshold: IExpression<number> | null
-  maximumThreshold: IExpression<number> | null
-}
+export const greaterThan = GreaterThanExpression.builder
 
-export const floor = (value: Expression<number>, minimumThreshold: Expression<number>): BoundsExpression => {
-  return {
-    expressionKey: ExpressionType.Bounds,
-    value: Expressions.valuate(value),
-    minimumThreshold: Expressions.valuate(minimumThreshold),
-    maximumThreshold: null,
-  }
-}
+export const BoundsExpression = defineExpression({
+  expressionKey: 'Bounds',
+  builder: (value: Expression<number>, minimumThreshold: Expression<number> | null, maximumThreshold: Expression<number> | null) => {
+    return { value, minimumThreshold, maximumThreshold }
+  },
+  resolver: (expression, evaluate) => {
+    let value = evaluate(expression.value)
+    const minimumThreshold = Objects.isPresent(expression.minimumThreshold) ? evaluate(expression.minimumThreshold) : null
+    const maximumThreshold = Objects.isPresent(expression.maximumThreshold) ? evaluate(expression.maximumThreshold) : null
+    if (Objects.isPresent(minimumThreshold) && value < minimumThreshold) {
+      value = minimumThreshold
+    }
+    if (Objects.isPresent(maximumThreshold) && value > maximumThreshold) {
+      value = maximumThreshold
+    }
 
-export const ceiling = (value: Expression<number>, maximumThreshold: Expression<number>): BoundsExpression => {
-  return {
-    expressionKey: ExpressionType.Bounds,
-    value: Expressions.valuate(value),
-    minimumThreshold: null,
-    maximumThreshold: Expressions.valuate(maximumThreshold),
-  }
-}
+    return value
+  },
+})
 
-export const bounds = (value: Expression<number>, minimumThreshold: Expression<number>, maximumThreshold: Expression<number>): BoundsExpression => {
-  return {
-    expressionKey: ExpressionType.Bounds,
-    value: Expressions.valuate(value),
-    minimumThreshold: Expressions.valuate(minimumThreshold),
-    maximumThreshold: Expressions.valuate(maximumThreshold),
-  }
-}
+export const bounds = BoundsExpression.builder
 
-export interface RoundExpression extends IExpression<number> {
-  expressionKey: ExpressionType.Round
-  value: IExpression<number>
-  scale: number
-  roundingMode: RoundingMode
-}
+export const FloorExpression = defineExpression({
+  expressionKey: 'Floor',
+  builder: (value: Expression<number>, minimumThreshold: Expression<number> | null) => {
+    return { value, minimumThreshold }
+  },
+  resolver: (expression, evaluate) => {
+    let value = evaluate(expression.value)
+    const minimumThreshold = Objects.isPresent(expression.minimumThreshold) ? evaluate(expression.minimumThreshold) : null
+    if (Objects.isPresent(minimumThreshold) && value < minimumThreshold) {
+      value = minimumThreshold
+    }
 
-export const round = (value: Expression<number>, scale: number, roundingMode: RoundingMode): RoundExpression => {
-  return {
-    expressionKey: ExpressionType.Round,
-    value: Expressions.valuate(value),
-    scale,
-    roundingMode,
-  }
-}
+    return value
+  },
+})
+
+export const floor = FloorExpression.builder
+
+export const CeilingExpression = defineExpression({
+  expressionKey: 'Ceiling',
+  builder: (value: Expression<number>, maximumThreshold: Expression<number> | null) => {
+    return { value, maximumThreshold }
+  },
+  resolver: (expression, evaluate) => {
+    let value = evaluate(expression.value)
+    const maximumThreshold = Objects.isPresent(expression.maximumThreshold) ? evaluate(expression.maximumThreshold) : null
+    if (Objects.isPresent(maximumThreshold) && value > maximumThreshold) {
+      value = maximumThreshold
+    }
+
+    return value
+  },
+})
+
+export const ceiling = CeilingExpression.builder
+
+export const RoundExpression = defineExpression({
+  expressionKey: 'Round',
+  builder: (value: Expression<number>, scale: number, roundingMode: RoundingMode) => {
+    return { value, scale, roundingMode }
+  },
+  resolver: ({ value, scale, roundingMode }, evaluate) => {
+    return Maths.round(evaluate(value), scale, roundingMode)
+  },
+})
+
+export const round = RoundExpression.builder

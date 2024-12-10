@@ -1,61 +1,35 @@
 import {
   Expression,
   ExpressionContext,
+  ExpressionDefinition,
   ExpressionReference,
-  ExpressionType,
-  ExpressionValue,
   ExpressionVariable,
   IExpression,
+  NumericExpressions,
   ParameterizedVariable,
-  ReducingExpression,
+  StringExpressions,
 } from '@simulacrum/util/expression/index'
 import { ExpressionEvaluator } from '@simulacrum/util/expression/expression-evaluator'
-import { Objects, Signatures } from '@simulacrum/util'
+import { Arrays, Objects, Preconditions, Signatures } from '@simulacrum/util'
 import { Signable } from '@simulacrum/util/signature'
+import { defineExpression } from '@simulacrum/util/expression/internal'
 
 export const evaluate = <T>(expression: Expression<T>, context: ExpressionContext): T => {
-  return new ExpressionEvaluator(context).evaluate(valuate(expression))
+  return new ExpressionEvaluator(DEFAULT_EXPRESSION_DEFINITIONS).evaluate(expression, context)
 }
 
-export const value = <T>(value: T): ExpressionValue<T> => {
-  return {
-    expressionKey: ExpressionType.Value,
-    value,
-  }
-}
-
-export const isValue = <T>(expression: Expression<T>): expression is T => {
-  if (!Objects.isObject(expression)) {
-    return true
-  }
-
-  const result = (expression as IExpression<T>).expressionKey === undefined
-  return result
-}
-
-export const valuate = <T>(expression: Expression<T>): IExpression<T> => {
-  if (isValue(expression)) {
-    return value(expression)
-  } else {
-    return expression
-  }
-}
-
-export const variable = <T>(name: string): ExpressionVariable<T> => {
-  return {
-    expressionKey: ExpressionType.Variable,
-    name,
-  }
+export const dereference = <ReturnType, ArgumentType extends Array<unknown>>(
+  reference: ExpressionReference<ReturnType, ArgumentType>,
+  ...args: ArgumentType
+): Expression<ReturnType> => {
+  return new ExpressionEvaluator(DEFAULT_EXPRESSION_DEFINITIONS).dereference(reference, ...args)
 }
 
 export const parameterizedVariable = <ValueType, ParameterType extends Array<Signable>>(name: string): ParameterizedVariable<ValueType, ParameterType> => {
   return {
     apply(...parameters: ParameterType): ExpressionVariable<ValueType> {
       const parameterString = parameters.map(Signatures.sign).join('.')
-      return {
-        expressionKey: ExpressionType.Variable,
-        name: `${name}.${parameterString}`,
-      }
+      return variable(`${name}.${parameterString}`)
     },
   }
 }
@@ -64,93 +38,127 @@ export const buildVariable = <T>(variable: ExpressionVariable<T>, value: T): Rec
   return { [variable.name]: value }
 }
 
-export const reference = <ArgumentType, ReturnType>(
-  expression: ReducingExpression<ArgumentType, ReturnType>
-): ExpressionReference<ArgumentType, ReturnType> => {
-  return {
-    expression,
-  }
+export const reference = <ReturnType, ArgumentType extends Array<unknown>>(
+  expressionDefinition: ExpressionDefinition<ReturnType, ArgumentType, IExpression<ReturnType>>
+): ExpressionReference<ReturnType, ArgumentType> => {
+  return { expressionKey: expressionDefinition.expressionKey }
 }
 
-export const invoke = <ArgumentType, ReturnType>(
-  reference: ExpressionReference<ArgumentType, ReturnType>,
-  operands: Array<Expression<ArgumentType>>
-): IExpression<ReturnType> => {
-  return { ...reference.expression, operands: operands.map(valuate) } as IExpression<ReturnType>
-}
+export const ValueExpression = defineExpression({
+  expressionKey: 'Value',
+  builder: (value: unknown) => {
+    return { value }
+  },
+  resolver: ({ value }, evaluate, context) => {
+    return value
+  },
+})
 
-export interface CustomExpression<T> extends IExpression<T> {
-  expressionKey: ExpressionType.Custom
-  name: string
-  args: Array<IExpression<unknown>>
-}
+export const value = <T>(value: T): Expression<T> => ValueExpression.builder(value) as Expression<T>
 
-export const custom = <T>(name: string, args: Array<Expression<unknown>>): CustomExpression<T> => {
-  return {
-    expressionKey: ExpressionType.Custom,
-    name,
-    args: args.map(valuate),
-  }
-}
+export const VariableExpression = defineExpression({
+  expressionKey: 'Variable',
+  builder: (name: string) => {
+    return { name }
+  },
+  resolver: ({ name }, evaluate, context) => {
+    const value = context.variables[name]
+    Preconditions.isPresent(value)
+    return value
+  },
+})
 
-export interface NotExpression extends IExpression<boolean> {
-  expressionKey: ExpressionType.Not
-  value: IExpression<boolean>
-}
+export const variable = <T>(name: string): ExpressionVariable<T> => VariableExpression.builder(name) as ExpressionVariable<T>
 
-export const not = (value: Expression<boolean>): NotExpression => {
-  return {
-    expressionKey: ExpressionType.Not,
-    value: valuate(value),
-  }
-}
+export const NotExpression = defineExpression({
+  expressionKey: 'Not',
+  builder: (value: Expression<boolean>) => {
+    return { value }
+  },
+  resolver: (expression, evaluate) => {
+    return !evaluate(expression.value)
+  },
+})
 
-export interface AndExpression extends ReducingExpression<boolean, boolean> {
-  expressionKey: ExpressionType.And
-  operands: Array<IExpression<boolean>>
-}
+export const not = NotExpression.builder
 
-export const and = (operands: Array<Expression<boolean>>): AndExpression => {
-  return {
-    expressionKey: ExpressionType.And,
-    operands: operands.map(valuate),
-  }
-}
+export const AndExpression = defineExpression({
+  expressionKey: 'And',
+  builder: (operands: Array<Expression<Signable>>) => {
+    return { operands }
+  },
+  resolver: (expression, evaluate) => {
+    const values = expression.operands.map((it) => evaluate(it))
+    const falseValue = values.find((it) => !it)
+    return Objects.isNil(falseValue)
+  },
+})
 
-export interface OrExpression extends ReducingExpression<boolean, boolean> {
-  expressionKey: ExpressionType.Or
-  operands: Array<IExpression<boolean>>
-}
+export const and = AndExpression.builder
 
-export const or = (operands: Array<Expression<boolean>>): OrExpression => {
-  return {
-    expressionKey: ExpressionType.Or,
-    operands: operands.map(valuate),
-  }
-}
+export const OrExpression = defineExpression({
+  expressionKey: 'Or',
+  builder: (operands: Array<Expression<Signable>>) => {
+    return { operands }
+  },
+  resolver: (expression, evaluate) => {
+    const values = expression.operands.map((it) => evaluate(it))
+    const trueValue = values.find((it) => it)
+    return Objects.isPresent(trueValue)
+  },
+})
 
-export interface EqualsExpression extends IExpression<boolean> {
-  expressionKey: ExpressionType.Equal
-  operands: Array<IExpression<Signable>>
-}
+export const or = OrExpression.builder
 
-export const equals = <T extends Signable>(operands: Array<Expression<T>>): EqualsExpression => {
-  return {
-    expressionKey: ExpressionType.Equal,
-    operands: operands.map(valuate),
-  }
-}
+export const EqualsExpression = defineExpression({
+  expressionKey: 'Equals',
+  builder: (operands: Array<Expression<Signable>>) => {
+    return { operands }
+  },
+  resolver: (expression, evaluate) => {
+    const values = expression.operands.map((it) => evaluate(it)).map(Signatures.sign)
 
-export interface ContainsExpression extends IExpression<boolean> {
-  expressionKey: ExpressionType.Contains
-  collection: IExpression<Array<Signable>>
-  operands: Array<IExpression<Signable>>
-}
+    if (values.length === 0) {
+      return true
+    }
 
-export const contains = <T extends Signable>(collection: Expression<Array<T>>, operands: Array<Expression<T>>): ContainsExpression => {
-  return {
-    expressionKey: ExpressionType.Contains,
-    collection: valuate(collection),
-    operands: operands.map(valuate),
-  }
-}
+    const first = values[0]
+    return values.every((val) => val === first)
+  },
+})
+
+export const equals = EqualsExpression.builder
+
+export const ContainsExpression = defineExpression({
+  expressionKey: 'Contains',
+  builder: (collection: Expression<Array<Signable>>, operands: Array<Expression<Signable>>) => {
+    return { collection, operands }
+  },
+  resolver: (expression, evaluate) => {
+    const collection = evaluate(expression.collection)
+    const values = expression.operands.map((it) => evaluate(it))
+    return Arrays.containsAll(collection, values)
+  },
+})
+
+export const contains = ContainsExpression.builder
+
+const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<any>, IExpression<any>>> = [
+  ValueExpression,
+  VariableExpression,
+  AndExpression,
+  OrExpression,
+  ContainsExpression,
+  EqualsExpression,
+  NumericExpressions.SumExpression,
+  NumericExpressions.MultiplyExpression,
+  NumericExpressions.GreaterThanExpression,
+  NumericExpressions.LessThanExpression,
+  NumericExpressions.FloorExpression,
+  NumericExpressions.CeilingExpression,
+  NumericExpressions.BoundsExpression,
+  NumericExpressions.RoundExpression,
+  StringExpressions.ConcatenateExpression,
+  StringExpressions.SubstringExpression,
+  StringExpressions.UppercaseExpression,
+]

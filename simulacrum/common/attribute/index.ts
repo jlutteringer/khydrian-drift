@@ -1,4 +1,4 @@
-import { Expression, ExpressionReference, Expressions, ExpressionVariable, NumericExpressions } from '@simulacrum/util/expression'
+import { Expression, Expressions, ExpressionVariable, NumericExpressions, ReducingExpression } from '@simulacrum/util/expression'
 import { Referencable, Reference } from '@simulacrum/util/reference'
 import { References } from '@simulacrum/util'
 import { EffectSource } from '@simulacrum/common/effect'
@@ -8,7 +8,7 @@ export type AttributeReference<T> = Reference<'Attribute'>
 export type AttributeTemplate<T> = Referencable<AttributeReference<T>> & {
   name: string
   path: string
-  reducer: ExpressionReference<T, T>
+  reducer: ReducingExpression<T, T>
 }
 
 export type AttributeProps<T> = {
@@ -48,7 +48,8 @@ export const defineTemplate = <T>(id: AttributeReference<T> | string, name: stri
     reference,
     name,
     path,
-    reducer: Expressions.reference(NumericExpressions.sum([])),
+    // JOHN another instance of us 'hardcoding' numeric attributes...
+    reducer: Expressions.reference(NumericExpressions.SumExpression) as ReducingExpression<T, T>,
   }
 }
 
