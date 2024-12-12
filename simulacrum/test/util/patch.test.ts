@@ -1,5 +1,4 @@
 import { Patches } from '@simulacrum/util'
-import { Patchable } from '@simulacrum/util/patch'
 import { Expressions } from '@simulacrum/util/expression'
 
 test('Patch Numbers', () => {
@@ -17,13 +16,6 @@ test('Patch Numbers', () => {
     const value = Patches.resolve(5, [Patches.set(2), Patches.sum(2), Patches.set(5)], Expressions.defaultEvaluator())
     expect(value).toEqual(5)
   }
-})
-
-test('Patch Arrays', () => {
-  // const a = Expressions.merge([
-  //   [1, 2, 3],
-  //   [4, 5, 6],
-  // ])
 })
 
 test('Patch Objects', () => {
@@ -46,8 +38,6 @@ test('Patch Objects', () => {
     primaryAddress: Address
     residences: Array<Location>
   }
-
-  type PersonPatch = Patchable<Person>
 
   const originalPerson: Person = {
     id: 1234,
@@ -82,10 +72,10 @@ test('Patch Objects', () => {
     const updatedPerson = Patches.resolve(
       originalPerson,
       [
-        Patches.patch<Person>({
+        Patches.patch({
           name: 'Bobby',
           age: Patches.multiply(2),
-          pets: Patches.set(['Fishy Fish', 'Yogi']),
+          pets: Patches.set(['Burly Bear']),
           primaryAddress: {
             addressLine2: 'New Apartment',
           },
@@ -94,12 +84,87 @@ test('Patch Objects', () => {
       Expressions.defaultEvaluator()
     )
 
-    expect(originalPerson.name).toBe('Bob Bobson')
-    expect(updatedPerson.id).toBe(originalPerson.id)
-    expect(updatedPerson.primaryAddress.addressLine1).toBe(originalPerson.primaryAddress.addressLine1)
+    expect(originalPerson.name).toEqual('Bob Bobson')
+    expect(updatedPerson.id).toEqual(originalPerson.id)
+    expect(updatedPerson.primaryAddress.addressLine1).toEqual(originalPerson.primaryAddress.addressLine1)
 
-    expect(updatedPerson.name).toBe('Bobby')
-    expect(updatedPerson.age).toBe(60)
-    expect(updatedPerson.primaryAddress.addressLine2).toBe('New Apartment')
+    expect(updatedPerson.name).toEqual('Bobby')
+    expect(updatedPerson.age).toEqual(60)
+    expect(updatedPerson.primaryAddress.addressLine2).toEqual('New Apartment')
+    expect(updatedPerson.pets).toEqual(['Burly Bear'])
+  }
+
+  {
+    const updatedPerson = Patches.resolve(
+      originalPerson,
+      [
+        Patches.patch({
+          pets: Patches.concatenate(['Burly Bear']),
+          primaryAddress: Patches.set({
+            addressLine1: 'Another Street',
+            addressLine2: 'Apt 7',
+          }),
+        }),
+      ],
+      Expressions.defaultEvaluator()
+    )
+
+    expect(updatedPerson.pets).toEqual([...originalPerson.pets, 'Burly Bear'])
+    expect(updatedPerson.primaryAddress).toEqual({
+      addressLine1: 'Another Street',
+      addressLine2: 'Apt 7',
+    })
+  }
+
+  {
+    const updatedPerson = Patches.resolve(
+      originalPerson,
+      [
+        Patches.patch({
+          residences: [
+            {
+              name: 'Winter Chalet',
+            },
+            {
+              address: {
+                addressLine1: 'Address Line 1 Changed!',
+              },
+            },
+          ],
+        }),
+      ],
+      Expressions.defaultEvaluator()
+    )
+
+    expect(updatedPerson.residences.length).toEqual(2)
+    expect(updatedPerson.residences[0].name).toEqual('Winter Chalet')
+    expect(updatedPerson.residences[0].address.addressLine1).toEqual('Siberia')
+    expect(updatedPerson.residences[1].name).toEqual('Summer Palace')
+    expect(updatedPerson.residences[1].address.addressLine1).toEqual('Address Line 1 Changed!')
+  }
+
+  {
+    const updatedPerson = Patches.resolve(
+      originalPerson,
+      [
+        Patches.patch({
+          residences: [
+            {},
+            {
+              address: Patches.set({
+                addressLine1: 'Liberia',
+                addressLine2: null,
+              }),
+            },
+          ],
+        }),
+      ],
+      Expressions.defaultEvaluator()
+    )
+
+    expect(updatedPerson.residences[1].address).toEqual({
+      addressLine1: 'Liberia',
+      addressLine2: null,
+    })
   }
 })

@@ -1,4 +1,5 @@
 import {
+  concat,
   differenceBy as _differenceBy,
   differenceWith as _differenceWith,
   first as _first,
@@ -57,6 +58,8 @@ export const containsAllWith = <T>(first: Array<T>, second: Array<T>, equalitor:
 export const containsAllBy = <T>(first: Array<T>, second: Array<T>, mapper: (element: T) => Signable): boolean => isEmpty(differenceBy(second, first, mapper))
 
 export const containsAll = <T extends Signable>(first: Array<T>, second: Array<T>): boolean => isEmpty(difference(second, first))
+
+export const concatenate = concat
 
 export const dedupeWith = <T>(array: Array<T>, equalitor: Equalitor<T>): Array<T> => {
   return uniqWith(array, equalitor)

@@ -1,10 +1,11 @@
 import * as NumericExpressions from '@simulacrum/util/expression/numeric-expression'
 import * as StringExpressions from '@simulacrum/util/expression/string-expression'
+import * as ArrayExpressions from '@simulacrum/util/expression/array-expression'
 import * as Expressions from '@simulacrum/util/expression/expression'
 import { Signable } from '@simulacrum/util/signature'
 import { NominalType } from '@simulacrum/util/types'
 
-export { Expressions, NumericExpressions, StringExpressions }
+export { Expressions, NumericExpressions, StringExpressions, ArrayExpressions }
 
 export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = NominalType<string, ['ExpressionKey', ReturnType, ArgumentType]>
 

@@ -1,4 +1,4 @@
-import { EvaluateExpression, Expression, Expressions, NumericExpressions, ReducingExpression } from '@simulacrum/util/expression'
+import { ArrayExpressions, EvaluateExpression, Expression, Expressions, NumericExpressions, ReducingExpression } from '@simulacrum/util/expression'
 import { Objects, Preconditions } from '@simulacrum/util/index'
 import { GenericRecord } from '@simulacrum/util/types'
 
@@ -27,15 +27,12 @@ export type PatchPatch<T> = {
 export type Patch<T> = SetPatch<T> | ApplyPatch<T> | PatchPatch<T>
 
 export type Patchable<T> = {
-  [P in keyof T]?: T[P] extends Array<infer U> ? Patch<Patchable<U>[]> : T[P] extends object | undefined ? Patchable<T[P]> | Patch<T[P]> : Patch<T[P]> | T[P]
+  [P in keyof T]?: T[P] extends Array<infer U>
+    ? Patch<U[]> | Patchable<U[]>
+    : T[P] extends object | undefined
+    ? Patch<T[P]> | Patchable<T[P]>
+    : Patch<T[P]> | T[P]
 }
-
-// export const set = <T, N extends Required<Patchable<T>>>(value: Expression<T>): Patch<N> => {
-//   return {
-//     _PatchType: PatchType.Set,
-//     value: value as any,
-//   }
-// }
 
 export const set = <T>(value: Expression<T>): Patch<T> => {
   return {
@@ -52,15 +49,11 @@ export const apply = <T>(value: Expression<T>, reducer: ReducingExpression<T, T>
   }
 }
 
-export const patch = <T extends GenericRecord>(patch: Patchable<T>): Patch<T> => {
+export const patch = <T extends GenericRecord, N extends Patchable<T>>(patch: N): Patch<T> => {
   return {
     _PatchType: PatchType.Patch,
     patch,
   }
-}
-
-export const merge = <T>(value: T): Patch<T> => {
-  return apply(value, null!) // JOHN merge function
 }
 
 export const sum = (value: Expression<number>): Patch<number> => {
@@ -69,6 +62,10 @@ export const sum = (value: Expression<number>): Patch<number> => {
 
 export const multiply = (value: Expression<number>): Patch<number> => {
   return apply(value, Expressions.reference(NumericExpressions.MultiplyExpression))
+}
+
+export const concatenate = <T extends Array<Expression<unknown>>>(value: Expression<T>): Patch<T> => {
+  return apply(value, Expressions.reference(ArrayExpressions.ConcatenateExpression)) as Patch<T>
 }
 
 export const resolve = <T>(value: T, patches: Array<Patch<T>>, evaluate: EvaluateExpression): T => {

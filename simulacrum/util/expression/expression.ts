@@ -1,4 +1,5 @@
 import {
+  ArrayExpressions,
   EvaluateExpression,
   Expression,
   ExpressionContext,
@@ -159,19 +160,6 @@ export const ContainsExpression = defineExpression({
 
 export const contains = ContainsExpression.builder
 
-export const MergeExpression = defineExpression({
-  expressionKey: 'Merge',
-  builder: (operands: Array<Array<Expression<unknown>>>) => {
-    return { operands }
-  },
-  resolver: (expression, evaluate) => {
-    const values = expression.operands.map((it) => evaluate(it))
-    return Objects.mergeAll(values)
-  },
-})
-
-export const merge = MergeExpression.builder
-
 const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<any>, Expression<any>>> = [
   ValueExpression,
   VariableExpression,
@@ -190,4 +178,5 @@ const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<
   StringExpressions.ConcatenateExpression,
   StringExpressions.SubstringExpression,
   StringExpressions.UppercaseExpression,
+  ArrayExpressions.ConcatenateExpression,
 ]
