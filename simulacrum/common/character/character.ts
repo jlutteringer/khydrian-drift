@@ -120,12 +120,7 @@ const getCharacterChoiceTable = (character: CharacterState, context: Application
 
 const getAllEffects = (character: CharacterSheet, context: ApplicationContext): Array<Effect> => {
   const progressionEffects = ProgressionTables.getValues(getProgressionEffects(character, context))
-
-  const abilityEffects = Abilities.getAbilities(
-    character.abilities.map((it) => it.ability),
-    context
-  ).flatMap((ability) => Abilities.getEffectsForAbility(ability))
-
+  const abilityEffects = character.abilities.flatMap((ability) => Abilities.getEffectsForAbility(ability.ability))
   return [...progressionEffects, ...abilityEffects]
 }
 
@@ -152,6 +147,7 @@ const buildCharacterState = (character: CharacterRecord, context: ApplicationCon
 
       characterState.attributes = evaluateCharacterAttributes(characterState, context)
       characterState.abilities = evaluateCharacterAbilities(characterState, context)
+      // characterState.resources = evaluateResourcePools(characterState, context)
       return characterState
     },
     (first, second) => {
@@ -218,7 +214,7 @@ const evaluateCharacterAttributes = (character: CharacterState, context: Applica
 const evaluateCharacterAbilities = (character: CharacterState, context: ApplicationContext): Array<AbilityState> => {
   const expressionContext = buildExpressionContext(character, context)
   const { activeEffects } = Effects.evaluateEffects(getAllEffects(character, context), Effects.GainAbility, expressionContext)
-  return activeEffects.map((it) => Abilities.buildAbilityState(it.ability))
+  return activeEffects.map((it) => Abilities.buildInitialState(it.ability, context))
 }
 
 export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {

@@ -20,13 +20,15 @@ export interface ExpressionReference<ReturnType, ArgumentType extends Array<unkn
 
 export interface ReducingExpression<ReturnType, ArgumentType> extends ExpressionReference<ReturnType, [Array<Expression<ArgumentType>>]> {}
 
-export type ExpressionDefinition<ReturnType, ArgumentType extends Array<unknown>, ExpressionType extends IExpression<ReturnType>> = ExpressionReference<
+export type EvaluateExpression = <T>(expression: Expression<T>) => T
+
+export type ExpressionDefinition<ReturnType, ArgumentType extends Array<unknown>, ExpressionType extends Expression<ReturnType>> = ExpressionReference<
   ReturnType,
   ArgumentType
 > & {
   expressionKey: ExpressionKey<ReturnType, ArgumentType>
   builder: (...parameters: ArgumentType) => ExpressionType
-  resolver: (expression: ExpressionType, evaluate: <T>(expression: Expression<T>) => T, context: ExpressionContext) => ReturnType
+  resolver: (expression: ExpressionType, evaluate: EvaluateExpression, context: ExpressionContext) => ReturnType
 }
 
 export interface ExpressionVariable<T> extends IExpression<T> {

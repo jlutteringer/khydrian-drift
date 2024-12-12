@@ -30,7 +30,7 @@ export const SubstringExpression = defineExpression({
   builder: (string: Expression<string>, substring: Expression<string>) => {
     return { string, substring }
   },
-  resolver: (): string => {
+  resolver: (): boolean => {
     throw new Error('Not yet implemented')
   },
 })

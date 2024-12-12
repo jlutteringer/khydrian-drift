@@ -2,7 +2,7 @@ import { LoadoutTypeReference } from '@simulacrum/common/loadout'
 import { Expression } from '@simulacrum/util/expression'
 import { Effect } from '@simulacrum/common/effect'
 import { Referencable, Reference } from '@simulacrum/util/reference'
-import { Arrays, References } from '@simulacrum/util'
+import { Preconditions, References } from '@simulacrum/util'
 import { ApplicationContext } from '@simulacrum/common/context'
 import { ResourceCost } from '@simulacrum/common/resource-pool'
 
@@ -32,7 +32,6 @@ export type AbilityAction = {
   description: string | null
 
   action: ActionType
-
   costs: Array<ResourceCost>
 }
 
@@ -56,7 +55,7 @@ export type AbilityProps = {
 }
 
 export type AbilityState = {
-  ability: AbilityReference
+  ability: Ability
 }
 
 export const defineAbility = (reference: AbilityReference | string, props: AbilityProps): Ability => {
@@ -77,8 +76,14 @@ export const defineAbility = (reference: AbilityReference | string, props: Abili
   }
 }
 
+export const getAbility = (reference: AbilityReference, context: ApplicationContext): Ability => {
+  const ability = context.ruleset.abilities.find((it) => References.equals(it.reference, reference))
+  Preconditions.isPresent(ability)
+  return ability
+}
+
 export const getAbilities = (abilities: Array<AbilityReference>, context: ApplicationContext): Array<Ability> => {
-  return context.ruleset.abilities.filter((ability) => Arrays.contains(abilities, ability.reference))
+  return abilities.map((it) => getAbility(it, context))
 }
 
 export const getEffectsForAbility = (ability: Ability): Array<Effect> => {
@@ -88,8 +93,7 @@ export const getEffectsForAbility = (ability: Ability): Array<Effect> => {
   })
 }
 
-export const buildAbilityState = (ability: AbilityReference): AbilityState => {
-  return {
-    ability,
-  }
+// JOHN
+export const buildInitialState = (ability: AbilityReference, context: ApplicationContext): AbilityState => {
+  return { ability: getAbility(ability, context) }
 }

@@ -1,6 +1,10 @@
 import { Lazy, Objects } from '@simulacrum/util/index'
 import { LazyValue } from '@simulacrum/util/lazy'
 
+export const isUnreachable = (message: LazyValue<string> = 'Preconditions.isUnreachable was reached') => {
+  throw new Error(Lazy.evaluate(message))
+}
+
 export const isTrue = (value: boolean, message: LazyValue<string> = 'Preconditions.isTrue failed validation') => {
   if (!value) {
     throw new Error(Lazy.evaluate(message))

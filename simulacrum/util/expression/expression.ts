@@ -1,21 +1,37 @@
 import {
+  EvaluateExpression,
   Expression,
   ExpressionContext,
   ExpressionDefinition,
   ExpressionReference,
   ExpressionVariable,
-  IExpression,
   NumericExpressions,
   ParameterizedVariable,
   StringExpressions,
 } from '@simulacrum/util/expression/index'
-import { ExpressionEvaluator } from '@simulacrum/util/expression/expression-evaluator'
 import { Arrays, Objects, Preconditions, Signatures } from '@simulacrum/util'
 import { Signable } from '@simulacrum/util/signature'
 import { defineExpression } from '@simulacrum/util/expression/internal'
+import { ExpressionEvaluator } from '@simulacrum/util/expression/expression-evaluator'
 
 export const evaluate = <T>(expression: Expression<T>, context: ExpressionContext): T => {
   return new ExpressionEvaluator(DEFAULT_EXPRESSION_DEFINITIONS).evaluate(expression, context)
+}
+
+export const evaluateDefault = <T>(expression: Expression<T>): T => {
+  return evaluate(expression, defaultContext())
+}
+
+export const evaluator = (context: ExpressionContext): EvaluateExpression => {
+  return (it) => evaluate(it, context)
+}
+
+export const defaultEvaluator = (): EvaluateExpression => {
+  return evaluator(defaultContext())
+}
+
+export const defaultContext = (): ExpressionContext => {
+  return { variables: {} }
 }
 
 export const dereference = <ReturnType, ArgumentType extends Array<unknown>>(
@@ -38,8 +54,8 @@ export const buildVariable = <T>(variable: ExpressionVariable<T>, value: T): Rec
   return { [variable.name]: value }
 }
 
-export const reference = <ReturnType, ArgumentType extends Array<unknown>>(
-  expressionDefinition: ExpressionDefinition<ReturnType, ArgumentType, IExpression<ReturnType>>
+export const reference = <ReturnType, ArgumentType extends Array<unknown>, ExpressionType extends Expression<ReturnType>>(
+  expressionDefinition: ExpressionDefinition<ReturnType, ArgumentType, ExpressionType>
 ): ExpressionReference<ReturnType, ArgumentType> => {
   return { expressionKey: expressionDefinition.expressionKey }
 }
@@ -84,7 +100,7 @@ export const not = NotExpression.builder
 
 export const AndExpression = defineExpression({
   expressionKey: 'And',
-  builder: (operands: Array<Expression<Signable>>) => {
+  builder: (operands: Array<Expression<boolean>>) => {
     return { operands }
   },
   resolver: (expression, evaluate) => {
@@ -98,7 +114,7 @@ export const and = AndExpression.builder
 
 export const OrExpression = defineExpression({
   expressionKey: 'Or',
-  builder: (operands: Array<Expression<Signable>>) => {
+  builder: (operands: Array<Expression<boolean>>) => {
     return { operands }
   },
   resolver: (expression, evaluate) => {
@@ -143,7 +159,20 @@ export const ContainsExpression = defineExpression({
 
 export const contains = ContainsExpression.builder
 
-const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<any>, IExpression<any>>> = [
+export const MergeExpression = defineExpression({
+  expressionKey: 'Merge',
+  builder: (operands: Array<Array<Expression<unknown>>>) => {
+    return { operands }
+  },
+  resolver: (expression, evaluate) => {
+    const values = expression.operands.map((it) => evaluate(it))
+    return Objects.mergeAll(values)
+  },
+})
+
+export const merge = MergeExpression.builder
+
+const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<any>, Expression<any>>> = [
   ValueExpression,
   VariableExpression,
   AndExpression,

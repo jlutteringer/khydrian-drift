@@ -2,7 +2,7 @@ import { Expression, ExpressionContext, ExpressionDefinition, ExpressionReferenc
 import { Objects, Preconditions } from '@simulacrum/util'
 
 export class ExpressionEvaluator {
-  constructor(private readonly expressionDefinitions: Array<ExpressionDefinition<unknown, Array<any>, IExpression<any>>>) {}
+  constructor(private readonly expressionDefinitions: Array<ExpressionDefinition<unknown, Array<any>, Expression<any>>>) {}
 
   evaluate<T>(expression: Expression<T>, context: ExpressionContext): T {
     if (isValue(expression)) {
@@ -11,7 +11,7 @@ export class ExpressionEvaluator {
 
     const matchingExpressionDefinition = this.expressionDefinitions.find((it) => it.expressionKey === expression.expressionKey)
     Preconditions.isPresent(matchingExpressionDefinition)
-    return matchingExpressionDefinition.resolver(expression as any, (expression) => this.evaluate(expression, context), context) as T
+    return matchingExpressionDefinition.resolver(expression, (expression) => this.evaluate(expression, context), context) as T
   }
 
   dereference<ReturnType, ArgumentType extends Array<unknown>>(

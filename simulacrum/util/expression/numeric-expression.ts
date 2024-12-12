@@ -1,11 +1,19 @@
 import { Expression } from '@simulacrum/util/expression/index'
 import { RoundingMode } from '@simulacrum/util/math'
 import { Maths, Objects } from '@simulacrum/util'
-import { defineExpression } from '@simulacrum/util/expression/internal'
+import { defineExpression, isType } from '@simulacrum/util/expression/internal'
 
 export const SumExpression = defineExpression({
   expressionKey: 'Sum',
-  builder: (operands: Array<Expression<number>>) => {
+  builder: (initialOperands: Array<Expression<number>>) => {
+    const operands: Array<Expression<number>> = initialOperands.flatMap((it) => {
+      if (isType(it, SumExpression)) {
+        return it.operands
+      } else {
+        return [it]
+      }
+    })
+
     return { operands }
   },
   resolver: ({ operands }, evaluate) => {
@@ -18,7 +26,15 @@ export const sum = SumExpression.builder
 
 export const MultiplyExpression = defineExpression({
   expressionKey: 'Multiply',
-  builder: (operands: Array<Expression<number>>) => {
+  builder: (initialOperands: Array<Expression<number>>) => {
+    const operands: Array<Expression<number>> = initialOperands.flatMap((it) => {
+      if (isType(it, MultiplyExpression)) {
+        return it.operands
+      } else {
+        return [it]
+      }
+    })
+
     return { operands }
   },
   resolver: ({ operands }, evaluate) => {

@@ -1,4 +1,6 @@
 import {
+  clone as _clone,
+  cloneDeep as _cloneDeep,
   invert as _invert,
   isEqual as _isEqual,
   isNil as _isNil,
@@ -7,6 +9,7 @@ import {
   isUndefined as _isUndefined,
   mapValues as _mapValues,
   merge as unsafeMerge,
+  mergeWith as unsafeMergeWith,
 } from 'lodash-es'
 import { produce } from 'immer'
 import { Arrays, Preconditions } from '@simulacrum/util/index'
@@ -24,6 +27,9 @@ export const deepEqual = _isEqual
 export const invert = _invert
 export const mapValues = _mapValues
 
+export const clone = _clone
+export const cloneDeep = _cloneDeep
+
 export const mergeAll = <T>(objects: Array<T>): T => {
   return objects.reduce((x, y) => merge(x, y))
 }
@@ -34,6 +40,11 @@ export const merge = <Source1, Source2>(obj1: Source1, obj2: Source2): Source1 &
 
 export function mergeInto<Source1, Source2>(source: Source1, values: Source2): asserts source is Source1 & Source2 {
   unsafeMerge(source, values)
+}
+
+export const mergeWith: typeof unsafeMergeWith = (...args: Array<any>) => {
+  const clone = cloneDeep(args[0])
+  return unsafeMergeWith.apply(null, [clone, ...Arrays.rest(args)])
 }
 
 export const isPromise = <T>(element: T | Promise<T>): element is Promise<T> => {
