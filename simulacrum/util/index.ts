@@ -12,6 +12,7 @@ import * as Signatures from './signature'
 import * as Eithers from './either'
 import * as Lazy from './lazy'
 import * as Patches from './patch'
+import * as Combinables from './combinable'
 import * as Misc from './misc'
 
-export { Objects, Functions, Arrays, Strings, Maths, Comparators, Equalitors, Preconditions, References, Signatures, Eithers, Lazy, Patches, Misc }
+export { Objects, Functions, Arrays, Strings, Maths, Comparators, Equalitors, Preconditions, References, Signatures, Eithers, Lazy, Patches, Combinables, Misc }

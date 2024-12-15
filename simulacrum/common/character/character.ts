@@ -1,4 +1,4 @@
-import { Abilities, Attributes, Effects, ProgressionTables, Traits } from '@simulacrum/common'
+import { Abilities, Characteristics, Effects, ProgressionTables, Traits } from '@simulacrum/common'
 import { TraitReference } from '@simulacrum/common/trait'
 import { ExpressionContext, Expressions, ExpressionVariable } from '@simulacrum/util/expression'
 import { ApplicationContext } from '@simulacrum/common/context'
@@ -7,24 +7,27 @@ import { Effect } from '@simulacrum/common/effect'
 import { CharacterChoice, CharacterSelection, EvaluateCharacterOptionsResult } from '@simulacrum/common/character/character-option'
 import { CharacterOptions } from '@simulacrum/common/character/index'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
-import { Attribute, AttributeValue } from '@simulacrum/common/attribute'
 import { AbilityReference, AbilityState } from '@simulacrum/common/ability'
+import { GenericRecord } from '@simulacrum/util/types'
+import { Characteristic, CharacteristicValue } from '@simulacrum/common/characteristic'
 
 export namespace CharacterValues {
   export const Level: ExpressionVariable<number> = Expressions.variable('Level')
   export const Traits: ExpressionVariable<Array<TraitReference>> = Expressions.variable('Traits')
 }
 
+export type CharacterInitialValues = GenericRecord
+
 export type CharacterRecord = {
   name: string
   level: number
-  initialValues: Record<string, unknown>
+  initialValues: CharacterInitialValues
   selections: ProgressionTable<CharacterSelection>
   selectedAbilities: Array<AbilityReference>
 }
 
 export type CharacterSheet = CharacterRecord & {
-  attributes: Record<string, AttributeValue<unknown>>
+  characteristics: Record<string, CharacteristicValue<unknown>>
   traits: ProgressionTable<TraitReference>
   choices: ProgressionTable<CharacterChoice>
   abilities: Array<AbilityState>
@@ -86,9 +89,9 @@ const getCharacterChoiceTable = (character: CharacterState, context: Application
   const selectedTraits = ProgressionTables.getValues(character.traits)
   const expressionContext = buildExpressionContext(character, context)
   const characterOptionTable = ProgressionTables.mapRows(getProgressionEffects(character, context), (effects, level) => {
-    const { activeEffects } = Effects.evaluateEffects(effects, Effects.GainCharacterOption, expressionContext)
+    const gainCharacterOptionEffects = Effects.filter(effects, Effects.GainCharacterOption)
 
-    return activeEffects
+    return gainCharacterOptionEffects
       .map((it) => it.option)
       .filter((option) => {
         // JOHN this logic will not work for options duplicated at the same level
@@ -145,14 +148,14 @@ const buildCharacterState = (character: CharacterRecord, context: ApplicationCon
         characterState = { ...previous }
       }
 
-      characterState.attributes = evaluateCharacterAttributes(characterState, context)
+      characterState.characteristics = evaluateCharacteristics(characterState, context)
       characterState.abilities = evaluateCharacterAbilities(characterState, context)
       // characterState.resources = evaluateResourcePools(characterState, context)
       return characterState
     },
     (first, second) => {
-      return Arrays.equalWith(Object.values(first.attributes), Object.values(second.attributes), (first, second) => {
-        if (!References.equals(first.attribute, second.attribute)) {
+      return Arrays.equalWith(Object.values(first.characteristics), Object.values(second.characteristics), (first, second) => {
+        if (!References.equals(first.characteristic, second.characteristic)) {
           return false
         }
 
@@ -167,7 +170,7 @@ const buildCharacterState = (character: CharacterRecord, context: ApplicationCon
 const buildInitialCharacterState = (character: CharacterRecord, context: ApplicationContext): CharacterState => {
   return {
     ...character,
-    attributes: buildInitialCharacterAttributes(context),
+    characteristics: buildInitialCharacteristics(character, context),
     traits: [],
     choices: ProgressionTables.empty(character.level),
     abilities: [],
@@ -179,53 +182,58 @@ const getCharacterTraits = (character: CharacterRecord, context: ApplicationCont
   return ProgressionTables.map(character.selections, (it) => it.selection)
 }
 
-const buildInitialCharacterAttributes = (context: ApplicationContext): Record<string, AttributeValue<unknown>> => {
-  const characterAttributes = Object.values(context.ruleset.characterAttributes)
+const buildInitialCharacteristics = (character: CharacterRecord, context: ApplicationContext): Record<string, CharacteristicValue<unknown>> => {
+  const characterAttributes = Object.values(context.ruleset.playerCharacteristics)
 
-  const attributeValues = characterAttributes.map((initialAttibute) => {
-    // TODO we don't support non-numeric attributes... not sure if we even should...
-    const attribute = initialAttibute as Attribute<number>
-    const attributeValue = Attributes.baseValue(0, attribute)
+  const characteristicValues = characterAttributes.map((initialCharacteristic) => {
+    // TODO we don't support non-numeric characteristics... not sure if we even should...
+    const characteristic = initialCharacteristic as Characteristic<number>
+    const attributeValue = Characteristics.simpleValue(0, characteristic, character.initialValues)
     const record = {}
-    Objects.parsePath(attribute.path).applyValue(record, attributeValue)
+    Objects.parsePath(characteristic.path).applyValue(record, attributeValue)
     return record
   })
 
-  return Objects.mergeAll(attributeValues)
+  return Objects.mergeAll(characteristicValues)
 }
 
-const evaluateCharacterAttributes = (character: CharacterState, context: ApplicationContext): Record<string, AttributeValue<unknown>> => {
+const evaluateCharacteristics = (character: CharacterState, context: ApplicationContext): Record<string, CharacteristicValue<unknown>> => {
   const effects = getAllEffects(character, context)
   const expressionContext = buildExpressionContext(character, context)
-  const characterAttributes = Object.values(context.ruleset.characterAttributes)
+  const characterAttributes = Object.values(context.ruleset.playerCharacteristics)
 
-  const attributeValues = characterAttributes.map((initialAttibute) => {
-    // TODO we don't support non-numeric attributes... not sure if we even should...
-    const attribute = initialAttibute as Attribute<number>
-    const attributeValue = Effects.evaluateAttribute(attribute, effects, character.initialValues, expressionContext)
+  const characteristicValues = characterAttributes.map((initialCharacteristic) => {
+    // TODO we don't support non-numeric characteristics... not sure if we even should...
+    const characteristic = initialCharacteristic as Characteristic<number>
+    const characteristicValue = Characteristics.evaluateCharacteristic(
+      characteristic,
+      character.initialValues,
+      effects,
+      Expressions.evaluator(expressionContext)
+    )
+
     const record = {}
-    Objects.parsePath(attribute.path).applyValue(record, attributeValue)
+    Objects.parsePath(characteristic.path).applyValue(record, characteristicValue)
     return record
   })
 
-  return Objects.mergeAll(attributeValues)
+  return Objects.mergeAll(characteristicValues)
 }
 
 const evaluateCharacterAbilities = (character: CharacterState, context: ApplicationContext): Array<AbilityState> => {
-  const expressionContext = buildExpressionContext(character, context)
-  const { activeEffects } = Effects.evaluateEffects(getAllEffects(character, context), Effects.GainAbility, expressionContext)
-  return activeEffects.map((it) => Abilities.buildInitialState(it.ability, context))
+  const gainAbilityEffects = Effects.filter(getAllEffects(character, context), Effects.GainAbility)
+  return gainAbilityEffects.map((it) => Abilities.buildInitialState(it.ability, context))
 }
 
 export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {
-  const characterAttributes = context.ruleset.characterAttributes
+  const characterAttributes = context.ruleset.playerCharacteristics
   const attributeVariables = characterAttributes.map((it) => {
-    const attribute = Objects.parsePath(it.path).getValue(character.attributes)
-    Preconditions.isPresent(attribute)
-    return Expressions.buildVariable(it.variable, attribute.value)
+    const characteristic = Objects.parsePath(it.path).getValue(character.characteristics)
+    Preconditions.isPresent(characteristic)
+    return Expressions.buildVariable(it.variable, characteristic.value)
   })
 
-  const variables: Record<string, unknown> = {
+  const variables: GenericRecord = {
     ...Expressions.buildVariable(CharacterValues.Level, character.level),
     ...Expressions.buildVariable(CharacterValues.Traits, ProgressionTables.getValues(character.traits)),
     ...Objects.mergeAll(attributeVariables),

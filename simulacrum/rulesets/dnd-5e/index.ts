@@ -26,7 +26,7 @@ import { Rogue } from '@simulacrum/rulesets/dnd-5e/class/class-rogue'
 import { Sorcerer } from '@simulacrum/rulesets/dnd-5e/class/class-sorcerer'
 import { Warlock } from '@simulacrum/rulesets/dnd-5e/class/class-warlock'
 import { Wizard } from '@simulacrum/rulesets/dnd-5e/class/class-wizard'
-import { CharacterAttributes, CreatureAttributes } from '@simulacrum/rulesets/dnd-5e/attributes'
+import { CreatureCharacteristics, PlayerCharacteristics } from '@simulacrum/rulesets/dnd-5e/characteristic'
 import { Dash, Disengage, Dodge, HealingSurge } from '@simulacrum/rulesets/dnd-5e/common'
 
 export const SelectClassLevel = CharacterOptions.selectTraitOption('afbef236-17a0-464f-b2d0-cb01ecf7931a', { archetypes: [Class] })
@@ -34,8 +34,8 @@ export const SelectClassLevel = CharacterOptions.selectTraitOption('afbef236-17a
 export const Dnd5e: Ruleset = {
   reference: References.reference('ca894259-d62d-4398-b417-cb4f0adf4ffe', 'Ruleset', 'Dungeons and Dragons 5e'),
   name: 'Dungeons and Dragons 5e',
-  creatureAttributes: Object.values(CreatureAttributes),
-  characterAttributes: Object.values(CharacterAttributes),
+  creatureCharacteristics: Object.values(CreatureCharacteristics),
+  playerCharacteristics: Object.values(PlayerCharacteristics),
   traits: [
     Barbarian,
     Bard,

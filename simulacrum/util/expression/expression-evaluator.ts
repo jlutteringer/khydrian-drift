@@ -19,7 +19,7 @@ export class ExpressionEvaluator {
     ...args: ArgumentType
   ): Expression<ReturnType> {
     const matchingExpressionDefinition = this.expressionDefinitions.find((it) => it.expressionKey === reference.expressionKey)
-    Preconditions.isPresent(matchingExpressionDefinition)
+    Preconditions.isPresent(matchingExpressionDefinition, () => `Unable to find Expression Definition for type: ${reference.expressionKey}`)
     return matchingExpressionDefinition.builder(...args)
   }
 }

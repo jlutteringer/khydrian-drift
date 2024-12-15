@@ -1,18 +1,19 @@
-import { Effects, Traits } from '@simulacrum/common'
+import { Attributes, Effects, Traits } from '@simulacrum/common'
 import { Expressions, NumericExpressions } from '@simulacrum/util/expression'
 import { BasicCombatTraining } from '@simulacrum/rulesets/khydrian-drift/archetype/archetype-combat'
 import { AdvancedHardpointLoadoutSlot, GeneralLoadoutSlot } from '@simulacrum/rulesets/khydrian-drift/loadout'
 import { TacticPoints } from '@simulacrum/rulesets/khydrian-drift/resource-pool'
 import { Class } from '@simulacrum/rulesets/khydrian-drift/archetype'
-import { CharacterAttributes } from '@simulacrum/rulesets/khydrian-drift/attributes'
 import { CharacterValues } from '@simulacrum/common/character/character'
+import { PlayerCharacteristics } from '@simulacrum/rulesets/khydrian-drift/characteristic'
+import { Patches } from '@simulacrum/util'
 
 export const Commando = Traits.defineTrait('e0b5ad7e-6e8b-4416-8a7c-41bab05993d3', {
   name: 'Commando',
   description: '',
   archetypes: [Class],
   effects: [
-    Effects.modifyAttribute(CharacterAttributes.VitalityPool, NumericExpressions.multiply([CharacterValues.Level, 2])),
+    Effects.modifyCharacteristic(PlayerCharacteristics.VitalityPool, Attributes.modifier(Patches.sum(NumericExpressions.multiply([CharacterValues.Level, 2])))),
     Effects.gainTrait(BasicCombatTraining),
     Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
     Effects.modifyLoadoutSlotQuantity(AdvancedHardpointLoadoutSlot, 1),
@@ -37,14 +38,19 @@ export const Momentum = Traits.defineTrait('7a3e377a-f2d4-41ce-b7f2-866538a517ce
   name: 'Momentum',
   description: '',
   prerequisites: [Traits.traitPrerequisite(Commando)],
-  effects: [Effects.modifyAttribute(CharacterAttributes.MovementSpeed, NumericExpressions.floor(CharacterAttributes.Agility.variable, 1))],
+  effects: [
+    Effects.modifyCharacteristic(
+      PlayerCharacteristics.MovementSpeed,
+      Attributes.modifier(Patches.sum(NumericExpressions.floor(PlayerCharacteristics.Agility.variable, 1)))
+    ),
+  ],
 })
 
 export const BaselineQuickGuy = Traits.defineTrait('asdasdaSDasdasDasdasDd', {
   name: 'BaselineQuickGuy',
   description: '',
   prerequisites: [Traits.traitPrerequisite(Commando)],
-  effects: [Effects.assignAttribute(CharacterAttributes.MovementSpeed, 6, NumericExpressions.lessThan(CharacterAttributes.MovementSpeed.variable, 6))],
+  effects: [Effects.modifyCharacteristic(PlayerCharacteristics.MovementSpeed, Attributes.modifier(Patches.set(6)))],
 })
 
 export const Officer = Traits.reference('cf3df79a-c906-49c5-8756-ee14bd4b26a5', 'Officer')

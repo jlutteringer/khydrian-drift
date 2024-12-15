@@ -14,6 +14,7 @@ import { Arrays, Objects, Preconditions, Signatures } from '@simulacrum/util'
 import { Signable } from '@simulacrum/util/signature'
 import { defineExpression } from '@simulacrum/util/expression/internal'
 import { ExpressionEvaluator } from '@simulacrum/util/expression/expression-evaluator'
+import { GenericRecord } from '@simulacrum/util/types'
 
 export const evaluate = <T>(expression: Expression<T>, context: ExpressionContext): T => {
   return new ExpressionEvaluator(DEFAULT_EXPRESSION_DEFINITIONS).evaluate(expression, context)
@@ -51,7 +52,7 @@ export const parameterizedVariable = <ValueType, ParameterType extends Array<Sig
   }
 }
 
-export const buildVariable = <T>(variable: ExpressionVariable<T>, value: T): Record<string, unknown> => {
+export const buildVariable = <T>(variable: ExpressionVariable<T>, value: T): GenericRecord => {
   return { [variable.name]: value }
 }
 
@@ -175,6 +176,8 @@ const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<
   NumericExpressions.CeilingExpression,
   NumericExpressions.BoundsExpression,
   NumericExpressions.RoundExpression,
+  NumericExpressions.MaxExpression,
+  NumericExpressions.MinExpression,
   StringExpressions.ConcatenateExpression,
   StringExpressions.SubstringExpression,
   StringExpressions.UppercaseExpression,

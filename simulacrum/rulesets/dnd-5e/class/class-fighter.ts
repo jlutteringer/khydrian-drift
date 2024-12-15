@@ -1,12 +1,13 @@
-import { Abilities, Archetypes, Effects, Traits } from '@simulacrum/common'
+import { Abilities, Archetypes, Attributes, Effects, Traits } from '@simulacrum/common'
 import { Class } from '@simulacrum/rulesets/dnd-5e/archetype'
 import { Expressions } from '@simulacrum/util/expression'
 import { SelectFightingStyle } from '@simulacrum/rulesets/dnd-5e/archetype/fighting-style'
 import { CharacterOptions } from '@simulacrum/common/character'
-import { CharacterAttributes } from '@simulacrum/rulesets/dnd-5e/attributes'
+import { PlayerCharacteristics } from '@simulacrum/rulesets/dnd-5e/characteristic'
 import { CharacterValues } from '@simulacrum/common/character/character'
 import { ActionType } from '@simulacrum/common/ability'
 import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
+import { Patches } from '@simulacrum/util'
 
 export const SecondWind = Abilities.defineAbility('5783fc7f-7915-40c7-8a51-8406e4b82bf2', {
   name: 'Second Wind',
@@ -43,7 +44,7 @@ export const Fighter = Traits.defineTrait('143dad4d-9496-4a73-927c-c77c6b008282'
   description: '',
   archetypes: [Class],
   effects: [
-    Effects.modifyAttribute(CharacterAttributes.HitPoints, 10),
+    Effects.modifyCharacteristic(PlayerCharacteristics.HitPoints, Attributes.modifier(Patches.sum(10))),
     Effects.gainCharacterOption(SelectFightingStyle),
     Effects.descriptive('Weapon Mastery!'),
     Effects.gainAbility(SecondWind),
@@ -79,7 +80,11 @@ export const Fighter2 = Traits.defineTrait('da3e0304-f824-4231-9329-05c8889aa0cd
   description: '',
   prerequisites: [Expressions.contains(CharacterValues.Traits, [Fighter.reference])],
   archetypes: [Class],
-  effects: [Effects.modifyAttribute(CharacterAttributes.HitPoints, 6), Effects.gainAbility(ActionSurge), Effects.descriptive('Tactical Mind')],
+  effects: [
+    Effects.modifyCharacteristic(PlayerCharacteristics.HitPoints, Attributes.modifier(Patches.sum(6))),
+    Effects.gainAbility(ActionSurge),
+    Effects.descriptive('Tactical Mind'),
+  ],
 })
 
 export const FighterSubclass = Archetypes.defineArchetype('5a40dddd-84a9-4de3-ae23-575f85e265cb', { name: 'Fighter Subclass' })
@@ -90,7 +95,10 @@ export const Fighter3 = Traits.defineTrait('a9fb4e9c-78b6-4067-b4f6-db6e831c53dc
   description: '',
   prerequisites: [Expressions.contains(CharacterValues.Traits, [Fighter2.reference])],
   archetypes: [Class],
-  effects: [Effects.modifyAttribute(CharacterAttributes.HitPoints, 6), Effects.gainCharacterOption(SelectFighterSubclass)],
+  effects: [
+    Effects.modifyCharacteristic(PlayerCharacteristics.HitPoints, Attributes.modifier(Patches.sum(6))),
+    Effects.gainCharacterOption(SelectFighterSubclass),
+  ],
 })
 
 export const BattleMaster = Traits.defineTrait('c2cfc67d-e22d-4343-9806-00dc1427e6a2', {

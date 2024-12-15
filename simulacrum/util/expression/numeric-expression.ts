@@ -4,7 +4,7 @@ import { Maths, Objects } from '@simulacrum/util'
 import { defineExpression, isType } from '@simulacrum/util/expression/internal'
 
 export const SumExpression = defineExpression({
-  expressionKey: 'Sum',
+  expressionKey: 'Numeric.Sum',
   builder: (initialOperands: Array<Expression<number>>) => {
     const operands: Array<Expression<number>> = initialOperands.flatMap((it) => {
       if (isType(it, SumExpression)) {
@@ -25,7 +25,7 @@ export const SumExpression = defineExpression({
 export const sum = SumExpression.builder
 
 export const MultiplyExpression = defineExpression({
-  expressionKey: 'Multiply',
+  expressionKey: 'Numeric.Multiply',
   builder: (initialOperands: Array<Expression<number>>) => {
     const operands: Array<Expression<number>> = initialOperands.flatMap((it) => {
       if (isType(it, MultiplyExpression)) {
@@ -46,7 +46,7 @@ export const MultiplyExpression = defineExpression({
 export const multiply = MultiplyExpression.builder
 
 export const LessThanExpression = defineExpression({
-  expressionKey: 'LessThan',
+  expressionKey: 'Numeric.LessThan',
   builder: (left: Expression<number>, right: Expression<number>) => {
     return { left, right }
   },
@@ -58,7 +58,7 @@ export const LessThanExpression = defineExpression({
 export const lessThan = LessThanExpression.builder
 
 export const GreaterThanExpression = defineExpression({
-  expressionKey: 'GreaterThan',
+  expressionKey: 'Numeric.GreaterThan',
   builder: (left: Expression<number>, right: Expression<number>) => {
     return { left, right }
   },
@@ -70,7 +70,7 @@ export const GreaterThanExpression = defineExpression({
 export const greaterThan = GreaterThanExpression.builder
 
 export const BoundsExpression = defineExpression({
-  expressionKey: 'Bounds',
+  expressionKey: 'Numeric.Bounds',
   builder: (value: Expression<number>, minimumThreshold: Expression<number> | null, maximumThreshold: Expression<number> | null) => {
     return { value, minimumThreshold, maximumThreshold }
   },
@@ -92,7 +92,7 @@ export const BoundsExpression = defineExpression({
 export const bounds = BoundsExpression.builder
 
 export const FloorExpression = defineExpression({
-  expressionKey: 'Floor',
+  expressionKey: 'Numeric.Floor',
   builder: (value: Expression<number>, minimumThreshold: Expression<number> | null) => {
     return { value, minimumThreshold }
   },
@@ -110,7 +110,7 @@ export const FloorExpression = defineExpression({
 export const floor = FloorExpression.builder
 
 export const CeilingExpression = defineExpression({
-  expressionKey: 'Ceiling',
+  expressionKey: 'Numeric.Ceiling',
   builder: (value: Expression<number>, maximumThreshold: Expression<number> | null) => {
     return { value, maximumThreshold }
   },
@@ -128,7 +128,7 @@ export const CeilingExpression = defineExpression({
 export const ceiling = CeilingExpression.builder
 
 export const RoundExpression = defineExpression({
-  expressionKey: 'Round',
+  expressionKey: 'Numeric.Round',
   builder: (value: Expression<number>, scale: number, roundingMode: RoundingMode) => {
     return { value, scale, roundingMode }
   },
@@ -138,3 +138,45 @@ export const RoundExpression = defineExpression({
 })
 
 export const round = RoundExpression.builder
+
+export const MinExpression = defineExpression({
+  expressionKey: 'Numeric.Min',
+  builder: (initialOperands: Array<Expression<number>>) => {
+    const operands: Array<Expression<number>> = initialOperands.flatMap((it) => {
+      if (isType(it, MinExpression)) {
+        return it.operands
+      } else {
+        return [it]
+      }
+    })
+
+    return { operands }
+  },
+  resolver: ({ operands }, evaluate) => {
+    const values = operands.map((it) => evaluate(it))
+    return Math.min(...values)
+  },
+})
+
+export const min = MinExpression.builder
+
+export const MaxExpression = defineExpression({
+  expressionKey: 'Numeric.Max',
+  builder: (initialOperands: Array<Expression<number>>) => {
+    const operands: Array<Expression<number>> = initialOperands.flatMap((it) => {
+      if (isType(it, MaxExpression)) {
+        return it.operands
+      } else {
+        return [it]
+      }
+    })
+
+    return { operands }
+  },
+  resolver: ({ operands }, evaluate) => {
+    const values = operands.map((it) => evaluate(it))
+    return Math.max(...values)
+  },
+})
+
+export const max = MaxExpression.builder

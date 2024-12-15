@@ -13,6 +13,7 @@ import {
 } from 'lodash-es'
 import { produce } from 'immer'
 import { Arrays, Preconditions } from '@simulacrum/util/index'
+import { GenericRecord } from '@simulacrum/util/types'
 
 export const update = produce
 
@@ -58,11 +59,11 @@ export const parsePath = (path: string): ObjectPath => {
 
 export type ObjectDiffResult = {
   elementsUpdated: Record<string, { originalValue: unknown; updatedValue: unknown }>
-  elementsAdded: Record<string, unknown>
-  elementsRemoved: Record<string, unknown>
+  elementsAdded: GenericRecord
+  elementsRemoved: GenericRecord
 }
 
-export function diffShallow(original: Record<string, unknown>, updated: Record<string, unknown>): ObjectDiffResult {
+export function diffShallow(original: GenericRecord, updated: GenericRecord): ObjectDiffResult {
   const result: ObjectDiffResult = {
     elementsUpdated: {},
     elementsAdded: {},

@@ -1,7 +1,8 @@
 import { EvaluateExpression, Expression, ExpressionContext, ExpressionDefinition, ExpressionKey, IExpression } from '@simulacrum/util/expression/index'
 import { Objects } from '@simulacrum/util'
+import { GenericRecord } from '@simulacrum/util/types'
 
-export const defineExpression = <ReturnType, ArgumentType extends Array<unknown>, PayloadType extends Record<string, unknown>>(options: {
+export const defineExpression = <ReturnType, ArgumentType extends Array<unknown>, PayloadType extends GenericRecord>(options: {
   expressionKey: ExpressionKey<ReturnType, ArgumentType>
   builder: (...parameters: ArgumentType) => PayloadType
   resolver: (expression: PayloadType, evaluate: EvaluateExpression, context: ExpressionContext) => ReturnType

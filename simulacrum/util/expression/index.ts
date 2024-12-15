@@ -3,17 +3,17 @@ import * as StringExpressions from '@simulacrum/util/expression/string-expressio
 import * as ArrayExpressions from '@simulacrum/util/expression/array-expression'
 import * as Expressions from '@simulacrum/util/expression/expression'
 import { Signable } from '@simulacrum/util/signature'
-import { NominalType } from '@simulacrum/util/types'
+import { GenericRecord, NominalType } from '@simulacrum/util/types'
 
 export { Expressions, NumericExpressions, StringExpressions, ArrayExpressions }
 
 export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = NominalType<string, ['ExpressionKey', ReturnType, ArgumentType]>
 
+export type Expression<ReturnType> = ReturnType | IExpression<ReturnType>
+
 export interface IExpression<ReturnType> {
   expressionKey: ExpressionKey<ReturnType, Array<unknown>>
 }
-
-export type Expression<ReturnType> = ReturnType | IExpression<ReturnType>
 
 export interface ExpressionReference<ReturnType, ArgumentType extends Array<unknown>> {
   expressionKey: ExpressionKey<ReturnType, ArgumentType>
@@ -42,5 +42,5 @@ export interface ParameterizedVariable<ValueType, ParameterType extends Array<Si
 }
 
 export type ExpressionContext = {
-  variables: Record<string, unknown>
+  variables: GenericRecord
 }
