@@ -31,7 +31,7 @@ export const SoldiersStamina = Traits.defineTrait('41c63a82-3304-44b2-8f0b-b0d2e
   name: "Soldier's Stamina",
   description: '',
   prerequisites: [Traits.traitPrerequisite(Commando)],
-  effects: [Effects.modifyHealingSurgeQuantity(2)],
+  effects: [Effects.descriptive('Gain healing surges...')],
 })
 
 export const Momentum = Traits.defineTrait('7a3e377a-f2d4-41ce-b7f2-866538a517ce', {
@@ -69,7 +69,7 @@ export const AdvancedOperations = Traits.defineTrait('cf015d5a-f427-4eea-9798-ca
   prerequisites: [Traits.traitPrerequisite(Commando), Traits.traitPrerequisite(Officer)],
   effects: [
     // JOHN this solution doesn't work - its supposed to add 2 not set 2
-    Effects.modifyResourcePool({ resource: TacticPoints.reference, size: 2 }),
+    // Effects.modifyResourcePool({ resource: TacticPoints.reference, size: 2 }),
     Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
   ],
 })

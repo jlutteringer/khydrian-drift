@@ -182,4 +182,5 @@ const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<
   StringExpressions.SubstringExpression,
   StringExpressions.UppercaseExpression,
   ArrayExpressions.ConcatenateExpression,
+  ArrayExpressions.FirstExpression,
 ]

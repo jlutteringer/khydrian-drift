@@ -52,4 +52,5 @@ test('Test Character Choices and Selections', () => {
   expect(CharacterOptions.isSelected(character.selections, SelectClassLevel, Fighter3)).toBe(true)
 
   expect(character.characteristics.hitPoints.value).toBe(28)
+  expect(character.resources.hitPoints.value).toBe(28)
 })

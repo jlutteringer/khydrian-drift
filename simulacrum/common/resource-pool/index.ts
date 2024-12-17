@@ -1,7 +1,8 @@
 import { Referencable, Reference } from '@simulacrum/util/reference'
-import { CooldownRateMutation, RelativeAmount, TimeUnit } from '@simulacrum/common/types'
-import { Expression } from '@simulacrum/util/expression'
-import { References } from '@simulacrum/util'
+import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
+import { EvaluateExpression, Expression } from '@simulacrum/util/expression'
+import { Preconditions, References } from '@simulacrum/util'
+import { ApplicationContext } from '@simulacrum/common/context'
 
 export type ResourcePool = {
   size: Expression<number>
@@ -15,19 +16,17 @@ export type CooldownRate = {
 
 export type ResourcePoolReference = Reference<'ResourcePoolDefinition'>
 
-export type ResourcePoolProps = {
+export type ResourcePoolProps = ResourcePool & {
   name: string
+  path: string
   description: string
-  resourcePool: ResourcePool
 }
 
 export type ResourcePoolDefinition = ResourcePoolProps & Referencable<ResourcePoolReference> & {}
 
-export type ResourcePoolMutation = {
+export type ResourcePoolState = {
   resource: ResourcePoolReference
-
-  size?: Expression<number>
-  refresh?: CooldownRateMutation
+  value: number
 }
 
 export type ResourceCost = {
@@ -40,4 +39,21 @@ export const defineResourcePool = (reference: ResourcePoolReference | string, pr
     reference: References.reference(reference, 'ResourcePoolDefinition', props.name),
     ...props,
   }
+}
+
+export const getResourcePool = (resourcePool: ResourcePoolReference, context: ApplicationContext): ResourcePoolDefinition => {
+  const matchingResourcePool = context.ruleset.resourcePools.find((it) => References.equals(it.reference, resourcePool))
+  Preconditions.isPresent(matchingResourcePool, () => `Unable to find Resource Pool for Reference: ${JSON.stringify(resourcePool)}`)
+  return matchingResourcePool
+}
+
+export const buildInitialState = (reference: ResourcePoolReference, evaluate: EvaluateExpression, context: ApplicationContext): [string, ResourcePoolState] => {
+  const resourcePool = getResourcePool(reference, context)
+  return [
+    resourcePool.path,
+    {
+      resource: resourcePool.reference,
+      value: evaluate(resourcePool.size),
+    },
+  ]
 }

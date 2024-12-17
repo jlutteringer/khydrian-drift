@@ -1,7 +1,9 @@
 import { Patch } from '@simulacrum/util/patch'
 import { Combinability } from '@simulacrum/util/combinable'
-import { EvaluateExpression, Expression, Expressions, ReducingExpression } from '@simulacrum/util/expression'
+import { ArrayExpressions, EvaluateExpression, Expression, Expressions, NumericExpressions, ReducingExpression } from '@simulacrum/util/expression'
 import { Arrays, Combinables, Equalitors, Objects, Patches } from '@simulacrum/util'
+import { ResourcePool } from '@simulacrum/common/resource-pool'
+import { TimeUnit } from '@simulacrum/common/types'
 
 export type Attribute<T> = {
   baseValue: Expression<T>
@@ -142,3 +144,38 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
     inactiveModifiers: [...inactiveModifiers, ...additionalInactiveModifiers],
   }
 }
+
+export type Attributable<T> =
+  | {
+      [P in keyof T]: T[P] extends Array<infer U> ? [Attributable<U>] : T[P] extends object | undefined ? Attributable<T[P]> : Attribute<T[P]>
+    }
+  | Attribute<number>
+  | Attribute<string>
+
+export const blah = <T>(attribute: Attributable<T>, modifiers: Array<Modifier<T>>, evaluate: EvaluateExpression) => {}
+
+const resourcePool: ResourcePool = {
+  size: 10,
+  refresh: [
+    {
+      period: TimeUnit.ShortRest,
+      amount: 10,
+    },
+  ],
+}
+
+blah<ResourcePool>(
+  {
+    size: attribute(10, NumericExpressions.MaxExpression),
+    refresh: [
+      {
+        period: attribute(TimeUnit.ShortRest, ArrayExpressions.FirstExpression as any),
+        amount: attribute(10, NumericExpressions.MaxExpression),
+      },
+    ],
+  },
+  [],
+  Expressions.defaultEvaluator()
+)
+
+blah<number>(attribute(10, NumericExpressions.MaxExpression), [], Expressions.defaultEvaluator())

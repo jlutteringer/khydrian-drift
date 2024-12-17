@@ -54,7 +54,7 @@ export const apply = <T>(value: Expression<T>, reducer: ReducingExpression<T, T>
   }
 }
 
-export const patch = <T extends GenericRecord, N extends Patchable<T>>(patch: N): Patch<T> => {
+export const patch = <T extends GenericRecord, N extends Patchable<T> = Patchable<T>>(patch: N): Patch<T> => {
   return {
     _PatchType: PatchType.Patch,
     patch,

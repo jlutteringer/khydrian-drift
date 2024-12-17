@@ -1,6 +1,6 @@
 import { Trait, TraitReference } from '@simulacrum/common/trait'
 import { LoadoutType, LoadoutTypeReference } from '@simulacrum/common/loadout'
-import { ResourcePoolDefinition, ResourcePoolMutation, ResourcePoolReference } from '../resource-pool'
+import { ResourcePoolDefinition, ResourcePoolReference } from '../resource-pool'
 import { Expression } from '@simulacrum/util/expression'
 import { References } from '@simulacrum/util'
 import { CharacterOption } from '@simulacrum/common/character/character-option'
@@ -54,19 +54,6 @@ export type ModifyCharacteristicEffect = Effect & {
   modifier: Modifier<unknown>
 }
 
-export const ModifyLoadoutSlotQuantity: EffectType<ModifyLoadoutSlotQuantityEffect> = { type: 'ModifyLoadoutSlotQuantity' }
-export type ModifyLoadoutSlotQuantityEffect = Effect & {
-  type: 'ModifyLoadoutSlotQuantity'
-  loadoutType: LoadoutTypeReference
-  amount: Expression<number>
-}
-
-export const ModifyHealingSurgeQuantity: EffectType<ModifyHealingSurgeQuantityEffect> = { type: 'ModifyHealingSurgeQuantity' }
-export type ModifyHealingSurgeQuantityEffect = Effect & {
-  type: 'ModifyHealingSurgeQuantity'
-  amount: Expression<number>
-}
-
 export const GainResourcePool: EffectType<GainResourcePoolEffect> = { type: 'GainResourcePool' }
 export type GainResourcePoolEffect = Effect & {
   type: 'GainResourcePool'
@@ -76,7 +63,15 @@ export type GainResourcePoolEffect = Effect & {
 export const ModifyResourcePool: EffectType<ModifyResourcePoolEffect> = { type: 'ModifyResourcePool' }
 export type ModifyResourcePoolEffect = Effect & {
   type: 'ModifyResourcePool'
-  resourcePoolModification: ResourcePoolMutation
+  resourcePool: ResourcePoolReference
+  modifier: Modifier<unknown>
+}
+
+export const ModifyLoadoutSlotQuantity: EffectType<ModifyLoadoutSlotQuantityEffect> = { type: 'ModifyLoadoutSlotQuantity' }
+export type ModifyLoadoutSlotQuantityEffect = Effect & {
+  type: 'ModifyLoadoutSlotQuantity'
+  loadoutType: LoadoutTypeReference
+  amount: Expression<number>
 }
 
 export const filter = <T extends Effect>(effects: Array<Effect>, type: EffectType<T>): Array<T> => {
@@ -130,21 +125,6 @@ export const modifyCharacteristic = (
   }
 }
 
-export const modifyLoadoutSlotQuantity = (loadoutType: LoadoutTypeReference | LoadoutType, amount: Expression<number>): ModifyLoadoutSlotQuantityEffect => {
-  return {
-    type: 'ModifyLoadoutSlotQuantity',
-    loadoutType: References.getReference(loadoutType),
-    amount,
-  }
-}
-
-export const modifyHealingSurgeQuantity = (amount: Expression<number>): ModifyHealingSurgeQuantityEffect => {
-  return {
-    type: 'ModifyHealingSurgeQuantity',
-    amount,
-  }
-}
-
 export const gainResourcePool = (resourcePool: ResourcePoolReference | ResourcePoolDefinition): GainResourcePoolEffect => {
   return {
     type: 'GainResourcePool',
@@ -152,9 +132,18 @@ export const gainResourcePool = (resourcePool: ResourcePoolReference | ResourceP
   }
 }
 
-export const modifyResourcePool = (resourcePoolModification: ResourcePoolMutation): ModifyResourcePoolEffect => {
+export const modifyResourcePool = (resourcePool: ResourcePoolReference | ResourcePoolDefinition, modifier: Modifier<unknown>): ModifyResourcePoolEffect => {
   return {
     type: 'ModifyResourcePool',
-    resourcePoolModification,
+    resourcePool: References.getReference(resourcePool),
+    modifier,
+  }
+}
+
+export const modifyLoadoutSlotQuantity = (loadoutType: LoadoutTypeReference | LoadoutType, amount: Expression<number>): ModifyLoadoutSlotQuantityEffect => {
+  return {
+    type: 'ModifyLoadoutSlotQuantity',
+    loadoutType: References.getReference(loadoutType),
+    amount,
   }
 }

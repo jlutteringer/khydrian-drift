@@ -28,6 +28,7 @@ import { Warlock } from '@simulacrum/rulesets/dnd-5e/class/class-warlock'
 import { Wizard } from '@simulacrum/rulesets/dnd-5e/class/class-wizard'
 import { CreatureCharacteristics, PlayerCharacteristics } from '@simulacrum/rulesets/dnd-5e/characteristic'
 import { Dash, Disengage, Dodge, HealingSurge } from '@simulacrum/rulesets/dnd-5e/common'
+import { HitPointResourcePool } from '@simulacrum/rulesets/dnd-5e/resource-pool'
 
 export const SelectClassLevel = CharacterOptions.selectTraitOption('afbef236-17a0-464f-b2d0-cb01ecf7931a', { archetypes: [Class] })
 
@@ -60,10 +61,11 @@ export const Dnd5e: Ruleset = {
     PsiWarrior,
   ],
   abilities: [Dodge, Disengage, Dash, HealingSurge, SecondWind, ActionSurge],
-  resourcePools: [],
+  resourcePools: [HitPointResourcePool],
   loadoutTypes: [],
   progressionTable: {
     1: [
+      Effects.gainResourcePool(HitPointResourcePool),
       Effects.gainCharacterOption(SelectClassLevel),
       Effects.gainAbility(Dodge),
       Effects.gainAbility(Disengage),

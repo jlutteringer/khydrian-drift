@@ -1,6 +1,6 @@
-import { Abilities, Characteristics, Effects, ProgressionTables, Traits } from '@simulacrum/common'
+import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools, Traits } from '@simulacrum/common'
 import { TraitReference } from '@simulacrum/common/trait'
-import { ExpressionContext, Expressions, ExpressionVariable } from '@simulacrum/util/expression'
+import { EvaluateExpression, ExpressionContext, Expressions, ExpressionVariable } from '@simulacrum/util/expression'
 import { ApplicationContext } from '@simulacrum/common/context'
 import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@simulacrum/util'
 import { Effect } from '@simulacrum/common/effect'
@@ -10,6 +10,7 @@ import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { AbilityReference, AbilityState } from '@simulacrum/common/ability'
 import { GenericRecord } from '@simulacrum/util/types'
 import { Characteristic, CharacteristicValue } from '@simulacrum/common/characteristic'
+import { ResourcePoolState } from '@simulacrum/common/resource-pool'
 
 export namespace CharacterValues {
   export const Level: ExpressionVariable<number> = Expressions.variable('Level')
@@ -31,6 +32,7 @@ export type CharacterSheet = CharacterRecord & {
   traits: ProgressionTable<TraitReference>
   choices: ProgressionTable<CharacterChoice>
   abilities: Array<AbilityState>
+  resources: Record<string, ResourcePoolState>
 }
 
 export type CharacterState = CharacterSheet & {
@@ -148,9 +150,10 @@ const buildCharacterState = (character: CharacterRecord, context: ApplicationCon
         characterState = { ...previous }
       }
 
-      characterState.characteristics = evaluateCharacteristics(characterState, context)
+      const evaluator = Expressions.evaluator(buildExpressionContext(characterState, context))
+      characterState.characteristics = evaluateCharacteristics(characterState, evaluator, context)
       characterState.abilities = evaluateCharacterAbilities(characterState, context)
-      // characterState.resources = evaluateResourcePools(characterState, context)
+      characterState.resources = evaluateResourcePools(characterState, evaluator, context)
       return characterState
     },
     (first, second) => {
@@ -174,6 +177,7 @@ const buildInitialCharacterState = (character: CharacterRecord, context: Applica
     traits: [],
     choices: ProgressionTables.empty(character.level),
     abilities: [],
+    resources: {},
   }
 }
 
@@ -197,20 +201,18 @@ const buildInitialCharacteristics = (character: CharacterRecord, context: Applic
   return Objects.mergeAll(characteristicValues)
 }
 
-const evaluateCharacteristics = (character: CharacterState, context: ApplicationContext): Record<string, CharacteristicValue<unknown>> => {
+const evaluateCharacteristics = (
+  character: CharacterState,
+  evaluate: EvaluateExpression,
+  context: ApplicationContext
+): Record<string, CharacteristicValue<unknown>> => {
   const effects = getAllEffects(character, context)
-  const expressionContext = buildExpressionContext(character, context)
   const characterAttributes = Object.values(context.ruleset.playerCharacteristics)
 
   const characteristicValues = characterAttributes.map((initialCharacteristic) => {
     // TODO we don't support non-numeric characteristics... not sure if we even should...
     const characteristic = initialCharacteristic as Characteristic<number>
-    const characteristicValue = Characteristics.evaluateCharacteristic(
-      characteristic,
-      character.initialValues,
-      effects,
-      Expressions.evaluator(expressionContext)
-    )
+    const characteristicValue = Characteristics.evaluateCharacteristic(characteristic, character.initialValues, effects, evaluate)
 
     const record = {}
     Objects.parsePath(characteristic.path).applyValue(record, characteristicValue)
@@ -223,6 +225,11 @@ const evaluateCharacteristics = (character: CharacterState, context: Application
 const evaluateCharacterAbilities = (character: CharacterState, context: ApplicationContext): Array<AbilityState> => {
   const gainAbilityEffects = Effects.filter(getAllEffects(character, context), Effects.GainAbility)
   return gainAbilityEffects.map((it) => Abilities.buildInitialState(it.ability, context))
+}
+
+const evaluateResourcePools = (character: CharacterState, evaluate: EvaluateExpression, context: ApplicationContext): Record<string, ResourcePoolState> => {
+  const gainResourcePoolEffects = Effects.filter(getAllEffects(character, context), Effects.GainResourcePool)
+  return Object.fromEntries(gainResourcePoolEffects.map((it) => ResourcePools.buildInitialState(it.resourcePool, evaluate, context)))
 }
 
 export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {

@@ -14,3 +14,16 @@ export const ConcatenateExpression = defineExpression({
 })
 
 export const concatenate = ConcatenateExpression.builder
+
+export const FirstExpression = defineExpression({
+  expressionKey: 'Array.First',
+  builder: (operands: Array<Expression<Array<Expression<unknown>>>>) => {
+    return { operands }
+  },
+  resolver: ({ operands }, evaluate) => {
+    const values = evaluate(operands).map((it) => evaluate(it))
+    return Arrays.first(values)
+  },
+})
+
+export const first = FirstExpression.builder
