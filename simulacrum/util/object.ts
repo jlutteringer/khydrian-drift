@@ -12,8 +12,8 @@ import {
   mergeWith as unsafeMergeWith,
 } from 'lodash-es'
 import { produce } from 'immer'
-import { Arrays, Preconditions } from '@simulacrum/util/index'
-import { GenericRecord } from '@simulacrum/util/types'
+import { Arrays, Maths, Strings } from '@simulacrum/util/index'
+import { GenericRecord, Primitive } from '@simulacrum/util/types'
 
 export const update = produce
 
@@ -50,11 +50,6 @@ export const mergeWith: typeof unsafeMergeWith = (...args: Array<any>) => {
 
 export const isPromise = <T>(element: T | Promise<T>): element is Promise<T> => {
   return typeof (element as Promise<T>).then === 'function'
-}
-
-export const parsePath = (path: string): ObjectPath => {
-  const pathArray = path.split('.')
-  return new ObjectPath(pathArray)
 }
 
 export type ObjectDiffResult = {
@@ -100,35 +95,118 @@ export function fieldsPresent<T extends object, K extends keyof T>(
   return fields.every((field) => isPresent(object[field]))
 }
 
-export class ObjectPath {
-  constructor(readonly path: Array<string>) {}
+export type ObjectPath = {
+  path: Array<string | number>
+}
 
-  applyValue = <T>(object: Record<string, T>, value: T) => {
-    // JOHN we are not supporting multiple paths here yet... but we should
-    Preconditions.isFalse(Arrays.isEmpty(this.path))
-    object[Arrays.first(this.path)!] = value
+export const path = (path: Array<string | number>): ObjectPath => {
+  return { path }
+}
+
+export const parsePath = (path: string): ObjectPath => {
+  const result: Array<string | number> = []
+  const regex = /([^.\[\]]+)|\[(\d+)]/g
+
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(path)) !== null) {
+    if (match[1] !== undefined) {
+      result.push(match[1])
+    } else if (match[2] !== undefined) {
+      result.push(Number(match[2]))
+    }
   }
 
-  getValue = <T>(object: Record<string, T>): T | undefined => {
-    let root = object
+  return { path: result }
+}
 
-    let nextElement: any = root
-    let index = 0
-    do {
-      const pathPart = this.path[index]
-      nextElement = nextElement[pathPart]
-      index++
-    } while (isObject(nextElement) && index < this.path.length)
+const pathify = (path: ObjectPath | string): ObjectPath => {
+  if (Strings.isString(path)) {
+    return parsePath(path)
+  }
 
-    // If we didn't make it to the end, we didn't find the value
-    if (index !== this.path.length) {
+  return path
+}
+
+export const getPathValue = (object: GenericRecord, initialPath: ObjectPath | string): unknown | undefined => {
+  const path = pathify(initialPath)
+  let current: any = object
+
+  for (const key of path.path) {
+    if (isPrimitive(current)) {
       return undefined
     }
 
-    return nextElement
+    current = current[key]
   }
 
-  toString = (): string => {
-    return this.path.join('.')
+  return current
+}
+
+export const applyPathValue = (object: GenericRecord, initialPath: ObjectPath | string, value: unknown): GenericRecord | undefined => {
+  const path = pathify(initialPath)
+
+  const newObject = update(object, (draft) => {
+    let current: any = draft
+
+    for (let i = 0; i < path.path.length; i++) {
+      const key = path.path[i]
+      const isLastKey = i === path.path.length - 1
+
+      if (isPrimitive(current)) {
+        return
+      }
+
+      if (Array.isArray(current)) {
+        if (!Maths.isNumber(key)) {
+          return
+        }
+
+        if (key >= current.length) {
+          return
+        }
+      }
+
+      if (isLastKey) {
+        current[key] = value
+      } else {
+        current = current[key]
+      }
+    }
+  })
+
+  if (newObject === object) {
+    return undefined
   }
+
+  return newObject
+}
+
+const isPrimitive = (value: any): value is Primitive => {
+  return value === null || (typeof value !== 'object' && typeof value !== 'function')
+}
+
+type TransformFunction = (value: any, path: (string | number)[], key: string | number, parent: any) => any
+
+const walk = (value: any, transform: TransformFunction, path: (string | number)[] = []): any => {
+  if (isNil(value) || isPrimitive(value)) {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((value, index) => {
+      const currentPath = [...path, index]
+      return walk(transform(value, currentPath, index, value), transform, currentPath)
+    })
+  }
+
+  const result: any = {}
+  for (const key in value) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      const currentPath = [...path, key]
+      const transformedValue = transform(value[key], currentPath, key, value)
+      result[key] = walk(transformedValue, transform, currentPath)
+    }
+  }
+
+  return result
 }

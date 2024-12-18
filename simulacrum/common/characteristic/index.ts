@@ -53,7 +53,7 @@ export const buildAttribute = <T>(characteristic: Characteristic<T>, initialValu
   if (Objects.isPresent(characteristic.baseValue)) {
     baseValue = characteristic.baseValue
   } else {
-    const initialValue = Objects.parsePath(characteristic.path).getValue(initialValues)
+    const initialValue = Objects.getPathValue(initialValues, characteristic.path)
     Preconditions.isPresent(initialValue)
     baseValue = initialValue as T
   }

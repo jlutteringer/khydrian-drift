@@ -5,6 +5,13 @@ import { Arrays, Combinables, Equalitors, Objects, Patches } from '@simulacrum/u
 import { ResourcePool } from '@simulacrum/common/resource-pool'
 import { TimeUnit } from '@simulacrum/common/types'
 
+export type Attributable<T> =
+  | {
+      [P in keyof T]: T[P] extends Array<infer U> ? [Attributable<U>] : T[P] extends object | undefined ? Attributable<T[P]> : Attribute<T[P]>
+    }
+  | Attribute<number>
+  | Attribute<string>
+
 export type Attribute<T> = {
   baseValue: Expression<T>
   optimizer: ReducingExpression<T, T>
@@ -144,13 +151,6 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
     inactiveModifiers: [...inactiveModifiers, ...additionalInactiveModifiers],
   }
 }
-
-export type Attributable<T> =
-  | {
-      [P in keyof T]: T[P] extends Array<infer U> ? [Attributable<U>] : T[P] extends object | undefined ? Attributable<T[P]> : Attribute<T[P]>
-    }
-  | Attribute<number>
-  | Attribute<string>
 
 export const blah = <T>(attribute: Attributable<T>, modifiers: Array<Modifier<T>>, evaluate: EvaluateExpression) => {}
 

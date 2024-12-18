@@ -1,16 +1,16 @@
 import type { Metadata } from 'next'
-import localFont from 'next/font/local'
-import './globals.css'
+import Head from 'next/head'
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter'
+import { Roboto } from 'next/font/google'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '@simulacrum/ui/theme'
+import { CssBaseline } from '@mui/material'
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-  weight: '100 900',
-})
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
-  weight: '100 900',
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-roboto',
 })
 
 export const metadata: Metadata = {
@@ -25,7 +25,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+      <Head>
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+        />
+      </Head>
+
+      <body className={roboto.variable}>
+        <AppRouterCacheProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            {children}
+          </ThemeProvider>
+        </AppRouterCacheProvider>
+      </body>
     </html>
   )
 }

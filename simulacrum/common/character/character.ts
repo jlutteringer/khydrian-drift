@@ -193,12 +193,10 @@ const buildInitialCharacteristics = (character: CharacterRecord, context: Applic
     // TODO we don't support non-numeric characteristics... not sure if we even should...
     const characteristic = initialCharacteristic as Characteristic<number>
     const attributeValue = Characteristics.simpleValue(0, characteristic, character.initialValues)
-    const record = {}
-    Objects.parsePath(characteristic.path).applyValue(record, attributeValue)
-    return record
+    return Objects.applyPathValue({}, characteristic.path, attributeValue)
   })
 
-  return Objects.mergeAll(characteristicValues)
+  return Objects.mergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
 }
 
 const evaluateCharacteristics = (
@@ -213,13 +211,10 @@ const evaluateCharacteristics = (
     // TODO we don't support non-numeric characteristics... not sure if we even should...
     const characteristic = initialCharacteristic as Characteristic<number>
     const characteristicValue = Characteristics.evaluateCharacteristic(characteristic, character.initialValues, effects, evaluate)
-
-    const record = {}
-    Objects.parsePath(characteristic.path).applyValue(record, characteristicValue)
-    return record
+    return Objects.applyPathValue({}, characteristic.path, characteristicValue)
   })
 
-  return Objects.mergeAll(characteristicValues)
+  return Objects.mergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
 }
 
 const evaluateCharacterAbilities = (character: CharacterState, context: ApplicationContext): Array<AbilityState> => {
@@ -235,7 +230,7 @@ const evaluateResourcePools = (character: CharacterState, evaluate: EvaluateExpr
 export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {
   const characterAttributes = context.ruleset.playerCharacteristics
   const attributeVariables = characterAttributes.map((it) => {
-    const characteristic = Objects.parsePath(it.path).getValue(character.characteristics)
+    const characteristic = Objects.getPathValue(character.characteristics, it.path) as CharacteristicValue<unknown>
     Preconditions.isPresent(characteristic)
     return Expressions.buildVariable(it.variable, characteristic.value)
   })
