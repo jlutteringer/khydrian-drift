@@ -1,12 +1,12 @@
 import { Trait, TraitReference } from '@simulacrum/common/trait'
 import { LoadoutType, LoadoutTypeReference } from '@simulacrum/common/loadout'
 import { ResourcePoolDefinition, ResourcePoolReference } from '../resource-pool'
-import { Expression } from '@simulacrum/util/expression'
-import { References } from '@simulacrum/util'
 import { CharacterOption } from '@simulacrum/common/character/character-option'
 import { Ability, AbilityReference } from '@simulacrum/common/ability'
 import { Characteristic, CharacteristicReference } from '@simulacrum/common/characteristic'
 import { Modifier } from '@simulacrum/common/attribute'
+import { Expression } from '@bessemer/cornerstone/expression'
+import { References } from '@bessemer/cornerstone'
 
 export interface Effect {
   type: string

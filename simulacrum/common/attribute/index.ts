@@ -1,9 +1,9 @@
-import { Patch } from '@simulacrum/util/patch'
-import { Combinability } from '@simulacrum/util/combinable'
-import { ArrayExpressions, EvaluateExpression, Expression, Expressions, NumericExpressions, ReducingExpression } from '@simulacrum/util/expression'
-import { Arrays, Combinables, Equalitors, Objects, Patches } from '@simulacrum/util'
 import { ResourcePool } from '@simulacrum/common/resource-pool'
 import { TimeUnit } from '@simulacrum/common/types'
+import { ArrayExpressions, EvaluateExpression, Expression, Expressions, NumericExpressions, ReducingExpression } from '@bessemer/cornerstone/expression'
+import { Patch } from '@bessemer/cornerstone/patch'
+import { Combinability } from '@bessemer/cornerstone/combinable'
+import { Arrays, Combinables, Equalitors, Objects, Patches } from '@bessemer/cornerstone'
 
 export type Attributable<T> =
   | {

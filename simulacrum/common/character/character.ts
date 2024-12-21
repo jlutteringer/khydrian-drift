@@ -1,16 +1,16 @@
-import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools, Traits } from '@simulacrum/common'
 import { TraitReference } from '@simulacrum/common/trait'
-import { EvaluateExpression, ExpressionContext, Expressions, ExpressionVariable } from '@simulacrum/util/expression'
 import { ApplicationContext } from '@simulacrum/common/context'
-import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@simulacrum/util'
 import { Effect } from '@simulacrum/common/effect'
 import { CharacterChoice, CharacterSelection, EvaluateCharacterOptionsResult } from '@simulacrum/common/character/character-option'
 import { CharacterOptions } from '@simulacrum/common/character/index'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { AbilityReference, AbilityState } from '@simulacrum/common/ability'
-import { GenericRecord } from '@simulacrum/util/types'
 import { Characteristic, CharacteristicValue } from '@simulacrum/common/characteristic'
 import { ResourcePoolState } from '@simulacrum/common/resource-pool'
+import { EvaluateExpression, ExpressionContext, Expressions, ExpressionVariable } from '@bessemer/cornerstone/expression'
+import { GenericRecord } from '@bessemer/cornerstone/types'
+import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools, Traits } from '@simulacrum/common'
+import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@bessemer/cornerstone'
 
 export namespace CharacterValues {
   export const Level: ExpressionVariable<number> = Expressions.variable('Level')

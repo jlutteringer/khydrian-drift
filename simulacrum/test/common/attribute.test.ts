@@ -1,8 +1,8 @@
 import { Attributes, ResourcePools } from '@simulacrum/common'
-import { ArrayExpressions, Expressions, NumericExpressions } from '@simulacrum/util/expression'
-import { Patches } from '@simulacrum/util'
 import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
 import { ResourcePoolDefinition } from '@simulacrum/common/resource-pool'
+import { Patches } from '@bessemer/cornerstone'
+import { ArrayExpressions, Expressions, NumericExpressions } from '@bessemer/cornerstone/expression'
 
 test('Test Numeric Attibutes and Combinations', () => {
   {

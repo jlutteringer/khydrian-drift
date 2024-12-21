@@ -1,10 +1,10 @@
-import { Referencable, Reference } from '@simulacrum/util/reference'
 import { Effect } from '@simulacrum/common/effect'
-import { Arrays, Preconditions, References } from '@simulacrum/util'
-import { Expression, Expressions } from '@simulacrum/util/expression'
 import { ApplicationContext } from '@simulacrum/common/context'
 import { Archetype, ArchetypeReference } from '@simulacrum/common/archetype'
 import { CharacterValues } from '@simulacrum/common/character/character'
+import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { Expression, Expressions } from '@bessemer/cornerstone/expression'
+import { Arrays, Preconditions, References } from '@bessemer/cornerstone'
 
 export type TraitReference = Reference<'Trait'>
 

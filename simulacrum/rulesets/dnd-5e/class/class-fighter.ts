@@ -1,13 +1,13 @@
 import { Abilities, Archetypes, Attributes, Effects, Traits } from '@simulacrum/common'
 import { Class } from '@simulacrum/rulesets/dnd-5e/archetype'
-import { Expressions } from '@simulacrum/util/expression'
 import { SelectFightingStyle } from '@simulacrum/rulesets/dnd-5e/archetype/fighting-style'
 import { CharacterOptions } from '@simulacrum/common/character'
 import { PlayerCharacteristics } from '@simulacrum/rulesets/dnd-5e/characteristic'
 import { CharacterValues } from '@simulacrum/common/character/character'
 import { ActionType } from '@simulacrum/common/ability'
 import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
-import { Patches } from '@simulacrum/util'
+import { Expressions } from '@bessemer/cornerstone/expression'
+import { Patches } from '@bessemer/cornerstone'
 
 export const SecondWind = Abilities.defineAbility('5783fc7f-7915-40c7-8a51-8406e4b82bf2', {
   name: 'Second Wind',

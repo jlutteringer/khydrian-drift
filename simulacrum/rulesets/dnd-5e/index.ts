@@ -1,5 +1,4 @@
 import { Ruleset } from '@simulacrum/common/ruleset'
-import { References } from '@simulacrum/util'
 import { Effects } from '@simulacrum/common'
 import {
   ActionSurge,
@@ -29,6 +28,7 @@ import { Wizard } from '@simulacrum/rulesets/dnd-5e/class/class-wizard'
 import { CreatureCharacteristics, PlayerCharacteristics } from '@simulacrum/rulesets/dnd-5e/characteristic'
 import { Dash, Disengage, Dodge, HealingSurge } from '@simulacrum/rulesets/dnd-5e/common'
 import { HitPointResourcePool } from '@simulacrum/rulesets/dnd-5e/resource-pool'
+import { References } from '@bessemer/cornerstone'
 
 export const SelectClassLevel = CharacterOptions.selectTraitOption('afbef236-17a0-464f-b2d0-cb01ecf7931a', { archetypes: [Class] })
 

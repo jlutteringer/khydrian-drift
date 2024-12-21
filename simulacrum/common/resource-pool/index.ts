@@ -1,8 +1,8 @@
-import { Referencable, Reference } from '@simulacrum/util/reference'
 import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
-import { EvaluateExpression, Expression } from '@simulacrum/util/expression'
-import { Preconditions, References } from '@simulacrum/util'
 import { ApplicationContext } from '@simulacrum/common/context'
+import { EvaluateExpression, Expression } from '@bessemer/cornerstone/expression'
+import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { Preconditions, References } from '@bessemer/cornerstone'
 
 export type ResourcePool = {
   size: Expression<number>

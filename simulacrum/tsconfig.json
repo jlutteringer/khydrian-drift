@@ -19,7 +19,22 @@
       }
     ],
     "paths": {
-      "@simulacrum/*": ["./*"]
+      "@simulacrum/common": ["./common"],
+      "@simulacrum/common/*": ["./common/*"],
+      "@simulacrum/app": ["./app"],
+      "@simulacrum/app/*": ["./app/*"],
+      "@simulacrum/ui": ["./ui"],
+      "@simulacrum/ui/*": ["./ui/*"],
+
+      "@simulacrum/rulesets/*": ["./rulesets/*"],
+      "@simulacrum/test/*": ["./test/*"],
+
+      "@bessemer/cornerstone": ["./bessemer/cornerstone"],
+      "@bessemer/cornerstone/*": ["./bessemer/cornerstone/*"],
+      "@bessemer/react": ["./bessemer/react"],
+      "@bessemer/react/*": ["./bessemer/react/*"],
+      "@bessemer/mui": ["./bessemer/mui"],
+      "@bessemer/mui/*": ["./bessemer/mui/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

@@ -10,13 +10,13 @@ import {
   SoldiersStamina,
 } from '@simulacrum/rulesets/khydrian-drift/class/class-commando'
 import { BasicCombatTraining } from '@simulacrum/rulesets/khydrian-drift/archetype/archetype-combat'
-import { References } from '@simulacrum/util'
 import { TacticPoints } from '@simulacrum/rulesets/khydrian-drift/resource-pool'
 import { AdvancedHardpointLoadoutSlot, GeneralLoadoutSlot } from '@simulacrum/rulesets/khydrian-drift/loadout'
 import { Effects, Traits } from '@simulacrum/common'
 import { Class } from '@simulacrum/rulesets/khydrian-drift/archetype'
 import { CharacterOptions } from '@simulacrum/common/character'
 import { CreatureCharacteristics, PlayerCharacteristics } from '@simulacrum/rulesets/khydrian-drift/characteristic'
+import { References } from '@bessemer/cornerstone'
 
 export const SelectClassOption = CharacterOptions.selectTraitOption('98e42317-8a5c-45a2-9700-fec314750a37', { archetypes: [Class] })
 export const SelectTraitOption = CharacterOptions.selectTraitOption('5a1a65ff-6c10-4dd0-85a8-393c196efd2b', Traits.filterNone())

@@ -1,12 +1,12 @@
 import { Attributes, Effects, Traits } from '@simulacrum/common'
-import { Expressions, NumericExpressions } from '@simulacrum/util/expression'
 import { BasicCombatTraining } from '@simulacrum/rulesets/khydrian-drift/archetype/archetype-combat'
 import { AdvancedHardpointLoadoutSlot, GeneralLoadoutSlot } from '@simulacrum/rulesets/khydrian-drift/loadout'
 import { TacticPoints } from '@simulacrum/rulesets/khydrian-drift/resource-pool'
 import { Class } from '@simulacrum/rulesets/khydrian-drift/archetype'
 import { CharacterValues } from '@simulacrum/common/character/character'
 import { PlayerCharacteristics } from '@simulacrum/rulesets/khydrian-drift/characteristic'
-import { Patches } from '@simulacrum/util'
+import { Patches } from '@bessemer/cornerstone'
+import { Expressions, NumericExpressions } from '@bessemer/cornerstone/expression'
 
 export const Commando = Traits.defineTrait('e0b5ad7e-6e8b-4416-8a7c-41bab05993d3', {
   name: 'Commando',

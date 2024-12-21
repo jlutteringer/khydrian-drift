@@ -1,4 +1,4 @@
-import { Expression } from '@simulacrum/util/expression'
+import { Expression } from '@bessemer/cornerstone/expression'
 
 export enum TimeUnit {
   Day = 'Day',

@@ -1,7 +1,7 @@
 import { Characteristics } from '@simulacrum/common'
-import { NumericExpressions } from '@simulacrum/util/expression'
 import { CharacterValues } from '@simulacrum/common/character/character'
 import { Characteristic, CharacteristicTemplate } from '@simulacrum/common/characteristic'
+import { NumericExpressions } from '@bessemer/cornerstone/expression'
 
 export namespace CharacteristicTemplates {
   export const VitalityPool: CharacteristicTemplate<number> = Characteristics.defineTemplate(

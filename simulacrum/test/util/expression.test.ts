@@ -1,4 +1,4 @@
-import { Expressions, NumericExpressions, StringExpressions } from '@simulacrum/util/expression'
+import { Expressions, NumericExpressions, StringExpressions } from '@bessemer/cornerstone/expression'
 
 test('TODO', () => {
   NumericExpressions.sum([Expressions.variable('VitalityPoints'), 10])

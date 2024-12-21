@@ -4,6 +4,7 @@ module.exports = {
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@simulacrum/(.*)$': '<rootDir>/$1',
+    '^@bessemer/(.*)$': '<rootDir>/bessemer/$1',
   },
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],

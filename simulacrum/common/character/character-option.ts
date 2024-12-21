@@ -1,8 +1,8 @@
-import { Referencable, Reference } from '@simulacrum/util/reference'
 import { Trait, TraitFilter, TraitFilterProps, TraitReference } from '@simulacrum/common/trait'
-import { Arrays, Objects, Preconditions, References } from '@simulacrum/util'
 import { ProgressionTables, Traits } from '@simulacrum/common'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
+import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { Arrays, Objects, Preconditions, References } from '@bessemer/cornerstone'
 
 export enum CharacterOptionType {
   SelectTrait = 'SelectTrait',

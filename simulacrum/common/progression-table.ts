@@ -1,6 +1,6 @@
-import { Arrays, Eithers, Objects } from '@simulacrum/util'
-import { Either } from '@simulacrum/util/either'
-import { Signable } from '@simulacrum/util/signature'
+import { Arrays, Eithers, Objects } from '@bessemer/cornerstone'
+import { Either } from '@bessemer/cornerstone/either'
+import { Signable } from '@bessemer/cornerstone/signature'
 
 export type ProgressionTable<T> = Record<number, Array<T>>
 

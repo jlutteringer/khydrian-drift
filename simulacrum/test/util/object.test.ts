@@ -1,4 +1,4 @@
-import { Objects } from '@simulacrum/util'
+import { Objects } from '@bessemer/cornerstone'
 
 test('Test Object Path', () => {
   expect(Objects.parsePath('')).toEqual(Objects.path([]))

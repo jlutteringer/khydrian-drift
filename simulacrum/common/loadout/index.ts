@@ -1,5 +1,5 @@
-import { Referencable, Reference } from '@simulacrum/util/reference'
-import { References } from '@simulacrum/util'
+import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { References } from '@bessemer/cornerstone'
 
 export type LoadoutTypeReference = Reference<'LoadoutType'>
 

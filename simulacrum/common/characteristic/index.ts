@@ -1,10 +1,10 @@
-import { EvaluateExpression, Expression, Expressions, ExpressionVariable, NumericExpressions, ReducingExpression } from '@simulacrum/util/expression'
-import { Referencable, Reference } from '@simulacrum/util/reference'
-import { Objects, Preconditions, References } from '@simulacrum/util'
 import { Attribute, AttributeValue, Modifier } from '@simulacrum/common/attribute'
 import { Attributes, Effects } from '@simulacrum/common'
 import { Effect } from '@simulacrum/common/effect'
 import { CharacterInitialValues } from '@simulacrum/common/character/character'
+import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { EvaluateExpression, Expression, Expressions, ExpressionVariable, NumericExpressions, ReducingExpression } from '@bessemer/cornerstone/expression'
+import { Objects, Preconditions, References } from '@bessemer/cornerstone'
 
 export type CharacteristicReference<T> = Reference<'Characteristic'>
 

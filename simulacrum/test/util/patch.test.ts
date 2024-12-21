@@ -1,5 +1,5 @@
-import { Patches } from '@simulacrum/util'
-import { Expressions } from '@simulacrum/util/expression'
+import { Patches } from '@bessemer/cornerstone'
+import { Expressions } from '@bessemer/cornerstone/expression'
 
 test('Patch Numbers', () => {
   {

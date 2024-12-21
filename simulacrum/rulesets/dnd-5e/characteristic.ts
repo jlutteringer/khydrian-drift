@@ -1,8 +1,8 @@
-import { NumericExpressions } from '@simulacrum/util/expression'
 import { CharacterValues } from '@simulacrum/common/character/character'
-import { RoundingMode } from '@simulacrum/util/math'
 import { Characteristics } from '@simulacrum/common'
 import { Characteristic, CharacteristicTemplate } from '@simulacrum/common/characteristic'
+import { NumericExpressions } from '@bessemer/cornerstone/expression'
+import { RoundingMode } from '@bessemer/cornerstone/math'
 
 export namespace CharacteristicTemplates {
   export const HitPoints: CharacteristicTemplate<number> = Characteristics.defineTemplate('60cddec2-2b04-4a8e-92c4-2566b050989e', 'Hit Points', 'hitPoints')
