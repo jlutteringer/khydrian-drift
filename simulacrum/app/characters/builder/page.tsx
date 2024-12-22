@@ -1,5 +1,3 @@
-'use client'
-
 import * as React from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
@@ -138,7 +136,6 @@ const CharactersPage = () => {
                     )}
                   </Box>
 
-                  {/* Button */}
                   <Box mt={2}>
                     <Button
                       variant="contained"

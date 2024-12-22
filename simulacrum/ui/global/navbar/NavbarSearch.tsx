@@ -1,10 +1,32 @@
+'use client'
+
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/navigation'
 import { Box, InputBase } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
-import React from 'react'
+
+type NavbarSearchForm = {
+  query: string
+}
 
 export const NavbarSearch = () => {
+  const { register, handleSubmit } = useForm<NavbarSearchForm>()
+  const router = useRouter()
+
+  const onSubmit = (data: NavbarSearchForm) => {
+    const searchQuery = data.query.trim()
+
+    if (searchQuery) {
+      // JOHN create url utility finally?
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`) // Navigate to search page
+    }
+  }
+
   return (
     <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -19,7 +41,9 @@ export const NavbarSearch = () => {
       <SearchIcon />
       <InputBase
         placeholder="Search Everything..."
+        autoComplete="off"
         sx={{ ml: 1, color: 'white', flex: 1 }}
+        {...register('query')}
       />
     </Box>
   )
