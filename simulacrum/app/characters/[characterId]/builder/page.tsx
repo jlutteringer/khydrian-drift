@@ -1,10 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { CharacterSection } from '@simulacrum/ui/character/CharacterSection'
+import { CharacterBuilder } from '@simulacrum/ui/character/builder/CharacterBuilder'
 
-const CharactersPage = () => {
-  return <CharacterSection />
+const CharacterBuilderPage = () => {
+  return <CharacterBuilder />
 }
 
-export default CharactersPage
+export default CharacterBuilderPage

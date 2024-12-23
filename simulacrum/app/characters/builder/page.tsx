@@ -9,7 +9,7 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import Button from '@mui/material/Button'
 
-const CharactersPage = () => {
+const CharacterBuilderLandingPage = () => {
   const creationMethods = [
     {
       title: 'STANDARD',
@@ -156,4 +156,4 @@ const CharactersPage = () => {
   )
 }
 
-export default CharactersPage
+export default CharacterBuilderLandingPage

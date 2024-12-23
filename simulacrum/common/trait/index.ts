@@ -49,17 +49,6 @@ export const getTraits = (traits: Array<TraitReference>, context: ApplicationCon
   return traits.map((trait) => getTrait(trait, context))
 }
 
-export const getEffectsForTrait = (trait: Trait): Array<Effect> => {
-  return trait.effects.map((effect) => {
-    const sourcedEffect: Effect = { ...effect, source: trait.reference }
-    return sourcedEffect
-  })
-}
-
-export const getEffectsForTraits = (traits: Array<Trait>): Array<Effect> => {
-  return traits.flatMap(getEffectsForTrait)
-}
-
 export const traitPrerequisite = (trait: TraitReference | Trait): Expression<boolean> => {
   return Expressions.contains(CharacterValues.Traits, [References.getReference(trait)])
 }

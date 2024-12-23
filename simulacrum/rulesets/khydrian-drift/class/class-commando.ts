@@ -1,6 +1,5 @@
 import { Attributes, Effects, Traits } from '@simulacrum/common'
 import { BasicCombatTraining } from '@simulacrum/rulesets/khydrian-drift/archetype/archetype-combat'
-import { AdvancedHardpointLoadoutSlot, GeneralLoadoutSlot } from '@simulacrum/rulesets/khydrian-drift/loadout'
 import { TacticPoints } from '@simulacrum/rulesets/khydrian-drift/resource-pool'
 import { Class } from '@simulacrum/rulesets/khydrian-drift/archetype'
 import { CharacterValues } from '@simulacrum/common/character/character'
@@ -15,8 +14,8 @@ export const Commando = Traits.defineTrait('e0b5ad7e-6e8b-4416-8a7c-41bab05993d3
   effects: [
     Effects.modifyCharacteristic(PlayerCharacteristics.VitalityPool, Attributes.modifier(Patches.sum(NumericExpressions.multiply([CharacterValues.Level, 2])))),
     Effects.gainTrait(BasicCombatTraining),
-    Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
-    Effects.modifyLoadoutSlotQuantity(AdvancedHardpointLoadoutSlot, 1),
+    // Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
+    // Effects.modifyLoadoutSlotQuantity(AdvancedHardpointLoadoutSlot, 1),
   ],
 })
 
@@ -60,7 +59,10 @@ export const OfficerTrait = Traits.defineTrait(Officer, {
   name: 'Officer',
   description: '',
   prerequisites: [Traits.traitPrerequisite(Commando), Traits.traitPrerequisite(Momentum), Expressions.not(Traits.traitPrerequisite(Sentinel))],
-  effects: [Effects.gainResourcePool(TacticPoints), Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2)],
+  effects: [
+    Effects.gainResourcePool(TacticPoints),
+    // Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2)
+  ],
 })
 
 export const AdvancedOperations = Traits.defineTrait('cf015d5a-f427-4eea-9798-caf9700fcacd', {
@@ -70,7 +72,7 @@ export const AdvancedOperations = Traits.defineTrait('cf015d5a-f427-4eea-9798-ca
   effects: [
     // JOHN this solution doesn't work - its supposed to add 2 not set 2
     // Effects.modifyResourcePool({ resource: TacticPoints.reference, size: 2 }),
-    Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
+    // Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
   ],
 })
 

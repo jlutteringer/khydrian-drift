@@ -1,5 +1,5 @@
 import { LoadoutTypeReference } from '@simulacrum/common/loadout'
-import { Effect } from '@simulacrum/common/effect'
+import { Effect, EffectSourceType } from '@simulacrum/common/effect'
 import { ApplicationContext } from '@simulacrum/common/context'
 import { ResourceCost } from '@simulacrum/common/resource-pool'
 import { Referencable, Reference } from '@bessemer/cornerstone/reference'
@@ -88,7 +88,7 @@ export const getAbilities = (abilities: Array<AbilityReference>, context: Applic
 
 export const getEffectsForAbility = (ability: Ability): Array<Effect> => {
   return ability.effects.map((effect) => {
-    const sourcedEffect: Effect = { ...effect, source: ability.reference }
+    const sourcedEffect: Effect = { ...effect, source: { type: EffectSourceType.Ability, ability: ability.reference } }
     return sourcedEffect
   })
 }

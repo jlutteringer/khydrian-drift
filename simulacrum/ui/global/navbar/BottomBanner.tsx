@@ -1,16 +1,19 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
-import { Box, Container, Popper, Stack, Typography } from '@mui/material'
+import React, { useEffect, useRef, useState } from 'react'
+import { Box, Container, Fade, Popper, Stack, Typography } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { NavbarTileSquareImage } from '@simulacrum/ui/global/navbar/NavbarTiles'
+import { usePathname } from 'next/navigation'
 
 type BottomBannerContent = {
   label: string
   content: React.JSX.Element
 }
 
+// JOHN there's probably some kind of abstract component that can be pulled out of this
 export const BottomBanner = () => {
+  const pathname = usePathname()
   const container = useRef<HTMLDivElement>(null)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
 
@@ -26,65 +29,34 @@ export const BottomBanner = () => {
     setActiveMenu(null)
   }
 
+  useEffect(() => {
+    closeMenu()
+  }, [pathname])
+
   const content: Array<BottomBannerContent> = [
     {
       label: 'Collections',
-      content: (
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Box
-            sx={{
-              bgcolor: 'grey.800',
-              p: 2,
-              borderRadius: 2,
-              flex: 1,
-            }}
-          >
-            <Typography
-              variant="body2"
-              color="white"
-            >
-              My Characters
-            </Typography>
-            <Typography
-              variant="body2"
-              color="white"
-            >
-              My Campaigns
-            </Typography>
-            <Typography
-              variant="body2"
-              color="white"
-            >
-              My Encounters
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              bgcolor: 'grey.800',
-              p: 2,
-              borderRadius: 2,
-              flex: 1,
-            }}
-          >
-            <Typography
-              variant="body2"
-              color="white"
-            >
-              My Homebrew Creations
-            </Typography>
-            <Typography
-              variant="body2"
-              color="white"
-            >
-              My Dice
-            </Typography>
-          </Box>
-        </Box>
-      ),
+      content: <Box>Placeholder Content</Box>,
     },
     {
       label: 'Tools',
       content: <ToolsDropdown />,
+    },
+    {
+      label: 'Game Rules',
+      content: <Box>Placeholder Content</Box>,
+    },
+    {
+      label: 'Sources',
+      content: <Box>Placeholder Content</Box>,
+    },
+    {
+      label: 'Subscribe',
+      content: <Box>Placeholder Content</Box>,
+    },
+    {
+      label: 'Shop',
+      content: <Box>Placeholder Content</Box>,
     },
   ]
 
@@ -107,7 +79,7 @@ export const BottomBanner = () => {
                   alignItems: 'center',
                   cursor: 'pointer',
                   py: 2,
-                  px: 3,
+                  px: 2,
                   transition: 'background-color 0.3s, color 0.3s',
                   '&:hover': {
                     bgcolor: 'grey.800',
@@ -123,19 +95,27 @@ export const BottomBanner = () => {
               <Popper
                 open={activeMenu === item.label}
                 anchorEl={container.current}
+                transition
               >
-                <Box
-                  sx={{
-                    bgcolor: 'grey.800',
-                    p: 1,
-                    borderTopLeftRadius: 0,
-                    borderTopRightRadius: 0,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-                    width: '100vw', // Span the full viewport width
-                  }}
-                >
-                  <Container maxWidth="lg">{item.content}</Container>
-                </Box>
+                {({ TransitionProps }) => (
+                  <Fade
+                    {...TransitionProps}
+                    timeout={300}
+                  >
+                    <Box
+                      sx={{
+                        bgcolor: 'grey.800',
+                        p: 1,
+                        borderTopLeftRadius: 0,
+                        borderTopRightRadius: 0,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                        width: '100vw', // Span the full viewport width
+                      }}
+                    >
+                      <Container maxWidth="lg">{item.content}</Container>
+                    </Box>
+                  </Fade>
+                )}
               </Popper>
             </Box>
           ))}

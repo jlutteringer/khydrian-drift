@@ -2,7 +2,7 @@ import { TraitReference } from '@simulacrum/common/trait'
 import { ApplicationContext } from '@simulacrum/common/context'
 import { Effect } from '@simulacrum/common/effect'
 import { CharacterChoice, CharacterSelection, EvaluateCharacterOptionsResult } from '@simulacrum/common/character/character-option'
-import { CharacterOptions } from '@simulacrum/common/character/index'
+import { CharacterOptions, CharacterProgression } from '@simulacrum/common/character/index'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { AbilityReference, AbilityState } from '@simulacrum/common/ability'
 import { Characteristic, CharacteristicValue } from '@simulacrum/common/characteristic'
@@ -90,7 +90,7 @@ const evaluateCharacterOptions = (character: CharacterRecord, context: Applicati
 const getCharacterChoiceTable = (character: CharacterState, context: ApplicationContext): ProgressionTable<CharacterChoice> => {
   const selectedTraits = ProgressionTables.getValues(character.traits)
   const expressionContext = buildExpressionContext(character, context)
-  const characterOptionTable = ProgressionTables.mapRows(getProgressionEffects(character, context), (effects, level) => {
+  const characterOptionTable = ProgressionTables.mapRows(CharacterProgression.buildEffectsTable(character, context), (effects, level) => {
     const gainCharacterOptionEffects = Effects.filter(effects, Effects.GainCharacterOption)
 
     return gainCharacterOptionEffects
@@ -124,19 +124,9 @@ const getCharacterChoiceTable = (character: CharacterState, context: Application
 }
 
 const getAllEffects = (character: CharacterSheet, context: ApplicationContext): Array<Effect> => {
-  const progressionEffects = ProgressionTables.getValues(getProgressionEffects(character, context))
+  const progressionEffects = ProgressionTables.getValues(CharacterProgression.buildEffectsTable(character, context))
   const abilityEffects = character.abilities.flatMap((ability) => Abilities.getEffectsForAbility(ability.ability))
   return [...progressionEffects, ...abilityEffects]
-}
-
-const getProgressionEffects = (character: CharacterSheet, context: ApplicationContext): ProgressionTable<Effect> => {
-  const globalEffects = ProgressionTables.capAtLevel(context.ruleset.progressionTable, character.level)
-  const traitEffects = ProgressionTables.flatMap(character.traits, (reference) => {
-    const trait = Traits.getTrait(reference, context)
-    return Traits.getEffectsForTrait(trait)
-  })
-
-  return ProgressionTables.merge(globalEffects, traitEffects)
 }
 
 const buildCharacterState = (character: CharacterRecord, context: ApplicationContext): CharacterState => {
