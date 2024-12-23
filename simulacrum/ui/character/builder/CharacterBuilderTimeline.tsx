@@ -6,8 +6,7 @@ import { AbilityIcon, CharacterOptionIcon, DescriptiveEffectIcon } from '@simula
 import { Block, Check, HorizontalRule, MoreHoriz, QuestionMark } from '@mui/icons-material'
 import { Objects } from '@bessemer/cornerstone'
 import { CharacterBuilderState } from '@simulacrum/ui/character/builder/use-character-builder'
-import { CharacterProgression } from '@simulacrum/common/character'
-import { useBrowseContext } from '@simulacrum/ui/global/use-context'
+import { useBrowseContext } from '@simulacrum/ui/common/use-context'
 import { Abilities, ProgressionTables, ResourcePools, Traits } from '@simulacrum/common'
 import { CharacterProgressionEntry } from '@simulacrum/common/character/character-progression'
 import {
@@ -23,16 +22,10 @@ import {
 import { SvgIconOwnProps } from '@mui/material/SvgIcon/SvgIcon'
 
 export const CharacterBuilderTimeline = ({ characterBuilder }: { characterBuilder: CharacterBuilderState }) => {
-  const context = useBrowseContext()
-  const character = characterBuilder.character
-  const table = CharacterProgression.buildProgressionTable(character, context)
-
-  console.log('CharacterBuilderTimeline', table)
-
   return (
     <>
       <Timeline position="right">
-        {ProgressionTables.getEntries(table).map(([level, entry]) => {
+        {ProgressionTables.getEntries(characterBuilder.progressionTable).map(([level, entry]) => {
           return (
             <CharacterBuilderTimelineEntry
               key={entry.key}

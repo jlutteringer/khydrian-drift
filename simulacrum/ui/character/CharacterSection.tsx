@@ -3,6 +3,8 @@ import { Box, Button, Card, CardContent, Grid, IconButton, InputBase, MenuItem, 
 import SettingsIcon from '@mui/icons-material/Settings'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import SearchIcon from '@mui/icons-material/Search'
+import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
+import { ContentLabels } from '@simulacrum/ui/content'
 
 const characters = [
   { name: "john_lutteringer's Char...", level: 1, campaign: 'Irawulfe' },
@@ -15,30 +17,19 @@ const characters = [
 export const CharacterSection = () => {
   return (
     <div>
-      {/* Header Section */}
-      <Box
-        display="flex"
-        flexDirection={{ xs: 'column', sm: 'row' }}
-        justifyContent="space-between"
-        alignItems={{ xs: 'center', sm: 'center' }}
-        mb={2}
-      >
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          mb={{ xs: 1, sm: 0 }}
-        >
-          My Characters
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddCircleOutlineIcon />}
-          sx={{ width: { xs: '100%', sm: 'auto' } }}
-        >
-          Create a Character
-        </Button>
-      </Box>
+      <StandardPageHeader
+        title={ContentLabels.CharactersTitle}
+        content={
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddCircleOutlineIcon />}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            {ContentLabels.CharactersCreate}
+          </Button>
+        }
+      />
 
       {/* Slots & Controls */}
       <Box

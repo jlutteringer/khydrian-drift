@@ -2,7 +2,9 @@ import { Trait, TraitFilter, TraitFilterProps, TraitReference } from '@simulacru
 import { ProgressionTables, Traits } from '@simulacrum/common'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { Referencable, Reference } from '@bessemer/cornerstone/reference'
-import { Arrays, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Eithers, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { EvaluateExpression } from '@bessemer/cornerstone/expression'
+import { ApplicationContext } from '@simulacrum/common/context'
 
 export enum CharacterOptionType {
   SelectTrait = 'SelectTrait',
@@ -10,7 +12,8 @@ export enum CharacterOptionType {
 
 export type CharacterOptionReference = Reference<'CharacterOption'>
 
-export type CharacterOptionValue = TraitReference
+export type CharacterOptionValueReference = TraitReference
+export type CharacterOptionValue = Trait
 
 export type CharacterOption = Referencable<CharacterOptionReference> & {
   type: CharacterOptionType
@@ -20,11 +23,12 @@ export type CharacterOption = Referencable<CharacterOptionReference> & {
 export type CharacterChoice = {
   option: CharacterOptionReference
   values: Array<CharacterOptionValue>
+  inactiveValues: Array<CharacterOptionValue>
 }
 
 export type CharacterSelection = {
   option: CharacterOptionReference
-  selection: CharacterOptionValue
+  selection: CharacterOptionValueReference
 }
 
 export type EvaluateCharacterOptionsResult = {
@@ -40,10 +44,28 @@ export const selectTraitOption = (reference: CharacterOptionReference | string, 
   }
 }
 
-export const buildChoice = (option: CharacterOption, values: Array<CharacterOptionValue>): CharacterChoice => {
+export const evaluateChoice = (
+  option: CharacterOption,
+  selectedTraits: Array<TraitReference>,
+  evaluate: EvaluateExpression,
+  context: ApplicationContext
+): CharacterChoice => {
+  let traits = Traits.applyFilter(context.ruleset.traits, option.traitFilter)
+
+  traits = traits.filter((trait) => {
+    // Filter out traits we have already selected
+    return !Arrays.contains(selectedTraits, trait.reference)
+  })
+
+  const [values, inactiveValues] = Arrays.bisect(traits, (trait) => {
+    const prerequisitesSatisfied = trait.prerequisites.every(evaluate)
+    return prerequisitesSatisfied ? Eithers.left(trait) : Eithers.right(trait)
+  })
+
   return {
     option: References.getReference(option),
     values,
+    inactiveValues,
   }
 }
 
@@ -77,8 +99,11 @@ export const isSelected = (
   return Objects.isPresent(matchingSelections.find((it) => References.equals(it.selection, References.getReference(selection))))
 }
 
-export const isAllowedValue = (choice: CharacterChoice, optionValue: CharacterOptionValue) => {
-  return Arrays.contains(choice.values, optionValue)
+export const isAllowedValue = (choice: CharacterChoice, optionValue: CharacterOptionValueReference) => {
+  return Arrays.contains(
+    choice.values.map((it) => it.reference),
+    optionValue
+  )
 }
 
 export const validateSelection = (choices: ProgressionTable<CharacterChoice>, selection: CharacterSelection): number => {

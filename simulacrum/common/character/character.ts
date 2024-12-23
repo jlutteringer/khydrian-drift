@@ -9,7 +9,7 @@ import { Characteristic, CharacteristicValue } from '@simulacrum/common/characte
 import { ResourcePoolState } from '@simulacrum/common/resource-pool'
 import { EvaluateExpression, ExpressionContext, Expressions, ExpressionVariable } from '@bessemer/cornerstone/expression'
 import { GenericRecord } from '@bessemer/cornerstone/types'
-import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools, Traits } from '@simulacrum/common'
+import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools } from '@simulacrum/common'
 import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@bessemer/cornerstone'
 
 export namespace CharacterValues {
@@ -102,22 +102,7 @@ const getCharacterChoiceTable = (character: CharacterState, context: Application
   })
 
   const choiceTable = ProgressionTables.map(characterOptionTable, (option) => {
-    let traits = Traits.applyFilter(context.ruleset.traits, option.traitFilter)
-
-    traits = traits.filter((trait) => {
-      // Filter out traits we have already selected
-      return !Arrays.contains(selectedTraits, trait.reference)
-    })
-
-    traits = traits.filter((trait) =>
-      // Filter out traits whose prerequisites we do not meet
-      trait.prerequisites.every((it) => {
-        const result = Expressions.evaluate(it, expressionContext)
-        return result
-      })
-    )
-
-    return CharacterOptions.buildChoice(option, traits.map(References.getReference))
+    return CharacterOptions.evaluateChoice(option, selectedTraits, Expressions.evaluator(expressionContext), context)
   })
 
   return choiceTable

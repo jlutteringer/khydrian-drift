@@ -3,9 +3,12 @@ import { Characters } from '@simulacrum/common/character'
 import Grid from '@mui/material/Grid2'
 import { CharacterBuilderTimeline } from '@simulacrum/ui/character/builder/CharacterBuilderTimeline'
 import * as React from 'react'
-import { useBrowseContext } from '@simulacrum/ui/global/use-context'
+import { useBrowseContext } from '@simulacrum/ui/common/use-context'
 import { useCharacterBuilder } from '@simulacrum/ui/character/builder/use-character-builder'
 import { CharacterOptionPanel } from '@simulacrum/ui/character/builder/CharacterOptionPanel'
+import Box from '@mui/material/Box'
+import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
+import { ContentLabels } from '@simulacrum/ui/content'
 
 export const CharacterBuilder = () => {
   const context = useBrowseContext()
@@ -18,16 +21,20 @@ export const CharacterBuilder = () => {
   const characterBuilder = useCharacterBuilder({ character })
 
   return (
-    <Grid
-      container
-      spacing={2}
-    >
-      <Grid size={4}>
-        <CharacterBuilderTimeline characterBuilder={characterBuilder} />
+    <Box>
+      <StandardPageHeader title={ContentLabels.CharacterBuilderTitle} />
+
+      <Grid
+        container
+        spacing={2}
+      >
+        <Grid size={4}>
+          <CharacterBuilderTimeline characterBuilder={characterBuilder} />
+        </Grid>
+        <Grid size={8}>
+          <CharacterOptionPanel characterBuilder={characterBuilder} />
+        </Grid>
       </Grid>
-      <Grid size={8}>
-        <CharacterOptionPanel characterBuilder={characterBuilder} />
-      </Grid>
-    </Grid>
+    </Box>
   )
 }

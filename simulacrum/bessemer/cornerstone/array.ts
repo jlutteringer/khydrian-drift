@@ -13,7 +13,8 @@ import {
 } from 'lodash-es'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
 import { Signable } from '@bessemer/cornerstone/signature'
-import { Signatures } from '@bessemer/cornerstone'
+import { Eithers, Signatures } from '@bessemer/cornerstone'
+import { Either } from '@bessemer/cornerstone/either'
 
 export const equalWith = <T>(first: Array<T>, second: Array<T>, equalitor: Equalitor<T>): boolean => {
   if (first.length !== second.length) {
@@ -112,4 +113,11 @@ export const permute = <T>(values: Array<T>): Array<Array<T>> => {
 
 export const cartesianProduct = <T>(...arrays: Array<Array<T>>): Array<Array<T>> => {
   return arrays.reduce<Array<Array<T>>>((acc, array) => acc.flatMap((product) => array.map((element) => [...product, element])), [[]])
+}
+
+export const bisect = <T, L, R>(array: Array<T>, bisector: (element: T, index: number) => Either<L, R>): [Array<L>, Array<R>] => {
+  const bisected = array.map(bisector)
+  const lefts = bisected.filter(Eithers.isLeft).map((it) => it.value)
+  const rights = bisected.filter(Eithers.isRight).map((it) => it.value)
+  return [lefts, rights]
 }
