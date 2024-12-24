@@ -2,7 +2,7 @@ import { Attribute, AttributeValue, Modifier } from '@simulacrum/common/attribut
 import { Attributes, Effects } from '@simulacrum/common'
 import { Effect } from '@simulacrum/common/effect'
 import { CharacterInitialValues } from '@simulacrum/common/character/character'
-import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { EvaluateExpression, Expression, Expressions, ExpressionVariable, NumericExpressions, ReducingExpression } from '@bessemer/cornerstone/expression'
 import { Objects, Preconditions, References } from '@bessemer/cornerstone'
 
@@ -28,7 +28,7 @@ export type CharacteristicValue<T> = AttributeValue<T> & {
   characteristic: CharacteristicReference<T>
 }
 
-export const defineTemplate = <T>(id: CharacteristicReference<T> | string, name: string, path: string): CharacteristicTemplate<T> => {
+export const defineTemplate = <T>(id: ReferenceType<CharacteristicReference<T>>, name: string, path: string): CharacteristicTemplate<T> => {
   const reference = References.reference(id, 'Characteristic', name)
 
   return {

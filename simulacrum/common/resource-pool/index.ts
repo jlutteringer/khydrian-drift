@@ -1,7 +1,7 @@
 import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
 import { ApplicationContext } from '@simulacrum/common/context'
 import { EvaluateExpression, Expression } from '@bessemer/cornerstone/expression'
-import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Preconditions, References } from '@bessemer/cornerstone'
 
 export type ResourcePool = {
@@ -34,7 +34,7 @@ export type ResourceCost = {
   resource: ResourcePool | ResourcePoolReference
 }
 
-export const defineResourcePool = (reference: ResourcePoolReference | string, props: ResourcePoolProps): ResourcePoolDefinition => {
+export const defineResourcePool = (reference: ReferenceType<ResourcePoolReference>, props: ResourcePoolProps): ResourcePoolDefinition => {
   return {
     reference: References.reference(reference, 'ResourcePoolDefinition', props.name),
     ...props,

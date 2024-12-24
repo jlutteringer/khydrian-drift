@@ -2,7 +2,7 @@ import { Effect } from '@simulacrum/common/effect'
 import { ApplicationContext } from '@simulacrum/common/context'
 import { Archetype, ArchetypeReference } from '@simulacrum/common/archetype'
 import { CharacterValues } from '@simulacrum/common/character/character'
-import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Expression, Expressions } from '@bessemer/cornerstone/expression'
 import { Arrays, Preconditions, References } from '@bessemer/cornerstone'
 
@@ -30,7 +30,7 @@ export const reference = (id: string, name: string): TraitReference => {
   return References.reference(id, 'Trait', name)
 }
 
-export const defineTrait = (reference: TraitReference | string, props: TraitProps): Trait => {
+export const defineTrait = (reference: ReferenceType<TraitReference>, props: TraitProps): Trait => {
   return {
     reference: References.reference(reference, 'Trait', props.name),
     ...props,

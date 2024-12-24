@@ -2,7 +2,7 @@ import { LoadoutTypeReference } from '@simulacrum/common/loadout'
 import { Effect, EffectSourceType } from '@simulacrum/common/effect'
 import { ApplicationContext } from '@simulacrum/common/context'
 import { ResourceCost } from '@simulacrum/common/resource-pool'
-import { Referencable, Reference } from '@bessemer/cornerstone/reference'
+import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Expression } from '@bessemer/cornerstone/expression'
 import { Preconditions, References } from '@bessemer/cornerstone'
 
@@ -58,7 +58,7 @@ export type AbilityState = {
   ability: Ability
 }
 
-export const defineAbility = (reference: AbilityReference | string, props: AbilityProps): Ability => {
+export const defineAbility = (reference: ReferenceType<AbilityReference>, props: AbilityProps): Ability => {
   return {
     reference: References.reference(reference, 'Ability', props.name),
     name: props.name,

@@ -34,7 +34,9 @@
       "@bessemer/react": ["./bessemer/react"],
       "@bessemer/react/*": ["./bessemer/react/*"],
       "@bessemer/mui": ["./bessemer/mui"],
-      "@bessemer/mui/*": ["./bessemer/mui/*"]
+      "@bessemer/mui/*": ["./bessemer/mui/*"],
+      "@bessemer/codex": ["./bessemer/codex"],
+      "@bessemer/codex/*": ["./bessemer/codex/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

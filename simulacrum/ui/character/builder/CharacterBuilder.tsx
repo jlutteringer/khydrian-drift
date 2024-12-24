@@ -8,7 +8,7 @@ import { useCharacterBuilder } from '@simulacrum/ui/character/builder/use-charac
 import { CharacterOptionPanel } from '@simulacrum/ui/character/builder/CharacterOptionPanel'
 import Box from '@mui/material/Box'
 import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
-import { ContentLabels } from '@simulacrum/ui/content'
+import { ContentLabelComponents } from '@simulacrum/ui/content'
 
 export const CharacterBuilder = () => {
   const context = useBrowseContext()
@@ -22,7 +22,7 @@ export const CharacterBuilder = () => {
 
   return (
     <Box>
-      <StandardPageHeader title={ContentLabels.CharacterBuilderTitle} />
+      <StandardPageHeader title={ContentLabelComponents.CharacterBuilderTitle} />
 
       <Grid
         container
