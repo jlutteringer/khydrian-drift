@@ -1,10 +1,10 @@
 import { LoadoutTypeReference } from '@simulacrum/common/loadout'
 import { Effect, EffectSourceType } from '@simulacrum/common/effect'
-import { ApplicationContext } from '@simulacrum/common/context'
 import { ResourceCost } from '@simulacrum/common/resource-pool'
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Expression } from '@bessemer/cornerstone/expression'
 import { Preconditions, References } from '@bessemer/cornerstone'
+import { ApplicationContext } from '@simulacrum/common/application'
 
 export enum ActionType {
   Free = 'Free',

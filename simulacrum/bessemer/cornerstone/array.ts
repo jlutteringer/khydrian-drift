@@ -13,8 +13,9 @@ import {
 } from 'lodash-es'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
 import { Signable } from '@bessemer/cornerstone/signature'
-import { Eithers, Signatures } from '@bessemer/cornerstone'
+import { Comparators, Eithers, Signatures } from '@bessemer/cornerstone'
 import { Either } from '@bessemer/cornerstone/either'
+import { Comparator } from '@bessemer/cornerstone/comparator'
 
 export const equalWith = <T>(first: Array<T>, second: Array<T>, equalitor: Equalitor<T>): boolean => {
   if (first.length !== second.length) {
@@ -54,13 +55,13 @@ export const containsBy = <T>(array: Array<T>, element: T, mapper: (element: T) 
 
 export const contains = <T extends Signable>(array: Array<T>, element: T): boolean => containsBy(array, element, Signatures.sign)
 
-export const containsAllWith = <T>(first: Array<T>, second: Array<T>, equalitor: Equalitor<T>): boolean => isEmpty(differenceWith(second, first, equalitor))
+export const containsAllWith = <T>(first: Array<T>, second: Array<T>, equalitor: Equalitor<T>): boolean =>
+  isEmpty(differenceWith(second, first, equalitor))
 
-export const containsAllBy = <T>(first: Array<T>, second: Array<T>, mapper: (element: T) => Signable): boolean => isEmpty(differenceBy(second, first, mapper))
+export const containsAllBy = <T>(first: Array<T>, second: Array<T>, mapper: (element: T) => Signable): boolean =>
+  isEmpty(differenceBy(second, first, mapper))
 
 export const containsAll = <T extends Signable>(first: Array<T>, second: Array<T>): boolean => isEmpty(difference(second, first))
-
-export const concatenate = concat
 
 export const dedupeWith = <T>(array: Array<T>, equalitor: Equalitor<T>): Array<T> => {
   return uniqWith(array, equalitor)
@@ -73,6 +74,21 @@ export const dedupeBy = <T>(array: Array<T>, mapper: (element: T) => Signable): 
 export const dedupe = <T extends Signable>(array: Array<T>): Array<T> => {
   return dedupeBy(array, Signatures.sign)
 }
+
+export const sortWith = <T>(array: Array<T>, comparator: Comparator<T>): Array<T> => {
+  return [...array].sort(comparator)
+}
+
+export const sortBy = <T>(array: Array<T>, mapper: (element: T) => Signable): Array<T> => {
+  return sortWith(
+    array,
+    Comparators.compareBy((it) => Signatures.sign(mapper(it)), Comparators.natural())
+  )
+}
+
+export const sort = <T extends Signable>(array: Array<T>): Array<T> => sortBy(array, Signatures.sign)
+
+export const concatenate = concat
 
 export const first = _first
 // JOHN validate that it is indeed the only...
@@ -90,29 +106,6 @@ export const rest = <T>(array: Array<T>, elementsToSkip: number = 1): Array<T> =
 
 export const clear = (array: Array<unknown>): void => {
   remove(array, () => true)
-}
-
-export const permute = <T>(values: Array<T>): Array<Array<T>> => {
-  let result: Array<Array<T>> = []
-
-  const permuteInternal = (arr: Array<T>, m: Array<T> = []) => {
-    if (arr.length === 0) {
-      result.push(m)
-    } else {
-      for (let i = 0; i < arr.length; i++) {
-        let curr = arr.slice()
-        let next = curr.splice(i, 1)
-        permuteInternal(curr.slice(), m.concat(next))
-      }
-    }
-  }
-
-  permuteInternal(values)
-  return result
-}
-
-export const cartesianProduct = <T>(...arrays: Array<Array<T>>): Array<Array<T>> => {
-  return arrays.reduce<Array<Array<T>>>((acc, array) => acc.flatMap((product) => array.map((element) => [...product, element])), [[]])
 }
 
 export const bisect = <T, L, R>(array: Array<T>, bisector: (element: T, index: number) => Either<L, R>): [Array<L>, Array<R>] => {

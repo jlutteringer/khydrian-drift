@@ -1,10 +1,10 @@
-import { ApplicationContext } from '@simulacrum/common/context'
 import { Dnd5e } from '@simulacrum/rulesets/dnd-5e'
 import { CharacterRecord } from '@simulacrum/common/character/character'
 import { ProgressionTables } from '@simulacrum/common'
+import { ApplicationContext } from '@simulacrum/common/application'
 
 export const buildTestContext = (): ApplicationContext => {
-  return { ruleset: Dnd5e }
+  return { ruleset: Dnd5e, environment: 'test' }
 }
 
 export const CommonerLevel1: CharacterRecord = {

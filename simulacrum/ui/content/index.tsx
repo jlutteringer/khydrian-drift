@@ -1,5 +1,5 @@
-import { Codex } from '@bessemer/codex'
-import { ContentLabelComponent } from '@bessemer/codex/component/ContentLabelComponent'
+import { Codex } from '@bessemer/core'
+import { ContentLabel } from '@bessemer/core/codex/component/ContentLabel'
 
 export namespace ContentLabels {
   export const CharactersTitle = Codex.label('characters.title', 'Characters')
@@ -8,7 +8,7 @@ export namespace ContentLabels {
 }
 
 export namespace ContentLabelComponents {
-  export const CharactersTitle = <ContentLabelComponent content={ContentLabels.CharactersTitle} />
-  export const CharactersCreate = <ContentLabelComponent content={ContentLabels.CharactersCreate} />
-  export const CharacterBuilderTitle = <ContentLabelComponent content={ContentLabels.CharacterBuilderTitle} />
+  export const CharactersTitle = <ContentLabel content={ContentLabels.CharactersTitle} />
+  export const CharactersCreate = <ContentLabel content={ContentLabels.CharactersCreate} />
+  export const CharacterBuilderTitle = <ContentLabel content={ContentLabels.CharacterBuilderTitle} />
 }

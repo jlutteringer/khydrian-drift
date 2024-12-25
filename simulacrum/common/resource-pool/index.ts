@@ -1,8 +1,8 @@
 import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
-import { ApplicationContext } from '@simulacrum/common/context'
 import { EvaluateExpression, Expression } from '@bessemer/cornerstone/expression'
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Preconditions, References } from '@bessemer/cornerstone'
+import { ApplicationContext } from '@simulacrum/common/application'
 
 export type ResourcePool = {
   size: Expression<number>
@@ -47,7 +47,11 @@ export const getResourcePool = (resourcePool: ResourcePoolReference, context: Ap
   return matchingResourcePool
 }
 
-export const buildInitialState = (reference: ResourcePoolReference, evaluate: EvaluateExpression, context: ApplicationContext): [string, ResourcePoolState] => {
+export const buildInitialState = (
+  reference: ResourcePoolReference,
+  evaluate: EvaluateExpression,
+  context: ApplicationContext
+): [string, ResourcePoolState] => {
   const resourcePool = getResourcePool(reference, context)
   return [
     resourcePool.path,

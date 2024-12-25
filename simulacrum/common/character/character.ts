@@ -1,5 +1,4 @@
 import { TraitReference } from '@simulacrum/common/trait'
-import { ApplicationContext } from '@simulacrum/common/context'
 import { Effect } from '@simulacrum/common/effect'
 import { CharacterChoice, CharacterSelection, EvaluateCharacterOptionsResult } from '@simulacrum/common/character/character-option'
 import { CharacterOptions, CharacterProgression } from '@simulacrum/common/character/index'
@@ -11,6 +10,7 @@ import { EvaluateExpression, ExpressionContext, Expressions, ExpressionVariable 
 import { GenericRecord } from '@bessemer/cornerstone/types'
 import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools } from '@simulacrum/common'
 import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { ApplicationContext } from '@simulacrum/common/application'
 
 export namespace CharacterValues {
   export const Level: ExpressionVariable<number> = Expressions.variable('Level')
@@ -197,7 +197,11 @@ const evaluateCharacterAbilities = (character: CharacterState, context: Applicat
   return gainAbilityEffects.map((it) => Abilities.buildInitialState(it.ability, context))
 }
 
-const evaluateResourcePools = (character: CharacterState, evaluate: EvaluateExpression, context: ApplicationContext): Record<string, ResourcePoolState> => {
+const evaluateResourcePools = (
+  character: CharacterState,
+  evaluate: EvaluateExpression,
+  context: ApplicationContext
+): Record<string, ResourcePoolState> => {
   const gainResourcePoolEffects = Effects.filter(getAllEffects(character, context), Effects.GainResourcePool)
   return Object.fromEntries(gainResourcePoolEffects.map((it) => ResourcePools.buildInitialState(it.resourcePool, evaluate, context)))
 }

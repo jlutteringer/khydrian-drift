@@ -1,4 +1,4 @@
-import { Arrays } from '@bessemer/cornerstone/index'
+import { Arrays, Sets } from '@bessemer/cornerstone/index'
 
 export interface Combinable {
   combinability: Combinability
@@ -36,5 +36,5 @@ export const combinations = <T extends Combinable>(combinables: Array<T>): Array
     return [stackableCombination, ...singletonCombinations]
   })
 
-  return Arrays.cartesianProduct(...classCombinations).flatMap((it) => it)
+  return Sets.cartesianProduct(...classCombinations).flatMap((it) => it)
 }

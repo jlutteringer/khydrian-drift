@@ -1,9 +1,16 @@
 import { ResourcePool } from '@simulacrum/common/resource-pool'
 import { TimeUnit } from '@simulacrum/common/types'
-import { ArrayExpressions, EvaluateExpression, Expression, Expressions, NumericExpressions, ReducingExpression } from '@bessemer/cornerstone/expression'
+import {
+  ArrayExpressions,
+  EvaluateExpression,
+  Expression,
+  Expressions,
+  NumericExpressions,
+  ReducingExpression,
+} from '@bessemer/cornerstone/expression'
 import { Patch } from '@bessemer/cornerstone/patch'
 import { Combinability } from '@bessemer/cornerstone/combinable'
-import { Arrays, Combinables, Equalitors, Objects, Patches } from '@bessemer/cornerstone'
+import { Arrays, Combinables, Equalitors, Objects, Patches, Sets } from '@bessemer/cornerstone'
 
 export type Attributable<T> =
   | {
@@ -108,7 +115,7 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
   // evaluate(reducer)
 
   const combinationValues: Array<[T, Array<ModifierValue<T>>]> = modifierCombinations.map((combination) => {
-    const permutationValues: Array<[T, Array<ModifierValue<T>>]> = Arrays.permute(combination).map((permutations) => {
+    const permutationValues: Array<[T, Array<ModifierValue<T>>]> = Sets.permute(combination).map((permutations) => {
       const { value, patchValues } = Patches.resolveWithDetails(
         initialValue,
         permutations.map((it) => it.value),

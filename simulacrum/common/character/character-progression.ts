@@ -2,11 +2,11 @@ import { CharacterOption, CharacterSelection } from '@simulacrum/common/characte
 import { Effect, EffectSource, EffectSourceType } from '@simulacrum/common/effect'
 import { TraitReference } from '@simulacrum/common/trait'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
-import { ApplicationContext } from '@simulacrum/common/context'
 import { Effects, ProgressionTables, Traits } from '@simulacrum/common'
 import { CharacterSheet } from '@simulacrum/common/character/character'
 import { Arrays, Objects, References } from '@bessemer/cornerstone'
 import { CharacterOptions } from '@simulacrum/common/character/index'
+import { ApplicationContext } from '@simulacrum/common/application'
 
 export type CharacterEffectSource = { type: EffectSourceType.Ruleset } | { type: EffectSourceType.Trait; trait: TraitReference }
 

@@ -4,7 +4,7 @@ import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { Referencable, Reference } from '@bessemer/cornerstone/reference'
 import { Arrays, Eithers, Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { EvaluateExpression } from '@bessemer/cornerstone/expression'
-import { ApplicationContext } from '@simulacrum/common/context'
+import { ApplicationContext } from '@simulacrum/common/application'
 
 export enum CharacterOptionType {
   SelectTrait = 'SelectTrait',
@@ -86,7 +86,11 @@ export const getSelection = (
   return matchingSelection ?? null
 }
 
-export const hasSelection = (selections: ProgressionTable<CharacterSelection>, option: CharacterOptionReference | CharacterOption, level: number): boolean => {
+export const hasSelection = (
+  selections: ProgressionTable<CharacterSelection>,
+  option: CharacterOptionReference | CharacterOption,
+  level: number
+): boolean => {
   return Objects.isPresent(getSelection(selections, option, level))
 }
 

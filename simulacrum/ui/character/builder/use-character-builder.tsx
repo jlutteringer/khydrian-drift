@@ -1,6 +1,5 @@
 import { CharacterRecord, CharacterState } from '@simulacrum/common/character/character'
 import { CharacterOptions, CharacterProgression, Characters } from '@simulacrum/common/character'
-import { useBrowseContext } from '@simulacrum/ui/common/use-context'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { CharacterProgressionEntry } from '@simulacrum/common/character/character-progression'
 import { useMemo, useState } from 'react'
@@ -8,6 +7,8 @@ import { ProgressionTables } from '@simulacrum/common'
 import { CharacterChoice } from '@simulacrum/common/character/character-option'
 import { Objects, Preconditions } from '@bessemer/cornerstone'
 import { Expressions } from '@bessemer/cornerstone/expression'
+import { useBrowseContext } from '@bessemer/framework/context/use-browse-context'
+import { BrowseContext } from '@simulacrum/common/application'
 
 export type CharacterBuilderProps = {
   character: CharacterRecord
@@ -22,17 +23,17 @@ export type CharacterBuilderState = {
 }
 
 export const useCharacterBuilder = ({ character }: CharacterBuilderProps): CharacterBuilderState => {
-  const context = useBrowseContext()
+  const context = useBrowseContext<BrowseContext>()
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterRecord>(character)
   const [selectedEntryKey, setSelectedEntryKey] = useState<string | null>(null)
 
   const characterSheet = useMemo(() => {
-    const characterSheet = Characters.buildCharacterDefinition(character, context)
+    const characterSheet = Characters.buildCharacterDefinition(character, context.application)
     return characterSheet
   }, [selectedCharacter])
 
   const progressionTable = useMemo(() => {
-    const progressionTable = CharacterProgression.buildProgressionTable(characterSheet, context)
+    const progressionTable = CharacterProgression.buildProgressionTable(characterSheet, context.application)
     return progressionTable
   }, [characterSheet])
 
@@ -47,12 +48,12 @@ export const useCharacterBuilder = ({ character }: CharacterBuilderProps): Chara
     }
     Preconditions.isPresent(selectedEntry.option)
 
-    const expressionContext = Characters.buildExpressionContext(characterSheet, context)
+    const expressionContext = Characters.buildExpressionContext(characterSheet, context.application)
     const choice = CharacterOptions.evaluateChoice(
       selectedEntry.option,
       ProgressionTables.getValues(characterSheet.traits),
       Expressions.evaluator(expressionContext),
-      context
+      context.application
     )
 
     return choice

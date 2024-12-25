@@ -6,7 +6,6 @@ import { AbilityIcon, CharacterOptionIcon, DescriptiveEffectIcon } from '@simula
 import { Block, Check, HorizontalRule, MoreHoriz, QuestionMark } from '@mui/icons-material'
 import { Objects } from '@bessemer/cornerstone'
 import { CharacterBuilderState } from '@simulacrum/ui/character/builder/use-character-builder'
-import { useBrowseContext } from '@simulacrum/ui/common/use-context'
 import { Abilities, ProgressionTables, ResourcePools, Traits } from '@simulacrum/common'
 import { CharacterProgressionEntry } from '@simulacrum/common/character/character-progression'
 import {
@@ -20,6 +19,8 @@ import {
   GainTraitEffect,
 } from '@simulacrum/common/effect'
 import { SvgIconOwnProps } from '@mui/material/SvgIcon/SvgIcon'
+import { useBrowseContext } from '@bessemer/framework/context/use-browse-context'
+import { BrowseContext } from '@simulacrum/common/application'
 
 export const CharacterBuilderTimeline = ({ characterBuilder }: { characterBuilder: CharacterBuilderState }) => {
   return (
@@ -49,12 +50,12 @@ const CharacterBuilderTimelineEntry = ({
   level: number
   characterBuilder: CharacterBuilderState
 }) => {
-  const context = useBrowseContext()
+  const context = useBrowseContext<BrowseContext>()
 
   let timeLineContentHeader = <></>
   if (Objects.isPresent(entry.option)) {
     if (Objects.isPresent(entry.selection)) {
-      const selectedTrait = Traits.getTrait(entry.selection.selection, context)
+      const selectedTrait = Traits.getTrait(entry.selection.selection, context.application)
       timeLineContentHeader = <Typography variant="subtitle1">{selectedTrait.name}</Typography>
     } else {
       timeLineContentHeader = <Typography variant="subtitle1">Select Option</Typography>
@@ -155,7 +156,7 @@ const EffectIcon = (props: { effect: Effect } & SvgIconOwnProps) => {
 }
 
 const EffectLabel = ({ effect }: { effect: Effect }) => {
-  const context = useBrowseContext()
+  const context = useBrowseContext<BrowseContext>()
 
   switch (effect.type) {
     case EffectTypeEnum.Descriptive:
@@ -163,17 +164,17 @@ const EffectLabel = ({ effect }: { effect: Effect }) => {
     case EffectTypeEnum.GainCharacterOption:
       return '???'
     case EffectTypeEnum.GainTrait:
-      return Traits.getTrait((effect as GainTraitEffect).trait, context).name
+      return Traits.getTrait((effect as GainTraitEffect).trait, context.application).name
     case EffectTypeEnum.GainCharacteristic:
       return '???'
     case EffectTypeEnum.ModifyCharacteristic:
       return '???'
     case EffectTypeEnum.GainAbility:
-      return Abilities.getAbility((effect as GainAbilityEffect).ability, context).name
+      return Abilities.getAbility((effect as GainAbilityEffect).ability, context.application).name
     case EffectTypeEnum.ModifyAbility:
       return '???'
     case EffectTypeEnum.GainResourcePool:
-      return ResourcePools.getResourcePool((effect as GainResourcePoolEffect).resourcePool, context).name
+      return ResourcePools.getResourcePool((effect as GainResourcePoolEffect).resourcePool, context.application).name
     case EffectTypeEnum.ModifyResourcePool:
       return '???'
   }
@@ -181,15 +182,15 @@ const EffectLabel = ({ effect }: { effect: Effect }) => {
 
 // JOHN this could be more efficient
 const EffectSourceLabel = ({ source, level }: { source: EffectSource; level: number }) => {
-  const context = useBrowseContext()
+  const context = useBrowseContext<BrowseContext>()
 
   switch (source.type) {
     case EffectSourceType.Ruleset:
       return `Level ${level}`
     case EffectSourceType.Trait:
-      return Traits.getTrait(source.trait, context).name
+      return Traits.getTrait(source.trait, context.application).name
     case EffectSourceType.Ability:
-      return Abilities.getAbility(source.ability, context).name
+      return Abilities.getAbility(source.ability, context.application).name
   }
 }
 

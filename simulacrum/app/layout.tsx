@@ -20,9 +20,13 @@ export const metadata: Metadata = {
 
 const RootLayout = ({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode
+  params: { locale: string }
 }>) => {
+  // await Bessemer.initialize(Application, ApplicationOptions)
+
   return (
     <html lang="en">
       <Head>

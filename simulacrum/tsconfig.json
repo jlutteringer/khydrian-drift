@@ -31,12 +31,12 @@
 
       "@bessemer/cornerstone": ["./bessemer/cornerstone"],
       "@bessemer/cornerstone/*": ["./bessemer/cornerstone/*"],
-      "@bessemer/react": ["./bessemer/react"],
-      "@bessemer/react/*": ["./bessemer/react/*"],
+      "@bessemer/framework": ["./bessemer/framework"],
+      "@bessemer/framework/*": ["./bessemer/framework/*"],
+      "@bessemer/core": ["./bessemer/core"],
+      "@bessemer/core/*": ["./bessemer/core/*"],
       "@bessemer/mui": ["./bessemer/mui"],
       "@bessemer/mui/*": ["./bessemer/mui/*"],
-      "@bessemer/codex": ["./bessemer/codex"],
-      "@bessemer/codex/*": ["./bessemer/codex/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
