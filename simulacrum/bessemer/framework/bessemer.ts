@@ -1,30 +1,42 @@
-import { Environments, FrameworkApplicationContext, FrameworkApplicationOptions, FrameworkBrowseContext, Module } from '@bessemer/framework'
-import { Objects, Preconditions, Properties } from '@bessemer/cornerstone'
+import {
+  ApplicationRuntimeType,
+  BessemerApplication,
+  BessemerApplicationProvider,
+  BessemerOptions,
+  BessemerRuntimeProvider,
+  ClientApplicationType,
+  DehydratedApplicationType,
+} from '@bessemer/framework'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
+import { Async, Durations, Properties } from '@bessemer/cornerstone'
 
-let applicationContext: FrameworkApplicationContext | null = null
-const browseContextStore = new AsyncLocalStorage<{ context: any }>()
-
-export const setContext = <T extends FrameworkBrowseContext>(context: T) => {
-  browseContextStore.run({ context }, () => {})
+export const dehydrateApplication = <T extends BessemerApplication>(context: T): DehydratedApplicationType<T> => {
+  const { runtime, ...rest } = context.client
+  return { client: rest } as DehydratedApplicationType<T>
 }
 
-export const getContext = <T extends FrameworkBrowseContext>(): T => {
-  const store = browseContextStore.getStore()
-  Preconditions.isPresent(store)
-  return store.context
+export const hydrateApplication = <T extends BessemerApplication>(
+  dehydratedContext: DehydratedApplicationType<T>,
+  runtime: ApplicationRuntimeType<T>
+): ClientApplicationType<T> => {
+  return { client: { ...dehydratedContext.client, runtime } }
 }
 
-export const initialize = async <ApplicationContext extends FrameworkApplicationContext, ApplicationOptions extends FrameworkApplicationOptions>(
-  module: Module<ApplicationContext, ApplicationOptions>,
+export type BessemerResult<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
+  application: Application
+  options: ApplicationOptions
+}
+
+export const initializeBessemer = async <Application extends BessemerApplication, ApplicationOptions extends BessemerOptions>(
+  applicationProvider: BessemerApplicationProvider<Application, ApplicationOptions>,
+  runtimeProvider: BessemerRuntimeProvider<Application, ApplicationOptions>,
   properties: PropertyRecord<ApplicationOptions>
-): Promise<void> => {
-  const propertyTags = [Environments.getEnvironmentTag(), ...(module.propertyTags?.() ?? [])]
-  const options = Properties.resolve(properties, propertyTags)
+): Promise<BessemerResult<Application, ApplicationOptions>> => {
+  await Async.sleep(Durations.ofMilliseconds(1000))
 
-  if (Objects.isNil(applicationContext)) {
-    applicationContext = await module.initializeApplication(options)
-  }
-
-  return null!
+  const tags = await applicationProvider.getTags()
+  const options = Properties.resolve(properties, tags)
+  const runtime = runtimeProvider.initializeRuntime(options)
+  const application = await applicationProvider.initializeApplication(options, runtime, tags)
+  return { application, options }
 }

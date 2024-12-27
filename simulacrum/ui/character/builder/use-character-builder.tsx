@@ -7,8 +7,8 @@ import { ProgressionTables } from '@simulacrum/common'
 import { CharacterChoice } from '@simulacrum/common/character/character-option'
 import { Objects, Preconditions } from '@bessemer/cornerstone'
 import { Expressions } from '@bessemer/cornerstone/expression'
-import { useBrowseContext } from '@bessemer/framework/context/use-browse-context'
-import { BrowseContext } from '@simulacrum/common/application'
+import { useApplication } from '@bessemer/framework/use-application'
+import { Application } from '@simulacrum/common/application'
 
 export type CharacterBuilderProps = {
   character: CharacterRecord
@@ -23,17 +23,17 @@ export type CharacterBuilderState = {
 }
 
 export const useCharacterBuilder = ({ character }: CharacterBuilderProps): CharacterBuilderState => {
-  const context = useBrowseContext<BrowseContext>()
+  const application = useApplication<Application>()
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterRecord>(character)
   const [selectedEntryKey, setSelectedEntryKey] = useState<string | null>(null)
 
   const characterSheet = useMemo(() => {
-    const characterSheet = Characters.buildCharacterDefinition(character, context.application)
+    const characterSheet = Characters.buildCharacterDefinition(character, application)
     return characterSheet
   }, [selectedCharacter])
 
   const progressionTable = useMemo(() => {
-    const progressionTable = CharacterProgression.buildProgressionTable(characterSheet, context.application)
+    const progressionTable = CharacterProgression.buildProgressionTable(characterSheet, application)
     return progressionTable
   }, [characterSheet])
 
@@ -48,12 +48,12 @@ export const useCharacterBuilder = ({ character }: CharacterBuilderProps): Chara
     }
     Preconditions.isPresent(selectedEntry.option)
 
-    const expressionContext = Characters.buildExpressionContext(characterSheet, context.application)
+    const expressionContext = Characters.buildExpressionContext(characterSheet, application)
     const choice = CharacterOptions.evaluateChoice(
       selectedEntry.option,
       ProgressionTables.getValues(characterSheet.traits),
       Expressions.evaluator(expressionContext),
-      context.application
+      application
     )
 
     return choice

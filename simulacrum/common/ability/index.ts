@@ -4,7 +4,7 @@ import { ResourceCost } from '@simulacrum/common/resource-pool'
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Expression } from '@bessemer/cornerstone/expression'
 import { Preconditions, References } from '@bessemer/cornerstone'
-import { ApplicationContext } from '@simulacrum/common/application'
+import { Application } from '@simulacrum/common/application'
 
 export enum ActionType {
   Free = 'Free',
@@ -76,14 +76,14 @@ export const defineAbility = (reference: ReferenceType<AbilityReference>, props:
   }
 }
 
-export const getAbility = (reference: AbilityReference, context: ApplicationContext): Ability => {
-  const ability = context.ruleset.abilities.find((it) => References.equals(it.reference, reference))
+export const getAbility = (reference: AbilityReference, application: Application): Ability => {
+  const ability = application.client.ruleset.abilities.find((it) => References.equals(it.reference, reference))
   Preconditions.isPresent(ability)
   return ability
 }
 
-export const getAbilities = (abilities: Array<AbilityReference>, context: ApplicationContext): Array<Ability> => {
-  return abilities.map((it) => getAbility(it, context))
+export const getAbilities = (abilities: Array<AbilityReference>, application: Application): Array<Ability> => {
+  return abilities.map((it) => getAbility(it, application))
 }
 
 export const getEffectsForAbility = (ability: Ability): Array<Effect> => {
@@ -94,6 +94,6 @@ export const getEffectsForAbility = (ability: Ability): Array<Effect> => {
 }
 
 // JOHN
-export const buildInitialState = (ability: AbilityReference, context: ApplicationContext): AbilityState => {
-  return { ability: getAbility(ability, context) }
+export const buildInitialState = (ability: AbilityReference, application: Application): AbilityState => {
+  return { ability: getAbility(ability, application) }
 }

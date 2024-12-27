@@ -2,7 +2,7 @@ import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
 import { EvaluateExpression, Expression } from '@bessemer/cornerstone/expression'
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Preconditions, References } from '@bessemer/cornerstone'
-import { ApplicationContext } from '@simulacrum/common/application'
+import { Application } from '@simulacrum/common/application'
 
 export type ResourcePool = {
   size: Expression<number>
@@ -41,8 +41,8 @@ export const defineResourcePool = (reference: ReferenceType<ResourcePoolReferenc
   }
 }
 
-export const getResourcePool = (resourcePool: ResourcePoolReference, context: ApplicationContext): ResourcePoolDefinition => {
-  const matchingResourcePool = context.ruleset.resourcePools.find((it) => References.equals(it.reference, resourcePool))
+export const getResourcePool = (resourcePool: ResourcePoolReference, application: Application): ResourcePoolDefinition => {
+  const matchingResourcePool = application.client.ruleset.resourcePools.find((it) => References.equals(it.reference, resourcePool))
   Preconditions.isPresent(matchingResourcePool, () => `Unable to find Resource Pool for Reference: ${JSON.stringify(resourcePool)}`)
   return matchingResourcePool
 }
@@ -50,9 +50,9 @@ export const getResourcePool = (resourcePool: ResourcePoolReference, context: Ap
 export const buildInitialState = (
   reference: ResourcePoolReference,
   evaluate: EvaluateExpression,
-  context: ApplicationContext
+  application: Application
 ): [string, ResourcePoolState] => {
-  const resourcePool = getResourcePool(reference, context)
+  const resourcePool = getResourcePool(reference, application)
   return [
     resourcePool.path,
     {

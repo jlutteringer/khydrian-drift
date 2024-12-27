@@ -8,12 +8,12 @@ import { CharacterOptionPanel } from '@simulacrum/ui/character/builder/Character
 import Box from '@mui/material/Box'
 import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
 import { ContentLabelComponents } from '@simulacrum/ui/content'
-import { useBrowseContext } from '@bessemer/framework/context/use-browse-context'
-import { BrowseContext } from '@simulacrum/common/application'
+import { useApplication } from '@bessemer/framework/use-application'
+import { Application } from '@simulacrum/common/application'
 
 export const CharacterBuilder = () => {
-  const context = useBrowseContext<BrowseContext>()
-  let character = Characters.buildCharacterDefinition(TestHarness.CommonerLevel3, context.application)
+  const application = useApplication<Application>()
+  let character = Characters.buildCharacterDefinition(TestHarness.CommonerLevel3, application)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), context)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectFightingStyle, Archery), context)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter2), context)

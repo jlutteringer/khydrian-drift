@@ -4,7 +4,7 @@ import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { Referencable, Reference } from '@bessemer/cornerstone/reference'
 import { Arrays, Eithers, Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { EvaluateExpression } from '@bessemer/cornerstone/expression'
-import { ApplicationContext } from '@simulacrum/common/application'
+import { Application } from '@simulacrum/common/application'
 
 export enum CharacterOptionType {
   SelectTrait = 'SelectTrait',
@@ -48,9 +48,9 @@ export const evaluateChoice = (
   option: CharacterOption,
   selectedTraits: Array<TraitReference>,
   evaluate: EvaluateExpression,
-  context: ApplicationContext
+  application: Application
 ): CharacterChoice => {
-  let traits = Traits.applyFilter(context.ruleset.traits, option.traitFilter)
+  let traits = Traits.applyFilter(application.client.ruleset.traits, option.traitFilter)
 
   traits = traits.filter((trait) => {
     // Filter out traits we have already selected

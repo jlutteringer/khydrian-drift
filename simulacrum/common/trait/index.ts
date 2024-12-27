@@ -4,7 +4,7 @@ import { CharacterValues } from '@simulacrum/common/character/character'
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Expression, Expressions } from '@bessemer/cornerstone/expression'
 import { Arrays, Preconditions, References } from '@bessemer/cornerstone'
-import { ApplicationContext } from '@simulacrum/common/application'
+import { Application } from '@simulacrum/common/application'
 
 export type TraitReference = Reference<'Trait'>
 
@@ -39,14 +39,14 @@ export const defineTrait = (reference: ReferenceType<TraitReference>, props: Tra
   }
 }
 
-export const getTrait = (trait: TraitReference, context: ApplicationContext): Trait => {
-  const matchingTrait = context.ruleset.traits.find((it) => References.equals(it.reference, trait))
+export const getTrait = (trait: TraitReference, application: Application): Trait => {
+  const matchingTrait = application.client.ruleset.traits.find((it) => References.equals(it.reference, trait))
   Preconditions.isPresent(matchingTrait, () => `Unable to find Trait for Reference: ${JSON.stringify(trait)}`)
   return matchingTrait
 }
 
-export const getTraits = (traits: Array<TraitReference>, context: ApplicationContext): Array<Trait> => {
-  return traits.map((trait) => getTrait(trait, context))
+export const getTraits = (traits: Array<TraitReference>, application: Application): Array<Trait> => {
+  return traits.map((trait) => getTrait(trait, application))
 }
 
 export const traitPrerequisite = (trait: TraitReference | Trait): Expression<boolean> => {

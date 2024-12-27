@@ -6,7 +6,7 @@ import { Effects, ProgressionTables, Traits } from '@simulacrum/common'
 import { CharacterSheet } from '@simulacrum/common/character/character'
 import { Arrays, Objects, References } from '@bessemer/cornerstone'
 import { CharacterOptions } from '@simulacrum/common/character/index'
-import { ApplicationContext } from '@simulacrum/common/application'
+import { Application } from '@simulacrum/common/application'
 
 export type CharacterEffectSource = { type: EffectSourceType.Ruleset } | { type: EffectSourceType.Trait; trait: TraitReference }
 
@@ -21,15 +21,15 @@ export type CharacterProgressionEntry = {
   // modifiers: Array<ModifierValue<unknown>>
 }
 
-export const buildEffectsTable = (character: CharacterSheet, context: ApplicationContext): ProgressionTable<Effect> => {
-  return ProgressionTables.flatMap(buildProgressionTable(character, context), (it) => it.effects)
+export const buildEffectsTable = (character: CharacterSheet, application: Application): ProgressionTable<Effect> => {
+  return ProgressionTables.flatMap(buildProgressionTable(character, application), (it) => it.effects)
 }
 
-export const buildProgressionTable = (character: CharacterSheet, context: ApplicationContext): ProgressionTable<CharacterProgressionEntry> => {
-  const rulesetEffects = ProgressionTables.capAtLevel(context.ruleset.progressionTable, character.level)
+export const buildProgressionTable = (character: CharacterSheet, application: Application): ProgressionTable<CharacterProgressionEntry> => {
+  const rulesetEffects = ProgressionTables.capAtLevel(application.client.ruleset.progressionTable, character.level)
   const source: CharacterEffectSource = { type: EffectSourceType.Ruleset }
   const characterProgressionTable = ProgressionTables.mapRows(rulesetEffects, (effects, level) => {
-    const [levelUpEffects, additionalEntries] = buildCharacterProgressionEntries(effects, source, character, level, context)
+    const [levelUpEffects, additionalEntries] = buildCharacterProgressionEntries(effects, source, character, level, application)
     const levelUpEntries = !Arrays.isEmpty(levelUpEffects)
       ? [
           {
@@ -53,7 +53,7 @@ const buildCharacterProgressionEntries = (
   source: CharacterEffectSource,
   character: CharacterSheet,
   level: number,
-  context: ApplicationContext
+  application: Application
 ): [Array<Effect>, Array<CharacterProgressionEntry>] => {
   const effects = Effects.sourceEffects(initialEffects, source)
   const optionEffects = Effects.filter(effects, Effects.GainCharacterOption)
@@ -62,9 +62,9 @@ const buildCharacterProgressionEntries = (
     const selection = CharacterOptions.getSelection(character.selections, optionEffect.option, level)
 
     if (Objects.isPresent(selection)) {
-      const trait = Traits.getTrait(selection.selection, context)
+      const trait = Traits.getTrait(selection.selection, application)
       const traitSource: EffectSource = { type: EffectSourceType.Trait, trait: References.getReference(trait) }
-      const [traitEffects, additionalEntries] = buildCharacterProgressionEntries(trait.effects, traitSource, character, level, context)
+      const [traitEffects, additionalEntries] = buildCharacterProgressionEntries(trait.effects, traitSource, character, level, application)
 
       const traitEntries = !Arrays.isEmpty(traitEffects)
         ? [

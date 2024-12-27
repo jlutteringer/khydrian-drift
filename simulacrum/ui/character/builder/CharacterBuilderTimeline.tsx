@@ -19,8 +19,8 @@ import {
   GainTraitEffect,
 } from '@simulacrum/common/effect'
 import { SvgIconOwnProps } from '@mui/material/SvgIcon/SvgIcon'
-import { useBrowseContext } from '@bessemer/framework/context/use-browse-context'
-import { BrowseContext } from '@simulacrum/common/application'
+import { useApplication } from '@bessemer/framework/use-application'
+import { Application } from '@simulacrum/common/application'
 
 export const CharacterBuilderTimeline = ({ characterBuilder }: { characterBuilder: CharacterBuilderState }) => {
   return (
@@ -50,12 +50,12 @@ const CharacterBuilderTimelineEntry = ({
   level: number
   characterBuilder: CharacterBuilderState
 }) => {
-  const context = useBrowseContext<BrowseContext>()
+  const application = useApplication<Application>()
 
   let timeLineContentHeader = <></>
   if (Objects.isPresent(entry.option)) {
     if (Objects.isPresent(entry.selection)) {
-      const selectedTrait = Traits.getTrait(entry.selection.selection, context.application)
+      const selectedTrait = Traits.getTrait(entry.selection.selection, application)
       timeLineContentHeader = <Typography variant="subtitle1">{selectedTrait.name}</Typography>
     } else {
       timeLineContentHeader = <Typography variant="subtitle1">Select Option</Typography>
@@ -156,7 +156,7 @@ const EffectIcon = (props: { effect: Effect } & SvgIconOwnProps) => {
 }
 
 const EffectLabel = ({ effect }: { effect: Effect }) => {
-  const context = useBrowseContext<BrowseContext>()
+  const context = useApplication<Application>()
 
   switch (effect.type) {
     case EffectTypeEnum.Descriptive:
@@ -164,17 +164,17 @@ const EffectLabel = ({ effect }: { effect: Effect }) => {
     case EffectTypeEnum.GainCharacterOption:
       return '???'
     case EffectTypeEnum.GainTrait:
-      return Traits.getTrait((effect as GainTraitEffect).trait, context.application).name
+      return Traits.getTrait((effect as GainTraitEffect).trait, context).name
     case EffectTypeEnum.GainCharacteristic:
       return '???'
     case EffectTypeEnum.ModifyCharacteristic:
       return '???'
     case EffectTypeEnum.GainAbility:
-      return Abilities.getAbility((effect as GainAbilityEffect).ability, context.application).name
+      return Abilities.getAbility((effect as GainAbilityEffect).ability, context).name
     case EffectTypeEnum.ModifyAbility:
       return '???'
     case EffectTypeEnum.GainResourcePool:
-      return ResourcePools.getResourcePool((effect as GainResourcePoolEffect).resourcePool, context.application).name
+      return ResourcePools.getResourcePool((effect as GainResourcePoolEffect).resourcePool, context).name
     case EffectTypeEnum.ModifyResourcePool:
       return '???'
   }
@@ -182,15 +182,15 @@ const EffectLabel = ({ effect }: { effect: Effect }) => {
 
 // JOHN this could be more efficient
 const EffectSourceLabel = ({ source, level }: { source: EffectSource; level: number }) => {
-  const context = useBrowseContext<BrowseContext>()
+  const context = useApplication<Application>()
 
   switch (source.type) {
     case EffectSourceType.Ruleset:
       return `Level ${level}`
     case EffectSourceType.Trait:
-      return Traits.getTrait(source.trait, context.application).name
+      return Traits.getTrait(source.trait, context).name
     case EffectSourceType.Ability:
-      return Abilities.getAbility(source.ability, context.application).name
+      return Abilities.getAbility(source.ability, context).name
   }
 }
 

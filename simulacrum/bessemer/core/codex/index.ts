@@ -3,7 +3,7 @@ import { ContentModel, ContentReference, ContentType } from '@bessemer/cornersto
 import { Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { GenericRecord } from '@bessemer/cornerstone/types'
-import { CoreBrowseContext } from '@bessemer/core/module'
+import { CoreApplication } from '@bessemer/core/application'
 
 export type CodexOptions = {
   label: CodexFunctions<{}>
@@ -13,7 +13,7 @@ export type CodexOptions = {
 
 export type CodexDefinitionResolver<T extends GenericRecord> = (
   reference: ReferenceType<ContentReference>,
-  context: CoreBrowseContext
+  application: CoreApplication
 ) => Promise<T | undefined>
 
 export type CodexDefinitionRenderer<T> = (data: T) => ReactNode
@@ -59,29 +59,33 @@ export const definition = <T extends GenericRecord>(
   }
 }
 
-export const renderLabel = async (content: CodexLabel, context: CoreBrowseContext): Promise<ReactNode> => {
-  const data = await context.codex?.label.resolve(content.reference, context)
+export const renderLabel = async (content: CodexLabel, application: CoreApplication): Promise<ReactNode> => {
+  const data = await application.codex?.label.resolve(content.reference, application)
   if (Objects.isUndefined(data)) {
     return content.defaultValue
   }
 
-  return context.codex?.label.render(data)
+  return application.codex?.label.render(data)
 }
 
-export const renderText = async (content: CodexLabel, context: CoreBrowseContext): Promise<ReactNode> => {
-  const data = await context.codex?.text.resolve(content.reference, context)
+export const renderText = async (content: CodexLabel, application: CoreApplication): Promise<ReactNode> => {
+  const data = await application.codex?.text.resolve(content.reference, application)
   if (Objects.isUndefined(data)) {
     return content.defaultValue
   }
 
-  return context.codex?.text.render(data)
+  return application.codex?.text.render(data)
 }
 
-export const renderCodex = async (reference: ReferenceType<ContentReference>, type: ContentType, context: CoreBrowseContext): Promise<ReactNode> => {
-  const definition = context.codex?.definitions.find((it) => it.type === type)!
+export const renderCodex = async (
+  reference: ReferenceType<ContentReference>,
+  type: ContentType,
+  application: CoreApplication
+): Promise<ReactNode> => {
+  const definition = application.codex?.definitions.find((it) => it.type === type)!
   Preconditions.isPresent(definition)
 
-  const data = await definition.resolve(reference, context)
+  const data = await definition.resolve(reference, application)
   if (Objects.isUndefined(data)) {
     // JOHN figure out what to do here
     throw new Error('Oh noes')

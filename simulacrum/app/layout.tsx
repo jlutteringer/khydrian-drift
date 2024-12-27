@@ -5,6 +5,12 @@ import { Roboto } from 'next/font/google'
 import { ThemeProvider } from '@mui/material/styles'
 import theme from '@simulacrum/ui/theme'
 import { CssBaseline } from '@mui/material'
+import { use } from 'react'
+import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
+import { ApplicationProperties } from '@simulacrum/common/application/properties'
+import { Bessemer } from '@bessemer/framework'
+import { ApplicationProvider } from '@simulacrum/common/application'
+import { ApplicationRuntimeProvider } from '@simulacrum/common/application/common'
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -25,7 +31,8 @@ const RootLayout = ({
   children: React.ReactNode
   params: { locale: string }
 }>) => {
-  // await Bessemer.initialize(Application, ApplicationOptions)
+  const response = Bessemer.initializeBessemer(ApplicationProvider, ApplicationRuntimeProvider, ApplicationProperties)
+  const { application, options } = use(response)
 
   return (
     <html lang="en">
@@ -46,6 +53,12 @@ const RootLayout = ({
       </Head>
 
       <body className={roboto.variable}>
+        <TestClientComponent
+          value={application.client.runtime.test()}
+          application={Bessemer.dehydrateApplication(application)}
+          options={options.public}
+        />
+
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />

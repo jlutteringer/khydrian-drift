@@ -2,10 +2,12 @@ import * as Objects from './object'
 import * as Functions from './function'
 import * as Arrays from './array'
 import * as Strings from './string'
+import * as Async from './async'
 import * as Maths from './math'
 import * as Sets from './set'
 import * as Comparators from './comparator'
 import * as Equalitors from './equalitor'
+import * as Durations from './duration'
 
 import * as Preconditions from './precondition'
 import * as References from './reference'
@@ -15,6 +17,7 @@ import * as Lazy from './lazy'
 import * as Patches from './patch'
 import * as Combinables from './combinable'
 import * as Properties from './property'
+import * as Isomorphic from './isomorphic'
 import * as Misc from './misc'
 
 export {
@@ -22,10 +25,12 @@ export {
   Functions,
   Arrays,
   Strings,
+  Async,
   Maths,
   Sets,
   Comparators,
   Equalitors,
+  Durations,
   Preconditions,
   References,
   Signatures,
@@ -34,5 +39,6 @@ export {
   Patches,
   Combinables,
   Properties,
+  Isomorphic,
   Misc,
 }
