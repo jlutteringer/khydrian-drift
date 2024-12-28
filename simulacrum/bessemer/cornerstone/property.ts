@@ -20,11 +20,11 @@ export type SerializedPropertyTags = NominalType<string, 'SerializedPropertyTags
 
 export type PropertyRecord<T extends GenericRecord> = {
   values: T
-  overrides: Record<SerializedPropertyTags, DeepPartial<T>>
+  overrides: Record<SerializedPropertyTags, PropertyOverride<T>>
 }
 
 export type PropertyOverride<T extends GenericRecord> = {
-  values: T
+  values: DeepPartial<T>
   tags: Array<PropertyTag>
 }
 
@@ -45,10 +45,10 @@ export const serializeTags = (tags: Array<PropertyTag>): SerializedPropertyTags 
 
 export const properties = <T extends GenericRecord>(values: T, overrides?: Array<PropertyOverride<T>>): PropertyRecord<T> => {
   const propertyOverrideEntries = (overrides ?? []).map((override) => {
-    return [serializeTags(override.tags), override.values]
+    return [serializeTags(override.tags), override]
   })
 
-  const propertyOverrides: Record<SerializedPropertyTags, DeepPartial<T>> = Object.fromEntries(propertyOverrideEntries)
+  const propertyOverrides: Record<SerializedPropertyTags, PropertyOverride<T>> = Object.fromEntries(propertyOverrideEntries)
 
   return {
     values,
@@ -59,7 +59,7 @@ export const properties = <T extends GenericRecord>(values: T, overrides?: Array
 export const resolve = <T extends GenericRecord>(properties: PropertyRecord<T>, tags: Array<PropertyTag>): T => {
   const overrides = Sets.properPowerSet(tags).map((tags) => {
     const serializedTags = serializeTags(tags)
-    return properties.overrides[serializedTags] ?? {}
+    return properties.overrides[serializedTags]?.values ?? {}
   })
 
   return Objects.mergeAll([properties.values, ...overrides]) as T

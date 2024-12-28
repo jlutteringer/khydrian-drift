@@ -8,11 +8,11 @@ import { CharacterOptionPanel } from '@simulacrum/ui/character/builder/Character
 import Box from '@mui/material/Box'
 import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
 import { ContentLabelComponents } from '@simulacrum/ui/content'
-import { useApplication } from '@bessemer/framework/use-application'
 import { Application } from '@simulacrum/common/application'
+import { Bessemer } from '@bessemer/framework'
 
 export const CharacterBuilder = () => {
-  const application = useApplication<Application>()
+  const application = Bessemer.getApplication<Application>()
   let character = Characters.buildCharacterDefinition(TestHarness.CommonerLevel3, application)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), context)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectFightingStyle, Archery), context)

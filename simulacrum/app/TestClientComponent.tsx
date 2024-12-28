@@ -1,29 +1,16 @@
 'use client'
 
-import { Application, ApplicationOptions } from '@simulacrum/common/application'
-import { Bessemer, DehydratedApplicationType, PublicOptions } from '@bessemer/framework'
 import { usePathname } from 'next/navigation'
-import { ApplicationRuntimeProvider } from '@simulacrum/common/application/common'
-import { ApplicationClientProvider } from '@simulacrum/common/application/client'
+import { ClientApplication } from '@simulacrum/common/application/client'
+import { useClientApplication } from '@bessemer/framework/use-client-application'
 
-export const TestClientComponent = ({
-  value,
-  application,
-  options,
-}: {
-  value: string
-  application: DehydratedApplicationType<Application>
-  options: PublicOptions<ApplicationOptions>
-}) => {
+export const TestClientComponent = () => {
   const pathname = usePathname()
-
-  const clientRuntime = ApplicationRuntimeProvider.initializeRuntime(options)
-  const client = ApplicationClientProvider.useInitializeClient(Bessemer.hydrateApplication(application, clientRuntime))
+  const clientApplication = useClientApplication<ClientApplication>()
 
   console.log('pathname', pathname)
-  console.log('clientApplication.test', client.client.runtime.test())
-  console.log('clientApplication.coreRuntimeTest', client.client.runtime.coreRuntimeTest())
-  console.log('client', client)
-
-  return <div>{value}</div>
+  console.log('clientApplication.test', clientApplication.client.runtime.test())
+  console.log('clientApplication.coreRuntimeTest', clientApplication.client.runtime.coreRuntimeTest())
+  console.log('client', clientApplication)
+  return <div>Hello</div>
 }

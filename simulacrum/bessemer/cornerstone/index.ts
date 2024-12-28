@@ -10,6 +10,7 @@ import * as Equalitors from './equalitor'
 import * as Durations from './duration'
 
 import * as Preconditions from './precondition'
+import * as Promises from './promise'
 import * as References from './reference'
 import * as Signatures from './signature'
 import * as Eithers from './either'
@@ -32,6 +33,7 @@ export {
   Equalitors,
   Durations,
   Preconditions,
+  Promises,
   References,
   Signatures,
   Eithers,

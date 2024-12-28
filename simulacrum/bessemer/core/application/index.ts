@@ -1,7 +1,6 @@
 import { CodexOptions } from '@bessemer/core/codex'
 import { InternationalizationOptions } from '@bessemer/core/internationalization'
 import { ApplicationRuntimeType, BessemerApplication, BessemerApplicationProvider, BessemerOptions } from '@bessemer/framework'
-import { PropertyTag } from '@bessemer/cornerstone/property'
 import { Objects } from '@bessemer/cornerstone'
 import { BaseApplicationProvider } from '@bessemer/framework/application'
 
@@ -25,12 +24,8 @@ export type CoreApplication = BessemerApplication & {
 
 export const CoreApplicationProvider: BessemerApplicationProvider<CoreApplication, CoreOptions> = {
   getTags: BaseApplicationProvider.getTags,
-  initializeApplication: async (
-    options: CoreOptions,
-    runtime: ApplicationRuntimeType<CoreApplication>,
-    tags: Array<PropertyTag>
-  ): Promise<CoreApplication> => {
-    const baseApplication = await BaseApplicationProvider.initializeApplication(options, runtime, tags)
+  initializeApplication: async (options: CoreOptions, runtime: ApplicationRuntimeType<CoreApplication>): Promise<CoreApplication> => {
+    const baseApplication = await BaseApplicationProvider.initializeApplication(options, runtime)
     const application = Objects.merge(baseApplication, {
       client: {
         runtime: runtime,

@@ -19,8 +19,8 @@ import {
   GainTraitEffect,
 } from '@simulacrum/common/effect'
 import { SvgIconOwnProps } from '@mui/material/SvgIcon/SvgIcon'
-import { useApplication } from '@bessemer/framework/use-application'
 import { Application } from '@simulacrum/common/application'
+import { Bessemer } from '@bessemer/framework'
 
 export const CharacterBuilderTimeline = ({ characterBuilder }: { characterBuilder: CharacterBuilderState }) => {
   return (
@@ -50,7 +50,7 @@ const CharacterBuilderTimelineEntry = ({
   level: number
   characterBuilder: CharacterBuilderState
 }) => {
-  const application = useApplication<Application>()
+  const application = Bessemer.getApplication<Application>()
 
   let timeLineContentHeader = <></>
   if (Objects.isPresent(entry.option)) {
@@ -156,7 +156,7 @@ const EffectIcon = (props: { effect: Effect } & SvgIconOwnProps) => {
 }
 
 const EffectLabel = ({ effect }: { effect: Effect }) => {
-  const context = useApplication<Application>()
+  const context = Bessemer.getApplication<Application>()
 
   switch (effect.type) {
     case EffectTypeEnum.Descriptive:
@@ -182,7 +182,7 @@ const EffectLabel = ({ effect }: { effect: Effect }) => {
 
 // JOHN this could be more efficient
 const EffectSourceLabel = ({ source, level }: { source: EffectSource; level: number }) => {
-  const context = useApplication<Application>()
+  const context = Bessemer.getApplication<Application>()
 
   switch (source.type) {
     case EffectSourceType.Ruleset:

@@ -6,3 +6,9 @@ export const sleep = (duration: Duration): Promise<void> => {
     setTimeout(resolve, Durations.inMilliseconds(duration))
   })
 }
+
+export const execute = <T>(runnable: () => Promise<T>): Promise<T> => {
+  return (async () => {
+    return await runnable()
+  })()
+}

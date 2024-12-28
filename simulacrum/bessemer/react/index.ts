@@ -1,3 +1,3 @@
-import * as IsomorphicContexts from './isomorphic-contex'
+import * as ServerContexts from './server-context'
 
-export { IsomorphicContexts }
+export { ServerContexts }

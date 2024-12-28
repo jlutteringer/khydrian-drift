@@ -1,9 +1,7 @@
-'use client'
-
 import * as React from 'react'
 
-const AccountPage = () => {
+const StorePage = () => {
   return <div>Page Under Construction</div>
 }
 
-export default AccountPage
+export default StorePage

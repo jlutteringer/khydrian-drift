@@ -1,30 +1,35 @@
-'use client'
-
 import Image from 'next/image'
 import React from 'react'
+import { Bessemer } from '@bessemer/framework'
+import { Application } from '@simulacrum/common/application'
+import { CharacterRecord } from '@simulacrum/common/character/character'
+import { ProgressionTables } from '@simulacrum/common'
+import { CharacterOptions, Characters } from '@simulacrum/common/character'
+import { SelectClassLevel } from '@simulacrum/rulesets/dnd-5e'
+import { Archery, SelectFightingStyle } from '@simulacrum/rulesets/dnd-5e/archetype/fighting-style'
+import { Fighter, Fighter2, Fighter3 } from '@simulacrum/rulesets/dnd-5e/class/class-fighter'
 
 export default function Home() {
-  // JOHN
-  // const application = useApplication<Application>()
-  // let character: CharacterRecord = {
-  //   name: 'Bob the Fighter',
-  //   level: 3,
-  //   initialValues: {
-  //     strength: 16,
-  //     dexterity: 14,
-  //     constitution: 15,
-  //     wisdom: 11,
-  //     intelligence: 12,
-  //     charisma: 8,
-  //   },
-  //   selections: ProgressionTables.empty(3),
-  //   selectedAbilities: [],
-  // }
-  // character = Characters.buildCharacterDefinition(character, context)
-  // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), context)
-  // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectFightingStyle, Archery), context)
-  // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter2), context)
-  // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter3), context)
+  const application = Bessemer.getApplication<Application>()
+  let character: CharacterRecord = {
+    name: 'Bob the Fighter',
+    level: 3,
+    initialValues: {
+      strength: 16,
+      dexterity: 14,
+      constitution: 15,
+      wisdom: 11,
+      intelligence: 12,
+      charisma: 8,
+    },
+    selections: ProgressionTables.empty(3),
+    selectedAbilities: [],
+  }
+  character = Characters.buildCharacterDefinition(character, application)
+  character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), application)
+  character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectFightingStyle, Archery), application)
+  character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter2), application)
+  character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter3), application)
 
   return (
     <div>

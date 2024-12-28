@@ -1,19 +1,14 @@
 import { ApplicationRuntimeType, BessemerApplication, BessemerApplicationProvider, BessemerOptions, Environments } from '@bessemer/framework'
-import { PropertyTag } from '@bessemer/cornerstone/property'
 
 export const BaseApplicationProvider: BessemerApplicationProvider<BessemerApplication, BessemerOptions> = {
   getTags: async () => {
-    return []
+    return [Environments.getEnvironmentTag()]
   },
-  initializeApplication: async (
-    _: BessemerOptions,
-    runtime: ApplicationRuntimeType<BessemerApplication>,
-    tags: Array<PropertyTag>
-  ): Promise<BessemerApplication> => {
+  initializeApplication: async (_: BessemerOptions, runtime: ApplicationRuntimeType<BessemerApplication>): Promise<BessemerApplication> => {
     return {
       client: {
+        tags: [],
         environment: Environments.getEnvironment(),
-        tags,
         runtime: runtime,
       },
     }

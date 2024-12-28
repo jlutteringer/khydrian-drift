@@ -36,8 +36,23 @@ export const mergeAll = <T>(objects: Array<T>): T => {
   return objects.reduce((x, y) => merge(x, y))
 }
 
-export const merge = <Source1, Source2>(obj1: Source1, obj2: Source2): Source1 & Source2 => {
-  return unsafeMerge({}, obj1, obj2)
+export function merge<TObject, TSource>(object: TObject, source: TSource): TObject & TSource
+export function merge<TObject, TSource1, TSource2>(object: TObject, source1: TSource1, source2: TSource2): TObject & TSource1 & TSource2
+export function merge<TObject, TSource1, TSource2, TSource3>(
+  object: TObject,
+  source1: TSource1,
+  source2: TSource2,
+  source3: TSource3
+): TObject & TSource1 & TSource2 & TSource3
+export function merge<TObject, TSource1, TSource2, TSource3, TSource4>(
+  object: TObject,
+  source1: TSource1,
+  source2: TSource2,
+  source3: TSource3,
+  source4: TSource4
+): TObject & TSource1 & TSource2 & TSource3 & TSource4
+export function merge(object: any, ...otherArgs: any[]): any {
+  return unsafeMerge({}, object, ...otherArgs)
 }
 
 export function mergeInto<Source1, Source2>(source: Source1, values: Source2): asserts source is Source1 & Source2 {
