@@ -11,7 +11,7 @@ type BottomBannerContent = {
   content: React.JSX.Element
 }
 
-// JOHN there's probably some kind of abstract component that can be pulled out of this
+// TODO there's probably some kind of abstract component that can be pulled out of this
 export const BottomBanner = () => {
   const pathname = usePathname()
   const container = useRef<HTMLDivElement>(null)

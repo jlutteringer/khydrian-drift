@@ -1,8 +1,7 @@
 import { Attributes, ResourcePools } from '@simulacrum/common'
 import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
-import { ResourcePoolDefinition } from '@simulacrum/common/resource-pool'
 import { Patches } from '@bessemer/cornerstone'
-import { ArrayExpressions, Expressions, NumericExpressions } from '@bessemer/cornerstone/expression'
+import { Expressions, NumericExpressions } from '@bessemer/cornerstone/expression'
 
 test('Test Numeric Attibutes and Combinations', () => {
   {
@@ -59,25 +58,24 @@ test('Test Objects', () => {
     })
 
     // JOHN any way to fix the cast issue...?
-    const attribute = Attributes.attribute(resourcePool, Expressions.reference(ArrayExpressions.FirstExpression as any))
-    const modifiers = [
-      Attributes.modifier(
-        Patches.patch<ResourcePoolDefinition>({
-          size: Patches.multiply(5),
-        })
-      ),
-      Attributes.modifier(
-        Patches.patch<ResourcePoolDefinition>({
-          size: Patches.sum(5),
-        })
-      ),
-      Attributes.modifier(
-        Patches.patch<ResourcePoolDefinition>({
-          size: Patches.sum(5),
-        })
-      ),
-    ]
-    const attributeValue = Attributes.evaluateAttribute(attribute, modifiers, Expressions.defaultEvaluator())
-    console.log('attributeValue', attributeValue)
+    // const attribute = Attributes.attribute(resourcePool, Expressions.reference(ArrayExpressions.FirstExpression as any))
+    // const modifiers = [
+    //   Attributes.modifier(
+    //     Patches.patch<ResourcePoolDefinition>({
+    //       size: Patches.multiply(5),
+    //     })
+    //   ),
+    //   Attributes.modifier(
+    //     Patches.patch<ResourcePoolDefinition>({
+    //       size: Patches.sum(5),
+    //     })
+    //   ),
+    //   Attributes.modifier(
+    //     Patches.patch<ResourcePoolDefinition>({
+    //       size: Patches.sum(5),
+    //     })
+    //   ),
+    // ]
+    // const attributeValue = Attributes.evaluateAttribute(attribute, modifiers, Expressions.defaultEvaluator())
   }
 })

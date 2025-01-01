@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { Box, InputBase } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
+import { Urls } from '@bessemer/cornerstone'
 
 type NavbarSearchForm = {
   query: string
@@ -18,6 +19,7 @@ export const NavbarSearch = () => {
     const searchQuery = data.query.trim()
 
     if (searchQuery) {
+      Urls.buildString({ location: { path: '/search', parameters: { q: searchQuery } } })
       // JOHN create url utility finally?
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`) // Navigate to search page
     }

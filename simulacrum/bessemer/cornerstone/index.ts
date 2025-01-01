@@ -8,6 +8,8 @@ import * as Sets from './set'
 import * as Comparators from './comparator'
 import * as Equalitors from './equalitor'
 import * as Durations from './duration'
+import * as Uris from './uri'
+import * as Urls from './url'
 
 import * as Preconditions from './precondition'
 import * as Promises from './promise'
@@ -32,6 +34,8 @@ export {
   Comparators,
   Equalitors,
   Durations,
+  Uris,
+  Urls,
   Preconditions,
   Promises,
   References,

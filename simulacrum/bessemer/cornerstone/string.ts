@@ -1,4 +1,5 @@
 import { isEmpty as _isEmpty, isString as _isString, startsWith as _startsWith } from 'lodash-es'
+import { Arrays } from '@bessemer/cornerstone/index'
 
 export const isString = (value?: any): value is string => {
   return _isString(value)
@@ -6,40 +7,97 @@ export const isString = (value?: any): value is string => {
 
 export const isEmpty = _isEmpty
 
-/**
- * Splits a string on the first value of splitString and returns [first, rest]
- */
-export const splitFirst = (str: string, splitString: string) => {
-  const results = str.split(splitString)
-  if (results.length === 1) {
-    return results
-  }
+export type StringSplitResult = { selection: string; separator: string; rest: string } | { selection: null; separator: null; rest: string }
 
-  return [results[0], results.slice(1).join(splitString)] as const
+export const splitFirst = (str: string, splitter: string | RegExp): StringSplitResult => {
+  if (isString(splitter)) {
+    const results = str.split(splitter)
+    if (results.length === 1) {
+      return { selection: null, separator: null, rest: str }
+    }
+
+    return { selection: results[0], separator: splitter, rest: Arrays.rest(results).join(splitter) }
+  } else {
+    const match = splitter.exec(str)
+
+    if (!match) {
+      return { selection: null, separator: null, rest: str }
+    }
+
+    const matchIndex = match.index
+    const beforeMatch = str.slice(0, matchIndex)
+    const afterMatch = str.slice(matchIndex + match[0].length)
+    const separator = match[0]
+    return { selection: beforeMatch, separator, rest: afterMatch }
+  }
 }
 
-/**
- * Splits a string on the last value of splitString and returns [rest, last]
- */
-export const splitLast = (str: string, splitString: string) => {
-  const results = str.split(splitString)
-  if (results.length === 1) {
-    return results
-  }
+export const splitLast = (str: string, splitter: string | RegExp): StringSplitResult => {
+  if (isString(splitter)) {
+    const results = str.split(splitter)
+    if (results.length === 1) {
+      return { selection: null, separator: null, rest: str }
+    }
 
-  return [results.slice(0, results.length - 1).join(splitString), results[results.length - 1]] as const
+    return { selection: results[results.length - 1], separator: splitter, rest: results.slice(0, results.length - 1).join(splitter) }
+  } else {
+    if (!splitter.global) {
+      splitter = new RegExp(splitter.source, splitter.flags + 'g')
+    }
+
+    const matches = Array.from(str.matchAll(splitter))
+
+    if (matches.length === 0) {
+      return { selection: null, separator: null, rest: str }
+    }
+
+    // Use the last match
+    const lastMatch = matches[matches.length - 1]
+    const matchIndex = lastMatch.index!
+    const separator = lastMatch[0]
+    const beforeMatch = str.slice(0, matchIndex)
+    const afterMatch = str.slice(matchIndex + separator.length)
+
+    return {
+      selection: afterMatch,
+      separator: separator,
+      rest: beforeMatch,
+    }
+  }
 }
 
-/**
- * Splits a string at a given index and returns both parts
- */
-export const splitAt = (str: string, index: number) => {
+export const splitLastRegex = (str: string, regex: RegExp): StringSplitResult => {
+  // Find the last match using regex lastIndex
+  let lastMatch: RegExpExecArray | null = null
+  let match
+
+  while ((match = regex.exec(str)) !== null) {
+    lastMatch = match
+  }
+
+  if (!lastMatch) {
+    return { selection: null, separator: null, rest: str }
+  }
+
+  const matchIndex = lastMatch.index!
+  const separator = lastMatch[0]
+  const beforeMatch = str.slice(0, matchIndex)
+  const afterMatch = str.slice(matchIndex + separator.length)
+
+  return {
+    selection: afterMatch,
+    separator,
+    rest: beforeMatch,
+  }
+}
+
+export const splitAt = (str: string, index: number): [string, string] => {
   return [str.slice(0, index), str.slice(index)] as const
 }
 
 export const startsWith = _startsWith
 
-export const removeStart = (string: string, substring: string) => {
+export const removeStart = (string: string, substring: string): string => {
   if (!string.startsWith(substring)) {
     return string
   }
@@ -55,40 +113,9 @@ export const removeEnd = (string: string, substring: string): string => {
   return string.slice(0, -substring.length)
 }
 
-export const isBlank = (str?: string | null) => {
+export const isBlank = (str?: string | null): boolean => {
   const testStr = str ?? ''
   return /^\s*$/.test(testStr)
-}
-
-/**
- * Converts a given string into a URL-friendly slug.
- *
- * The function performs the following transformations:
- * - Converts German umlauts (ä, ö, ü) to their respective digraphs (ae, oe, ue).
- * - Converts the German sharp S (ß) to 'ss'.
- * - Trims leading and trailing whitespace.
- * - Converts the string to lowercase.
- * - Removes any non-alphanumeric characters, including spaces.
- * - Collapses consecutive hyphens into a single hyphen.
- *
- * Modified from: https://dev.to/bybydev/how-to-slugify-a-string-in-javascript-4o9n
- *
- * @param str - The input string to be slugified.
- * @param maxChars - Maximum number of characters for the slug. Defaults to 32
- * @returns The slugified version of the input string.
- */
-export const slugify = (str: string, maxChars: number = 32) => {
-  return str
-    .replace(/[Ää]/g, 'ae') // convert ä to ae
-    .replace(/[Öö]/g, 'oe') // convert ö to oe
-    .replace(/[Üü]/g, 'ue') // convert ü to ue
-    .replace(/ß/g, 'ss') // convert ß to ss
-    .trim() // trim leading/trailing white space
-    .toLowerCase()
-    .replace(/[^a-z0-9 -]/g, '') // remove any non-alphanumeric characters
-    .replace(/\s+/g, '-') // replace spaces with hyphens
-    .replace(/-+/g, '-') // remove consecutive hyphens
-    .slice(0, maxChars)
 }
 
 export const mostCentralOccurrence = (str: string, substr: string): number | null => {
