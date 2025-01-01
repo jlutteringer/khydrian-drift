@@ -6,10 +6,6 @@ export const encode = Uris.encode
 
 export const decode = Uris.decode
 
-export type UrlParseOptions = {
-  normalize: boolean
-}
-
 export interface UrlLocation extends UriLocation {
   pathSegments: Array<string>
   parameters: Dictionary<string | Array<string>>

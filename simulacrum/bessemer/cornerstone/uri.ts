@@ -309,19 +309,15 @@ export const format = (uri: Uri): UriString => {
 const formatLocation = (location: UriLocation): string => {
   let urlString = ''
 
-  const includePath = !Strings.isEmpty(location.path)
-  const includeParameters = !Strings.isEmpty(location.query)
-  const includeFragment = !Strings.isBlank(location.fragment)
-
-  if (includePath) {
-    urlString = urlString + '/' + location.path
+  if (!Strings.isEmpty(location.path)) {
+    urlString = urlString + location.path
   }
 
-  if (includeParameters) {
+  if (!Strings.isEmpty(location.query)) {
     urlString = urlString + '?' + location.query
   }
 
-  if (includeFragment) {
+  if (!Strings.isEmpty(location.fragment)) {
     urlString = urlString + '#' + encode(location.fragment!)
   }
 

@@ -19,9 +19,7 @@ export const NavbarSearch = () => {
     const searchQuery = data.query.trim()
 
     if (searchQuery) {
-      Urls.buildString({ location: { path: '/search', parameters: { q: searchQuery } } })
-      // JOHN create url utility finally?
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`) // Navigate to search page
+      router.push(Urls.buildString({ location: { path: '/search', parameters: { q: searchQuery } } }))
     }
   }
 

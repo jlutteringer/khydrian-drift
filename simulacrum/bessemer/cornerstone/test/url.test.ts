@@ -18,6 +18,7 @@ test('Urls.parse / Urls.build', () => {
     )
   }
 
+  // TODO i think we should try and support these URLs without having to have the double slash
   {
     expect(Urls.parse('//www.google.com')).toEqual(
       Urls.build({
