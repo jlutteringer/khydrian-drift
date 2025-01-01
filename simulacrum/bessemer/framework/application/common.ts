@@ -1,6 +1,6 @@
-import { ApplicationRuntimeType, BessemerApplication, BessemerOptions, BessemerRuntimeProvider, PublicOptions } from '@bessemer/framework'
+import { ApplicationRuntimeType, BessemerApplication, BessemerOptions, BessemerRuntimeModule, PublicOptions } from '@bessemer/framework'
 
-export const BaseRuntimeProvider: BessemerRuntimeProvider<BessemerApplication, BessemerOptions> = {
+export const BaseRuntimeModule: BessemerRuntimeModule<BessemerApplication, BessemerOptions> = {
   initializeRuntime: (_: PublicOptions<BessemerOptions>): ApplicationRuntimeType<BessemerApplication> => {
     return {}
   },

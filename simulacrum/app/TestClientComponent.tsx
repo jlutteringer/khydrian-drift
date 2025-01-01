@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { ClientApplication } from '@simulacrum/common/application/client'
-import { useClientApplication } from '@bessemer/framework/use-client-application'
+import { useClientApplication } from '@bessemer/framework/use-bessemer-client'
 
 export const TestClientComponent = () => {
   const pathname = usePathname()

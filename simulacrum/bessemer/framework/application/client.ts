@@ -1,6 +1,6 @@
-import { BessemerApplication, BessemerClientApplication, BessemerClientProvider } from '@bessemer/framework'
+import { BessemerApplication, BessemerClientApplication, BessemerClientModule } from '@bessemer/framework'
 
-export const BaseClientProvider: BessemerClientProvider<BessemerApplication, BessemerClientApplication> = {
+export const BaseClientModule: BessemerClientModule<BessemerApplication, BessemerClientApplication> = {
   useTags: () => {
     return null
   },

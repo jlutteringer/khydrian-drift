@@ -1,8 +1,8 @@
 import {
   BessemerApplication,
-  BessemerApplicationProvider,
+  BessemerApplicationModule,
   BessemerOptions,
-  BessemerRuntimeProvider,
+  BessemerRuntimeModule,
   DehydratedApplicationType,
   PublicProperties,
 } from '@bessemer/framework'
@@ -12,8 +12,8 @@ import { ServerContexts } from '@bessemer/react'
 import { ServerContext } from '@bessemer/react/server-context'
 
 export type BessemerConfiguration<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
-  applicationProvider: BessemerApplicationProvider<Application, ApplicationOptions>
-  runtimeProvider: BessemerRuntimeProvider<Application, ApplicationOptions>
+  applicationProvider: BessemerApplicationModule<Application, ApplicationOptions>
+  runtimeProvider: BessemerRuntimeModule<Application, ApplicationOptions>
   properties: PropertyRecord<ApplicationOptions>
 }
 
@@ -32,10 +32,7 @@ let Configuration: BessemerConfiguration<any, any> | null = null
 export const configure = <Application extends BessemerApplication, ApplicationOptions extends BessemerOptions>(
   configuration: BessemerConfiguration<Application, ApplicationOptions>
 ): void => {
-  console.log('========= configureBessemer =========')
-  if (Configuration !== null) {
-    throw new Error('Unable to configureBessemer after it has already be configured.')
-  }
+  Preconditions.isNil(Configuration, 'Unable to configureBessemer after it has already be configured.')
   Configuration = configuration
 }
 
@@ -46,7 +43,6 @@ export const getInstance = <Application extends BessemerApplication, Application
   ApplicationOptions
 > => {
   const response = context.fetchValue(initializeBessemer) as BessemerInstance<Application, ApplicationOptions>
-  console.log('getBessemer', response)
   return response
 }
 
@@ -57,7 +53,6 @@ export const getApplication = <Application extends BessemerApplication>(): Appli
 const initializeBessemer = async <Application extends BessemerApplication, ApplicationOptions extends BessemerOptions>(): Promise<
   BessemerInstance<Application, ApplicationOptions>
 > => {
-  console.log('initializeBessemer', Configuration)
   Preconditions.isPresent(Configuration)
 
   const { applicationProvider, runtimeProvider, properties } = Configuration as BessemerConfiguration<Application, ApplicationOptions>
@@ -70,7 +65,6 @@ const initializeBessemer = async <Application extends BessemerApplication, Appli
 
   const dehydratedApplication = dehydrateApplication(application)
   const publicProperties = toPublicProperties(properties)
-  console.log('initialized')
   return { application, clientProps: { dehydratedApplication, publicProperties } }
 }
 

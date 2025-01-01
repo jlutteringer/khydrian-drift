@@ -1,8 +1,8 @@
 import { CodexOptions } from '@bessemer/core/codex'
 import { InternationalizationOptions } from '@bessemer/core/internationalization'
-import { ApplicationRuntimeType, BessemerApplication, BessemerApplicationProvider, BessemerOptions } from '@bessemer/framework'
+import { ApplicationRuntimeType, BessemerApplication, BessemerApplicationModule, BessemerOptions } from '@bessemer/framework'
 import { Objects } from '@bessemer/cornerstone'
-import { BaseApplicationProvider } from '@bessemer/framework/application'
+import { BaseApplicationModule } from '@bessemer/framework/application'
 
 export type CoreOptions = BessemerOptions & {
   codex?: CodexOptions
@@ -22,10 +22,10 @@ export type CoreApplication = BessemerApplication & {
   }
 }
 
-export const CoreApplicationProvider: BessemerApplicationProvider<CoreApplication, CoreOptions> = {
-  getTags: BaseApplicationProvider.getTags,
+export const CoreApplicationModule: BessemerApplicationModule<CoreApplication, CoreOptions> = {
+  getTags: BaseApplicationModule.getTags,
   initializeApplication: async (options: CoreOptions, runtime: ApplicationRuntimeType<CoreApplication>): Promise<CoreApplication> => {
-    const baseApplication = await BaseApplicationProvider.initializeApplication(options, runtime)
+    const baseApplication = await BaseApplicationModule.initializeApplication(options, runtime)
     const application = Objects.merge(baseApplication, {
       client: {
         runtime: runtime,

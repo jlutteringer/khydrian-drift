@@ -1,7 +1,7 @@
 import { CoreApplication } from '@bessemer/core/application'
-import { BessemerClientApplication, BessemerClientProvider, ClientApplicationType } from '@bessemer/framework'
+import { BessemerClientApplication, BessemerClientModule, ClientApplicationType } from '@bessemer/framework'
 import { usePathname } from 'next/navigation'
-import { BaseClientProvider } from '@bessemer/framework/application/client'
+import { BaseClientModule } from '@bessemer/framework/application/client'
 import { Objects } from '@bessemer/cornerstone'
 
 export type CoreClientApplication = BessemerClientApplication &
@@ -9,10 +9,10 @@ export type CoreClientApplication = BessemerClientApplication &
     pathname: string
   }
 
-export const CoreClientProvider: BessemerClientProvider<CoreApplication, CoreClientApplication> = {
-  useTags: BaseClientProvider.useTags,
+export const CoreClientModule: BessemerClientModule<CoreApplication, CoreClientApplication> = {
+  useTags: BaseClientModule.useTags,
   useInitializeClient: (initialClient) => {
-    const baseClient = BaseClientProvider.useInitializeClient(initialClient)
+    const baseClient = BaseClientModule.useInitializeClient(initialClient)
     const pathname = usePathname()
 
     return Objects.merge(baseClient, initialClient, {

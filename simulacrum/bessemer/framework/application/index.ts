@@ -1,6 +1,6 @@
-import { ApplicationRuntimeType, BessemerApplication, BessemerApplicationProvider, BessemerOptions, Environments } from '@bessemer/framework'
+import { ApplicationRuntimeType, BessemerApplication, BessemerApplicationModule, BessemerOptions, Environments } from '@bessemer/framework'
 
-export const BaseApplicationProvider: BessemerApplicationProvider<BessemerApplication, BessemerOptions> = {
+export const BaseApplicationModule: BessemerApplicationModule<BessemerApplication, BessemerOptions> = {
   getTags: async () => {
     return [Environments.getEnvironmentTag()]
   },

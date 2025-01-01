@@ -8,12 +8,12 @@ import { ThemeProvider } from '@mui/material/styles'
 import theme from '@simulacrum/ui/theme'
 import { CssBaseline } from '@mui/material'
 import { Bessemer } from '@bessemer/framework'
-import { Application, ApplicationOptions, ApplicationProvider } from '@simulacrum/common/application'
+import { Application, ApplicationModule, ApplicationOptions } from '@simulacrum/common/application'
 import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
-import { ApplicationRuntimeProvider } from '@simulacrum/common/application/common'
+import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { ApplicationProperties } from '@simulacrum/common/application/properties'
 import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
-import { ClientApplicationProviderX } from '@simulacrum/app/ClientApplicationProviderX'
+import { ClientApplicationProvider } from '@simulacrum/ui/application/use-client-application'
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
 }
 
 Bessemer.configure({
-  applicationProvider: ApplicationProvider,
-  runtimeProvider: ApplicationRuntimeProvider,
+  applicationProvider: ApplicationModule,
+  runtimeProvider: ApplicationRuntimeModule,
   properties: ApplicationProperties,
 })
 
@@ -59,7 +59,7 @@ const RootLayout = ({
       </Head>
 
       <body className={roboto.variable}>
-        <ClientApplicationProviderX clientProps={clientProps}>
+        <ClientApplicationProvider props={clientProps}>
           <TestClientComponent />
           <TestServerComponent />
           <AppRouterCacheProvider>
@@ -68,7 +68,7 @@ const RootLayout = ({
               {children}
             </ThemeProvider>
           </AppRouterCacheProvider>
-        </ClientApplicationProviderX>
+        </ClientApplicationProvider>
       </body>
     </html>
   )

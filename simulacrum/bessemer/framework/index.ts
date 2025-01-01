@@ -33,20 +33,19 @@ export interface BessemerClientApplication extends ClientApplicationType<Besseme
 
 export type ApplicationRuntimeType<T extends BessemerApplication> = T['client']['runtime']
 
-export type BessemerApplicationProvider<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
+export type BessemerApplicationModule<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
   getTags: () => Promise<Array<PropertyTag>>
   initializeApplication: (options: ApplicationOptions, runtime: ApplicationRuntimeType<Application>) => Promise<Application>
 }
 
-export type BessemerRuntimeProvider<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
+export type BessemerRuntimeModule<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
   initializeRuntime: (options: PublicOptions<ApplicationOptions>) => ApplicationRuntimeType<Application>
 }
 
-export type BessemerClientProvider<
+export type BessemerClientModule<
   Application extends BessemerApplication,
   ClientApplication extends ClientApplicationType<BessemerApplication> = ClientApplicationType<BessemerApplication>
 > = {
-  // JOHN do we need a way to fetch additional data or signal loading on the client?
   useTags: () => Array<PropertyTag> | null
   useInitializeClient: (initialClient: ClientApplicationType<Application>) => ClientApplication
 }

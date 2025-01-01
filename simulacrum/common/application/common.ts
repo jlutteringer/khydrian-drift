@@ -1,9 +1,9 @@
-import { ApplicationRuntimeType, BessemerRuntimeProvider, PublicOptions } from '@bessemer/framework'
+import { ApplicationRuntimeType, BessemerRuntimeModule, PublicOptions } from '@bessemer/framework'
 import { Application, ApplicationOptions } from '@simulacrum/common/application/index'
-import { CoreRuntimeProvider } from '@bessemer/core/application/common'
+import { CoreRuntimeModule } from '@bessemer/core/application/common'
 
-export const ApplicationRuntimeProvider: BessemerRuntimeProvider<Application, ApplicationOptions> = {
+export const ApplicationRuntimeModule: BessemerRuntimeModule<Application, ApplicationOptions> = {
   initializeRuntime: (options: PublicOptions<ApplicationOptions>): ApplicationRuntimeType<Application> => {
-    return { ...CoreRuntimeProvider.initializeRuntime(options), test: () => 'Hello from the Application' }
+    return { ...CoreRuntimeModule.initializeRuntime(options), test: () => 'Hello from the Application' }
   },
 }

@@ -1,9 +1,9 @@
 import { Ruleset } from '@simulacrum/common/ruleset'
-import { CoreApplication, CoreApplicationProvider, CoreOptions } from '@bessemer/core/application'
+import { CoreApplication, CoreApplicationModule, CoreOptions } from '@bessemer/core/application'
 import { Dnd5e } from '@simulacrum/rulesets/dnd-5e'
 import { Objects } from '@bessemer/cornerstone'
 import { serverOnlyTest } from '@simulacrum/common/server-only-test'
-import { ApplicationRuntimeType, BessemerApplicationProvider } from '@bessemer/framework'
+import { ApplicationRuntimeType, BessemerApplicationModule } from '@bessemer/framework'
 
 export type ApplicationOptions = CoreOptions & {
   ruleset: string
@@ -22,10 +22,10 @@ export type Application = CoreApplication & {
   }
 }
 
-export const ApplicationProvider: BessemerApplicationProvider<Application, ApplicationOptions> = {
-  getTags: CoreApplicationProvider.getTags,
+export const ApplicationModule: BessemerApplicationModule<Application, ApplicationOptions> = {
+  getTags: CoreApplicationModule.getTags,
   initializeApplication: async (options: ApplicationOptions, runtime: ApplicationRuntimeType<Application>): Promise<Application> => {
-    const baseApplication = await CoreApplicationProvider.initializeApplication(options, runtime)
+    const baseApplication = await CoreApplicationModule.initializeApplication(options, runtime)
     const application = Objects.merge(baseApplication, { serverOnlyTest, client: { ruleset: Dnd5e, runtime } })
     return application
   },
