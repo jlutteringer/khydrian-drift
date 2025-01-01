@@ -1,12 +1,12 @@
 import { Arrays, Objects, Strings, Uris } from '@bessemer/cornerstone'
 import { Dictionary } from '@bessemer/cornerstone/types'
-import { Uri, UriBuilder, UriComponent, UriLocation, UriParseOptions, UriString } from '@bessemer/cornerstone/uri'
+import { Uri, UriBuilder, UriComponent, UriLocation, UriString } from '@bessemer/cornerstone/uri'
 
 export const encode = Uris.encode
 
 export const decode = Uris.decode
 
-export type UrlParseOptions = UriParseOptions & {
+export type UrlParseOptions = {
   normalize: boolean
 }
 
@@ -19,7 +19,7 @@ export interface Url extends Uri {
   location: UrlLocation
 }
 
-const augmentUriLocation = (uriLocation: UriLocation, collapseEmptyPathSegments: boolean): UrlLocation => {
+const augmentUriLocation = (uriLocation: UriLocation, normalize: boolean): UrlLocation => {
   const pathSegments: Array<string> = []
   const parameters: Dictionary<string | Array<string>> = {}
 
@@ -27,7 +27,7 @@ const augmentUriLocation = (uriLocation: UriLocation, collapseEmptyPathSegments:
     Strings.removeStart(uriLocation.path, '/')
       .split('/')
       .forEach((urlPathPart) => {
-        if (!Strings.isBlank(urlPathPart) || !collapseEmptyPathSegments) {
+        if (!Strings.isBlank(urlPathPart) || !normalize) {
           pathSegments.push(decode(urlPathPart))
         }
       })
@@ -63,16 +63,17 @@ const augmentUriLocation = (uriLocation: UriLocation, collapseEmptyPathSegments:
   }
 }
 
-const DEFAULT_URL_PARSE_OPTIONS: UrlParseOptions = Objects.merge(Uris.DEFAULT_PARSE_OPTIONS, { opaque: true, normalize: true })
+export const parse = (urlString: UriString, normalize: boolean = true): Url => {
+  const uri = Uris.parse(urlString)
+  const location = augmentUriLocation(uri.location, normalize)
 
-const DEFAULT_HREF_PARSE_OPTIONS: UrlParseOptions = DEFAULT_URL_PARSE_OPTIONS
+  if (normalize) {
+    if (!Arrays.isEmpty(location.pathSegments)) {
+      location.path = (Strings.startsWith(location.path, '/') ? '/' : '') + formatPathSegments(location.pathSegments)
+    } else {
+      location.path = ''
+    }
 
-export const parse = (urlString: UriString, parseOptions: UrlParseOptions = DEFAULT_URL_PARSE_OPTIONS): Url => {
-  const uri = Uris.parse(urlString, parseOptions)
-  const location = augmentUriLocation(uri.location, parseOptions.normalize)
-
-  if (parseOptions.normalize) {
-    location.path = formatPathSegments(location.pathSegments)
     location.query = formatQueryParameters(location.parameters)
   }
 
@@ -80,10 +81,6 @@ export const parse = (urlString: UriString, parseOptions: UrlParseOptions = DEFA
     ...uri,
     location,
   }
-}
-
-export const parseHref = (urlString: UriString, parseOptions = DEFAULT_HREF_PARSE_OPTIONS): Url => {
-  return parse(urlString, parseOptions)
 }
 
 export const format = Uris.format

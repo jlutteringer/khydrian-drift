@@ -9,7 +9,6 @@ test('Urls.parse / Urls.build', () => {
       })
     )
   }
-
   {
     expect(Urls.parse('https://www.google.com/')).toEqual(
       Urls.build({
@@ -20,7 +19,7 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('www.google.com')).toEqual(
+    expect(Urls.parse('//www.google.com')).toEqual(
       Urls.build({
         host: 'www.google.com',
       })
@@ -28,7 +27,7 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('www.google.com/')).toEqual(
+    expect(Urls.parse('//www.google.com/')).toEqual(
       Urls.build({
         host: 'www.google.com',
       })
@@ -55,9 +54,8 @@ test('Urls.parse / Urls.build', () => {
       })
     )
   }
-
   {
-    expect(Urls.parse('localhost:8080')).toEqual(
+    expect(Urls.parse('//localhost:8080')).toEqual(
       Urls.build({
         host: {
           value: 'localhost',
@@ -66,9 +64,8 @@ test('Urls.parse / Urls.build', () => {
       })
     )
   }
-
   {
-    expect(Urls.parse('localhost:8080/')).toEqual(
+    expect(Urls.parse('//localhost:8080/')).toEqual(
       Urls.build({
         host: {
           value: 'localhost',
@@ -123,7 +120,7 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('john.lutteringer:password123@www.google.com')).toEqual(
+    expect(Urls.parse('//john.lutteringer:password123@www.google.com')).toEqual(
       Urls.build({
         host: 'www.google.com',
         authentication: {
@@ -135,7 +132,7 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('www.google.com?q=Search%20Query')).toEqual(
+    expect(Urls.parse('//www.google.com?q=Search%20Query')).toEqual(
       Urls.build({
         host: 'www.google.com',
         location: {
@@ -148,16 +145,29 @@ test('Urls.parse / Urls.build', () => {
     )
   }
 
-  // {
-  //   expect(Urls.parse('/search?q=Search%20Query')).toEqual(
-  //     Urls.build({
-  //       location: {
-  //         path: '/search',
-  //         parameters: {
-  //           q: 'search',
-  //         },
-  //       },
-  //     })
-  //   )
-  // }
+  {
+    expect(Urls.parse('/search?q=Search%20Query')).toEqual(
+      Urls.build({
+        location: {
+          path: '/search',
+          parameters: {
+            q: 'Search Query',
+          },
+        },
+      })
+    )
+  }
+
+  {
+    expect(Urls.parse('search?q=Search%20Query')).toEqual(
+      Urls.build({
+        location: {
+          path: 'search',
+          parameters: {
+            q: 'Search Query',
+          },
+        },
+      })
+    )
+  }
 })

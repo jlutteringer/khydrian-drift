@@ -1,4 +1,4 @@
-import { isEmpty as _isEmpty, isString as _isString, startsWith as _startsWith } from 'lodash-es'
+import { endsWith as _endsWith, isEmpty as _isEmpty, isString as _isString, startsWith as _startsWith } from 'lodash-es'
 import { Arrays } from '@bessemer/cornerstone/index'
 
 export const isString = (value?: any): value is string => {
@@ -96,6 +96,7 @@ export const splitAt = (str: string, index: number): [string, string] => {
 }
 
 export const startsWith = _startsWith
+export const endsWith = _endsWith
 
 export const removeStart = (string: string, substring: string): string => {
   if (!string.startsWith(substring)) {

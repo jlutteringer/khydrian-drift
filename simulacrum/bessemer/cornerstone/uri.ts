@@ -1,5 +1,4 @@
 import { Objects, Strings } from '@bessemer/cornerstone/index'
-import { UrlBuilder } from '@bessemer/cornerstone/url'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { StringSplitResult } from '@bessemer/cornerstone/string'
 
@@ -39,38 +38,20 @@ export interface Uri {
   location: UriLocation
 }
 
-export type UriParseOptions = {
-  opaque: boolean // controls whether or not we support 'opaque' parsing - ie allowing some url formats which deviate from the spec
-}
+const parseSchemePart = (url: UriComponent): [UriScheme | null, UriComponent] => {
+  // Search for the colon or double slash
+  const schemeMatch = Strings.splitFirst(url, /(\/\/|:)/)
 
-const parseSchemePart = (url: UriComponent, parseOptions: UriParseOptions): [UriScheme | null, UriComponent] => {
-  const { selection, rest } = Strings.splitFirst(url, ':')
-
-  // No : means no protocol is possible
-  if (Objects.isNil(selection)) {
+  // If we don't find either, or we hit the double slash before finding a colon, there is no scheme
+  if (Objects.isNil(schemeMatch.selection) || schemeMatch.separator === '//') {
     return [null, url]
   }
 
   // This means the string started with :, so no protocol. We'll go ahead and remove the : from consideration
-  if (Strings.isEmpty(selection)) {
-    return [null, rest]
-  }
-
-  // This means we have a host and therefore we have correctly captured the protocol
-  if (Strings.startsWith(rest, '//')) {
-    return [selection, rest]
-  }
-
-  // Things get challenging here. If we're supporting "opaque" urls - that is urls which are not technically syntactically valid
-  // then we assume that we are looking at a host/port pair
-  if (parseOptions.opaque) {
-    return [null, url]
-  }
-
-  // Otherwise, we need to support valid urns and can't tell the difference between an incomplete url and a urn, so since opaque is false
-  // we assume it is a syntactically valid urn
-  else {
-    return [selection, rest]
+  if (Strings.isEmpty(schemeMatch.selection)) {
+    return [null, schemeMatch.rest]
+  } else {
+    return [schemeMatch.selection, schemeMatch.rest]
   }
 }
 
@@ -93,11 +74,7 @@ const parseAuthenticationPart = (url: UriComponent): [UriAuthentication | null, 
 
   const { rest } = Strings.splitFirst(url, '@')
 
-  if (Strings.startsWith(targetPart, '//')) {
-    return [parseAuthentication(Strings.removeStart(authentication, '//')), '//' + rest]
-  } else {
-    return [parseAuthentication(authentication), rest]
-  }
+  return [parseAuthentication(Strings.removeStart(authentication, '//')), '//' + rest]
 }
 
 const parseAuthentication = (authentication: UriComponent): UriAuthentication => {
@@ -117,14 +94,14 @@ const parseAuthentication = (authentication: UriComponent): UriAuthentication =>
   return { principal, password: authenticationRest }
 }
 
-const parseHostPart = (url: UriComponent, parseOptions: UriParseOptions): [UriHost | null, UriComponent] => {
+const parseHostPart = (url: UriComponent): [UriHost | null, UriComponent] => {
   // Check if the host is starting with reserved characters, if so we should just bail on trying to parse
   if (Strings.startsWith(url, '?') || Strings.startsWith(url, '#')) {
     return [null, url]
   }
 
   let hostRequired = Strings.startsWith(url, '//')
-  if (!hostRequired && !parseOptions.opaque) {
+  if (!hostRequired) {
     return [null, url]
   }
 
@@ -201,19 +178,14 @@ const parseLocation = (url: UriComponent): UriLocation => {
   return location
 }
 
-export const DEFAULT_PARSE_OPTIONS: UriParseOptions = {
-  opaque: false,
-}
-
-export const parse = (urlString: UriString, initialParseOptions: Partial<UriParseOptions> = DEFAULT_PARSE_OPTIONS): Uri => {
-  const parseOptions = Objects.merge(DEFAULT_PARSE_OPTIONS, initialParseOptions)
-  const [scheme, rest1] = parseSchemePart(urlString, parseOptions)
+export const parse = (urlString: UriString): Uri => {
+  const [scheme, rest1] = parseSchemePart(urlString)
   console.log('parseSchemePart', scheme, urlString)
 
   const [authentication, rest2] = parseAuthenticationPart(rest1)
   console.log('parseAuthenticationPart', authentication, rest1)
 
-  const [host, rest3] = parseHostPart(rest2, parseOptions)
+  const [host, rest3] = parseHostPart(rest2)
   console.log('parseHostPart', host, rest2)
 
   const location = parseLocation(rest3)
@@ -356,6 +328,6 @@ const formatLocation = (location: UriLocation): string => {
   return urlString
 }
 
-export const buildString = (builder: UrlBuilder): UriString => {
+export const buildString = (builder: UriBuilder): UriString => {
   return format(build(builder))
 }
