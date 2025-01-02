@@ -13,7 +13,7 @@ import {
 } from 'lodash-es'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
 import { Signable } from '@bessemer/cornerstone/signature'
-import { Comparators, Eithers, Signatures } from '@bessemer/cornerstone'
+import { Comparators, Eithers, Preconditions, Signatures } from '@bessemer/cornerstone'
 import { Either } from '@bessemer/cornerstone/either'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 
@@ -91,13 +91,18 @@ export const sort = <T extends Signable>(array: Array<T>): Array<T> => sortBy(ar
 export const concatenate = concat
 
 export const first = _first
-// JOHN validate that it is indeed the only...
-export const only = first
+
+export const only = <T>(array: Array<T>): T => {
+  Preconditions.isTrue(array.length === 1)
+  return first(array)!
+}
+
 export const last = _last
+
 export const isEmpty = _isEmpty
-// JOHN make a better range function
+// TODO make a better range function
 export const range = _range
-// JOHN should this live in collections?
+// TODO should this live in collections?
 export const groupBy = _groupBy
 
 export const rest = <T>(array: Array<T>, elementsToSkip: number = 1): Array<T> => {

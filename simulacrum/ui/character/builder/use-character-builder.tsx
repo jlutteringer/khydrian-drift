@@ -7,7 +7,7 @@ import { ProgressionTables } from '@simulacrum/common'
 import { CharacterChoice } from '@simulacrum/common/character/character-option'
 import { Objects, Preconditions } from '@bessemer/cornerstone'
 import { Expressions } from '@bessemer/cornerstone/expression'
-import { Application } from '@simulacrum/common/application'
+import { ApplicationContext } from '@simulacrum/common/application'
 import { Bessemer } from '@bessemer/framework'
 
 export type CharacterBuilderProps = {
@@ -23,7 +23,7 @@ export type CharacterBuilderState = {
 }
 
 export const useCharacterBuilder = ({ character }: CharacterBuilderProps): CharacterBuilderState => {
-  const application = Bessemer.getApplication<Application>()
+  const application = Bessemer.getApplication<ApplicationContext>()
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterRecord>(character)
   const [selectedEntryKey, setSelectedEntryKey] = useState<string | null>(null)
 

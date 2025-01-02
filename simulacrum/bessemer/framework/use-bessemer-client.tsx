@@ -2,22 +2,22 @@ import React, { PropsWithChildren, use } from 'react'
 import { BessemerClientProps } from '@bessemer/framework/bessemer'
 import {
   ApplicationRuntimeType,
-  BessemerApplication,
-  BessemerClientApplication,
+  BessemerApplicationContext,
+  BessemerClientContext,
   BessemerClientModule,
   BessemerOptions,
   BessemerRuntimeModule,
-  ClientApplicationType,
-  DehydratedApplicationType,
+  ClientContextType,
+  DehydratedContextType,
 } from '@bessemer/framework'
 import { Preconditions, Properties } from '@bessemer/cornerstone'
 
-const BessemerContext = React.createContext<BessemerClientApplication | null>(null)
+const BessemerContext = React.createContext<BessemerClientContext | null>(null)
 
 export function BessemerClientProvider<
-  Application extends BessemerApplication,
+  Application extends BessemerApplicationContext,
   ApplicationOptions extends BessemerOptions,
-  ClientApplication extends ClientApplicationType<Application>
+  ClientApplication extends ClientContextType<Application>
 >({
   client,
   runtime,
@@ -28,22 +28,22 @@ export function BessemerClientProvider<
   runtime: BessemerRuntimeModule<Application, ApplicationOptions>
   props: BessemerClientProps<Application, ApplicationOptions>
 }>) {
-  const tags = client.useTags()
-  const options = Properties.resolve(props.publicProperties, tags ?? props.dehydratedApplication.client.tags)
+  const profile = client.useProfile()
+  const options = Properties.resolve(props.publicProperties, profile ?? props.dehydratedApplication.client.profile)
   const clientRuntime = runtime.initializeRuntime(options)
   const rehydratedApplication = hydrateApplication(props.dehydratedApplication, clientRuntime)
   const clientApplication = client.useInitializeClient(rehydratedApplication)
   return <BessemerContext.Provider value={clientApplication}>{children}</BessemerContext.Provider>
 }
 
-const hydrateApplication = <T extends BessemerApplication>(
-  dehydratedContext: DehydratedApplicationType<T>,
+const hydrateApplication = <T extends BessemerApplicationContext>(
+  dehydratedContext: DehydratedContextType<T>,
   runtime: ApplicationRuntimeType<T>
-): ClientApplicationType<T> => {
+): ClientContextType<T> => {
   return { client: { ...dehydratedContext.client, runtime } }
 }
 
-export function useBessemerClient<T extends BessemerClientApplication>(): T {
+export function useBessemerClient<T extends BessemerClientContext>(): T {
   const clientApplication = use(BessemerContext)
   Preconditions.isPresent(clientApplication)
 

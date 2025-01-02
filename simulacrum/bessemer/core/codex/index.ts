@@ -3,7 +3,7 @@ import { ContentModel, ContentReference, ContentType } from '@bessemer/cornersto
 import { Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { GenericRecord } from '@bessemer/cornerstone/types'
-import { CoreApplication } from '@bessemer/core/application'
+import { CoreApplicationContext } from '@bessemer/core/application'
 
 export type CodexOptions = {
   label: CodexFunctions<{}>
@@ -13,7 +13,7 @@ export type CodexOptions = {
 
 export type CodexDefinitionResolver<T extends GenericRecord> = (
   reference: ReferenceType<ContentReference>,
-  application: CoreApplication
+  application: CoreApplicationContext
 ) => Promise<T | undefined>
 
 export type CodexDefinitionRenderer<T> = (data: T) => ReactNode
@@ -59,7 +59,7 @@ export const definition = <T extends GenericRecord>(
   }
 }
 
-export const renderLabel = async (content: CodexLabel, application: CoreApplication): Promise<ReactNode> => {
+export const renderLabel = async (content: CodexLabel, application: CoreApplicationContext): Promise<ReactNode> => {
   const data = await application.codex?.label.resolve(content.reference, application)
   if (Objects.isUndefined(data)) {
     return content.defaultValue
@@ -68,7 +68,7 @@ export const renderLabel = async (content: CodexLabel, application: CoreApplicat
   return application.codex?.label.render(data)
 }
 
-export const renderText = async (content: CodexLabel, application: CoreApplication): Promise<ReactNode> => {
+export const renderText = async (content: CodexLabel, application: CoreApplicationContext): Promise<ReactNode> => {
   const data = await application.codex?.text.resolve(content.reference, application)
   if (Objects.isUndefined(data)) {
     return content.defaultValue
@@ -80,7 +80,7 @@ export const renderText = async (content: CodexLabel, application: CoreApplicati
 export const renderCodex = async (
   reference: ReferenceType<ContentReference>,
   type: ContentType,
-  application: CoreApplication
+  application: CoreApplicationContext
 ): Promise<ReactNode> => {
   const definition = application.codex?.definitions.find((it) => it.type === type)!
   Preconditions.isPresent(definition)

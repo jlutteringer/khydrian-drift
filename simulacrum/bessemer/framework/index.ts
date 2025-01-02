@@ -2,10 +2,12 @@ import * as Bessemer from './bessemer'
 import * as Environments from './environment'
 import { Environment } from './environment'
 import { PropertyRecord, PropertyTag } from '@bessemer/cornerstone/property'
+import { LoggerOptions } from '@bessemer/cornerstone/logger'
 
 export { Bessemer, Environments }
 
 export type BessemerOptions = {
+  logger?: LoggerOptions
   public?: {}
 }
 
@@ -13,39 +15,54 @@ export type PublicOptions<T extends BessemerOptions> = T['public'] & {}
 
 export type PublicProperties<T extends BessemerOptions> = PropertyRecord<PublicOptions<T>>
 
-export interface BessemerApplication {
+export type BessemerGlobalContext = {
   client: {
     environment: Environment
-    tags: Array<PropertyTag>
+  }
+}
+
+export type BessemerApplicationContext = BessemerGlobalContext & {
+  client: {
+    profile: Array<PropertyTag>
     runtime: {}
   }
 }
 
-export type DehydratedApplicationType<T extends BessemerApplication> = {
+export type DehydratedContextType<T extends BessemerApplicationContext> = {
   client: Omit<T['client'], 'runtime'>
 }
 
-export type ClientApplicationType<T extends BessemerApplication> = {
+export type ClientContextType<T extends BessemerApplicationContext> = {
   client: T['client']
 }
 
-export interface BessemerClientApplication extends ClientApplicationType<BessemerApplication> {}
+export type BessemerClientContext = ClientContextType<BessemerApplicationContext> & {}
 
-export type ApplicationRuntimeType<T extends BessemerApplication> = T['client']['runtime']
+export type ApplicationRuntimeType<T extends BessemerApplicationContext> = T['client']['runtime']
 
-export type BessemerApplicationModule<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
-  getTags: () => Promise<Array<PropertyTag>>
-  initializeApplication: (options: ApplicationOptions, runtime: ApplicationRuntimeType<Application>) => Promise<Application>
+export type BessemerApplicationModule<
+  GlobalContext extends BessemerGlobalContext,
+  ApplicationContext extends BessemerApplicationContext,
+  ApplicationOptions extends BessemerOptions
+> = {
+  globalProfile: () => Array<PropertyTag>
+  configure: (options: ApplicationOptions) => GlobalContext
+  applicationProfile: () => Promise<Array<PropertyTag>>
+  initializeApplication: (
+    options: ApplicationOptions,
+    global: GlobalContext,
+    runtime: ApplicationRuntimeType<ApplicationContext>
+  ) => Promise<ApplicationContext>
 }
 
-export type BessemerRuntimeModule<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
+export type BessemerRuntimeModule<Application extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
   initializeRuntime: (options: PublicOptions<ApplicationOptions>) => ApplicationRuntimeType<Application>
 }
 
 export type BessemerClientModule<
-  Application extends BessemerApplication,
-  ClientApplication extends ClientApplicationType<BessemerApplication> = ClientApplicationType<BessemerApplication>
+  ApplicationContext extends BessemerApplicationContext,
+  ClientApplication extends ClientContextType<BessemerApplicationContext> = ClientContextType<BessemerApplicationContext>
 > = {
-  useTags: () => Array<PropertyTag> | null
-  useInitializeClient: (initialClient: ClientApplicationType<Application>) => ClientApplication
+  useProfile: () => Array<PropertyTag> | null
+  useInitializeClient: (initialClient: ClientContextType<ApplicationContext>) => ClientApplication
 }

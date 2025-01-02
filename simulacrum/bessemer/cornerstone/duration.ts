@@ -1,6 +1,5 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 
-// JOHN finish this class... consider if we should store in millis?
 export type Millisecond = NominalType<number, 'Millisecond'>
 export type Second = NominalType<number, 'Second'>
 export type Minute = NominalType<number, 'Minute'>
@@ -8,7 +7,7 @@ export type Hour = NominalType<number, 'Hour'>
 export type Day = NominalType<number, 'Day'>
 
 export type Duration = {
-  value: number
+  value: Millisecond
 }
 
 export const ofMilliseconds = (value: Millisecond) => {
@@ -21,10 +20,34 @@ export const inMilliseconds = (duration: Duration) => {
   return duration.value
 }
 
-export const ofSeconds = (value: Second) => {}
+export const ofSeconds = (value: Second) => {
+  return ofMilliseconds(value * 1000)
+}
 
-export const ofMinutes = (value: Minute) => {}
+export const inSeconds = (duration: Duration) => {
+  return inMilliseconds(duration) / 1000
+}
 
-export const ofHours = (value: Hour) => {}
+export const ofMinutes = (value: Minute) => {
+  return ofSeconds(value * 60)
+}
 
-export const ofDays = (value: Day) => {}
+export const inMinutes = (duration: Duration) => {
+  return inSeconds(duration) / 60
+}
+
+export const ofHours = (value: Hour) => {
+  return ofMinutes(value * 60)
+}
+
+export const inHours = (duration: Duration) => {
+  return inMinutes(duration) / 60
+}
+
+export const ofDays = (value: Day) => {
+  return ofHours(value * 24)
+}
+
+export const inDays = (duration: Duration) => {
+  return inHours(duration) / 24
+}

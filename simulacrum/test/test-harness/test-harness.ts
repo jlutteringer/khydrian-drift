@@ -1,12 +1,13 @@
 import { Dnd5e } from '@simulacrum/rulesets/dnd-5e'
 import { CharacterRecord } from '@simulacrum/common/character/character'
 import { ProgressionTables } from '@simulacrum/common'
-import { Application } from '@simulacrum/common/application'
+import { ApplicationContext } from '@simulacrum/common/application'
 
-export const buildTestContext = (): Application => {
+// JOHN
+export const buildTestContext = (): ApplicationContext => {
   return {
     serverOnlyTest: () => 'asdasd',
-    client: { ruleset: Dnd5e, tags: [], environment: 'test', runtime: { test: () => 'hello', coreRuntimeTest: () => 'world' } },
+    client: { ruleset: Dnd5e, profile: [], environment: 'test', runtime: { test: () => 'hello', coreRuntimeTest: () => 'world' } },
   }
 }
 

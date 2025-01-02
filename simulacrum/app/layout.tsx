@@ -8,7 +8,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import theme from '@simulacrum/ui/theme'
 import { CssBaseline } from '@mui/material'
 import { Bessemer } from '@bessemer/framework'
-import { Application, ApplicationModule, ApplicationOptions } from '@simulacrum/common/application'
+import { ApplicationContext, ApplicationModule, ApplicationOptions } from '@simulacrum/common/application'
 import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
 import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { ApplicationProperties } from '@simulacrum/common/application/properties'
@@ -38,7 +38,7 @@ const RootLayout = ({
 }: Readonly<{
   children: React.ReactNode
 }>) => {
-  const { clientProps } = Bessemer.getInstance<Application, ApplicationOptions>()
+  const { clientProps } = Bessemer.getInstance<ApplicationContext, ApplicationOptions>()
 
   return (
     <html lang="en">

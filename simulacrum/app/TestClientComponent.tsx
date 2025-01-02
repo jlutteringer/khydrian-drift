@@ -1,16 +1,16 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { ClientApplication } from '@simulacrum/common/application/client'
-import { useClientApplication } from '@bessemer/framework/use-bessemer-client'
+import { useClientApplication } from '@simulacrum/ui/application/use-client-application'
+import { Logger } from '@bessemer/cornerstone'
 
 export const TestClientComponent = () => {
   const pathname = usePathname()
-  const clientApplication = useClientApplication<ClientApplication>()
+  const clientApplication = useClientApplication()
 
-  console.log('pathname', pathname)
-  console.log('clientApplication.test', clientApplication.client.runtime.test())
-  console.log('clientApplication.coreRuntimeTest', clientApplication.client.runtime.coreRuntimeTest())
-  console.log('client', clientApplication)
+  Logger.info('pathname', pathname)
+  // console.log('clientApplication.test', clientApplication.client.runtime.test())
+  // console.log('clientApplication.coreRuntimeTest', clientApplication.client.runtime.coreRuntimeTest())
+  // console.log('client', clientApplication)
   return <div>Hello</div>
 }

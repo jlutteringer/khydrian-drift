@@ -1,76 +1,98 @@
 import {
-  BessemerApplication,
+  BessemerApplicationContext,
   BessemerApplicationModule,
+  BessemerGlobalContext,
   BessemerOptions,
   BessemerRuntimeModule,
-  DehydratedApplicationType,
+  DehydratedContextType,
   PublicProperties,
 } from '@bessemer/framework'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
-import { Preconditions, Properties } from '@bessemer/cornerstone'
+import { Logger, Preconditions, Properties } from '@bessemer/cornerstone'
 import { ServerContexts } from '@bessemer/react'
 import { ServerContext } from '@bessemer/react/server-context'
 
-export type BessemerConfiguration<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
-  applicationProvider: BessemerApplicationModule<Application, ApplicationOptions>
-  runtimeProvider: BessemerRuntimeModule<Application, ApplicationOptions>
+const logger = Logger.Primary.child({ module: 'Bessemer' })
+
+export type BessemerConfiguration<
+  GlobalContext extends BessemerGlobalContext,
+  ApplicationContext extends BessemerApplicationContext,
+  ApplicationOptions extends BessemerOptions
+> = {
+  applicationProvider: BessemerApplicationModule<GlobalContext, ApplicationContext, ApplicationOptions>
+  runtimeProvider: BessemerRuntimeModule<ApplicationContext, ApplicationOptions>
   properties: PropertyRecord<ApplicationOptions>
 }
 
-export type BessemerInstance<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
-  application: Application
-  clientProps: BessemerClientProps<Application, ApplicationOptions>
+export type BessemerInstance<ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
+  context: ApplicationContext
+  clientProps: BessemerClientProps<ApplicationContext, ApplicationOptions>
 }
 
-export type BessemerClientProps<Application extends BessemerApplication, ApplicationOptions extends BessemerOptions> = {
-  dehydratedApplication: DehydratedApplicationType<Application>
+export type BessemerClientProps<ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
+  dehydratedApplication: DehydratedContextType<ApplicationContext>
   publicProperties: PublicProperties<ApplicationOptions>
 }
 
-let Configuration: BessemerConfiguration<any, any> | null = null
+let BessemerConfiguration: { configuration: BessemerConfiguration<any, any, any>; context: BessemerGlobalContext } | null = null
 
-export const configure = <Application extends BessemerApplication, ApplicationOptions extends BessemerOptions>(
-  configuration: BessemerConfiguration<Application, ApplicationOptions>
+export const configure = <
+  GlobalContext extends BessemerGlobalContext,
+  ApplicationContext extends BessemerApplicationContext,
+  ApplicationOptions extends BessemerOptions
+>(
+  configuration: BessemerConfiguration<GlobalContext, ApplicationContext, ApplicationOptions>
 ): void => {
-  Preconditions.isNil(Configuration, 'Unable to configureBessemer after it has already be configured.')
-  Configuration = configuration
+  const { applicationProvider, properties } = configuration
+  Preconditions.isNil(BessemerConfiguration, 'Unable to configureBessemer after it has already be configured.')
+  logger.info('Configuring Global Bessemer Settings...')
+
+  const profile = applicationProvider.globalProfile()
+  const options = Properties.resolve(properties, profile)
+  BessemerConfiguration = { configuration, context: applicationProvider.configure(options) }
 }
 
-const context: ServerContext<BessemerInstance<BessemerApplication, BessemerOptions>> = ServerContexts.create()
+const context: ServerContext<BessemerInstance<BessemerApplicationContext, BessemerOptions>> = ServerContexts.create()
 
-export const getInstance = <Application extends BessemerApplication, ApplicationOptions extends BessemerOptions>(): BessemerInstance<
-  Application,
+export const getInstance = <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(): BessemerInstance<
+  ApplicationContext,
   ApplicationOptions
 > => {
-  const response = context.fetchValue(initializeBessemer) as BessemerInstance<Application, ApplicationOptions>
+  const response = context.fetchValue(initializeBessemer) as BessemerInstance<ApplicationContext, ApplicationOptions>
   return response
 }
 
-export const getApplication = <Application extends BessemerApplication>(): Application => {
-  return getInstance<Application, BessemerOptions>().application
+export const getApplication = <ApplicationContext extends BessemerApplicationContext>(): ApplicationContext => {
+  return getInstance<ApplicationContext, BessemerOptions>().context
 }
 
-const initializeBessemer = async <Application extends BessemerApplication, ApplicationOptions extends BessemerOptions>(): Promise<
-  BessemerInstance<Application, ApplicationOptions>
+const initializeBessemer = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(): Promise<
+  BessemerInstance<ApplicationContext, ApplicationOptions>
 > => {
-  Preconditions.isPresent(Configuration)
+  Preconditions.isPresent(BessemerConfiguration)
+  logger.info('Initializing Bessemer for request')
 
-  const { applicationProvider, runtimeProvider, properties } = Configuration as BessemerConfiguration<Application, ApplicationOptions>
-  const tags = await applicationProvider.getTags()
-  const options = Properties.resolve(properties, tags)
+  const { applicationProvider, runtimeProvider, properties } = BessemerConfiguration.configuration as BessemerConfiguration<
+    any,
+    ApplicationContext,
+    ApplicationOptions
+  >
+
+  const profile = await applicationProvider.applicationProfile()
+  const options = Properties.resolve(properties, profile)
   const runtime = runtimeProvider.initializeRuntime(options)
 
-  const application = await applicationProvider.initializeApplication(options, runtime)
-  application.client.tags = tags
+  const context = await applicationProvider.initializeApplication(options, BessemerConfiguration.context, runtime)
+  context.client.profile = profile
 
-  const dehydratedApplication = dehydrateApplication(application)
+  const dehydratedApplication = dehydrateApplication(context)
   const publicProperties = toPublicProperties(properties)
-  return { application, clientProps: { dehydratedApplication, publicProperties } }
+  return { context, clientProps: { dehydratedApplication, publicProperties } }
 }
 
-const dehydrateApplication = <T extends BessemerApplication>(context: T): DehydratedApplicationType<T> => {
+const dehydrateApplication = <T extends BessemerApplicationContext>(context: T): DehydratedContextType<T> => {
   const { runtime, ...rest } = context.client
-  return { client: rest } as DehydratedApplicationType<T>
+  return { client: rest } as DehydratedContextType<T>
 }
 
 const toPublicProperties = <T extends BessemerOptions>(properties: PropertyRecord<T>): PublicProperties<T> => {
