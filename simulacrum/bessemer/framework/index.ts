@@ -3,6 +3,7 @@ import * as Environments from './environment'
 import { Environment } from './environment'
 import { PropertyRecord, PropertyTag } from '@bessemer/cornerstone/property'
 import { LoggerOptions } from '@bessemer/cornerstone/logger'
+import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 
 export { Bessemer, Environments }
 
@@ -15,11 +16,10 @@ export type PublicOptions<T extends BessemerOptions> = T['public'] & {}
 
 export type PublicProperties<T extends BessemerOptions> = PropertyRecord<PublicOptions<T>>
 
-export type BessemerApplicationContext = {
+export type BessemerApplicationContext = AbstractApplicationContext & {
   client: {
     environment: Environment
     profile: Array<PropertyTag>
-    runtime: {}
   }
 }
 

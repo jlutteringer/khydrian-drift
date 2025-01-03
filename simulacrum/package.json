@@ -28,6 +28,10 @@
     "@mui/material-nextjs": "6.2.1",
     "@emotion/cache": "11.14.0",
 
+    "@tiptap/core": "2.11.0",
+    "@tiptap/pm": "2.11.0",
+    "@tiptap/html": "2.11.0",
+
     "react-hook-form": "7.54.2"
   },
   "devDependencies": {

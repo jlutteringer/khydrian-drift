@@ -19,6 +19,7 @@ import * as Signatures from './signature'
 import * as Eithers from './either'
 import * as Lazy from './lazy'
 import * as Patches from './patch'
+import * as Content from './content'
 import * as Combinables from './combinable'
 import * as Properties from './property'
 import * as Isomorphic from './isomorphic'
@@ -45,6 +46,7 @@ export {
   Eithers,
   Lazy,
   Patches,
+  Content,
   Combinables,
   Properties,
   Isomorphic,

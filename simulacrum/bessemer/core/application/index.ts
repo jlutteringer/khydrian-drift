@@ -40,7 +40,11 @@ export const CoreApplicationModule: BessemerApplicationModule<CoreApplicationCon
   applicationProfile: BaseApplicationModule.applicationProfile,
   initializeApplication: async (options: CoreOptions, runtime: ApplicationRuntimeType<CoreApplicationContext>): Promise<CoreApplicationContext> => {
     const baseApplication = await BaseApplicationModule.initializeApplication(options, runtime)
+
     const application = Objects.merge(baseApplication, {
+      codex: options.codex && {
+        provider: options.codex.provider,
+      },
       client: {
         runtime: runtime,
       },

@@ -7,7 +7,6 @@ import { useCharacterBuilder } from '@simulacrum/ui/character/builder/use-charac
 import { CharacterOptionPanel } from '@simulacrum/ui/character/builder/CharacterOptionPanel'
 import Box from '@mui/material/Box'
 import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
-import { ContentLabelComponents } from '@simulacrum/ui/content'
 import { ApplicationContext } from '@simulacrum/common/application'
 import { Bessemer } from '@bessemer/framework'
 
@@ -23,7 +22,11 @@ export const CharacterBuilder = () => {
 
   return (
     <Box>
-      <StandardPageHeader title={ContentLabelComponents.CharacterBuilderTitle} />
+      <StandardPageHeader
+        title="TODO"
+        // JOHN
+        // title={ContentLabelComponents.CharacterBuilderTitle}
+      />
 
       <Grid
         container

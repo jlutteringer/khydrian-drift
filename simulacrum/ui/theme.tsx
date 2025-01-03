@@ -1,11 +1,9 @@
 'use client'
+
 import { createTheme } from '@mui/material/styles'
+import { Objects } from '@bessemer/cornerstone'
+import { DefaultTheme, MuiTheme } from '@bessemer/mui/theme'
 
-const theme = createTheme({
-  cssVariables: true,
-  typography: {
-    fontFamily: 'var(--font-roboto)',
-  },
-})
+const theme: MuiTheme = {}
 
-export default theme
+export default createTheme(Objects.merge(DefaultTheme, theme))

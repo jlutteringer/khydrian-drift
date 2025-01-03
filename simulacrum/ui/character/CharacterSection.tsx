@@ -4,7 +4,6 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import SearchIcon from '@mui/icons-material/Search'
 import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
-import { ContentLabelComponents } from '@simulacrum/ui/content'
 
 const characters = [
   { name: "john_lutteringer's Char...", level: 1, campaign: 'Irawulfe' },
@@ -18,7 +17,9 @@ export const CharacterSection = () => {
   return (
     <div>
       <StandardPageHeader
-        title={ContentLabelComponents.CharactersTitle}
+        // JOHN
+        // title={ContentLabelComponents.CharactersTitle}
+        title={'TODO'}
         content={
           <Button
             variant="contained"
@@ -26,7 +27,8 @@ export const CharacterSection = () => {
             startIcon={<AddCircleOutlineIcon />}
             sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
-            {ContentLabelComponents.CharactersCreate}
+            TODO
+            {/* JOHN {ContentLabelComponents.CharactersCreate}*/}
           </Button>
         }
       />
