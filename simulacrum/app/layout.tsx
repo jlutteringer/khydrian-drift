@@ -9,11 +9,12 @@ import theme from '@simulacrum/ui/theme'
 import { CssBaseline } from '@mui/material'
 import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext, ApplicationModule, ApplicationOptions } from '@simulacrum/common/application'
-import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
 import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { ApplicationProperties } from '@simulacrum/common/application/properties'
+import { ClientApplicationProvider } from '@simulacrum/ui/application/use-client-context'
+import React from 'react'
 import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
-import { ClientApplicationProvider } from '@simulacrum/ui/application/use-client-application'
+import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -39,7 +40,6 @@ const RootLayout = ({
   children: React.ReactNode
 }>) => {
   const { clientProps } = Bessemer.getInstance<ApplicationContext, ApplicationOptions>()
-
   return (
     <html lang="en">
       <Head>

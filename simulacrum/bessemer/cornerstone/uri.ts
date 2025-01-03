@@ -180,17 +180,9 @@ const parseLocation = (url: UriComponent): UriLocation => {
 
 export const parse = (urlString: UriString): Uri => {
   const [scheme, rest1] = parseSchemePart(urlString)
-  console.log('parseSchemePart', scheme, urlString)
-
   const [authentication, rest2] = parseAuthenticationPart(rest1)
-  console.log('parseAuthenticationPart', authentication, rest1)
-
   const [host, rest3] = parseHostPart(rest2)
-  console.log('parseHostPart', host, rest2)
-
   const location = parseLocation(rest3)
-  console.log('parseLocationPart', location, rest3)
-
   const url: Uri = { scheme, host, authentication, location }
   return url
 }

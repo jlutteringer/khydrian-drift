@@ -1,36 +1,23 @@
-import {
-  ApplicationRuntimeType,
-  BessemerApplicationContext,
-  BessemerApplicationModule,
-  BessemerGlobalContext,
-  BessemerOptions,
-  Environments,
-} from '@bessemer/framework'
-import { Logger, Objects } from '@bessemer/cornerstone'
+import { ApplicationRuntimeType, BessemerApplicationContext, BessemerApplicationModule, BessemerOptions, Environments } from '@bessemer/framework'
+import { Loggers, Objects } from '@bessemer/cornerstone'
 
-export const BaseApplicationModule: BessemerApplicationModule<BessemerGlobalContext, BessemerApplicationContext, BessemerOptions> = {
+export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicationContext, BessemerOptions> = {
   globalProfile: () => {
     return [Environments.getEnvironmentTag()]
   },
-  configure: (options: BessemerOptions): BessemerGlobalContext => {
-    Logger.initialize(options.logger)
-
-    return {
-      client: {
-        environment: Environments.getEnvironment(),
-      },
-    }
+  configure: (options: BessemerOptions): void => {
+    Loggers.configure(options.logger)
   },
   applicationProfile: async () => {
     return []
   },
   initializeApplication: async (
     _: BessemerOptions,
-    global: BessemerGlobalContext,
     runtime: ApplicationRuntimeType<BessemerApplicationContext>
   ): Promise<BessemerApplicationContext> => {
     const application = Objects.merge(global, {
       client: {
+        environment: Environments.getEnvironment(),
         profile: [],
         runtime: runtime,
       },

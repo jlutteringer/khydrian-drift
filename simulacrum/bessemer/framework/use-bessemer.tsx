@@ -43,7 +43,7 @@ const hydrateApplication = <T extends BessemerApplicationContext>(
   return { client: { ...dehydratedContext.client, runtime } }
 }
 
-export function useBessemerClient<T extends BessemerClientContext>(): T {
+export const useBessemerClient = <T extends BessemerClientContext>(): T => {
   const clientApplication = use(BessemerContext)
   Preconditions.isPresent(clientApplication)
 

@@ -1,14 +1,14 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useClientApplication } from '@simulacrum/ui/application/use-client-application'
-import { Logger } from '@bessemer/cornerstone'
+import { useClientContext } from '@simulacrum/ui/application/use-client-context'
+import { Loggers } from '@bessemer/cornerstone'
 
 export const TestClientComponent = () => {
   const pathname = usePathname()
-  const clientApplication = useClientApplication()
+  const clientApplication = useClientContext()
 
-  Logger.info('pathname', pathname)
+  Loggers.info('Aha!')
   // console.log('clientApplication.test', clientApplication.client.runtime.test())
   // console.log('clientApplication.coreRuntimeTest', clientApplication.client.runtime.coreRuntimeTest())
   // console.log('client', clientApplication)

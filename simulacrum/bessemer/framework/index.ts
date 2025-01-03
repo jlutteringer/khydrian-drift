@@ -15,14 +15,9 @@ export type PublicOptions<T extends BessemerOptions> = T['public'] & {}
 
 export type PublicProperties<T extends BessemerOptions> = PropertyRecord<PublicOptions<T>>
 
-export type BessemerGlobalContext = {
+export type BessemerApplicationContext = {
   client: {
     environment: Environment
-  }
-}
-
-export type BessemerApplicationContext = BessemerGlobalContext & {
-  client: {
     profile: Array<PropertyTag>
     runtime: {}
   }
@@ -40,19 +35,11 @@ export type BessemerClientContext = ClientContextType<BessemerApplicationContext
 
 export type ApplicationRuntimeType<T extends BessemerApplicationContext> = T['client']['runtime']
 
-export type BessemerApplicationModule<
-  GlobalContext extends BessemerGlobalContext,
-  ApplicationContext extends BessemerApplicationContext,
-  ApplicationOptions extends BessemerOptions
-> = {
+export type BessemerApplicationModule<ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
   globalProfile: () => Array<PropertyTag>
-  configure: (options: ApplicationOptions) => GlobalContext
+  configure: (options: ApplicationOptions) => void
   applicationProfile: () => Promise<Array<PropertyTag>>
-  initializeApplication: (
-    options: ApplicationOptions,
-    global: GlobalContext,
-    runtime: ApplicationRuntimeType<ApplicationContext>
-  ) => Promise<ApplicationContext>
+  initializeApplication: (options: ApplicationOptions, runtime: ApplicationRuntimeType<ApplicationContext>) => Promise<ApplicationContext>
 }
 
 export type BessemerRuntimeModule<Application extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {

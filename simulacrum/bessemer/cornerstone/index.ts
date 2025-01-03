@@ -10,7 +10,7 @@ import * as Equalitors from './equalitor'
 import * as Durations from './duration'
 import * as Uris from './uri'
 import * as Urls from './url'
-import * as Logger from './logger'
+import * as Loggers from './logger'
 
 import * as Preconditions from './precondition'
 import * as Promises from './promise'
@@ -37,7 +37,7 @@ export {
   Durations,
   Uris,
   Urls,
-  Logger,
+  Loggers,
   Preconditions,
   Promises,
   References,

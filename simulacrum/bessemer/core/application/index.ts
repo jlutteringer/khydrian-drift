@@ -5,7 +5,6 @@ import {
   BessemerApplicationContext,
   BessemerApplicationModule,
   BessemerClientContext,
-  BessemerGlobalContext,
   BessemerOptions,
   ClientContextType,
 } from '@bessemer/framework'
@@ -19,35 +18,28 @@ export type CoreOptions = BessemerOptions & {
   }
 }
 
-export type CoreGlobalContext = BessemerGlobalContext & {}
+export type CoreApplicationContext = BessemerApplicationContext & {
+  codex?: CodexOptions
 
-export type CoreApplicationContext = CoreGlobalContext &
-  BessemerApplicationContext & {
-    codex?: CodexOptions
-
-    client: {
-      internationalization?: InternationalizationOptions
-      runtime: {
-        coreRuntimeTest: () => string
-      }
+  client: {
+    internationalization?: InternationalizationOptions
+    runtime: {
+      coreRuntimeTest: () => string
     }
   }
+}
 
 export type CoreClientContext = BessemerClientContext &
   ClientContextType<CoreApplicationContext> & {
     pathname: string
   }
 
-export const CoreApplicationModule: BessemerApplicationModule<BessemerGlobalContext, CoreApplicationContext, CoreOptions> = {
+export const CoreApplicationModule: BessemerApplicationModule<CoreApplicationContext, CoreOptions> = {
   globalProfile: BaseApplicationModule.globalProfile,
   configure: BaseApplicationModule.configure,
   applicationProfile: BaseApplicationModule.applicationProfile,
-  initializeApplication: async (
-    options: CoreOptions,
-    global: BessemerGlobalContext,
-    runtime: ApplicationRuntimeType<CoreApplicationContext>
-  ): Promise<CoreApplicationContext> => {
-    const baseApplication = await BaseApplicationModule.initializeApplication(options, global, runtime)
+  initializeApplication: async (options: CoreOptions, runtime: ApplicationRuntimeType<CoreApplicationContext>): Promise<CoreApplicationContext> => {
+    const baseApplication = await BaseApplicationModule.initializeApplication(options, runtime)
     const application = Objects.merge(baseApplication, {
       client: {
         runtime: runtime,

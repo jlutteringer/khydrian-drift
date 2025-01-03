@@ -5,7 +5,6 @@ import { ApplicationContext } from '@simulacrum/common/application'
 
 const CharactersPage = () => {
   const application = Bessemer.getApplication<ApplicationContext>()
-  console.log('application', application)
 
   return <CharacterSection />
 }

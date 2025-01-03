@@ -4,8 +4,6 @@ import { ApplicationContext } from '@simulacrum/common/application'
 
 const CampaignsPage = () => {
   const application = Bessemer.getApplication<ApplicationContext>()
-  console.log(application)
-
   return <div>Page Under Construction</div>
 }
 
