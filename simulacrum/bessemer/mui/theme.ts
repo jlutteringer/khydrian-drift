@@ -1,8 +1,9 @@
-import NextLink from 'next/link'
+// import NextLink from 'next/link'
 import { createTheme } from '@mui/material/styles'
 
 export type MuiTheme = Parameters<typeof createTheme>[0]
 
+// JOHN figure out why this config infinitely loops
 export const DefaultTheme: MuiTheme = {
   cssVariables: true,
   typography: {
@@ -11,12 +12,12 @@ export const DefaultTheme: MuiTheme = {
   components: {
     MuiLink: {
       defaultProps: {
-        component: NextLink,
+        // component: NextLink,
       },
     },
     MuiButtonBase: {
       defaultProps: {
-        LinkComponent: NextLink,
+        // LinkComponent: NextLink,
       },
     },
   },

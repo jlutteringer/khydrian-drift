@@ -57,7 +57,7 @@ test('Test Objects', () => {
       refresh: [{ period: TimeUnit.LongRest, amount: RelativeAmount.All }],
     })
 
-    // JOHN any way to fix the cast issue...?
+    // TODO any way to fix the cast issue...?
     // const attribute = Attributes.attribute(resourcePool, Expressions.reference(ArrayExpressions.FirstExpression as any))
     // const modifiers = [
     //   Attributes.modifier(

@@ -36,7 +36,7 @@ export type Modifier<T> = {
   value: Patch<T>
   combinability: Combinability
   condition?: Expression<boolean>
-  // JOHN
+  // TODO
   // source: EffectSource | null
 }
 
@@ -110,7 +110,7 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
   const { activeModifiers, inactiveModifiers } = evaluateModifiers(modifiers, evaluate)
   const modifierCombinations = Combinables.combinations(activeModifiers)
 
-  // JOHN we should refactor expressions to make this impossible.... but later
+  // TODO we should refactor expressions to make this impossible.... but later
   // evaluate(Expressions.dereference(reducer, []))
   // evaluate(reducer)
 

@@ -52,7 +52,7 @@ export const selectOption = (character: CharacterRecord, selection: CharacterSel
 export const buildCharacterDefinition = (character: CharacterRecord, context: ApplicationContext): CharacterSheet => {
   const { selections, choices } = evaluateCharacterOptions(character, context)
 
-  // JOHN If the computed selections didn't match up with the character... do some error thing...
+  // TODO If the computed selections didn't match up with the character... do some error thing...
   const characterState = buildCharacterState({ ...character, selections: selections }, context)
   characterState.choices = choices
   return characterState
@@ -96,7 +96,7 @@ const getCharacterChoiceTable = (character: CharacterState, context: Application
     return gainCharacterOptionEffects
       .map((it) => it.option)
       .filter((option) => {
-        // JOHN this logic will not work for options duplicated at the same level
+        // TODO this logic will not work for options duplicated at the same level
         return !character.selections[level].find((it) => References.equals(it.option, option.reference))
       })
   })
@@ -156,7 +156,7 @@ const buildInitialCharacterState = (character: CharacterRecord, context: Applica
   }
 }
 
-// JOHN need to consider bonus traits obtained via the GainTrait effect...
+// TODO need to consider bonus traits obtained via the GainTrait effect...
 const getCharacterTraits = (character: CharacterRecord, context: ApplicationContext): ProgressionTable<TraitReference> => {
   return ProgressionTables.map(character.selections, (it) => it.selection)
 }

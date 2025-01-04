@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { RichTextElement, RichTextRenderer, RichTextRendererProps } from '@bessemer/react/components/RichTextRenderer'
 import { Dictionary } from '@bessemer/cornerstone/types'
 import { Objects } from '@bessemer/cornerstone'
@@ -177,27 +177,28 @@ const tableHeader: RichTextElement = (props) => {
   )
 }
 
-const details: RichTextElement = (props) => {
-  const [isOpen, setIsOpen] = useState(false)
-
-  return (
-    <Box
-      component="details"
-      open={isOpen}
-      onToggle={(e: React.SyntheticEvent<HTMLDetailsElement>) => {
-        setIsOpen(e.currentTarget.open)
-      }}
-      sx={{
-        my: 2,
-        p: 2,
-        borderRadius: 1,
-        bgcolor: 'background.paper',
-      }}
-    >
-      {props.children}
-    </Box>
-  )
-}
+// JOHN useState client context issues
+// const details: RichTextElement = (props) => {
+//   const [isOpen, setIsOpen] = useState(false)
+//
+//   return (
+//     <Box
+//       component="details"
+//       open={isOpen}
+//       onToggle={(e: React.SyntheticEvent<HTMLDetailsElement>) => {
+//         setIsOpen(e.currentTarget.open)
+//       }}
+//       sx={{
+//         my: 2,
+//         p: 2,
+//         borderRadius: 1,
+//         bgcolor: 'background.paper',
+//       }}
+//     >
+//       {props.children}
+//     </Box>
+//   )
+// }
 
 const detailsContent: RichTextElement = (props) => {
   return <Box sx={{ mt: 2 }}>{props.children}</Box>
@@ -235,7 +236,7 @@ const defaultHandlers: Dictionary<RichTextElement> = {
   tableRow,
   tableCell,
   tableHeader,
-  details,
+  // details,
   detailsContent,
   detailsSummary,
 }

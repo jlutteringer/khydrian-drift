@@ -93,7 +93,7 @@ export const getEffectsForAbility = (ability: Ability): Array<Effect> => {
   })
 }
 
-// JOHN
+// TODO
 export const buildInitialState = (ability: AbilityReference, context: ApplicationContext): AbilityState => {
   return { ability: getAbility(ability, context) }
 }

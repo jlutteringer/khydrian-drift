@@ -3,7 +3,14 @@ import { Attributes, Effects } from '@simulacrum/common'
 import { Effect } from '@simulacrum/common/effect'
 import { CharacterInitialValues } from '@simulacrum/common/character/character'
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
-import { EvaluateExpression, Expression, Expressions, ExpressionVariable, NumericExpressions, ReducingExpression } from '@bessemer/cornerstone/expression'
+import {
+  EvaluateExpression,
+  Expression,
+  Expressions,
+  ExpressionVariable,
+  NumericExpressions,
+  ReducingExpression,
+} from '@bessemer/cornerstone/expression'
 import { Objects, Preconditions, References } from '@bessemer/cornerstone'
 
 export type CharacteristicReference<T> = Reference<'Characteristic'>
@@ -35,7 +42,7 @@ export const defineTemplate = <T>(id: ReferenceType<CharacteristicReference<T>>,
     reference,
     name,
     path,
-    // JOHN another instance of us 'hardcoding' numeric attributes...
+    // TODO another instance of us 'hardcoding' numeric attributes...
     optimizer: Expressions.reference(NumericExpressions.MaxExpression) as ReducingExpression<T, T>,
   }
 }
@@ -77,7 +84,7 @@ export const evaluateCharacteristic = <T>(
 ): CharacteristicValue<T> => {
   const attribute = buildAttribute(characteristic, initialValues)
 
-  // JOHN need to set sources or something... gotta figure that one out!
+  // TODO need to set sources or something... gotta figure that one out!
   const modifiers = Effects.filter(effects, Effects.ModifyCharacteristic)
     .filter((it) => References.equals(it.characteristic, characteristic.reference))
     .map((it) => it.modifier) as Array<Modifier<T>>

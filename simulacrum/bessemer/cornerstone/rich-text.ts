@@ -16,4 +16,4 @@ export type RichTextDto = {
 
 export type RichTextHtml = NominalType<string, 'RichTextHtml'>
 
-export type RichText = string | RichTextHtml | RichTextDto | RichTextDto[] | null
+export type RichText = string | RichTextHtml | RichTextDto

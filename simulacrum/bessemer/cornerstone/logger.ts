@@ -4,7 +4,7 @@ import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 
 export type LoggerOptions = pino.LoggerOptions
 
-// JOHN we might want to tweak this interface...
+// TODO we might want to tweak this interface...
 interface LogFunction {
   (obj: unknown, msg?: string, ...args: any[]): void
   (msg: string, ...args: any[]): void

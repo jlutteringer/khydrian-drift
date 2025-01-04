@@ -12,7 +12,10 @@ export const Commando = Traits.defineTrait('e0b5ad7e-6e8b-4416-8a7c-41bab05993d3
   description: '',
   archetypes: [Class],
   effects: [
-    Effects.modifyCharacteristic(PlayerCharacteristics.VitalityPool, Attributes.modifier(Patches.sum(NumericExpressions.multiply([CharacterValues.Level, 2])))),
+    Effects.modifyCharacteristic(
+      PlayerCharacteristics.VitalityPool,
+      Attributes.modifier(Patches.sum(NumericExpressions.multiply([CharacterValues.Level, 2])))
+    ),
     Effects.gainTrait(BasicCombatTraining),
     // Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
     // Effects.modifyLoadoutSlotQuantity(AdvancedHardpointLoadoutSlot, 1),
@@ -61,6 +64,7 @@ export const OfficerTrait = Traits.defineTrait(Officer, {
   prerequisites: [Traits.traitPrerequisite(Commando), Traits.traitPrerequisite(Momentum), Expressions.not(Traits.traitPrerequisite(Sentinel))],
   effects: [
     Effects.gainResourcePool(TacticPoints),
+    // TODO this solution doesn't work - its supposed to add 2 not set 2 - Patch solves!
     // Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2)
   ],
 })
@@ -70,7 +74,7 @@ export const AdvancedOperations = Traits.defineTrait('cf015d5a-f427-4eea-9798-ca
   description: '',
   prerequisites: [Traits.traitPrerequisite(Commando), Traits.traitPrerequisite(Officer)],
   effects: [
-    // JOHN this solution doesn't work - its supposed to add 2 not set 2
+    // TODO this solution doesn't work - its supposed to add 2 not set 2 - Patch solves!
     // Effects.modifyResourcePool({ resource: TacticPoints.reference, size: 2 }),
     // Effects.modifyLoadoutSlotQuantity(GeneralLoadoutSlot, 2),
   ],

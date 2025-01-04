@@ -7,7 +7,16 @@ export function middleware(request: NextRequest) {
   return response
 }
 
-// JOHN this is too broad
 export const config = {
-  matcher: '/:path*',
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - /api (API routes)
+     * - /_next (Next.js internals)
+     * - /_static (static files)
+     * - /_vercel (Vercel internals)
+     * - /favicon.ico, /sitemap.xml (static files)
+     */
+    '/((?!api|_next|_static|_vercel|favicon.ico|sitemap.xml).*)',
+  ],
 }

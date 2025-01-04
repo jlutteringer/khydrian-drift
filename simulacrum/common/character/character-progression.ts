@@ -17,7 +17,7 @@ export type CharacterProgressionEntry = {
   selection: CharacterSelection | null
   effects: Array<Effect>
 
-  // JOHN
+  // TODO
   // modifiers: Array<ModifierValue<unknown>>
 }
 
