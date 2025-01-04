@@ -23,7 +23,7 @@ export type ApplicationContext = CoreApplicationContext & {
   }
 }
 
-export type ClientContext = ClientContextType<ApplicationContext> & CoreApplicationContext & CoreClientContext & {}
+export type ClientContext = ClientContextType<ApplicationContext> & CoreClientContext & {}
 
 export const ApplicationModule: BessemerApplicationModule<ApplicationContext, ApplicationOptions> = {
   globalProfile: CoreApplicationModule.globalProfile,

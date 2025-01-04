@@ -1,11 +1,12 @@
 import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
-import { ContentProvider, ContentReference, TextContent, TextContentType } from '@bessemer/cornerstone/content'
-import { Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Preconditions, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
+import { ContentProvider, ContentReference, TextContent, TextContentType } from '@bessemer/cornerstone/content'
 
 export type CodexOptions = {
-  provider: ContentProvider<CoreApplicationContext>
+  // JOHN better solution here?
+  provider: ContentProvider<any>
   // definitions: Array<CodexDefinition<{}>>
 }
 
@@ -68,12 +69,14 @@ export const text = (reference: ReferenceType<ContentReference>, defaultValue?: 
 //   return application.codex?.label.render(data)
 // }
 
-export const fetchText = async (reference: ReferenceType<ContentReference>, context: CoreApplicationContext): Promise<TextContent> => {
+export const fetchText = async (reference: ReferenceType<ContentReference>, context: CoreApplicationContext): Promise<TextContent | undefined> => {
   Preconditions.isPresent(context.codex)
-
   const content = await context.codex.provider.fetchContent([reference], context)
-  Preconditions.isTrue(content[0]?.type === TextContentType)
+  if (Arrays.isEmpty(content)) {
+    return undefined
+  }
 
+  Preconditions.isTrue(content[0]?.type === TextContentType)
   return content[0] as TextContent
 }
 

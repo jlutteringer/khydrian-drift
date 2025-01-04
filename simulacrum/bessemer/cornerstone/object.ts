@@ -12,7 +12,7 @@ import {
   mergeWith as unsafeMergeWith,
 } from 'lodash-es'
 import { produce } from 'immer'
-import { GenericRecord } from '@bessemer/cornerstone/types'
+import { GenericRecord, NominalType } from '@bessemer/cornerstone/types'
 import { Arrays, Maths, Strings } from '@bessemer/cornerstone'
 import { Primitive } from 'type-fest'
 
@@ -225,4 +225,11 @@ const walk = (value: any, transform: TransformFunction, path: (string | number)[
   }
 
   return result
+}
+
+export type RecordAttribute<Type = unknown, Class extends string = 'RecordAttribute'> = NominalType<string, [Type, Class]>
+type RecordAttributeType<Attribute> = Attribute extends RecordAttribute<infer Type, string> ? Type : never
+
+export const getAttribute = <T extends RecordAttribute<unknown, string>>(record: GenericRecord, attribute: T): RecordAttributeType<T> | undefined => {
+  return record[attribute] as RecordAttributeType<T> | undefined
 }

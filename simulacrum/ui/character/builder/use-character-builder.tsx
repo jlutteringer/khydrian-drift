@@ -2,7 +2,7 @@ import { CharacterRecord, CharacterState } from '@simulacrum/common/character/ch
 import { CharacterOptions, CharacterProgression, Characters } from '@simulacrum/common/character'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { CharacterProgressionEntry } from '@simulacrum/common/character/character-progression'
-import { useMemo, useState } from 'react'
+import { use, useMemo, useState } from 'react'
 import { ProgressionTables } from '@simulacrum/common'
 import { CharacterChoice } from '@simulacrum/common/character/character-option'
 import { Objects, Preconditions } from '@bessemer/cornerstone'
@@ -23,7 +23,7 @@ export type CharacterBuilderState = {
 }
 
 export const useCharacterBuilder = ({ character }: CharacterBuilderProps): CharacterBuilderState => {
-  const application = Bessemer.getApplication<ApplicationContext>()
+  const application = use(Bessemer.getApplication<ApplicationContext>())
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterRecord>(character)
   const [selectedEntryKey, setSelectedEntryKey] = useState<string | null>(null)
 

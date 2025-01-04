@@ -1,13 +1,13 @@
 import React, { ReactNode } from 'react'
-import { RichTextDto } from '@bessemer/cornerstone/rich-text'
+import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 import { Objects } from '@bessemer/cornerstone'
 import { Dictionary } from '@bessemer/cornerstone/types'
 
-export type RichTextRendererProps = { content: RichTextDto; handlers?: Dictionary<RichTextElement> }
+export type RichTextRendererProps = { content: RichTextJson; handlers?: Dictionary<RichTextElement> }
 
 export type RichTextElementProps = {
   children?: ReactNode
-  content: RichTextDto
+  content: RichTextJson
 }
 
 export type RichTextElement = (props: RichTextElementProps) => ReactNode

@@ -1,14 +1,19 @@
 import * as Bessemer from './bessemer'
 import * as Environments from './environment'
 import { Environment } from './environment'
+import * as Routes from './route'
+import { RouteErrorHandler } from './route'
 import { PropertyRecord, PropertyTag } from '@bessemer/cornerstone/property'
 import { LoggerOptions } from '@bessemer/cornerstone/logger'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 
-export { Bessemer, Environments }
+export { Bessemer, Routes, Environments }
 
 export type BessemerOptions = {
   logger?: LoggerOptions
+  route?: {
+    errorHandler?: RouteErrorHandler<any>
+  }
   public?: {}
 }
 
@@ -17,6 +22,10 @@ export type PublicOptions<T extends BessemerOptions> = T['public'] & {}
 export type PublicProperties<T extends BessemerOptions> = PropertyRecord<PublicOptions<T>>
 
 export type BessemerApplicationContext = AbstractApplicationContext & {
+  route: {
+    // TODO add some notion of middleware/interceptors/filters as well maybe?
+    errorHandler: RouteErrorHandler
+  }
   client: {
     environment: Environment
     profile: Array<PropertyTag>

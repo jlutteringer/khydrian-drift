@@ -6,6 +6,10 @@ import { ApplicationContext } from '@simulacrum/common/application'
 // JOHN
 export const buildTestContext = (): ApplicationContext => {
   return {
+    tiptapExtensions: [],
+    route: {
+      errorHandler: null!,
+    },
     serverOnlyTest: () => 'asdasd',
     client: { ruleset: Dnd5e, profile: [], environment: 'test', runtime: { test: () => 'hello', coreRuntimeTest: () => 'world' } },
   }

@@ -1,4 +1,4 @@
-import { cache, use } from 'react'
+import { cache } from 'react'
 import { Preconditions } from '@bessemer/cornerstone'
 
 export const create = <T>(): ServerContext<T> => {
@@ -9,19 +9,19 @@ export const create = <T>(): ServerContext<T> => {
   })
 
   return {
-    fetchValue: (fetch: () => Promise<T>) => {
+    fetchValue: (fetch: () => Promise<T>): Promise<T> => {
       const promise = getCache().promise
       if (promise) {
-        return use(promise)
+        return promise
       } else {
         const result = fetch()
         getCache().promise = result
-        return use(result)
+        return result
       }
     },
   }
 }
 
 export type ServerContext<T> = {
-  fetchValue: (fetch: () => Promise<T>) => T
+  fetchValue: (fetch: () => Promise<T>) => Promise<T>
 }

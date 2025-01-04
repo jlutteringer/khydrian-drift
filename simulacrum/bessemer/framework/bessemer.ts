@@ -53,17 +53,18 @@ export const configure = <ApplicationContext extends BessemerApplicationContext,
 
 const context: ServerContext<BessemerInstance<BessemerApplicationContext, BessemerOptions>> = ServerContexts.create()
 
-export const getInstance = <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(): BessemerInstance<
-  ApplicationContext,
-  ApplicationOptions
+export const getInstance = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(): Promise<
+  BessemerInstance<ApplicationContext, ApplicationOptions>
 > => {
-  const response = context.fetchValue(initializeBessemer) as BessemerInstance<ApplicationContext, ApplicationOptions>
+  const response = (await context.fetchValue(initializeBessemer)) as BessemerInstance<ApplicationContext, ApplicationOptions>
   return response
 }
 
-export const getApplication = <ApplicationContext extends BessemerApplicationContext>(): ApplicationContext => {
+export const getApplication = async <ApplicationContext extends BessemerApplicationContext>(): Promise<ApplicationContext> => {
   Preconditions.isServerSide()
-  return getInstance<ApplicationContext, BessemerOptions>().context
+
+  const { context } = await getInstance<ApplicationContext, BessemerOptions>()
+  return context
 }
 
 const initializeBessemer = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(): Promise<

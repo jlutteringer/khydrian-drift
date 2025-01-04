@@ -11,6 +11,8 @@ import * as Durations from './duration'
 import * as Uris from './uri'
 import * as Urls from './url'
 import * as Loggers from './logger'
+import * as Errors from './error'
+import * as ErrorEvents from './error-event'
 
 import * as Preconditions from './precondition'
 import * as Promises from './promise'
@@ -23,6 +25,7 @@ import * as Content from './content'
 import * as Combinables from './combinable'
 import * as Properties from './property'
 import * as Isomorphic from './isomorphic'
+import * as RichTexts from './rich-text'
 import * as Misc from './misc'
 
 export {
@@ -39,6 +42,8 @@ export {
   Uris,
   Urls,
   Loggers,
+  Errors,
+  ErrorEvents,
   Preconditions,
   Promises,
   References,
@@ -50,5 +55,6 @@ export {
   Combinables,
   Properties,
   Isomorphic,
+  RichTexts,
   Misc,
 }

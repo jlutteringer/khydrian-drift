@@ -2,7 +2,7 @@ import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/re
 import { NominalType } from '@bessemer/cornerstone/types'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { Arrays, Objects } from '@bessemer/cornerstone'
-import { RichTextDto } from '@bessemer/cornerstone/rich-text'
+import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 
 export type ContentType<Data = unknown, T extends string = string> = NominalType<T, ['ContentType', Data]>
 
@@ -15,7 +15,7 @@ export type ContentData<Type extends ContentType = ContentType, Data = ContentDa
   data: Data
 }
 
-export const TextContentType: ContentType<RichTextDto, 'Text'> = 'Text'
+export const TextContentType: ContentType<RichTextJson, 'Text'> = 'Text'
 export type TextContent = ContentData<typeof TextContentType>
 
 export interface ContentProvider<ContextType extends AbstractApplicationContext = AbstractApplicationContext> {
@@ -25,13 +25,20 @@ export interface ContentProvider<ContextType extends AbstractApplicationContext 
   fetchContentByModel: <Type extends ContentType>(type: Type, context: ContextType) => Promise<Array<ContentData<Type>>>
 }
 
-export type ContentNormalizer<Type extends ContentData = ContentData> = {
+export type ContentNormalizer<
+  ApplicationContext extends AbstractApplicationContext = AbstractApplicationContext,
+  Type extends ContentData = ContentData
+> = {
   type: Type['type']
-  normalize: (data: Array<ContentData>) => Promise<Array<Type>>
+  normalize: (data: Array<ContentData>, context: ApplicationContext) => Promise<Array<Type>>
 }
 
 // TODO might be more efficient to put the normalizers in a map at some point
-export const normalizeContent = async (content: Array<ContentData>, normalizers: Array<ContentNormalizer>): Promise<Array<ContentData>> => {
+export const normalizeContent = async <ApplicationContext extends AbstractApplicationContext>(
+  content: Array<ContentData>,
+  normalizers: Array<ContentNormalizer<ApplicationContext>>,
+  context: ApplicationContext
+): Promise<Array<ContentData>> => {
   const groupedContent = Arrays.groupBy(content, (it) => it.type)
   const normalizedGroupedContent = Object.entries(groupedContent).map(async ([type, values]) => {
     const normalizer = normalizers.find((it) => it.type === type)
@@ -39,22 +46,25 @@ export const normalizeContent = async (content: Array<ContentData>, normalizers:
       return values
     }
 
-    return await normalizer.normalize(values)
+    return await normalizer.normalize(values, context)
   })
 
   const normalizedContent = (await Promise.all(normalizedGroupedContent)).flatMap((it) => it)
   return normalizedContent
 }
 
-export const staticProvider = (content: Array<ContentData>, normalizers?: Array<ContentNormalizer>): ContentProvider => {
+export const staticProvider = <ApplicationContext extends AbstractApplicationContext>(
+  content: Array<ContentData>,
+  normalizers?: Array<ContentNormalizer<ApplicationContext>>
+): ContentProvider<ApplicationContext> => {
   return {
-    async fetchContent(references: Array<ReferenceType<ContentReference>>): Promise<Array<ContentData>> {
+    async fetchContent(references: Array<ReferenceType<ContentReference>>, context: ApplicationContext): Promise<Array<ContentData>> {
       const matchingContent = content.filter((it) => Arrays.contains(references, it.reference))
-      return normalizeContent(matchingContent, normalizers ?? [])
+      return normalizeContent(matchingContent, normalizers ?? [], context)
     },
-    async fetchContentByModel<Type extends ContentType>(type: Type): Promise<Array<ContentData<Type>>> {
+    async fetchContentByModel<Type extends ContentType>(type: Type, context: ApplicationContext): Promise<Array<ContentData<Type>>> {
       const matchingContent = content.filter((it) => it.type === type)
-      const normalizedContent = await normalizeContent(matchingContent, normalizers ?? [])
+      const normalizedContent = await normalizeContent(matchingContent, normalizers ?? [], context)
       return normalizedContent as Array<ContentData<Type>>
     },
   }

@@ -5,7 +5,7 @@ import { Objects } from '@bessemer/cornerstone'
 
 export const ApplicationClientModule: BessemerClientModule<ApplicationContext, ClientContext> = {
   useProfile: CoreClientModule.useProfile,
-  useInitializeClient: (initialClient) => {
+  useInitializeClient: (initialClient): ClientContext => {
     const coreClient = CoreClientModule.useInitializeClient(initialClient)
     return Objects.merge(coreClient, initialClient, {})
   },

@@ -1,10 +1,11 @@
 import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext } from '@simulacrum/common/application'
+import { use } from 'react'
 
 export const TestServerComponent = () => {
   // console.log('TestServerComponent')
 
-  const application = Bessemer.getApplication<ApplicationContext>()
+  const application = use(Bessemer.getApplication<ApplicationContext>())
 
   // console.log('application.test', application.client.runtime.test())
   // console.log('application.coreRuntimeTest', application.client.runtime.coreRuntimeTest())

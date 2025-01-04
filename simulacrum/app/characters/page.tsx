@@ -1,10 +1,11 @@
 import * as React from 'react'
+import { use } from 'react'
 import { CharacterSection } from '@simulacrum/ui/character/CharacterSection'
 import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext } from '@simulacrum/common/application'
 
 const CharactersPage = () => {
-  const application = Bessemer.getApplication<ApplicationContext>()
+  const application = use(Bessemer.getApplication<ApplicationContext>())
 
   return <CharacterSection />
 }

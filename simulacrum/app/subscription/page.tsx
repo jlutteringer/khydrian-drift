@@ -1,9 +1,10 @@
 import * as React from 'react'
+import { use } from 'react'
 import { Bessemer } from '@bessemer/framework'
-import { ApplicationContext, ApplicationOptions } from '@simulacrum/common/application'
+import { ApplicationContext } from '@simulacrum/common/application'
 
 const SubscriptionPage = () => {
-  const application = Bessemer.getInstance<ApplicationContext, ApplicationOptions>()
+  const application = use(Bessemer.getApplication<ApplicationContext>())
 
   return <div>Page Under Construction</div>
 }

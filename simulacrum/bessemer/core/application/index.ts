@@ -8,11 +8,15 @@ import {
   BessemerOptions,
   ClientContextType,
 } from '@bessemer/framework'
-import { Objects } from '@bessemer/cornerstone'
+import { Arrays, Objects } from '@bessemer/cornerstone'
 import { BaseApplicationModule } from '@bessemer/framework/application'
+import { Tiptap } from '@bessemer/core'
+import { TiptapExtension } from '@bessemer/core/tiptap'
 
 export type CoreOptions = BessemerOptions & {
   codex?: CodexOptions
+  tiptapExtensions?: Array<TiptapExtension>
+
   public?: {
     internationalization?: InternationalizationOptions
   }
@@ -20,6 +24,7 @@ export type CoreOptions = BessemerOptions & {
 
 export type CoreApplicationContext = BessemerApplicationContext & {
   codex?: CodexOptions
+  tiptapExtensions: Array<TiptapExtension>
 
   client: {
     internationalization?: InternationalizationOptions
@@ -45,6 +50,7 @@ export const CoreApplicationModule: BessemerApplicationModule<CoreApplicationCon
       codex: options.codex && {
         provider: options.codex.provider,
       },
+      tiptapExtensions: Arrays.concatenate(Tiptap.DefaultExtensions, options.tiptapExtensions ?? []),
       client: {
         runtime: runtime,
       },

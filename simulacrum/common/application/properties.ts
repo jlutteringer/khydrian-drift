@@ -1,43 +1,32 @@
 import 'server-only'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
-import { Content, Objects, Properties } from '@bessemer/cornerstone'
-import { ApplicationOptions } from '@simulacrum/common/application'
-import { ContentData, ContentNormalizer, TextContent, TextContentType } from '@bessemer/cornerstone/content'
-import { RichText, RichTextDto } from '@bessemer/cornerstone/rich-text'
-import { generateJSON } from '@tiptap/html'
-import { StarterKit } from '@tiptap/starter-kit'
+import { Content, Properties } from '@bessemer/cornerstone'
+import { ApplicationContext, ApplicationOptions } from '@simulacrum/common/application'
+import { TextContentNormalizer } from '@bessemer/core/codex/normalizer'
+import { CoreRouteErrorHandler } from '@bessemer/core/route'
+import { TextContentType } from '@bessemer/cornerstone/content'
 
-// JOHN this logic should not live here... needs to move
-const TextContentNormalizer: ContentNormalizer<TextContent> = {
-  type: TextContentType,
-  normalize: async (initialData) => {
-    const data = initialData as Array<ContentData<typeof TextContentType, RichText>>
-    const normalizedData = data.map((it) => {
-      if (Objects.isObject(it.data)) {
-        return it as TextContent
-      }
-
-      const json = generateJSON(it.data, [StarterKit]) as RichTextDto
-      const normalizedData: TextContent = { ...it, data: json }
-      return normalizedData
-    })
-
-    return normalizedData
-  },
-}
-
-const contentProvider = Content.staticProvider(
+// JOHN possible to simplify config?
+const contentProvider = Content.staticProvider<ApplicationContext>(
   [
     {
       reference: { id: 'test-content', type: 'Content' },
       type: TextContentType,
       data: 'Hello, World!',
     },
+    {
+      reference: { id: 'error-event.unhandled', type: 'Content' },
+      type: TextContentType,
+      data: '<p>Hello, <b>{{httpStatusCode}}</b></p>',
+    },
   ],
   [TextContentNormalizer]
 )
 
 export const ApplicationProperties: PropertyRecord<ApplicationOptions> = Properties.properties({
+  route: {
+    errorHandler: CoreRouteErrorHandler,
+  },
   ruleset: 'dnd',
   codex: {
     provider: contentProvider,

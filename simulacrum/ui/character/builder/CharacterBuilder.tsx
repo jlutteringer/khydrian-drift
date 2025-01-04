@@ -3,6 +3,7 @@ import { Characters } from '@simulacrum/common/character'
 import Grid from '@mui/material/Grid2'
 import { CharacterBuilderTimeline } from '@simulacrum/ui/character/builder/CharacterBuilderTimeline'
 import * as React from 'react'
+import { use } from 'react'
 import { useCharacterBuilder } from '@simulacrum/ui/character/builder/use-character-builder'
 import { CharacterOptionPanel } from '@simulacrum/ui/character/builder/CharacterOptionPanel'
 import Box from '@mui/material/Box'
@@ -11,7 +12,7 @@ import { ApplicationContext } from '@simulacrum/common/application'
 import { Bessemer } from '@bessemer/framework'
 
 export const CharacterBuilder = () => {
-  const application = Bessemer.getApplication<ApplicationContext>()
+  const application = use(Bessemer.getApplication<ApplicationContext>())
   let character = Characters.buildCharacterDefinition(TestHarness.CommonerLevel3, application)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), context)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectFightingStyle, Archery), context)

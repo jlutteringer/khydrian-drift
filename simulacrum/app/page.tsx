@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import React from 'react'
+import React, { use } from 'react'
 import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext } from '@simulacrum/common/application'
 import { CharacterRecord } from '@simulacrum/common/character/character'
@@ -10,7 +10,7 @@ import { Archery, SelectFightingStyle } from '@simulacrum/rulesets/dnd-5e/archet
 import { Fighter, Fighter2, Fighter3 } from '@simulacrum/rulesets/dnd-5e/class/class-fighter'
 
 export default function Home() {
-  const application = Bessemer.getApplication<ApplicationContext>()
+  const application = use(Bessemer.getApplication<ApplicationContext>())
   let character: CharacterRecord = {
     name: 'Bob the Fighter',
     level: 3,
