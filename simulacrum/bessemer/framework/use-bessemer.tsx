@@ -28,8 +28,8 @@ export function BessemerClientProvider<
   runtime: BessemerRuntimeModule<Application, ApplicationOptions>
   props: BessemerClientProps<Application, ApplicationOptions>
 }>) {
-  const profile = client.useProfile()
-  const options = Properties.resolve(props.publicProperties, profile ?? props.dehydratedApplication.client.profile)
+  const tags = client.useTags()
+  const options = Properties.resolve(props.publicProperties, tags ?? props.dehydratedApplication.client.tags)
   const clientRuntime = runtime.initializeRuntime(options)
   const rehydratedApplication = hydrateApplication(props.dehydratedApplication, clientRuntime)
   const clientApplication = client.useInitializeClient(rehydratedApplication)

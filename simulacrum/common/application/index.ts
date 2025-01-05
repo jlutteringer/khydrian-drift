@@ -26,24 +26,24 @@ export type ApplicationContext = CoreApplicationContext & {
 export type ClientContext = ClientContextType<ApplicationContext> & CoreClientContext & {}
 
 export const ApplicationModule: BessemerApplicationModule<ApplicationContext, ApplicationOptions> = {
-  globalProfile: CoreApplicationModule.globalProfile,
+  globalTags: CoreApplicationModule.globalTags,
   configure: CoreApplicationModule.configure,
-  applicationProfile: async () => {
+  applicationTags: async () => {
     // TODO this is all janky test code
-    const coreProfile = await CoreApplicationModule.applicationProfile()
+    const coreTags = await CoreApplicationModule.applicationTags()
     const headersList = await headers()
     const urlString = headersList.get('x-url')
 
     if (Objects.isNil(urlString)) {
-      return coreProfile
+      return coreTags
     }
 
     const url = Urls.parse(urlString)
     if (url.location.path === '/subscription') {
-      return [...coreProfile, Tags.tag('Tenant', 'subscription')]
+      return [...coreTags, Tags.tag('Tenant', 'subscription')]
     }
 
-    return coreProfile
+    return coreTags
   },
   initializeApplication: async (options: ApplicationOptions, runtime: ApplicationRuntimeType<ApplicationContext>): Promise<ApplicationContext> => {
     const baseApplication = await CoreApplicationModule.initializeApplication(options, runtime)

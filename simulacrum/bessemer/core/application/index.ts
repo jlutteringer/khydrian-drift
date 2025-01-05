@@ -40,9 +40,9 @@ export type CoreClientContext = BessemerClientContext &
   }
 
 export const CoreApplicationModule: BessemerApplicationModule<CoreApplicationContext, CoreOptions> = {
-  globalProfile: BaseApplicationModule.globalProfile,
+  globalTags: BaseApplicationModule.globalTags,
   configure: BaseApplicationModule.configure,
-  applicationProfile: BaseApplicationModule.applicationProfile,
+  applicationTags: BaseApplicationModule.applicationTags,
   initializeApplication: async (options: CoreOptions, runtime: ApplicationRuntimeType<CoreApplicationContext>): Promise<CoreApplicationContext> => {
     const baseApplication = await BaseApplicationModule.initializeApplication(options, runtime)
 

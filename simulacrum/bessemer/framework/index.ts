@@ -29,7 +29,7 @@ export type BessemerApplicationContext = AbstractApplicationContext & {
   }
   client: {
     environment: Environment
-    profile: Array<Tag>
+    tags: Array<Tag>
   }
 }
 
@@ -46,9 +46,9 @@ export type BessemerClientContext = ClientContextType<BessemerApplicationContext
 export type ApplicationRuntimeType<T extends BessemerApplicationContext> = T['client']['runtime']
 
 export type BessemerApplicationModule<ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
-  globalProfile: () => Array<Tag>
+  globalTags: () => Array<Tag>
   configure: (options: ApplicationOptions) => void
-  applicationProfile: () => Promise<Array<Tag>>
+  applicationTags: () => Promise<Array<Tag>>
   initializeApplication: (options: ApplicationOptions, runtime: ApplicationRuntimeType<ApplicationContext>) => Promise<ApplicationContext>
 }
 
@@ -60,6 +60,6 @@ export type BessemerClientModule<
   ApplicationContext extends BessemerApplicationContext,
   ClientApplication extends ClientContextType<BessemerApplicationContext> = ClientContextType<BessemerApplicationContext>
 > = {
-  useProfile: () => Array<Tag> | null
+  useTags: () => Array<Tag> | null
   useInitializeClient: (initialClient: ClientContextType<ApplicationContext>) => ClientApplication
 }

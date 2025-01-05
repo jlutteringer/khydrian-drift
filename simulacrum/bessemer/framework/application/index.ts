@@ -3,14 +3,14 @@ import { Loggers } from '@bessemer/cornerstone'
 import { DefaultRouteErrorHandler } from '@bessemer/framework/route'
 
 export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicationContext, BessemerOptions> = {
-  globalProfile: () => {
+  globalTags: () => {
     return [Environments.getEnvironmentTag()]
   },
   // TODO I can start to see the importance of a global context... lots of stuff that probably doesn't need to vary on profile
   configure: (options: BessemerOptions): void => {
     Loggers.configure(options.logger)
   },
-  applicationProfile: async () => {
+  applicationTags: async () => {
     return []
   },
   initializeApplication: async (
@@ -23,7 +23,7 @@ export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicatio
       },
       client: {
         environment: Environments.getEnvironment(),
-        profile: [],
+        tags: [],
         runtime: runtime,
       },
     }

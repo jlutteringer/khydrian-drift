@@ -43,11 +43,11 @@ export const configure = <ApplicationContext extends BessemerApplicationContext,
 
   const { applicationProvider, properties } = configuration
 
-  const profile = applicationProvider.globalProfile()
-  logger.info(() => `Configuring with profile: ${JSON.stringify(profile)}`)
+  const tags = applicationProvider.globalTags()
+  logger.info(() => `Configuring with tags: ${JSON.stringify(tags)}`)
 
   GlobalConfigurationState.setValue(configuration)
-  const options = Properties.resolve(properties, profile)
+  const options = Properties.resolve(properties, tags)
   applicationProvider.configure(options)
 }
 
@@ -56,7 +56,7 @@ const context: ServerContext<BessemerInstance<BessemerApplicationContext, Bessem
 export const getInstance = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(): Promise<
   BessemerInstance<ApplicationContext, ApplicationOptions>
 > => {
-  const response = (await context.fetchValue(initializeBessemer)) as BessemerInstance<ApplicationContext, ApplicationOptions>
+  const response = (await context.fetchValue(() => initializeBessemer())) as BessemerInstance<ApplicationContext, ApplicationOptions>
   return response
 }
 
@@ -76,15 +76,15 @@ const initializeBessemer = async <ApplicationContext extends BessemerApplication
   Preconditions.isPresent(configuration, 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')
 
   const { applicationProvider, runtimeProvider, properties } = configuration as BessemerConfiguration<ApplicationContext, ApplicationOptions>
-  const profile = [...applicationProvider.globalProfile(), ...(await applicationProvider.applicationProfile())]
+  const tags = [...applicationProvider.globalTags(), ...(await applicationProvider.applicationTags())]
 
-  logger.info(() => `Initializing Application with profile: ${JSON.stringify(profile)}`)
+  logger.info(() => `Initializing Application with tags: ${JSON.stringify(tags)}`)
 
-  const options = Properties.resolve(properties, profile)
+  const options = Properties.resolve(properties, tags)
   const runtime = runtimeProvider.initializeRuntime(options)
 
   const context = await applicationProvider.initializeApplication(options, runtime)
-  context.client.profile = profile
+  context.client.tags = tags
 
   const dehydratedApplication = dehydrateApplication(context)
   const publicProperties = toPublicProperties(properties)

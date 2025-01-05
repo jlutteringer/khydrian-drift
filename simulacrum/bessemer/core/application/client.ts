@@ -5,7 +5,7 @@ import { BaseClientModule } from '@bessemer/framework/application/client'
 import { Objects } from '@bessemer/cornerstone'
 
 export const CoreClientModule: BessemerClientModule<CoreApplicationContext, CoreClientContext> = {
-  useProfile: BaseClientModule.useProfile,
+  useTags: BaseClientModule.useTags,
   useInitializeClient: (initialClient) => {
     const baseClient = BaseClientModule.useInitializeClient(initialClient)
     const pathname = usePathname()
