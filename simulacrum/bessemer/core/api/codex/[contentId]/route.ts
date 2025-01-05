@@ -8,6 +8,10 @@ export const GET = Routes.route(async (context: CoreApplicationContext, _: NextR
   const contentId = (await params).contentId
   const content = await Codex.fetchTextById(contentId, context)
 
+  if (true) {
+    throw new Error()
+  }
+
   if (Objects.isNil(content)) {
     return NextResponse.json({ error: `Content Item: [${contentId}] Not Found` }, { status: 404 })
   }

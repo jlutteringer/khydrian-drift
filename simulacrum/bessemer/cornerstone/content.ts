@@ -22,9 +22,9 @@ export const TextContentType: ContentType<RichTextJson> = 'Text'
 export type TextContent = ContentData<typeof TextContentType>
 
 export interface ContentProvider<ContextType extends AbstractApplicationContext = AbstractApplicationContext> {
-  fetchContentById: (references: Array<ReferenceType<ContentReference>>, context: ContextType) => Promise<Array<ContentData>>
+  fetchContentByIds: (references: Array<ReferenceType<ContentReference>>, context: ContextType) => Promise<Array<ContentData>>
 
-  fetchContentByKey: (references: Array<ContentKey>, tags: Array<Tag>, context: ContextType) => Promise<Array<ContentData>>
+  fetchContentByKeys: (references: Array<ContentKey>, tags: Array<Tag>, context: ContextType) => Promise<Array<ContentData>>
 
   // JOHN pagination...
   fetchContentByModel: <Type extends ContentType>(type: Type, context: ContextType) => Promise<Array<ContentData<Type>>>
@@ -82,11 +82,11 @@ export const staticProvider = <ApplicationContext extends AbstractApplicationCon
   normalizers?: Array<ContentNormalizer<ApplicationContext>>
 ): ContentProvider<ApplicationContext> => {
   return {
-    async fetchContentById(references: Array<ReferenceType<ContentReference>>, context: ApplicationContext): Promise<Array<ContentData>> {
+    async fetchContentByIds(references: Array<ReferenceType<ContentReference>>, context: ApplicationContext): Promise<Array<ContentData>> {
       const matchingContent = content.filter((it) => Arrays.contains(references, it.reference))
       return normalizeContent(matchingContent, normalizers ?? [], context)
     },
-    async fetchContentByKey(keys: Array<ContentKey>, tags: Array<Tag>, context: ApplicationContext): Promise<Array<ContentData>> {
+    async fetchContentByKeys(keys: Array<ContentKey>, tags: Array<Tag>, context: ApplicationContext): Promise<Array<ContentData>> {
       const matchingContent = content.filter((it) => Arrays.contains(keys, it.key))
 
       const resolvedContent = Object.values(Arrays.groupBy(matchingContent, (it) => it.key)).map((it) => {

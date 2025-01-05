@@ -1,82 +1,51 @@
 import pino from 'pino'
-import { Arrays, Functions, Lazy, Objects } from '@bessemer/cornerstone'
+import { Lazy, Objects } from '@bessemer/cornerstone'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { LazyValue } from '@bessemer/cornerstone/lazy'
 import { GenericRecord } from '@bessemer/cornerstone/types'
 
 export type LoggerOptions = pino.LoggerOptions
 
-type LogFunction = (message: LazyValue<string>, context?: GenericRecord) => void
+type LogOptions = { error?: unknown; context?: GenericRecord }
+type LogFunction = (message: LazyValue<string>, options?: LogOptions) => void
 
 export class Logger {
   constructor(private readonly logger: pino.Logger) {}
 
-  trace: LogFunction = (message: LazyValue<string>, context?: GenericRecord): void => {
+  trace: LogFunction = (message: LazyValue<string>, options?: LogOptions): void => {
     if (this.logger.isLevelEnabled?.('trace') ?? true) {
-      if (Objects.isPresent(context)) {
-        this.logger.trace(context, Lazy.evaluate(message))
-      } else {
-        this.logger.trace(Lazy.evaluate(message))
-      }
+      this.logger.trace({ err: options?.error, context: options?.context }, Lazy.evaluate(message))
     }
   }
 
-  debug: LogFunction = (message: LazyValue<string>, context?: GenericRecord): void => {
+  debug: LogFunction = (message: LazyValue<string>, options?: LogOptions): void => {
     if (this.logger.isLevelEnabled?.('debug') ?? true) {
-      if (Objects.isPresent(context)) {
-        this.logger.debug(context, Lazy.evaluate(message))
-      } else {
-        this.logger.debug(Lazy.evaluate(message))
-      }
+      this.logger.debug({ err: options?.error, context: options?.context }, Lazy.evaluate(message))
     }
   }
 
-  info: LogFunction = (message: LazyValue<string>, context?: GenericRecord): void => {
+  info: LogFunction = (message: LazyValue<string>, options?: LogOptions): void => {
     if (this.logger.isLevelEnabled?.('info') ?? true) {
-      if (Objects.isPresent(context)) {
-        this.logger.info(context, Lazy.evaluate(message))
-      } else {
-        this.logger.info(Lazy.evaluate(message))
-      }
+      this.logger.info({ err: options?.error, context: options?.context }, Lazy.evaluate(message))
     }
   }
 
-  warn: LogFunction = (message: LazyValue<string>, context?: GenericRecord): void => {
+  warn: LogFunction = (message: LazyValue<string>, options?: LogOptions): void => {
     if (this.logger.isLevelEnabled?.('warn') ?? true) {
-      if (Objects.isPresent(context)) {
-        this.logger.warn(context, Lazy.evaluate(message))
-      } else {
-        this.logger.warn(Lazy.evaluate(message))
-      }
+      this.logger.warn({ err: options?.error, context: options?.context }, Lazy.evaluate(message))
     }
   }
 
-  error: LogFunction = (message: LazyValue<string>, context?: GenericRecord): void => {
+  error: LogFunction = (message: LazyValue<string>, options?: LogOptions): void => {
     if (this.logger.isLevelEnabled?.('error') ?? true) {
-      if (Objects.isPresent(context)) {
-        this.logger.error(context, Lazy.evaluate(message))
-      } else {
-        this.logger.error(Lazy.evaluate(message))
-      }
+      this.logger.error({ err: options?.error, context: options?.context }, Lazy.evaluate(message))
     }
   }
 
-  fatal: LogFunction = (message: LazyValue<string>, context?: GenericRecord): void => {
+  fatal: LogFunction = (message: LazyValue<string>, options?: LogOptions): void => {
     if (this.logger.isLevelEnabled?.('fatal') ?? true) {
-      if (Objects.isPresent(context)) {
-        this.logger.fatal(context, Lazy.evaluate(message))
-      } else {
-        this.logger.fatal(Lazy.evaluate(message))
-      }
+      this.logger.fatal({ err: options?.error, context: options?.context }, Lazy.evaluate(message))
     }
-  }
-
-  private augmentLogArguments = (args: [unknown, any?, ...any]): [unknown, any?, ...any] => {
-    if (!Functions.isFunction(args[0])) {
-      return args
-    }
-
-    return [args[0](), ...Arrays.rest(args)]
   }
 }
 

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Bessemer, BessemerApplicationContext } from '@bessemer/framework'
 import { GenericRecord } from '@bessemer/cornerstone/types'
+import { Tags } from '@bessemer/cornerstone'
+import { ApplicationRuntime, ApplicationRuntimeTag } from '@bessemer/framework/runtime'
 
 export type NextRouteHandler<Params extends GenericRecord = {}> = (
   request: NextRequest,
@@ -28,7 +30,7 @@ export const route = <ApplicationContext extends BessemerApplicationContext, Par
   handler: RouteHandler<ApplicationContext, Params>
 ): NextRouteHandler<Params> => {
   return async (request: NextRequest, nextContext) => {
-    const context = await Bessemer.getApplication<ApplicationContext>()
+    const context = await Bessemer.getApplication<ApplicationContext>([Tags.tag(ApplicationRuntimeTag, ApplicationRuntime.Api)])
 
     try {
       return await handler(context, request, nextContext)

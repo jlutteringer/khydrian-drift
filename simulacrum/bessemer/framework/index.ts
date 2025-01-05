@@ -3,12 +3,13 @@ import * as Environments from './environment'
 import { Environment } from './environment'
 import * as Routes from './route'
 import { RouteErrorHandler } from './route'
+import * as Contexts from './context'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
 import { LoggerOptions } from '@bessemer/cornerstone/logger'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { Tag } from '@bessemer/cornerstone/tag'
 
-export { Bessemer, Routes, Environments }
+export { Bessemer, Routes, Environments, Contexts }
 
 export type BessemerOptions = {
   logger?: LoggerOptions

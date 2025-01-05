@@ -2,11 +2,11 @@ import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Arrays, Preconditions, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
-import { ContentKey, ContentProvider, ContentReference, TextContent, TextContentType } from '@bessemer/cornerstone/content'
+import { ContentData, ContentKey, ContentProvider, ContentReference, ContentType, TextContent, TextContentType } from '@bessemer/cornerstone/content'
 import { Tag } from '@bessemer/cornerstone/tag'
+import { Contexts } from '@bessemer/framework'
 
 export type CodexOptions = {
-  // JOHN better solution here?
   provider: ContentProvider<any>
   // definitions: Array<CodexDefinition<{}>>
 }
@@ -75,7 +75,7 @@ export const fetchTextById = async (
   context: CoreApplicationContext
 ): Promise<TextContent | undefined> => {
   Preconditions.isPresent(context.codex)
-  const content = await context.codex.provider.fetchContentById([reference], context)
+  const content = await context.codex.provider.fetchContentByIds([reference], context)
   if (Arrays.isEmpty(content)) {
     return undefined
   }
@@ -84,15 +84,56 @@ export const fetchTextById = async (
   return content[0] as TextContent
 }
 
-export const fetchTextByKey = async (key: ContentKey, tags: Array<Tag>, context: CoreApplicationContext): Promise<TextContent | undefined> => {
-  Preconditions.isPresent(context.codex)
-  const content = await context.codex.provider.fetchContentByKey([key], tags, context)
-  if (Arrays.isEmpty(content)) {
-    return undefined
-  }
+export const fetchTextByKey = async (
+  key: ContentKey,
+  context: CoreApplicationContext,
+  additionalTags: Array<Tag> = []
+): Promise<TextContent | undefined> => fetchTypedContentByKey(key, TextContentType, context, additionalTags)
 
-  Preconditions.isTrue(content[0]?.type === TextContentType)
-  return content[0] as TextContent
+export const fetchTextByKeys = async (
+  keys: Array<ContentKey>,
+  context: CoreApplicationContext,
+  additionalTags: Array<Tag> = []
+): Promise<Array<TextContent>> => fetchTypedContentByKeys(keys, TextContentType, context, additionalTags)
+
+export const fetchTypedContentByKey = async <Type extends ContentType>(
+  key: ContentKey,
+  type: Type,
+  context: CoreApplicationContext,
+  additionalTags: Array<Tag> = []
+): Promise<ContentData<Type> | undefined> => {
+  return Arrays.first(await fetchTypedContentByKeys([key], type, context, additionalTags))
+}
+
+export const fetchTypedContentByKeys = async <Type extends ContentType>(
+  keys: Array<ContentKey>,
+  type: Type,
+  context: CoreApplicationContext,
+  additionalTags: Array<Tag> = []
+): Promise<Array<ContentData<Type>>> => {
+  const content = await fetchContentByKeys(keys, context, additionalTags)
+  Preconditions.isTrue(content.every((it) => it.type === type))
+  return content as Array<ContentData<Type>>
+}
+
+export const fetchContentByKey = async (
+  key: ContentKey,
+  context: CoreApplicationContext,
+  additionalTags: Array<Tag> = []
+): Promise<ContentData | undefined> => {
+  return Arrays.first(await fetchContentByKeys([key], context, additionalTags))
+}
+
+export const fetchContentByKeys = async (
+  keys: Array<ContentKey>,
+  context: CoreApplicationContext,
+  additionalTags: Array<Tag> = []
+): Promise<Array<ContentData>> => {
+  Preconditions.isPresent(context.codex)
+
+  const tags = Arrays.concatenate(Contexts.getTags(context), additionalTags)
+  const content = await context.codex.provider.fetchContentByKeys(keys, tags, context)
+  return content
 }
 
 // export const renderCodex = async (
@@ -105,7 +146,6 @@ export const fetchTextByKey = async (key: ContentKey, tags: Array<Tag>, context:
 //
 //   const data = await definition.resolve(reference, application)
 //   if (Objects.isUndefined(data)) {
-//     // JOHN figure out what to do here
 //     throw new Error('Oh noes')
 //   }
 //

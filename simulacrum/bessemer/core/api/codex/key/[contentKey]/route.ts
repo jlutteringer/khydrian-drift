@@ -17,7 +17,7 @@ export const GET = Routes.route(
       tags = JSON.parse(tagsString)
     }
 
-    const content = await Codex.fetchTextByKey(contentKey, tags, context)
+    const content = await Codex.fetchContentByKey(contentKey, context, tags)
 
     if (Objects.isNil(content)) {
       return NextResponse.json({ error: `Content Item: [${contentKey}] Not Found` }, { status: 404 })
