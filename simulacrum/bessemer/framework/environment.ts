@@ -1,6 +1,6 @@
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Objects, Preconditions } from '@bessemer/cornerstone'
-import { PropertyTag, PropertyTagType } from '@bessemer/cornerstone/property'
+import { Objects, Preconditions, Tags } from '@bessemer/cornerstone'
+import { Tag, TagType } from '@bessemer/cornerstone/tag'
 
 export type Environment = NominalType<string, 'Environment'>
 
@@ -18,11 +18,8 @@ export const getEnvironment = (): Environment => {
   Preconditions.isUnreachable('Environments.getEnvironment - unable to resolve environment. (Checking APP_ENV and NODE_ENV)')
 }
 
-const EnvironmentProperty: PropertyTagType = 'Environment'
+const EnvironmentTag: TagType<Environment> = 'Environment'
 
-export const getEnvironmentTag = (): PropertyTag => {
-  return {
-    type: EnvironmentProperty,
-    value: getEnvironment(),
-  }
+export const getEnvironmentTag = (): Tag => {
+  return Tags.tag(EnvironmentTag, getEnvironment())
 }

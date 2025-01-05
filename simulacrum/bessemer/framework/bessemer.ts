@@ -7,7 +7,7 @@ import {
   PublicProperties,
 } from '@bessemer/framework'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
-import { Loggers, Objects, Preconditions, Properties } from '@bessemer/cornerstone'
+import { Loggers, Objects, Preconditions, Properties, Tags } from '@bessemer/cornerstone'
 import { ServerContexts } from '@bessemer/react'
 import { ServerContext } from '@bessemer/react/server-context'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
@@ -100,7 +100,7 @@ const toPublicProperties = <T extends BessemerOptions>(properties: PropertyRecor
   return Properties.properties(
     properties.values.public ?? {},
     Object.values(properties.overrides).map((it) => {
-      return { tags: it.tags, values: it.values.public ?? {} }
+      return Tags.value(it.value.public ?? {}, it.tags)
     })
   )
 }

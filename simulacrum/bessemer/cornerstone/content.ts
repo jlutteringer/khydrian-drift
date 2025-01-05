@@ -1,25 +1,30 @@
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
-import { Arrays, Objects } from '@bessemer/cornerstone'
+import { Arrays, Objects, References, Tags, Uuids } from '@bessemer/cornerstone'
 import { RichTextJson } from '@bessemer/cornerstone/rich-text'
+import { Tag } from '@bessemer/cornerstone/tag'
 
-export type ContentType<Data = unknown, T extends string = string> = NominalType<T, ['ContentType', Data]>
+export type ContentKey = NominalType<string, 'ContentKey'>
+export type ContentType<Data = unknown> = NominalType<string, ['ContentType', Data]>
 
 export type ContentReference = Reference<'Content'>
 
 type ContentDataType<Type> = Type extends ContentType<infer Data> ? Data : never
 
 export type ContentData<Type extends ContentType = ContentType, Data = ContentDataType<Type>> = Referencable<ContentReference> & {
+  key: ContentKey
   type: Type
   data: Data
 }
 
-export const TextContentType: ContentType<RichTextJson, 'Text'> = 'Text'
+export const TextContentType: ContentType<RichTextJson> = 'Text'
 export type TextContent = ContentData<typeof TextContentType>
 
 export interface ContentProvider<ContextType extends AbstractApplicationContext = AbstractApplicationContext> {
-  fetchContent: (references: Array<ReferenceType<ContentReference>>, context: ContextType) => Promise<Array<ContentData>>
+  fetchContentById: (references: Array<ReferenceType<ContentReference>>, context: ContextType) => Promise<Array<ContentData>>
+
+  fetchContentByKey: (references: Array<ContentKey>, tags: Array<Tag>, context: ContextType) => Promise<Array<ContentData>>
 
   // JOHN pagination...
   fetchContentByModel: <Type extends ContentType>(type: Type, context: ContextType) => Promise<Array<ContentData<Type>>>
@@ -53,14 +58,43 @@ export const normalizeContent = async <ApplicationContext extends AbstractApplic
   return normalizedContent
 }
 
+export type StaticContentData<Type extends ContentType = ContentType, Data = ContentDataType<Type>> = ContentData<Type, Data> & {
+  tags?: Array<Tag>
+}
+
+export const staticData = <Type extends ContentType = ContentType, Data = ContentDataType<Type>>(
+  key: ContentKey,
+  type: Type,
+  data: Data,
+  tags?: Array<Tag>
+): StaticContentData<Type, Data> => {
+  return {
+    reference: References.reference(Uuids.random(), 'Content'),
+    key,
+    type,
+    data,
+    tags,
+  }
+}
+
 export const staticProvider = <ApplicationContext extends AbstractApplicationContext>(
-  content: Array<ContentData>,
+  content: Array<StaticContentData>,
   normalizers?: Array<ContentNormalizer<ApplicationContext>>
 ): ContentProvider<ApplicationContext> => {
   return {
-    async fetchContent(references: Array<ReferenceType<ContentReference>>, context: ApplicationContext): Promise<Array<ContentData>> {
+    async fetchContentById(references: Array<ReferenceType<ContentReference>>, context: ApplicationContext): Promise<Array<ContentData>> {
       const matchingContent = content.filter((it) => Arrays.contains(references, it.reference))
       return normalizeContent(matchingContent, normalizers ?? [], context)
+    },
+    async fetchContentByKey(keys: Array<ContentKey>, tags: Array<Tag>, context: ApplicationContext): Promise<Array<ContentData>> {
+      const matchingContent = content.filter((it) => Arrays.contains(keys, it.key))
+
+      const resolvedContent = Object.values(Arrays.groupBy(matchingContent, (it) => it.key)).map((it) => {
+        const resolvedContent = Tags.resolveBy(it, (it) => it.tags ?? [], tags)
+        return Arrays.first(resolvedContent)!
+      })
+
+      return normalizeContent(resolvedContent, normalizers ?? [], context)
     },
     async fetchContentByModel<Type extends ContentType>(type: Type, context: ApplicationContext): Promise<Array<ContentData<Type>>> {
       const matchingContent = content.filter((it) => it.type === type)

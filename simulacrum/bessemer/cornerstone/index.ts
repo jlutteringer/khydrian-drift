@@ -13,8 +13,10 @@ import * as Urls from './url'
 import * as Loggers from './logger'
 import * as Errors from './error'
 import * as ErrorEvents from './error-event'
-
 import * as Preconditions from './precondition'
+import * as Uuids from './uuid'
+
+import * as Tags from './tag'
 import * as Promises from './promise'
 import * as References from './reference'
 import * as Signatures from './signature'
@@ -45,6 +47,8 @@ export {
   Errors,
   ErrorEvents,
   Preconditions,
+  Uuids,
+  Tags,
   Promises,
   References,
   Signatures,

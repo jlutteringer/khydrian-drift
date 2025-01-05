@@ -8,7 +8,7 @@ import { Objects } from '@bessemer/cornerstone'
 // JOHN bessemer core cant depend on mui...
 export const ContentText = () => {
   const application = use(Bessemer.getApplication<CoreApplicationContext>())
-  const content = use(Codex.fetchText('test-content', application))
+  const content = use(Codex.fetchTextByKey('test-content', [], application))
   if (Objects.isNil(content)) {
     return 'No content found...'
   }

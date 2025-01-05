@@ -3,9 +3,10 @@ import * as Environments from './environment'
 import { Environment } from './environment'
 import * as Routes from './route'
 import { RouteErrorHandler } from './route'
-import { PropertyRecord, PropertyTag } from '@bessemer/cornerstone/property'
+import { PropertyRecord } from '@bessemer/cornerstone/property'
 import { LoggerOptions } from '@bessemer/cornerstone/logger'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
+import { Tag } from '@bessemer/cornerstone/tag'
 
 export { Bessemer, Routes, Environments }
 
@@ -28,7 +29,7 @@ export type BessemerApplicationContext = AbstractApplicationContext & {
   }
   client: {
     environment: Environment
-    profile: Array<PropertyTag>
+    profile: Array<Tag>
   }
 }
 
@@ -45,9 +46,9 @@ export type BessemerClientContext = ClientContextType<BessemerApplicationContext
 export type ApplicationRuntimeType<T extends BessemerApplicationContext> = T['client']['runtime']
 
 export type BessemerApplicationModule<ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
-  globalProfile: () => Array<PropertyTag>
+  globalProfile: () => Array<Tag>
   configure: (options: ApplicationOptions) => void
-  applicationProfile: () => Promise<Array<PropertyTag>>
+  applicationProfile: () => Promise<Array<Tag>>
   initializeApplication: (options: ApplicationOptions, runtime: ApplicationRuntimeType<ApplicationContext>) => Promise<ApplicationContext>
 }
 
@@ -59,6 +60,6 @@ export type BessemerClientModule<
   ApplicationContext extends BessemerApplicationContext,
   ClientApplication extends ClientContextType<BessemerApplicationContext> = ClientContextType<BessemerApplicationContext>
 > = {
-  useProfile: () => Array<PropertyTag> | null
+  useProfile: () => Array<Tag> | null
   useInitializeClient: (initialClient: ClientContextType<ApplicationContext>) => ClientApplication
 }

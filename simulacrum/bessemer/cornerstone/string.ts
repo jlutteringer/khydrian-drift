@@ -1,4 +1,11 @@
-import { endsWith as _endsWith, isEmpty as _isEmpty, isString as _isString, startsWith as _startsWith } from 'lodash-es'
+import {
+  endsWith as _endsWith,
+  isEmpty as _isEmpty,
+  isString as _isString,
+  padEnd as _padEnd,
+  padStart as _padStart,
+  startsWith as _startsWith,
+} from 'lodash-es'
 import { Arrays } from '@bessemer/cornerstone/index'
 import { GenericRecord } from '@bessemer/cornerstone/types'
 
@@ -155,3 +162,6 @@ export const replacePlaceholders = (string: string, parameters: GenericRecord, g
     string
   )
 }
+
+export const padStart = _padStart
+export const padEnd = _padEnd

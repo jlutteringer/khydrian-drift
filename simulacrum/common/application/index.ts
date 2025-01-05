@@ -1,7 +1,7 @@
 import { Ruleset } from '@simulacrum/common/ruleset'
 import { CoreApplicationContext, CoreApplicationModule, CoreClientContext, CoreOptions } from '@bessemer/core/application'
 import { Dnd5e } from '@simulacrum/rulesets/dnd-5e'
-import { Objects, Properties, Urls } from '@bessemer/cornerstone'
+import { Objects, Tags, Urls } from '@bessemer/cornerstone'
 import { serverOnlyTest } from '@simulacrum/common/server-only-test'
 import { ApplicationRuntimeType, BessemerApplicationModule, ClientContextType } from '@bessemer/framework'
 import { headers } from 'next/headers'
@@ -29,14 +29,10 @@ export const ApplicationModule: BessemerApplicationModule<ApplicationContext, Ap
   globalProfile: CoreApplicationModule.globalProfile,
   configure: CoreApplicationModule.configure,
   applicationProfile: async () => {
+    // TODO this is all janky test code
     const coreProfile = await CoreApplicationModule.applicationProfile()
     const headersList = await headers()
-    // for (const [key, value] of headersList.entries()) {
-    //   console.log(key, value)
-    // }
-
     const urlString = headersList.get('x-url')
-    console.log('x-url', urlString)
 
     if (Objects.isNil(urlString)) {
       return coreProfile
@@ -44,7 +40,7 @@ export const ApplicationModule: BessemerApplicationModule<ApplicationContext, Ap
 
     const url = Urls.parse(urlString)
     if (url.location.path === '/subscription') {
-      return [...coreProfile, Properties.tag('Tenant', 'subscription')]
+      return [...coreProfile, Tags.tag('Tenant', 'subscription')]
     }
 
     return coreProfile
