@@ -4,8 +4,6 @@ import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { ApplicationProperties } from '@simulacrum/common/application/properties'
 
 export const register = () => {
-  console.log('Instrumentation called!')
-
   if (process.env.NEXT_RUNTIME !== 'edge') {
     Bessemer.configure({
       applicationProvider: ApplicationModule,
