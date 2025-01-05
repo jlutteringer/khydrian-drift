@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { Footer } from '@simulacrum/ui/global/Footer'
+import { Footer } from '@simulacrum/ui/navigation/Footer'
 import { Box } from '@mui/material'
 import Container from '@mui/material/Container'
-import { Navbar } from '@simulacrum/ui/global/navbar'
+import { Navbar } from '@simulacrum/ui/navigation/navbar'
 
 export const StandardLayout = ({
   children,

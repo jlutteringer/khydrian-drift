@@ -12,7 +12,7 @@ import Divider from '@mui/material/Divider'
 import Stack from '@mui/material/Stack'
 import { SxProps } from '@mui/system'
 import { Theme } from '@mui/material/styles/createTheme'
-import { NavbarUserProfile } from '@simulacrum/ui/global/navbar/NavbarUserProfile'
+import { NavbarUserProfile } from '@simulacrum/ui/navigation/navbar/NavbarUserProfile'
 import Link from 'next/link'
 
 export const NavbarMainElements = ({ sx }: { sx?: SxProps<Theme> }) => {

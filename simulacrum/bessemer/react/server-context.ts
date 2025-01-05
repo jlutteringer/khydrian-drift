@@ -1,9 +1,6 @@
 import { cache } from 'react'
-import { Preconditions } from '@bessemer/cornerstone'
 
 export const create = <T>(): ServerContext<T> => {
-  Preconditions.isServerSide()
-
   const getCache: () => { promise: Promise<T> | undefined } = cache(() => {
     return { promise: undefined }
   })

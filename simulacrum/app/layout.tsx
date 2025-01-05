@@ -15,6 +15,7 @@ import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
 import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
 import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { ApplicationProperties } from '@simulacrum/common/application/properties'
+import { QueryClientProvider } from '@simulacrum/app/QueryClientProvider'
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -61,16 +62,18 @@ const RootLayout = ({
       </Head>
 
       <body className={roboto.variable}>
-        <ClientApplicationProvider props={clientProps}>
-          <TestClientComponent />
-          <TestServerComponent />
-          <AppRouterCacheProvider>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              {children}
-            </ThemeProvider>
-          </AppRouterCacheProvider>
-        </ClientApplicationProvider>
+        <QueryClientProvider>
+          <ClientApplicationProvider props={clientProps}>
+            <TestClientComponent />
+            <TestServerComponent />
+            <AppRouterCacheProvider>
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                {children}
+              </ThemeProvider>
+            </AppRouterCacheProvider>
+          </ClientApplicationProvider>
+        </QueryClientProvider>
       </body>
     </html>
   )

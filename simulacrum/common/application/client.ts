@@ -1,12 +1,12 @@
 import { ApplicationContext, ClientContext } from '@simulacrum/common/application'
 import { BessemerClientModule } from '@bessemer/framework'
-import { CoreClientModule } from '@bessemer/core/application/client'
 import { Objects } from '@bessemer/cornerstone'
+import { FoundryClientModule } from '@bessemer/foundry/application/client'
 
 export const ApplicationClientModule: BessemerClientModule<ApplicationContext, ClientContext> = {
-  useTags: CoreClientModule.useTags,
+  useTags: FoundryClientModule.useTags,
   useInitializeClient: (initialClient): ClientContext => {
-    const coreClient = CoreClientModule.useInitializeClient(initialClient)
+    const coreClient = FoundryClientModule.useInitializeClient(initialClient)
     return Objects.merge(coreClient, initialClient, {})
   },
 }

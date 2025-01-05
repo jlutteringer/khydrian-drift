@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Box, Container, Fade, Popper, Stack, Typography } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import { NavbarTileSquareImage } from '@simulacrum/ui/global/navbar/NavbarTiles'
+import { NavbarTileSquareImage } from '@simulacrum/ui/navigation/navbar/NavbarTiles'
 import { usePathname } from 'next/navigation'
 
 type BottomBannerContent = {

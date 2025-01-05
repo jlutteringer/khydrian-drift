@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { useClientContext } from '@simulacrum/ui/application/use-client-context'
 import { Loggers } from '@bessemer/cornerstone'
+import { ContentText } from '@bessemer/foundry/component/ContentText'
 
 export const TestClientComponent = () => {
   const pathname = usePathname()
@@ -12,5 +13,10 @@ export const TestClientComponent = () => {
   // console.log('clientApplication.test', clientApplication.client.runtime.test())
   // console.log('clientApplication.coreRuntimeTest', clientApplication.client.runtime.coreRuntimeTest())
   // console.log('client', clientApplication)
-  return <div>Hello</div>
+  return (
+    <div>
+      Hello
+      <ContentText />
+    </div>
+  )
 }

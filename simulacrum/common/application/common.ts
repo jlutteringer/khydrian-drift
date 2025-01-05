@@ -1,9 +1,9 @@
 import { ApplicationRuntimeType, BessemerRuntimeModule, PublicOptions } from '@bessemer/framework'
 import { ApplicationContext, ApplicationOptions } from '@simulacrum/common/application/index'
-import { CoreRuntimeModule } from '@bessemer/core/application/common'
+import { FoundryRuntimeModule } from '@bessemer/foundry/application/common'
 
 export const ApplicationRuntimeModule: BessemerRuntimeModule<ApplicationContext, ApplicationOptions> = {
   initializeRuntime: (options: PublicOptions<ApplicationOptions>): ApplicationRuntimeType<ApplicationContext> => {
-    return { ...CoreRuntimeModule.initializeRuntime(options), test: () => 'Hello from the Application' }
+    return { ...FoundryRuntimeModule.initializeRuntime(options), test: () => 'Hello from the Application' }
   },
 }

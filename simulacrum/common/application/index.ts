@@ -1,19 +1,19 @@
 import { Ruleset } from '@simulacrum/common/ruleset'
-import { CoreApplicationContext, CoreApplicationModule, CoreClientContext, CoreOptions } from '@bessemer/core/application'
 import { Dnd5e } from '@simulacrum/rulesets/dnd-5e'
 import { Objects, Tags, Urls } from '@bessemer/cornerstone'
 import { serverOnlyTest } from '@simulacrum/common/server-only-test'
 import { ApplicationRuntimeType, BessemerApplicationModule, ClientContextType } from '@bessemer/framework'
 import { headers } from 'next/headers'
+import { FoundryApplicationContext, FoundryApplicationModule, FoundryClientContext, FoundryOptions } from '@bessemer/foundry/application'
 
-export type ApplicationOptions = CoreOptions & {
+export type ApplicationOptions = FoundryOptions & {
   ruleset: string
   public: {
     test: string
   }
 }
 
-export type ApplicationContext = CoreApplicationContext & {
+export type ApplicationContext = FoundryApplicationContext & {
   serverOnlyTest: () => string
   client: {
     runtime: {
@@ -23,14 +23,14 @@ export type ApplicationContext = CoreApplicationContext & {
   }
 }
 
-export type ClientContext = ClientContextType<ApplicationContext> & CoreClientContext & {}
+export type ClientContext = ClientContextType<ApplicationContext> & FoundryClientContext & {}
 
 export const ApplicationModule: BessemerApplicationModule<ApplicationContext, ApplicationOptions> = {
-  globalTags: CoreApplicationModule.globalTags,
-  configure: CoreApplicationModule.configure,
+  globalTags: FoundryApplicationModule.globalTags,
+  configure: FoundryApplicationModule.configure,
   applicationTags: async () => {
     // TODO this is all janky test code
-    const coreTags = await CoreApplicationModule.applicationTags()
+    const coreTags = await FoundryApplicationModule.applicationTags()
     const headersList = await headers()
     const urlString = headersList.get('x-url')
 
@@ -46,7 +46,7 @@ export const ApplicationModule: BessemerApplicationModule<ApplicationContext, Ap
     return coreTags
   },
   initializeApplication: async (options: ApplicationOptions, runtime: ApplicationRuntimeType<ApplicationContext>): Promise<ApplicationContext> => {
-    const baseApplication = await CoreApplicationModule.initializeApplication(options, runtime)
+    const baseApplication = await FoundryApplicationModule.initializeApplication(options, runtime)
     const application = Objects.merge(baseApplication, { serverOnlyTest, client: { ruleset: Dnd5e, runtime } })
     return application
   },

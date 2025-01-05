@@ -1,5 +1,5 @@
 import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
-import { Arrays, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import { ContentData, ContentKey, ContentProvider, ContentReference, ContentType, TextContent, TextContentType } from '@bessemer/cornerstone/content'
@@ -84,56 +84,39 @@ export const fetchTextById = async (
   return content[0] as TextContent
 }
 
-export const fetchTextByKey = async (
+export const fetchTextByKey = async (key: ContentKey, context: CoreApplicationContext, tags: Array<Tag> = []): Promise<TextContent | undefined> =>
+  fetchContentByKey(key, context, { type: TextContentType, tags: tags })
+
+export const fetchTextByKeys = async (keys: Array<ContentKey>, context: CoreApplicationContext, tags: Array<Tag> = []): Promise<Array<TextContent>> =>
+  fetchContentByKeys(keys, context, { type: TextContentType, tags: tags })
+
+export type FetchContentOptions<Type extends ContentType> = { type?: Type; tags?: Array<Tag> }
+
+// JOHN implement content sectors
+// JOHN we probably should consider a more robust caching solution...
+export const fetchContentByKey = async <Type extends ContentType>(
   key: ContentKey,
   context: CoreApplicationContext,
-  additionalTags: Array<Tag> = []
-): Promise<TextContent | undefined> => fetchTypedContentByKey(key, TextContentType, context, additionalTags)
-
-export const fetchTextByKeys = async (
-  keys: Array<ContentKey>,
-  context: CoreApplicationContext,
-  additionalTags: Array<Tag> = []
-): Promise<Array<TextContent>> => fetchTypedContentByKeys(keys, TextContentType, context, additionalTags)
-
-export const fetchTypedContentByKey = async <Type extends ContentType>(
-  key: ContentKey,
-  type: Type,
-  context: CoreApplicationContext,
-  additionalTags: Array<Tag> = []
+  options?: FetchContentOptions<Type>
 ): Promise<ContentData<Type> | undefined> => {
-  return Arrays.first(await fetchTypedContentByKeys([key], type, context, additionalTags))
+  return Arrays.first(await fetchContentByKeys([key], context, options))
 }
 
-export const fetchTypedContentByKeys = async <Type extends ContentType>(
+export const fetchContentByKeys = async <Type extends ContentType>(
   keys: Array<ContentKey>,
-  type: Type,
   context: CoreApplicationContext,
-  additionalTags: Array<Tag> = []
+  options?: FetchContentOptions<Type>
 ): Promise<Array<ContentData<Type>>> => {
-  const content = await fetchContentByKeys(keys, context, additionalTags)
-  Preconditions.isTrue(content.every((it) => it.type === type))
-  return content as Array<ContentData<Type>>
-}
-
-export const fetchContentByKey = async (
-  key: ContentKey,
-  context: CoreApplicationContext,
-  additionalTags: Array<Tag> = []
-): Promise<ContentData | undefined> => {
-  return Arrays.first(await fetchContentByKeys([key], context, additionalTags))
-}
-
-export const fetchContentByKeys = async (
-  keys: Array<ContentKey>,
-  context: CoreApplicationContext,
-  additionalTags: Array<Tag> = []
-): Promise<Array<ContentData>> => {
   Preconditions.isPresent(context.codex)
 
-  const tags = Arrays.concatenate(Contexts.getTags(context), additionalTags)
+  const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
   const content = await context.codex.provider.fetchContentByKeys(keys, tags, context)
-  return content
+
+  if (Objects.isPresent(options?.type)) {
+    Preconditions.isTrue(content.every((it) => it.type === options?.type))
+  }
+
+  return content as Array<ContentData<Type>>
 }
 
 // export const renderCodex = async (

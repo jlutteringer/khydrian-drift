@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ContentText } from '@bessemer/core/codex/component/ContentText'
+import { ContentText } from '@bessemer/foundry/component/ContentText'
 
 const HomebrewPage = () => {
   return (

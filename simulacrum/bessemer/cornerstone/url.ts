@@ -15,6 +15,8 @@ export interface Url extends Uri {
   location: UrlLocation
 }
 
+export type UrlLike = Url | UriString
+
 const augmentUriLocation = (uriLocation: UriLocation, normalize: boolean): UrlLocation => {
   const pathSegments: Array<string> = []
   const parameters: Dictionary<string | Array<string>> = {}
@@ -124,4 +126,26 @@ export const build = (builder: UrlBuilder): Url => {
 
 export const buildString = (builder: UrlBuilder): UriString => {
   return format(build(builder))
+}
+
+export const reify = (blah: UrlLike): Url => {
+  if (!Strings.isString(blah)) {
+    return blah
+  }
+
+  return parse(blah)
+}
+
+export const getJsonParameter = <T>(url: UrlLike, name: string): T | undefined => {
+  const parameter = reify(url).location.parameters[name]
+  if (Objects.isNil(parameter)) {
+    return undefined
+  }
+
+  if (Array.isArray(parameter)) {
+    // JOHN error handling
+    throw new Error('oh no')
+  }
+
+  return JSON.parse(parameter) as T
 }

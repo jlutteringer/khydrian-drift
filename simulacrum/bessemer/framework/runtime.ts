@@ -1,7 +1,7 @@
 import { TagType } from '@bessemer/cornerstone/tag'
 
 export enum ApplicationRuntime {
-  Middleware = 'Middleware',
+  Edge = 'Edge',
   Api = 'Api',
   App = 'App',
   Page = 'Page',

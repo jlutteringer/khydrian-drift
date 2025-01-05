@@ -39,6 +39,8 @@
       "@bessemer/core/*": ["./bessemer/core/*"],
       "@bessemer/mui": ["./bessemer/mui"],
       "@bessemer/mui/*": ["./bessemer/mui/*"],
+      "@bessemer/foundry": ["./bessemer/foundry"],
+      "@bessemer/foundry/*": ["./bessemer/foundry/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
