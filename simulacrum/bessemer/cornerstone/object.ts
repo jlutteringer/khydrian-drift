@@ -12,9 +12,8 @@ import {
   mergeWith as unsafeMergeWith,
 } from 'lodash-es'
 import { produce } from 'immer'
-import { GenericRecord, NominalType } from '@bessemer/cornerstone/types'
+import { GenericRecord, NominalType, Primitive } from '@bessemer/cornerstone/types'
 import { Arrays, Maths, Strings } from '@bessemer/cornerstone'
-import { Primitive } from 'type-fest'
 
 export const update = produce
 

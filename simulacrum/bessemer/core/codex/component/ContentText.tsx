@@ -1,11 +1,10 @@
-import { TextContentType } from '@bessemer/cornerstone/content'
+import { TextContent, TextContentType } from '@bessemer/cornerstone/content'
 import { ContentElement, ContentElementProps } from '@bessemer/core/codex/component/ContentElement'
 
-export const ContentText = ({ contentKey, defaultValue, options }: ContentElementProps<typeof TextContentType>) => {
+export const ContentText = ({ contentKey, options }: ContentElementProps<TextContent>) => {
   return (
     <ContentElement
       contentKey={contentKey}
-      defaultValue={defaultValue}
       options={{ ...options, type: TextContentType }}
     />
   )

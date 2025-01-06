@@ -2,7 +2,17 @@ import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Arrays, Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
-import { ContentData, ContentKey, ContentProvider, ContentReference, ContentType, TextContent, TextContentType } from '@bessemer/cornerstone/content'
+import {
+  ContentData,
+  ContentKey,
+  ContentPayload,
+  ContentProvider,
+  ContentReference,
+  ContentType,
+  ContentTypeConstructor,
+  TextContent,
+  TextContentType,
+} from '@bessemer/cornerstone/content'
 import { Tag } from '@bessemer/cornerstone/tag'
 import { Contexts } from '@bessemer/framework'
 
@@ -11,20 +21,16 @@ export type CodexOptions = {
 }
 
 export type CodexRuntime = {
-  // JOHN probably also need to take context
-  renderers: Array<CodexRenderer>
+  renderers: Array<CodexRenderer<any>>
 }
 
-// JOHN Maybe this should be parametized on content data type not content type?
-export type CodexRenderer<Type extends ContentType = ContentType> = {
-  type: Type
-  render: (content: ContentData<Type>) => ReactNode
+export type CodexRenderer<Content extends ContentData = ContentData> = {
+  type: ContentTypeConstructor<Content>
+  render: (content: ContentPayload<Content>) => ReactNode
 }
 
 export const defaultRuntime = (): CodexRuntime => {
   return {
-    // JOHN add text renderer at least
-    // JOHn test extending this in the application
     renderers: [],
   }
 }
@@ -111,7 +117,7 @@ export const fetchTextByKeys = async (keys: Array<ContentKey>, context: CoreAppl
 export type FetchContentOptions<Type extends ContentType> = { type?: Type; tags?: Array<Tag> }
 
 // JOHN implement content sectors
-// JOHN we probably should consider a more robust caching solution...
+// TODO we probably should consider a more robust caching solution...
 export const fetchContentByKey = async <Type extends ContentType>(
   key: ContentKey,
   context: CoreApplicationContext,
@@ -140,19 +146,3 @@ export const fetchContentByKeys = async <Type extends ContentType>(
 
   return content as Array<ContentData<Type>>
 }
-
-// export const renderCodex = async (
-//   reference: ReferenceType<ContentReference>,
-//   type: ContentType,
-//   application: CoreApplicationContext
-// ): Promise<ReactNode> => {
-//   const definition = application.codex?.definitions.find((it) => it.type === type)!
-//   Preconditions.isPresent(definition)
-//
-//   const data = await definition.resolve(reference, application)
-//   if (Objects.isUndefined(data)) {
-//     throw new Error('Oh noes')
-//   }
-//
-//   return definition.render(data)
-// }

@@ -18,8 +18,12 @@ export const CharacterSection = () => {
   return (
     <div>
       <StandardPageHeader
-        // JOHN missing key... missing default
-        title={<ContentLabel contentKey="characters.title" />}
+        title={
+          <ContentLabel
+            contentKey="characters.title"
+            defaultValue="Characters"
+          />
+        }
         content={
           <Button
             variant="contained"
@@ -27,8 +31,10 @@ export const CharacterSection = () => {
             startIcon={<AddCircleOutlineIcon />}
             sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
-            {/* // JOHN missing key... missing default */}
-            <ContentLabel contentKey="characters.create" />
+            <ContentLabel
+              contentKey="characters.create"
+              defaultValue="Create a Character"
+            />
           </Button>
         }
       />

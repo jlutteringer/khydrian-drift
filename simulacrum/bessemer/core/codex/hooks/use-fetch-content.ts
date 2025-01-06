@@ -7,20 +7,18 @@ import { useQuery } from '@tanstack/react-query'
 import { RscRuntimes } from '@bessemer/react'
 import { FetchContentOptions } from '@bessemer/core/codex'
 import { AsyncValue } from '@bessemer/cornerstone/async'
-import { use } from 'react'
+import { useAsync } from '@bessemer/react/hook/use-async'
 
 export const useFetchContent = <Type extends ContentType>(
   key: ContentKey,
   options?: FetchContentOptions<Type>
 ): AsyncValue<ContentData<Type> | undefined> => {
   if (RscRuntimes.isServer) {
-    return use(
-      Async.blah(async () => {
-        const application = await Bessemer.getApplication<CoreApplicationContext>()
-        const content = await Codex.fetchContentByKey(key, application, options)
-        return content
-      })
-    )
+    return useAsync(async () => {
+      const application = await Bessemer.getApplication<CoreApplicationContext>()
+      const content = await Codex.fetchContentByKey(key, application, options)
+      return content
+    })
   }
 
   const result = useQuery({

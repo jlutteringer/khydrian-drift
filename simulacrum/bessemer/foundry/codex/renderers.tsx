@@ -1,16 +1,16 @@
 import { CodexRenderer } from '@bessemer/core/codex'
-import { LabelContentType, TextContentType } from '@bessemer/cornerstone/content'
+import { LabelContentType, TextContent, TextContentType } from '@bessemer/cornerstone/content'
 import { MuiRichTextRenderer } from '@bessemer/mui/component/MuiRichTextRenderer'
 import { MuiRichLabelRenderer } from '@bessemer/mui/component/MuiRichLabelRenderer'
 
-export const TextCodexRenderer: CodexRenderer<typeof TextContentType> = {
+export const TextCodexRenderer: CodexRenderer<TextContent> = {
   type: TextContentType,
   render: (content) => {
     return <MuiRichTextRenderer content={content.data} />
   },
 }
 
-export const LabelCodexRenderer: CodexRenderer<typeof LabelContentType> = {
+export const LabelCodexRenderer: CodexRenderer<TextContent> = {
   type: LabelContentType,
   render: (content) => {
     return <MuiRichLabelRenderer content={content.data} />

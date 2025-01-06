@@ -18,6 +18,10 @@ export type ContentData<Type extends ContentType = ContentType, Data = ContentDa
   data: Data
 }
 
+export type ContentTypeConstructor<Content extends ContentData> = Content['type']
+
+export type ContentPayload<Content extends ContentData = ContentData> = Omit<Content, 'key' | 'reference'>
+
 export const TextContentType: ContentType<RichTextJson> = 'Text'
 export type TextContent = ContentData<typeof TextContentType>
 

@@ -1,5 +1,5 @@
 import { Duration } from '@bessemer/cornerstone/duration'
-import { Async, Durations, Objects } from '@bessemer/cornerstone/index'
+import { Durations, Objects } from '@bessemer/cornerstone/index'
 
 export type PendingValue = {
   isSuccess: false
@@ -73,7 +73,7 @@ export const handle = <T, N>(
   value: AsyncValue<T | undefined>,
   handlers: { loading: () => N; error: (error: unknown) => N; absent: () => N; success: (data: T) => N }
 ): N => {
-  if (value.isLoading) {
+  if (value.isLoading || (value.isError && value.isFetching)) {
     return handlers.loading()
   }
   if (value.isError) {
@@ -84,16 +84,6 @@ export const handle = <T, N>(
   }
 
   return handlers.success(value.data)
-}
-
-// JOHN rename... maybe move use hook in here? but then cant be in cornerstone? ugh...
-export const blah = async <T>(runnable: () => Promise<T>): Promise<AsyncValue<T>> => {
-  try {
-    const result = await runnable()
-    return Async.settled(result)
-  } catch (e) {
-    return Async.error(e)
-  }
 }
 
 export const execute = <T>(runnable: () => Promise<T>): Promise<T> => {
