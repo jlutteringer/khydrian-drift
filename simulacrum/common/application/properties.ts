@@ -6,7 +6,6 @@ import { LabelContentNormalizer, TextContentNormalizer } from '@bessemer/core/co
 import { CoreRouteErrorHandler } from '@bessemer/core/route'
 import { ApplicationContent } from '@simulacrum/common/application/content'
 
-// JOHN we should be able to load default normalizers from... somewhere? probaby should be on context
 const contentProvider = Content.staticProvider<ApplicationContext>(ApplicationContent, [TextContentNormalizer, LabelContentNormalizer])
 
 export const ApplicationProperties: PropertyRecord<ApplicationOptions> = Properties.properties({

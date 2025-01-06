@@ -1,5 +1,4 @@
 import { ContentData, ContentKey, ContentType } from '@bessemer/cornerstone/content'
-import { Async, Durations } from '@bessemer/cornerstone'
 import { Bessemer } from '@bessemer/framework'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import { Codex, CodexClient } from '@bessemer/core'
@@ -24,8 +23,6 @@ export const useFetchContent = <Type extends ContentType>(
   const result = useQuery({
     queryKey: ['useFetchContent', key],
     queryFn: async () => {
-      // JOHN temp await
-      await Async.sleep(Durations.ofSeconds(5))
       return CodexClient.fetchContentByKey(key, options)
     },
   })
