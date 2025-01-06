@@ -1,4 +1,4 @@
-import { CodexOptions } from '@bessemer/core/codex'
+import { CodexOptions, CodexRuntime } from '@bessemer/core/codex'
 import { InternationalizationOptions } from '@bessemer/core/internationalization'
 import {
   ApplicationRuntimeType,
@@ -29,7 +29,7 @@ export type CoreApplicationContext = BessemerApplicationContext & {
   client: {
     internationalization?: InternationalizationOptions
     runtime: {
-      coreRuntimeTest: () => string
+      codex: CodexRuntime
     }
   }
 }

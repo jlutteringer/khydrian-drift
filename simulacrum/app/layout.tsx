@@ -11,8 +11,6 @@ import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext, ApplicationModule, ApplicationOptions } from '@simulacrum/common/application'
 import { ClientApplicationProvider } from '@simulacrum/ui/application/use-client-context'
 import React, { use } from 'react'
-import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
-import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
 import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { ApplicationProperties } from '@simulacrum/common/application/properties'
 import { QueryClientProvider } from '@simulacrum/app/QueryClientProvider'
@@ -64,8 +62,6 @@ const RootLayout = ({
       <body className={roboto.variable}>
         <QueryClientProvider>
           <ClientApplicationProvider props={clientProps}>
-            <TestClientComponent />
-            <TestServerComponent />
             <AppRouterCacheProvider>
               <ThemeProvider theme={theme}>
                 <CssBaseline />

@@ -136,16 +136,20 @@ export const reify = (blah: UrlLike): Url => {
   return parse(blah)
 }
 
-export const getJsonParameter = <T>(url: UrlLike, name: string): T | undefined => {
+export const getParameter = (url: UrlLike, name: string): string | undefined => {
   const parameter = reify(url).location.parameters[name]
   if (Objects.isNil(parameter)) {
     return undefined
   }
 
   if (Array.isArray(parameter)) {
-    // JOHN error handling
-    throw new Error('oh no')
+    throw new Error(`Expected a single parameter value but found multiple for parameter: ${name}`)
   }
 
-  return JSON.parse(parameter) as T
+  return parameter
+}
+
+export const getJsonParameter = <T>(url: UrlLike, name: string): T | undefined => {
+  const value = getParameter(url, name)
+  return Objects.isPresent(value) ? JSON.parse(value) : undefined
 }

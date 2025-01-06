@@ -11,8 +11,9 @@ import {
   DehydratedContextType,
 } from '@bessemer/framework'
 import { Preconditions, Properties } from '@bessemer/cornerstone'
+import { RscRuntimes } from '@bessemer/react'
 
-const BessemerContext = React.createContext<BessemerClientContext | null>(null)
+const BessemerContext = !RscRuntimes.isServer ? React.createContext<BessemerClientContext | null>(null) : null!
 
 export function BessemerClientProvider<
   Application extends BessemerApplicationContext,
@@ -43,7 +44,7 @@ const hydrateApplication = <T extends BessemerApplicationContext>(
   return { client: { ...dehydratedContext.client, runtime } }
 }
 
-export const useBessemerClient = <T extends BessemerClientContext>(): T => {
+export const useBessemerClientContext = <T extends BessemerClientContext>(): T => {
   const clientApplication = use(BessemerContext)
   Preconditions.isPresent(clientApplication)
 

@@ -16,9 +16,8 @@ export const getRuntime = (): RscRuntime => {
   }
 }
 
-export const isServer = () => {
-  return getRuntime() === RscRuntime.Server
-}
+// This is constant to enable tree shaking server code out of the client bundle
+export const isServer = rsc
 
 export const isSsr = () => {
   return getRuntime() === RscRuntime.Ssr

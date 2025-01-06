@@ -8,7 +8,25 @@ import { Contexts } from '@bessemer/framework'
 
 export type CodexOptions = {
   provider: ContentProvider<any>
-  // definitions: Array<CodexDefinition<{}>>
+}
+
+export type CodexRuntime = {
+  // JOHN probably also need to take context
+  renderers: Array<CodexRenderer>
+}
+
+// JOHN Maybe this should be parametized on content data type not content type?
+export type CodexRenderer<Type extends ContentType = ContentType> = {
+  type: Type
+  render: (content: ContentData<Type>) => ReactNode
+}
+
+export const defaultRuntime = (): CodexRuntime => {
+  return {
+    // JOHN add text renderer at least
+    // JOHn test extending this in the application
+    renderers: [],
+  }
 }
 
 // export type CodexDefinitionResolver<T extends GenericRecord> = (
@@ -113,7 +131,11 @@ export const fetchContentByKeys = async <Type extends ContentType>(
   const content = await context.codex.provider.fetchContentByKeys(keys, tags, context)
 
   if (Objects.isPresent(options?.type)) {
-    Preconditions.isTrue(content.every((it) => it.type === options?.type))
+    const illegalContent = content.find((it) => it.type !== options?.type)
+    Preconditions.isNil(
+      illegalContent,
+      () => `ContentData: [${illegalContent?.key}] with type: [${illegalContent?.type}] did not match requested ContentType: ${options?.type}`
+    )
   }
 
   return content as Array<ContentData<Type>>

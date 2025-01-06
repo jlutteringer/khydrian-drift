@@ -4,6 +4,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import SearchIcon from '@mui/icons-material/Search'
 import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
+import { ContentLabel } from '@bessemer/core/codex/component/ContentLabel'
 
 const characters = [
   { name: "john_lutteringer's Char...", level: 1, campaign: 'Irawulfe' },
@@ -17,9 +18,8 @@ export const CharacterSection = () => {
   return (
     <div>
       <StandardPageHeader
-        // JOHN
-        // title={ContentLabelComponents.CharactersTitle}
-        title={'TODO'}
+        // JOHN missing key... missing default
+        title={<ContentLabel contentKey="characters.title" />}
         content={
           <Button
             variant="contained"
@@ -27,8 +27,8 @@ export const CharacterSection = () => {
             startIcon={<AddCircleOutlineIcon />}
             sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
-            TODO
-            {/* JOHN {ContentLabelComponents.CharactersCreate}*/}
+            {/* // JOHN missing key... missing default */}
+            <ContentLabel contentKey="characters.create" />
           </Button>
         }
       />

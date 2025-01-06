@@ -8,6 +8,8 @@ import { CharacterOptions, Characters } from '@simulacrum/common/character'
 import { SelectClassLevel } from '@simulacrum/rulesets/dnd-5e'
 import { Archery, SelectFightingStyle } from '@simulacrum/rulesets/dnd-5e/archetype/fighting-style'
 import { Fighter, Fighter2, Fighter3 } from '@simulacrum/rulesets/dnd-5e/class/class-fighter'
+import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
+import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
 
 export default function Home() {
   const application = use(Bessemer.getApplication<ApplicationContext>())
@@ -33,6 +35,9 @@ export default function Home() {
 
   return (
     <div>
+      <TestClientComponent />
+      <TestServerComponent />
+
       <main>
         <Image
           src="/next.svg"

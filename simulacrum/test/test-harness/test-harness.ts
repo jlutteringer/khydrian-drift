@@ -11,7 +11,7 @@ export const buildTestContext = (): ApplicationContext => {
       errorHandler: null!,
     },
     serverOnlyTest: () => 'asdasd',
-    client: { ruleset: Dnd5e, tags: [], environment: 'test', runtime: { test: () => 'hello', coreRuntimeTest: () => 'world' } },
+    client: { ruleset: Dnd5e, tags: [], environment: 'test', runtime: { test: () => 'hello', codex: { renderers: [] } } },
   }
 }
 

@@ -20,9 +20,9 @@ import {
 } from '@mui/material'
 import { Code } from '@mui/icons-material'
 
-const doc: RichTextElement = (props) => <>{props.children}</>
+export const DocTextElement: RichTextElement = (props) => <>{props.children}</>
 
-const text: RichTextElement = (props) => {
+export const TextTextElement: RichTextElement = (props) => {
   if (!props.content.marks) {
     return <span>{props.content.text}</span>
   }
@@ -79,7 +79,7 @@ const horizontalRule: RichTextElement = () => {
   return <Divider sx={{ my: 4 }} />
 }
 
-const hardBreak: RichTextElement = () => {
+export const HardBreakTextElement: RichTextElement = () => {
   return <br />
 }
 
@@ -178,15 +178,15 @@ const tableHeader: RichTextElement = (props) => {
 }
 
 const defaultHandlers: Dictionary<RichTextElement> = {
-  doc,
+  doc: DocTextElement,
   paragraph,
-  text,
+  text: TextTextElement,
   heading,
   bulletList,
   orderedList,
   listItem,
   horizontalRule,
-  hardBreak,
+  hardBreak: HardBreakTextElement,
   blockquote,
   codeBlock,
   img,

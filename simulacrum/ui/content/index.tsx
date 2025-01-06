@@ -1,3 +1,4 @@
+// JOHN clean up
 export namespace ContentLabels {
   // export const CharactersTitle = Codex.label('characters.title', 'Characters')
   // export const CharactersCreate = Codex.label('characters.create', 'Create a Character')

@@ -1,11 +1,11 @@
 import * as React from 'react'
-import { ContentText } from '@bessemer/foundry/component/ContentText'
+import { ContentElement } from '@bessemer/core/codex/component/ContentElement'
 
 const HomebrewPage = () => {
   return (
     <div>
       Page Under Construction
-      <ContentText />
+      <ContentElement contentKey="test-content" />
     </div>
   )
 }
