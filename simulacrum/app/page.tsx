@@ -10,6 +10,8 @@ import { Archery, SelectFightingStyle } from '@simulacrum/rulesets/dnd-5e/archet
 import { Fighter, Fighter2, Fighter3 } from '@simulacrum/rulesets/dnd-5e/class/class-fighter'
 import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
 import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
+import Link from '@mui/material/Link'
+import Button from '@mui/material/Button'
 
 export default function Home() {
   const application = use(Bessemer.getApplication<ApplicationContext>())
@@ -35,6 +37,13 @@ export default function Home() {
 
   return (
     <div>
+      <Link href="/characters">This is a Mui Link</Link>
+      <Button
+        variant="contained"
+        href="/characters"
+      >
+        This is a Mui Button that Links
+      </Button>
       <TestClientComponent />
       <TestServerComponent />
 

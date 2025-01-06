@@ -1,4 +1,4 @@
-import { Isomorphic, Lazy, Objects } from '@bessemer/cornerstone'
+import { Lazy, Objects } from '@bessemer/cornerstone'
 import { LazyValue } from '@bessemer/cornerstone/lazy'
 import { Nil } from '@bessemer/cornerstone/types'
 
@@ -23,7 +23,3 @@ export function isNil(value: any, message: LazyValue<string> = 'Preconditions.is
 export function isPresent<T>(value: T, message: LazyValue<string> = 'Preconditions.isPresent failed validation'): asserts value is NonNullable<T> {
   return isTrue(Objects.isPresent(value), message)
 }
-
-export const isClientSide = (message: LazyValue<string> = 'Preconditions.isClientSide failed validation') => isTrue(Isomorphic.isClient(), message)
-
-export const isServerSide = (message: LazyValue<string> = 'Preconditions.isServerSide failed validation') => isTrue(Isomorphic.isServer(), message)

@@ -3,7 +3,7 @@ import { CharacterRecord } from '@simulacrum/common/character/character'
 import { ProgressionTables } from '@simulacrum/common'
 import { ApplicationContext } from '@simulacrum/common/application'
 
-// JOHN
+// TODO
 export const buildTestContext = (): ApplicationContext => {
   return {
     tiptapExtensions: [],

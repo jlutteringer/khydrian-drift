@@ -8,7 +8,7 @@ import {
 } from '@bessemer/framework'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
 import { Loggers, Objects, Preconditions, Properties, Tags } from '@bessemer/cornerstone'
-import { ServerContexts } from '@bessemer/react'
+import { RscRuntimes, ServerContexts } from '@bessemer/react'
 import { ServerContext } from '@bessemer/react/server-context'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { Tag } from '@bessemer/cornerstone/tag'
@@ -36,7 +36,7 @@ const GlobalConfigurationState = createGlobalVariable<BessemerConfiguration<any,
 export const configure = <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
   configuration: BessemerConfiguration<ApplicationContext, ApplicationOptions>
 ): void => {
-  Preconditions.isServerSide()
+  Preconditions.isTrue(RscRuntimes.isServer)
 
   if (Objects.isPresent(GlobalConfigurationState.getValue())) {
     return
@@ -62,7 +62,7 @@ export const getInstance = async <ApplicationContext extends BessemerApplication
 }
 
 export const getApplication = async <ApplicationContext extends BessemerApplicationContext>(tags?: Array<Tag>): Promise<ApplicationContext> => {
-  Preconditions.isServerSide()
+  Preconditions.isTrue(RscRuntimes.isServer)
 
   const { context } = await getInstance<ApplicationContext, BessemerOptions>(tags)
   return context
@@ -71,7 +71,7 @@ export const getApplication = async <ApplicationContext extends BessemerApplicat
 const initializeBessemer = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
   additionalTags: Array<Tag> = []
 ): Promise<BessemerInstance<ApplicationContext, ApplicationOptions>> => {
-  Preconditions.isServerSide()
+  Preconditions.isTrue(RscRuntimes.isServer)
 
   const configuration = GlobalConfigurationState.getValue()
   Preconditions.isPresent(configuration, 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')

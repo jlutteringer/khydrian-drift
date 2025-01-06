@@ -4,8 +4,8 @@ import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import {
   ContentData,
+  ContentDisplayType,
   ContentKey,
-  ContentPayload,
   ContentProvider,
   ContentReference,
   ContentType,
@@ -26,7 +26,8 @@ export type CodexRuntime = {
 
 export type CodexRenderer<Content extends ContentData = ContentData> = {
   type: ContentTypeConstructor<Content>
-  render: (content: ContentPayload<Content>) => ReactNode
+  displayTypes: Array<ContentDisplayType>
+  render: (content: Content) => ReactNode
 }
 
 export const defaultRuntime = (): CodexRuntime => {

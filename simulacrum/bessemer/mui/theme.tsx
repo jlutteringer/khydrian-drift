@@ -1,9 +1,19 @@
-// import NextLink from 'next/link'
+import NextLink from 'next/link'
 import { createTheme } from '@mui/material/styles'
+import { forwardRef } from 'react'
 
 export type MuiTheme = Parameters<typeof createTheme>[0]
 
-// JOHN figure out why this config infinitely loops
+const LinkBehaviour = forwardRef(function LinkBehaviour(props: any, ref) {
+  return (
+    <NextLink
+      ref={ref}
+      href={props.href ?? '#'}
+      {...props}
+    />
+  )
+})
+
 export const DefaultTheme: MuiTheme = {
   cssVariables: true,
   typography: {
@@ -12,12 +22,12 @@ export const DefaultTheme: MuiTheme = {
   components: {
     MuiLink: {
       defaultProps: {
-        // component: NextLink,
+        component: LinkBehaviour,
       },
     },
     MuiButtonBase: {
       defaultProps: {
-        // LinkComponent: NextLink,
+        LinkComponent: LinkBehaviour,
       },
     },
   },

@@ -1,5 +1,5 @@
 import { RichText } from '@bessemer/cornerstone/rich-text'
-import { ContentData, ContentNormalizer, LabelContent, LabelContentType, TextContent, TextContentType } from '@bessemer/cornerstone/content'
+import { ContentData, ContentNormalizer, TextContent, TextContentType } from '@bessemer/cornerstone/content'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import { Tiptap } from '@bessemer/core'
 
@@ -15,9 +15,4 @@ export const TextContentNormalizer: ContentNormalizer<CoreApplicationContext, Te
 
     return normalizedData
   },
-}
-
-export const LabelContentNormalizer: ContentNormalizer<CoreApplicationContext, LabelContent> = {
-  type: LabelContentType,
-  normalize: TextContentNormalizer.normalize,
 }

@@ -26,7 +26,6 @@ import * as Patches from './patch'
 import * as Content from './content'
 import * as Combinables from './combinable'
 import * as Properties from './property'
-import * as Isomorphic from './isomorphic'
 import * as RichTexts from './rich-text'
 import * as Misc from './misc'
 
@@ -58,7 +57,6 @@ export {
   Content,
   Combinables,
   Properties,
-  Isomorphic,
   RichTexts,
   Misc,
 }

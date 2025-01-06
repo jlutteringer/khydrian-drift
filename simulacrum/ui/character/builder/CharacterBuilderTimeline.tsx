@@ -90,7 +90,7 @@ const CharacterBuilderTimelineEntry = ({
             padding: 0,
           }}
         >
-          {/* JOHN bad key */}
+          {/* TODO bad key */}
           {entry.effects.map((effect, index) => {
             return (
               <CharacterBuilderEffect
@@ -181,7 +181,7 @@ const EffectLabel = ({ effect }: { effect: Effect }) => {
   }
 }
 
-// JOHN this could be more efficient
+// TODO this could be more efficient
 const EffectSourceLabel = ({ source, level }: { source: EffectSource; level: number }) => {
   const context = use(Bessemer.getApplication<ApplicationContext>())
 

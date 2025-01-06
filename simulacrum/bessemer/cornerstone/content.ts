@@ -20,16 +20,19 @@ export type ContentData<Type extends ContentType = ContentType, Data = ContentDa
 
 export type ContentTypeConstructor<Content extends ContentData> = Content['type']
 
-export type ContentPayload<Content extends ContentData = ContentData> = Omit<Content, 'key' | 'reference'>
+export type ContentDisplayType = NominalType<string, 'ContentDisplayType'>
+
+export namespace ContentDisplayTypes {
+  export const Default: ContentDisplayType = 'Default'
+  export const Label: ContentDisplayType = 'Label'
+  export const Desktop: ContentDisplayType = 'Desktop'
+  export const Mobile: ContentDisplayType = 'Mobile'
+  export const Modal: ContentDisplayType = 'Modal'
+  export const Tooltip: ContentDisplayType = 'Tooltip'
+}
 
 export const TextContentType: ContentType<RichTextJson> = 'Text'
 export type TextContent = ContentData<typeof TextContentType>
-
-// JOHN is LabelContentType really the way to go here? I worry it conflates the content data type with its display too much...
-// Think a Trait page vs. a Trait tooltip - same content data but two different form factors
-// Maybe form factor should become a first class thing... DisplayType?
-export const LabelContentType: ContentType<RichTextJson> = 'Label'
-export type LabelContent = ContentData<typeof LabelContentType>
 
 export interface ContentProvider<ContextType extends AbstractApplicationContext = AbstractApplicationContext> {
   fetchContentByIds: (references: Array<ReferenceType<ContentReference>>, context: ContextType) => Promise<Array<ContentData>>
