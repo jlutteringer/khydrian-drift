@@ -1,0 +1,39 @@
+{
+  "name": "@bessemer/cornerstone",
+  "type": "module",
+  "version": "0.0.0",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": [
+      {
+        "import": "./dist/*.js",
+        "types": "./dist/*.d.ts"
+      },
+      {
+        "import": "./dist/*/index.js",
+        "types": "./dist/*/index.d.ts"
+      }
+    ]
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch --external=none",
+    "test": "jest",
+    "prettier-fix": "prettier --write ."
+  },
+  "dependencies": {
+    "lodash-es": "4.17.21",
+    "immer": "10.1.1",
+    "pino": "9.6.0"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "4.17.12",
+    "pino-pretty": "13.0.0"
+  }
+}

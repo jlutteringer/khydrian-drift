@@ -1,0 +1,33 @@
+{
+  "name": "@bessemer/foundry",
+  "type": "module",
+  "version": "0.0.0",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": [
+      {
+        "import": "./dist/*.js",
+        "types": "./dist/*.d.ts"
+      },
+      {
+        "import": "./dist/*/index.js",
+        "types": "./dist/*/index.d.ts"
+      }
+    ]
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch --external=none",
+    "test": "jest",
+    "prettier-fix": "prettier --write ."
+  },
+  "dependencies": {
+    "@bessemer/core": "*"
+  }
+}
