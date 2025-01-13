@@ -8,5 +8,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   outDir: 'dist',
-  external: ['@bessemer/cornerstone', '@bessemer/react']
+  external: ['@bessemer/cornerstone', '@bessemer/react', 'react', 'react-dom']
 })

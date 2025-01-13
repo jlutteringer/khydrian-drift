@@ -8,5 +8,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   outDir: 'dist',
-  external: ['@bessemer/framework']
+  external: ['@bessemer/framework', 'react', 'react-dom']
 })
