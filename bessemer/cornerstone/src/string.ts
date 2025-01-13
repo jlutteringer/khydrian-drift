@@ -4,7 +4,7 @@ import {
   isString as _isString,
   padEnd as _padEnd,
   padStart as _padStart,
-  startsWith as _startsWith,
+  startsWith as _startsWith
 } from 'lodash-es'
 import { Arrays } from '@bessemer/cornerstone'
 import { GenericRecord } from '@bessemer/cornerstone/types'
@@ -24,7 +24,7 @@ export const splitFirst = (str: string, splitter: string | RegExp): StringSplitR
       return { selection: null, separator: null, rest: str }
     }
 
-    return { selection: results[0], separator: splitter, rest: Arrays.rest(results).join(splitter) }
+    return { selection: results[0]!, separator: splitter, rest: Arrays.rest(results).join(splitter) }
   } else {
     const match = splitter.exec(str)
 
@@ -47,7 +47,7 @@ export const splitLast = (str: string, splitter: string | RegExp): StringSplitRe
       return { selection: null, separator: null, rest: str }
     }
 
-    return { selection: results[results.length - 1], separator: splitter, rest: results.slice(0, results.length - 1).join(splitter) }
+    return { selection: results[results.length - 1]!, separator: splitter, rest: results.slice(0, results.length - 1).join(splitter) }
   } else {
     if (!splitter.global) {
       splitter = new RegExp(splitter.source, splitter.flags + 'g')
@@ -60,9 +60,9 @@ export const splitLast = (str: string, splitter: string | RegExp): StringSplitRe
     }
 
     // Use the last match
-    const lastMatch = matches[matches.length - 1]
+    const lastMatch = matches[matches.length - 1]!
     const matchIndex = lastMatch.index!
-    const separator = lastMatch[0]
+    const separator = lastMatch[0]!
     const beforeMatch = str.slice(0, matchIndex)
     const afterMatch = str.slice(matchIndex + separator.length)
 
@@ -142,14 +142,14 @@ export const mostCentralOccurrence = (str: string, substr: string): number | nul
 
   const center = str.length / 2
 
-  let closestIndex = occurrences[0]
+  let closestIndex = occurrences[0]!
   let minDistance = Math.abs(center - closestIndex)
 
   for (let i = 1; i < occurrences.length; i++) {
-    const distance = Math.abs(center - occurrences[i])
+    const distance = Math.abs(center - occurrences[i]!)
     if (distance < minDistance) {
       minDistance = distance
-      closestIndex = occurrences[i]
+      closestIndex = occurrences[i]!
     }
   }
 

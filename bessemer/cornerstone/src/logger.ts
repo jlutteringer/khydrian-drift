@@ -1,16 +1,22 @@
-import pino from 'pino'
+// import pino from 'pino'
 import { Lazy, Objects } from '@bessemer/cornerstone'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { LazyValue } from '@bessemer/cornerstone/lazy'
 import { GenericRecord } from '@bessemer/cornerstone/types'
 
-export type LoggerOptions = pino.LoggerOptions
+// JOHN
+// export type PinoLogger = pino.Logger
+// export type PinoBindings = pino.Bindings
+// export type LoggerOptions = pino.LoggerOptions
+export type PinoLogger = any
+export type PinoBindings = any
+export type LoggerOptions = any
 
 type LogOptions = { error?: unknown; context?: GenericRecord }
 type LogFunction = (message: LazyValue<string>, options?: LogOptions) => void
 
 export class Logger {
-  constructor(private readonly logger: pino.Logger) {}
+  constructor(private readonly logger: PinoLogger) {}
 
   trace: LogFunction = (message: LazyValue<string>, options?: LogOptions): void => {
     if (this.logger.isLevelEnabled?.('trace') ?? true) {
@@ -50,7 +56,7 @@ export class Logger {
 }
 
 const getPrettyTransport = (): LoggerOptions => {
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' || typeof window !== 'undefined' ) {
     return {}
   }
 
@@ -77,8 +83,8 @@ const applyDefaultOptions = (options?: LoggerOptions): LoggerOptions => {
   return Objects.merge(defaultOptions, options)
 }
 
-const createProxyHandler = (getLogger: () => pino.Logger): ProxyHandler<pino.Logger> => {
-  let cachedLogger: pino.Logger | null = null
+const createProxyHandler = (getLogger: () => PinoLogger): ProxyHandler<PinoLogger> => {
+  let cachedLogger: PinoLogger | null = null
   let cachedVersion = GlobalLoggerState.getValue().version
 
   const getOrCreateLogger = () => {
@@ -97,9 +103,9 @@ const createProxyHandler = (getLogger: () => pino.Logger): ProxyHandler<pino.Log
   return {
     get(_: any, prop: string): any {
       if (prop === 'child') {
-        return (bindings: pino.Bindings) => {
+        return (bindings: PinoBindings) => {
           return new Proxy(
-            {} as pino.Logger,
+            {} as PinoLogger,
             createProxyHandler(() => getOrCreateLogger().child(bindings))
           )
         }
@@ -112,14 +118,22 @@ const createProxyHandler = (getLogger: () => pino.Logger): ProxyHandler<pino.Log
 
 const GlobalLoggerState = createGlobalVariable<{
   version: number
-  logger: pino.Logger
+  logger: PinoLogger
 }>('GlobalLoggerState', () => ({
   version: 0,
-  logger: pino(applyDefaultOptions({ level: 'info' })),
+  logger: null!,
 }))
+// JOHN
+// const GlobalLoggerState = createGlobalVariable<{
+//   version: number
+//   logger: pino.Logger
+// }>('GlobalLoggerState', () => ({
+//   version: 0,
+//   logger: pino(applyDefaultOptions({ level: 'info' })),
+// }))
 
-const LoggerProxy: pino.Logger = new Proxy(
-  {} as pino.Logger,
+const LoggerProxy: PinoLogger = new Proxy(
+  {} as PinoLogger,
   createProxyHandler(() => GlobalLoggerState.getValue().logger)
 )
 
@@ -127,7 +141,8 @@ const Primary: Logger = new Logger(LoggerProxy)
 
 export const configure = (initialOptions?: LoggerOptions): void => {
   const options = applyDefaultOptions(initialOptions)
-  GlobalLoggerState.setValue({ version: GlobalLoggerState.getValue().version++, logger: pino(options) })
+  // JOHN
+  // GlobalLoggerState.setValue({ version: GlobalLoggerState.getValue().version++, logger: pino(options) })
 }
 
 export const child = (module: string): Logger => {

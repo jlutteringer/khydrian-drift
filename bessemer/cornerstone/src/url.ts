@@ -36,10 +36,10 @@ const augmentUriLocation = (uriLocation: UriLocation, normalize: boolean): UrlLo
       let splitParameters = parameterPair.split('=')
 
       if (!Strings.isBlank(Arrays.first(splitParameters))) {
-        let key = decode(splitParameters[0])
+        let key = decode(splitParameters[0]!)
         let value = ''
         if (splitParameters.length === 2) {
-          value = splitParameters[1]
+          value = splitParameters[1]!
         }
         if (Objects.isNil(parameters[key])) {
           parameters[key] = decode(value)

@@ -1,5 +1,5 @@
 import { Duration } from '@bessemer/cornerstone/duration'
-import { Durations, Objects } from '@bessemer/cornerstone/index'
+import { Durations, Objects } from '@bessemer/cornerstone'
 
 export type PendingValue = {
   isSuccess: false
@@ -25,11 +25,12 @@ export type ErrorValue = {
   data: unknown
 }
 
+// JOHN grumble gruble really want fecting: true in this type...
 export type FetchingValueSuccess<T> = {
   isSuccess: true
   isError: false
   isLoading: false
-  isFetching: true
+  isFetching: boolean
   data: T
 }
 

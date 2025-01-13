@@ -1,10 +1,10 @@
 import NextLink from 'next/link'
 import { createTheme } from '@mui/material/styles'
-import { forwardRef } from 'react'
 
 export type MuiTheme = Parameters<typeof createTheme>[0]
 
-const LinkBehaviour = forwardRef(function LinkBehaviour(props: any, ref) {
+// JOHN
+const LinkBehaviour = ({ ref, ...props}: any)=> {
   return (
     <NextLink
       ref={ref}
@@ -12,7 +12,7 @@ const LinkBehaviour = forwardRef(function LinkBehaviour(props: any, ref) {
       {...props}
     />
   )
-})
+}
 
 export const DefaultTheme: MuiTheme = {
   cssVariables: true,
@@ -22,12 +22,12 @@ export const DefaultTheme: MuiTheme = {
   components: {
     MuiLink: {
       defaultProps: {
-        component: LinkBehaviour,
+        // component: LinkBehaviour,
       },
     },
     MuiButtonBase: {
       defaultProps: {
-        LinkComponent: LinkBehaviour,
+        // LinkComponent: LinkBehaviour,
       },
     },
   },

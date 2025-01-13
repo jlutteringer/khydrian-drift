@@ -1,18 +1,20 @@
 import { RouteErrorHandler } from '@bessemer/framework/route'
 import { CoreApplicationContext } from '@bessemer/core/application'
-import { ErrorEvents, Loggers, Objects, Strings } from '@bessemer/cornerstone'
+import { ErrorEvents, Objects, Strings } from '@bessemer/cornerstone'
 import { Codex, Tiptap } from '@bessemer/core/index'
 import { NextRequest, NextResponse } from 'next/server'
 import { ContentKey } from '@bessemer/cornerstone/content'
 
-const logger = Loggers.child('RouteErrorHandler')
+// JOHN
+// const logger = Loggers.child('RouteErrorHandler')
 
 export const CoreRouteErrorHandler: RouteErrorHandler<CoreApplicationContext> = async (
   error: unknown,
   context: CoreApplicationContext,
   request: NextRequest
 ) => {
-  logger.error(() => `Handling error at endpoint: ${request.url}`, { error })
+  // JOHN
+  // logger.error(() => `Handling error at endpoint: ${request.url}`, { error })
 
   let errorEvent = ErrorEvents.from(error)
   const content = await Codex.fetchTextByKey(errorEvent.code as ContentKey, context)

@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation'
 import { useClientContext } from '@simulacrum/ui/application/use-client-context'
-import { ContentElement } from '@bessemer/core/codex/component/ContentElement'
 
 export const TestClientComponent = () => {
   const pathname = usePathname()
@@ -14,7 +13,7 @@ export const TestClientComponent = () => {
   return (
     <div>
       Hello
-      <ContentElement contentKey="test-content" />
+      {/*<ContentElement contentKey="test-content" />*/}
     </div>
   )
 }

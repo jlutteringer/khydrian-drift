@@ -2,30 +2,26 @@
   "name": "@bessemer/foundry",
   "type": "module",
   "version": "0.0.0",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./*": [
-      {
-        "import": "./dist/*.js",
-        "types": "./dist/*.d.ts"
-      },
-      {
-        "import": "./dist/*/index.js",
-        "types": "./dist/*/index.d.ts"
-      }
-    ]
+    "./*": {
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
   },
-  "sideEffects": false,
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch --external=none",
+    "build-turbo": "tsup",
+    "dev-turbo": "tsup --watch --external=none",
     "test": "jest",
-    "prettier-fix": "prettier --write ."
+    "prettier-fix": "prettier --write .",
+    "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
     "@bessemer/core": "*"

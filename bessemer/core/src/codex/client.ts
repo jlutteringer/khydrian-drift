@@ -1,5 +1,5 @@
 import { ContentData, ContentKey, ContentType } from '@bessemer/cornerstone/content'
-import { FetchContentOptions } from '@bessemer/core/codex/index'
+import { FetchContentOptions } from '@bessemer/core/codex'
 import { Urls } from '@bessemer/cornerstone'
 
 // JOHN fully implement me

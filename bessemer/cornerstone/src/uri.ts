@@ -1,4 +1,4 @@
-import { Objects, Strings } from '@bessemer/cornerstone/index'
+import { Objects, Strings } from '@bessemer/cornerstone'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { StringSplitResult } from '@bessemer/cornerstone/string'
 

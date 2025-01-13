@@ -32,7 +32,7 @@ export const properPowerSet = <T>(values: Array<T>): Array<Array<T>> => {
     for (let j = 0; j < values.length; j++) {
       if (i & (1 << j)) {
         // Check if the j-th element is in the subset
-        subset.push(values[j])
+        subset.push(values[j]!)
       }
     }
     powerSet.push(subset)

@@ -1,4 +1,4 @@
-import { Objects, Strings } from '@bessemer/cornerstone/index'
+import { Objects, Strings } from '@bessemer/cornerstone'
 
 export type Uuid = string
 

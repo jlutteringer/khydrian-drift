@@ -10,7 +10,7 @@ import { CssBaseline } from '@mui/material'
 import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext, ApplicationModule, ApplicationOptions } from '@simulacrum/common/application'
 import { ClientApplicationProvider } from '@simulacrum/ui/application/use-client-context'
-import React, { use } from 'react'
+import React, { ReactNode, use } from 'react'
 import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { ApplicationProperties } from '@simulacrum/common/application/properties'
 import { QueryClientProvider } from '@simulacrum/app/QueryClientProvider'
@@ -37,7 +37,7 @@ Bessemer.configure({
 const RootLayout = ({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: ReactNode
 }>) => {
   const { clientProps } = use(Bessemer.getInstance<ApplicationContext, ApplicationOptions>())
 

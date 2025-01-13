@@ -1,6 +1,5 @@
 import { isNumber as _isNumber } from 'lodash-es'
 
-// Checks to see if the value is actually a number, does not perform any type coercion
 export const isNumber = (value?: unknown): value is number => {
   return _isNumber(value)
 }
@@ -81,7 +80,7 @@ export const roundHalfEven = (value: number, scale: number): number => {
   if (fractPart.length < scale) {
     return value
   }
-  const followingDig = parseInt(fractPart[scale], 10)
+  const followingDig = parseInt(fractPart[scale]!, 10)
   if (followingDig < 5) {
     // rounding not required
     const newFractPart = fractPart.slice(0, scale)
@@ -96,10 +95,10 @@ export const roundHalfEven = (value: number, scale: number): number => {
     }
   }
 
-  let nextDig = parseInt(fractPart[fractPart.length - 1], 10)
+  let nextDig = parseInt(fractPart[fractPart.length - 1]!, 10)
   let carriedOver = 0
   for (let ptr = fractPart.length - 1; ptr >= scale; ptr--) {
-    let dig = parseInt(fractPart[ptr - 1], 10) + carriedOver
+    let dig = parseInt(fractPart[ptr - 1]!, 10) + carriedOver
     if (nextDig > 5 || (nextDig == 5 && !isEven(dig))) {
       ++dig
     }
@@ -114,7 +113,7 @@ export const roundHalfEven = (value: number, scale: number): number => {
 
   let newFractPart = ''
   for (let ptr = scale - 2; ptr >= 0; ptr--) {
-    let d = parseInt(fractPart[ptr], 10) + carriedOver
+    let d = parseInt(fractPart[ptr]!, 10) + carriedOver
     if (d > 9) {
       d -= 10
       carriedOver = 1

@@ -9,7 +9,7 @@ import {
   range as _range,
   remove,
   uniqBy,
-  uniqWith,
+  uniqWith
 } from 'lodash-es'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
 import { Signable } from '@bessemer/cornerstone/signature'
@@ -22,7 +22,7 @@ export const equalWith = <T>(first: Array<T>, second: Array<T>, equalitor: Equal
     return false
   }
 
-  return first.every((element, index) => equalitor(element, second[index]))
+  return first.every((element, index) => equalitor(element, second[index]!))
 }
 
 export const equalBy = <T>(first: Array<T>, second: Array<T>, mapper: (element: T) => Signable): boolean => {

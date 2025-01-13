@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material'
-import * as React from 'react'
+import { JSX } from 'react'
 
-export const StandardPageHeader = ({ title, content }: { title: string | React.JSX.Element; content?: React.JSX.Element }) => {
+export const StandardPageHeader = ({ title, content }: { title: string | JSX.Element; content?: JSX.Element }) => {
   return (
     <Box
       display="flex"

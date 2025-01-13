@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import { JSX, useEffect, useRef, useState } from 'react'
 import { Box, Container, Fade, Popper, Stack, Typography } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { NavbarTileSquareImage } from '@simulacrum/ui/navigation/navbar/NavbarTiles'
@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation'
 
 type BottomBannerContent = {
   label: string
-  content: React.JSX.Element
+  content: JSX.Element
 }
 
 // TODO there's probably some kind of abstract component that can be pulled out of this

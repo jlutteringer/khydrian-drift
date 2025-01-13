@@ -1,4 +1,3 @@
-import React from 'react'
 import { ContentDisplayTypes, TextContent, TextContentType } from '@bessemer/cornerstone/content'
 import { ContentElement, ContentElementProps } from '@bessemer/core/codex/component/ContentElement'
 import { RequireField } from '@bessemer/cornerstone/types'

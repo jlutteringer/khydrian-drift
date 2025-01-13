@@ -8,30 +8,36 @@ export type GlobalVariable<T> = {
   setValue: (value: T) => void
 }
 
-declare global {
-  // noinspection ES6ConvertVarToLetConst,JSUnusedGlobalSymbols
-  var BessemerGlobalVariables: GenericRecord
+let Global: { BessemerGlobalVariables: GenericRecord }
+if(typeof window !== 'undefined') {
+  Global = window as any
+}
+else if(typeof global !== 'undefined'){
+  Global = global as any
+}
+else {
+  Global = globalThis as any
 }
 
-if (isUndefined(global.BessemerGlobalVariables)) {
-  global.BessemerGlobalVariables = {}
+if (isUndefined(Global.BessemerGlobalVariables)) {
+  Global.BessemerGlobalVariables = {}
 }
 
 export const createGlobalVariable = <T>(key: string, defaultValue: LazyValue<NonUndefined<T>>): GlobalVariable<T> => {
   return {
     getValue: () => {
-      const value = global.BessemerGlobalVariables[key] as T | undefined
+      const value = Global.BessemerGlobalVariables[key] as T | undefined
 
       if (isUndefined(value)) {
         const def = evaluate(defaultValue)
-        global.BessemerGlobalVariables[key] = def
+        Global.BessemerGlobalVariables[key] = def
         return def
       }
 
       return value
     },
     setValue: (value: T) => {
-      global.BessemerGlobalVariables[key] = value
+      Global.BessemerGlobalVariables[key] = value
     },
   }
 }

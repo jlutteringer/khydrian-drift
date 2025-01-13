@@ -4,16 +4,17 @@ import {
   BessemerOptions,
   BessemerRuntimeModule,
   DehydratedContextType,
-  PublicProperties,
+  PublicProperties
 } from '@bessemer/framework'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
-import { Loggers, Objects, Preconditions, Properties, Tags } from '@bessemer/cornerstone'
+import { Objects, Preconditions, Properties, Tags } from '@bessemer/cornerstone'
 import { RscRuntimes, ServerContexts } from '@bessemer/react'
 import { ServerContext } from '@bessemer/react/server-context'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { Tag } from '@bessemer/cornerstone/tag'
 
-const logger = Loggers.child('Bessemer')
+// JOHN
+// const logger = Loggers.child('Bessemer')
 
 export type BessemerConfiguration<ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
   applicationProvider: BessemerApplicationModule<ApplicationContext, ApplicationOptions>
@@ -36,6 +37,7 @@ const GlobalConfigurationState = createGlobalVariable<BessemerConfiguration<any,
 export const configure = <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
   configuration: BessemerConfiguration<ApplicationContext, ApplicationOptions>
 ): void => {
+  console.log('RscRuntimes.isServer', RscRuntimes.isServer)
   Preconditions.isTrue(RscRuntimes.isServer)
 
   if (Objects.isPresent(GlobalConfigurationState.getValue())) {
@@ -45,7 +47,8 @@ export const configure = <ApplicationContext extends BessemerApplicationContext,
   const { applicationProvider, properties } = configuration
 
   const tags = applicationProvider.globalTags()
-  logger.info(() => `Configuring with tags: ${JSON.stringify(tags)}`)
+  // JOHN
+  // logger.info(() => `Configuring with tags: ${JSON.stringify(tags)}`)
 
   GlobalConfigurationState.setValue(configuration)
   const options = Properties.resolve(properties, tags)
@@ -79,7 +82,8 @@ const initializeBessemer = async <ApplicationContext extends BessemerApplication
   const { applicationProvider, runtimeProvider, properties } = configuration as BessemerConfiguration<ApplicationContext, ApplicationOptions>
   const tags = [...applicationProvider.globalTags(), ...(await applicationProvider.applicationTags()), ...additionalTags]
 
-  logger.info(() => `Initializing Application with tags: ${JSON.stringify(tags)}`)
+  // JOHN
+  // logger.info(() => `Initializing Application with tags: ${JSON.stringify(tags)}`)
 
   const options = Properties.resolve(properties, tags)
   const runtime = runtimeProvider.initializeRuntime(options)

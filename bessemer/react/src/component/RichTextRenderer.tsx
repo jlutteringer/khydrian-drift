@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 import { Objects } from '@bessemer/cornerstone'
 import { Dictionary } from '@bessemer/cornerstone/types'
@@ -15,7 +15,7 @@ export type RichTextElement = (props: RichTextElementProps) => ReactNode
 export const RichTextRenderer = (props: RichTextRendererProps): ReactNode => {
   const { content, handlers = {} } = props
 
-  const children: React.JSX.Element[] = []
+  const children: ReactNode[] = []
   if (Objects.isPresent(content.content)) {
     content.content.forEach((child, index) => {
       children.push(
@@ -32,6 +32,6 @@ export const RichTextRenderer = (props: RichTextRendererProps): ReactNode => {
     throw new Error(`Unable to resolve content type: ${content?.type}`)
   }
 
-  const Handler = handlers[content.type]
+  const Handler = handlers[content.type]!
   return <Handler content={content}>{children}</Handler>
 }

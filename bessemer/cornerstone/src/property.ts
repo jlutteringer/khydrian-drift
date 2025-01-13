@@ -1,5 +1,5 @@
 import { DeepPartial, GenericRecord } from '@bessemer/cornerstone/types'
-import { Objects, Tags } from '@bessemer/cornerstone/index'
+import { Objects, Tags } from '@bessemer/cornerstone'
 import { SerializedTags, Tag, TaggedValue } from '@bessemer/cornerstone/tag'
 
 export type PropertyRecord<T extends GenericRecord> = {

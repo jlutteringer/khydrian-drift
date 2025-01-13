@@ -4,16 +4,17 @@ import {
   invert as _invert,
   isEqual as _isEqual,
   isNil as _isNil,
+  isNumber,
   isObject as _isObject,
   isPlainObject as _isPlainObject,
+  isString,
   isUndefined as _isUndefined,
   mapValues as _mapValues,
   merge as unsafeMerge,
-  mergeWith as unsafeMergeWith,
+  mergeWith as unsafeMergeWith
 } from 'lodash-es'
 import { produce } from 'immer'
 import { GenericRecord, NominalType, Primitive } from '@bessemer/cornerstone/types'
-import { Arrays, Maths, Strings } from '@bessemer/cornerstone'
 
 export const update: typeof produce = produce
 
@@ -60,7 +61,7 @@ export function mergeInto<Source1, Source2>(source: Source1, values: Source2): a
 
 export const mergeWith: typeof unsafeMergeWith = (...args: Array<any>) => {
   const clone = cloneDeep(args[0])
-  return unsafeMergeWith.apply(null, [clone, ...Arrays.rest(args)])
+  return unsafeMergeWith.apply(null, [clone, ...args.slice(1)])
 }
 
 export const isPromise = <T>(element: T | Promise<T>): element is Promise<T> => {
@@ -135,11 +136,11 @@ export const parsePath = (path: string): ObjectPath => {
 }
 
 const pathify = (path: ObjectPath | string): ObjectPath => {
-  if (Strings.isString(path)) {
+  if (isString(path)) {
     return parsePath(path)
   }
 
-  return path
+  return path as ObjectPath
 }
 
 export const getPathValue = (object: GenericRecord, initialPath: ObjectPath | string): unknown | undefined => {
@@ -164,7 +165,7 @@ export const applyPathValue = (object: GenericRecord, initialPath: ObjectPath | 
     let current: any = draft
 
     for (let i = 0; i < path.path.length; i++) {
-      const key = path.path[i]
+      const key = path.path[i]!
       const isLastKey = i === path.path.length - 1
 
       if (isPrimitive(current)) {
@@ -172,7 +173,7 @@ export const applyPathValue = (object: GenericRecord, initialPath: ObjectPath | 
       }
 
       if (Array.isArray(current)) {
-        if (!Maths.isNumber(key)) {
+        if (!isNumber(key)) {
           return
         }
 

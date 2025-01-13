@@ -1,4 +1,3 @@
-import * as React from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import MuiCard from '@mui/material/Card'
@@ -14,6 +13,7 @@ import { styled } from '@mui/material/styles'
 import { FacebookIcon, GoogleIcon } from './AuthIcons'
 import { ForgotPasswordModal } from '@simulacrum/ui/auth/ForgotPasswordModal'
 import Image from 'next/image'
+import { FormEvent, useState } from 'react'
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -32,11 +32,11 @@ const Card = styled(MuiCard)(({ theme }) => ({
 }))
 
 export const LoginCard = () => {
-  const [emailError, setEmailError] = React.useState(false)
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('')
-  const [passwordError, setPasswordError] = React.useState(false)
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('')
-  const [open, setOpen] = React.useState(false)
+  const [emailError, setEmailError] = useState(false)
+  const [emailErrorMessage, setEmailErrorMessage] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('')
+  const [open, setOpen] = useState(false)
 
   const handleClickOpen = () => {
     setOpen(true)
@@ -46,7 +46,7 @@ export const LoginCard = () => {
     setOpen(false)
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     if (emailError || passwordError) {
       event.preventDefault()
       return

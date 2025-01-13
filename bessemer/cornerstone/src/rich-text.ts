@@ -1,5 +1,5 @@
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Objects } from '@bessemer/cornerstone/index'
+import { Objects } from '@bessemer/cornerstone'
 
 // These are to match TipTap types, but without us having to depend on the TipTap library
 export type RichTextJson = {
