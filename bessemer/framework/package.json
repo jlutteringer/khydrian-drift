@@ -24,7 +24,7 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/cornerstone": "*",
-    "@bessemer/react": "*"
+    "@bessemer/cornerstone": "workspace:*",
+    "@bessemer/react": "workspace:*"
   }
 }

@@ -23,7 +23,7 @@
     "prettier-fix": "prettier --write .",
     "clean": "rm -rf dist && rm -rf .turbo"
   },
-  "peerDependencies": {
+  "dependencies": {
     "immer": "10.1.1",
     "lodash-es": "4.17.21",
     "pino": "9.6.0"

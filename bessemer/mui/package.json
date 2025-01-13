@@ -24,9 +24,7 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/react": "*"
-  },
-  "peerDependencies": {
+    "@bessemer/react": "workspace:*",
     "@emotion/cache": "11.14.0",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",

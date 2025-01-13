@@ -393,47 +393,45 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bessemer/core@npm:*, @bessemer/core@workspace:bessemer/core":
+"@bessemer/core@workspace:*, @bessemer/core@workspace:bessemer/core":
   version: 0.0.0-use.local
   resolution: "@bessemer/core@workspace:bessemer/core"
   dependencies:
-    "@bessemer/framework": "npm:*"
-  peerDependencies:
-    "@tiptap/core": 2.11.0
-    "@tiptap/html": 2.11.0
-    "@tiptap/pm": 2.11.0
-    "@tiptap/starter-kit": 2.11.0
-    next: 15.1.2
+    "@bessemer/framework": "workspace:*"
+    "@tiptap/core": "npm:2.11.0"
+    "@tiptap/html": "npm:2.11.0"
+    "@tiptap/pm": "npm:2.11.0"
+    "@tiptap/starter-kit": "npm:2.11.0"
+    next: "npm:15.1.2"
   languageName: unknown
   linkType: soft
 
-"@bessemer/cornerstone@npm:*, @bessemer/cornerstone@workspace:bessemer/cornerstone":
+"@bessemer/cornerstone@workspace:*, @bessemer/cornerstone@workspace:bessemer/cornerstone":
   version: 0.0.0-use.local
   resolution: "@bessemer/cornerstone@workspace:bessemer/cornerstone"
   dependencies:
     "@types/lodash-es": "npm:4.17.12"
+    immer: "npm:10.1.1"
+    lodash-es: "npm:4.17.21"
+    pino: "npm:9.6.0"
     pino-pretty: "npm:13.0.0"
-  peerDependencies:
-    immer: 10.1.1
-    lodash-es: 4.17.21
-    pino: 9.6.0
   languageName: unknown
   linkType: soft
 
-"@bessemer/foundry@npm:*, @bessemer/foundry@workspace:bessemer/foundry":
+"@bessemer/foundry@workspace:*, @bessemer/foundry@workspace:bessemer/foundry":
   version: 0.0.0-use.local
   resolution: "@bessemer/foundry@workspace:bessemer/foundry"
   dependencies:
-    "@bessemer/core": "npm:*"
+    "@bessemer/core": "workspace:*"
   languageName: unknown
   linkType: soft
 
-"@bessemer/framework@npm:*, @bessemer/framework@workspace:bessemer/framework":
+"@bessemer/framework@workspace:*, @bessemer/framework@workspace:bessemer/framework":
   version: 0.0.0-use.local
   resolution: "@bessemer/framework@workspace:bessemer/framework"
   dependencies:
-    "@bessemer/cornerstone": "npm:*"
-    "@bessemer/react": "npm:*"
+    "@bessemer/cornerstone": "workspace:*"
+    "@bessemer/react": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -441,32 +439,30 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@bessemer/mui@workspace:bessemer/mui"
   dependencies:
-    "@bessemer/react": "npm:*"
-  peerDependencies:
-    "@emotion/cache": 11.14.0
-    "@emotion/react": 11.14.0
-    "@emotion/styled": 11.14.0
-    "@mui/icons-material": 6.2.1
-    "@mui/lab": 6.0.0-beta.20
-    "@mui/material": 6.2.1
-    "@mui/material-nextjs": 6.2.1
+    "@bessemer/react": "workspace:*"
+    "@emotion/cache": "npm:11.14.0"
+    "@emotion/react": "npm:11.14.0"
+    "@emotion/styled": "npm:11.14.0"
+    "@mui/icons-material": "npm:6.2.1"
+    "@mui/lab": "npm:6.0.0-beta.20"
+    "@mui/material": "npm:6.2.1"
+    "@mui/material-nextjs": "npm:6.2.1"
   languageName: unknown
   linkType: soft
 
-"@bessemer/react@npm:*, @bessemer/react@workspace:bessemer/react":
+"@bessemer/react@workspace:*, @bessemer/react@workspace:bessemer/react":
   version: 0.0.0-use.local
   resolution: "@bessemer/react@workspace:bessemer/react"
   dependencies:
-    "@bessemer/cornerstone": "npm:*"
+    "@bessemer/cornerstone": "workspace:*"
+    "@tanstack/react-query": "npm:5.62.15"
     "@types/react": "npm:19.0.3"
     "@types/react-dom": "npm:19.0.0"
-  peerDependencies:
-    "@tanstack/react-query": 5.62.15
-    react: 19.0.0
-    react-dom: 19.0.0
-    react-hook-form: 7.54.2
-    rsc-env: 0.0.2
-    server-only: 0.0.1
+    react: "npm:19.0.0"
+    react-dom: "npm:19.0.0"
+    react-hook-form: "npm:7.54.2"
+    rsc-env: "npm:0.0.2"
+    server-only: "npm:0.0.1"
   languageName: unknown
   linkType: soft
 
@@ -5539,6 +5535,8 @@ __metadata:
     "@babel/runtime": "npm:7.26.0"
     "@types/jest": "npm:29.5.14"
     "@types/node": "npm:22.10.5"
+    "@types/react": "npm:19.0.3"
+    "@types/react-dom": "npm:19.0.0"
     babel-jest: "npm:29.7.0"
     jest: "npm:29.7.0"
     prettier: "npm:2.7.1"
@@ -5728,28 +5726,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "simulacrum@workspace:apps/simulacrum"
   dependencies:
-    "@bessemer/foundry": "npm:*"
-    "@emotion/cache": "npm:11.14.0"
-    "@emotion/react": "npm:11.14.0"
-    "@emotion/styled": "npm:11.14.0"
-    "@mui/icons-material": "npm:6.2.1"
-    "@mui/lab": "npm:6.0.0-beta.20"
-    "@mui/material": "npm:6.2.1"
-    "@mui/material-nextjs": "npm:6.2.1"
-    "@tanstack/react-query": "npm:5.62.15"
-    "@tiptap/core": "npm:2.11.0"
-    "@tiptap/html": "npm:2.11.0"
-    "@tiptap/pm": "npm:2.11.0"
-    "@tiptap/starter-kit": "npm:2.11.0"
-    immer: "npm:10.1.1"
-    lodash-es: "npm:4.17.21"
-    next: "npm:15.1.2"
-    pino: "npm:9.6.0"
-    react: "npm:19.0.0"
-    react-dom: "npm:19.0.0"
-    react-hook-form: "npm:7.54.2"
-    rsc-env: "npm:0.0.2"
-    server-only: "npm:0.0.1"
+    "@bessemer/foundry": "workspace:*"
+    "@bessemer/react": "workspace:*"
   languageName: unknown
   linkType: soft
 

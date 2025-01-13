@@ -7,6 +7,5 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  outDir: 'dist',
-  external: ['@bessemer/core']
+  outDir: 'dist'
 })

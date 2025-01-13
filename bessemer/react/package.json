@@ -24,9 +24,7 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/cornerstone": "*"
-  },
-  "peerDependencies": {
+    "@bessemer/cornerstone": "workspace:*",
     "@tanstack/react-query": "5.62.15",
     "react": "19.0.0",
     "react-dom": "19.0.0",

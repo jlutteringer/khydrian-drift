@@ -1,7 +1,6 @@
 import { GenericRecord } from '@bessemer/cornerstone/types'
 import { evaluate, LazyValue } from '@bessemer/cornerstone/lazy'
 import { isUndefined } from '@bessemer/cornerstone/object'
-import { NonUndefined } from 'react-hook-form'
 
 export type GlobalVariable<T> = {
   getValue: () => T
@@ -23,7 +22,7 @@ if (isUndefined(Global.BessemerGlobalVariables)) {
   Global.BessemerGlobalVariables = {}
 }
 
-export const createGlobalVariable = <T>(key: string, defaultValue: LazyValue<NonUndefined<T>>): GlobalVariable<T> => {
+export const createGlobalVariable = <T>(key: string, defaultValue: LazyValue<T>): GlobalVariable<T> => {
   return {
     getValue: () => {
       const value = Global.BessemerGlobalVariables[key] as T | undefined
