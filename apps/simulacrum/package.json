@@ -5,8 +5,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "dev-turbo": "next build",
-    "build-turbo": "next build",
     "start": "next start",
     "lint": "next lint",
     "prettier-fix": "prettier --write .",

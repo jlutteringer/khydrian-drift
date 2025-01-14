@@ -4,9 +4,9 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   // transpilePackages: ['@bessemer/cornerstone', '@bessemer/react', '@bessemer/mui', '@bessemer/framework', '@bessemer/core', '@bessemer/foundry'],
   // outputFileTracingRoot: path.join(__dirname, '../../'),
-  // typescript: {
-  //   tsconfigPath: './tsconfig.build.json'
-  // },
+  typescript: (process.env.NODE_ENV === 'production') ? {
+    tsconfigPath: './tsconfig.build.json'
+  } : {},
 
   // serverExternalPackages: ['pino'],
 
