@@ -1,11 +1,4 @@
 import { defineConfig } from 'tsup'
+import { Config } from '../tsup.base.js'
 
-export default defineConfig({
-  tsconfig: 'tsconfig.build.json',
-  entry: ['src'],
-  format: ['esm'],
-  dts: true,
-  sourcemap: true,
-  clean: true,
-  outDir: 'dist',
-})
+export default defineConfig(Config)

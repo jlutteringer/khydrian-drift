@@ -16,6 +16,8 @@ import {
 import { produce } from 'immer'
 import { GenericRecord, NominalType, Primitive } from '@bessemer/cornerstone/types'
 
+console.log('========= LOADING LOADING LOADING LOADING LOADING LOADING LOADING LOADING LOADING =========')
+
 export const update: typeof produce = produce
 
 export const isUndefined = _isUndefined

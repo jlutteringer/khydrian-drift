@@ -430,7 +430,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@bessemer/framework@workspace:bessemer/framework"
   dependencies:
-    "@bessemer/cornerstone": "workspace:*"
     "@bessemer/react": "workspace:*"
   languageName: unknown
   linkType: soft
@@ -5727,7 +5726,6 @@ __metadata:
   resolution: "simulacrum@workspace:apps/simulacrum"
   dependencies:
     "@bessemer/foundry": "workspace:*"
-    "@bessemer/react": "workspace:*"
   languageName: unknown
   linkType: soft
 
