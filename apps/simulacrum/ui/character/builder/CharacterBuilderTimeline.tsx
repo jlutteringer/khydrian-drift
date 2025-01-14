@@ -1,4 +1,12 @@
-import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from '@mui/lab'
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineOppositeContent,
+  TimelineSeparator
+} from '@mui/lab'
 import Typography from '@mui/material/Typography'
 import * as React from 'react'
 import { use } from 'react'
@@ -17,11 +25,11 @@ import {
   EffectTypeEnum,
   GainAbilityEffect,
   GainResourcePoolEffect,
-  GainTraitEffect,
+  GainTraitEffect
 } from '@simulacrum/common/effect'
 import { SvgIconOwnProps } from '@mui/material/SvgIcon/SvgIcon'
 import { ApplicationContext } from '@simulacrum/common/application'
-import { Bessemer } from '@bessemer/framework'
+import { BessemerNext } from '@bessemer/framework-next'
 
 export const CharacterBuilderTimeline = ({ characterBuilder }: { characterBuilder: CharacterBuilderState }) => {
   return (
@@ -51,7 +59,7 @@ const CharacterBuilderTimelineEntry = ({
   level: number
   characterBuilder: CharacterBuilderState
 }) => {
-  const application = use(Bessemer.getApplication<ApplicationContext>())
+  const application = use(BessemerNext.getApplication<ApplicationContext>())
 
   let timeLineContentHeader = <></>
   if (Objects.isPresent(entry.option)) {
@@ -157,7 +165,7 @@ const EffectIcon = (props: { effect: Effect } & SvgIconOwnProps) => {
 }
 
 const EffectLabel = ({ effect }: { effect: Effect }) => {
-  const context = use(Bessemer.getApplication<ApplicationContext>())
+  const context = use(BessemerNext.getApplication<ApplicationContext>())
 
   switch (effect.type) {
     case EffectTypeEnum.Descriptive:
@@ -183,7 +191,7 @@ const EffectLabel = ({ effect }: { effect: Effect }) => {
 
 // TODO this could be more efficient
 const EffectSourceLabel = ({ source, level }: { source: EffectSource; level: number }) => {
-  const context = use(Bessemer.getApplication<ApplicationContext>())
+  const context = use(BessemerNext.getApplication<ApplicationContext>())
 
   switch (source.type) {
     case EffectSourceType.Ruleset:

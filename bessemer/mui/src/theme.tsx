@@ -3,7 +3,6 @@ import { createTheme } from '@mui/material/styles'
 
 export type MuiTheme = Parameters<typeof createTheme>[0]
 
-// JOHN
 const LinkBehaviour = ({ ref, ...props}: any)=> {
   return (
     <NextLink
@@ -22,12 +21,12 @@ export const DefaultTheme: MuiTheme = {
   components: {
     MuiLink: {
       defaultProps: {
-        // component: LinkBehaviour,
+        component: LinkBehaviour,
       },
     },
     MuiButtonBase: {
       defaultProps: {
-        // LinkComponent: LinkBehaviour,
+        LinkComponent: LinkBehaviour,
       },
     },
   },

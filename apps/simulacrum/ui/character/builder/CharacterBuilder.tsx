@@ -6,7 +6,7 @@ import { ContentLabel } from '@bessemer/core/codex/component/ContentLabel'
 
 // TODO
 export const CharacterBuilder = () => {
-  // const application = use(Bessemer.getApplication<ApplicationContext>())
+  // const application = use(BessemerNext.getApplication<ApplicationContext>())
   // let character = Characters.buildCharacterDefinition(TestHarness.CommonerLevel3, application)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectClassLevel, Fighter), context)
   // character = Characters.selectOption(character, CharacterOptions.buildSelection(SelectFightingStyle, Archery), context)

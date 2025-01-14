@@ -8,8 +8,7 @@ import {
 } from '@bessemer/framework'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
 import { Loggers, Objects, Preconditions, Properties, Tags } from '@bessemer/cornerstone'
-import { RscRuntimes, ServerContexts } from '@bessemer/react'
-import { ServerContext } from '@bessemer/react/server-context'
+import { RscRuntimes } from '@bessemer/react'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { Tag } from '@bessemer/cornerstone/tag'
 
@@ -52,31 +51,18 @@ export const configure = <ApplicationContext extends BessemerApplicationContext,
   applicationProvider.configure(options)
 }
 
-const context: ServerContext<BessemerInstance<BessemerApplicationContext, BessemerOptions>> = ServerContexts.create()
-
-export const getInstance = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
-  tags?: Array<Tag>
-): Promise<BessemerInstance<ApplicationContext, ApplicationOptions>> => {
-  const response = (await context.fetchValue(() => initializeBessemer(tags))) as BessemerInstance<ApplicationContext, ApplicationOptions>
-  return response
-}
-
-export const getApplication = async <ApplicationContext extends BessemerApplicationContext>(tags?: Array<Tag>): Promise<ApplicationContext> => {
-  Preconditions.isTrue(RscRuntimes.isServer)
-
-  const { context } = await getInstance<ApplicationContext, BessemerOptions>(tags)
-  return context
-}
-
-const initializeBessemer = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
-  additionalTags: Array<Tag> = []
-): Promise<BessemerInstance<ApplicationContext, ApplicationOptions>> => {
+const getConfiguration = <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(): BessemerConfiguration<ApplicationContext, ApplicationOptions> => {
   Preconditions.isTrue(RscRuntimes.isServer)
 
   const configuration = GlobalConfigurationState.getValue()
   Preconditions.isPresent(configuration, 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')
+  return configuration
+}
 
-  const { applicationProvider, runtimeProvider, properties } = configuration as BessemerConfiguration<ApplicationContext, ApplicationOptions>
+export const initialize = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
+  additionalTags: Array<Tag> = []
+): Promise<BessemerInstance<ApplicationContext, ApplicationOptions>> => {
+  const { applicationProvider, runtimeProvider, properties } = getConfiguration<ApplicationContext, ApplicationOptions>()
   const tags = [...applicationProvider.globalTags(), ...(await applicationProvider.applicationTags()), ...additionalTags]
   logger.info(() => `Initializing Application with tags: ${JSON.stringify(tags)}`)
 

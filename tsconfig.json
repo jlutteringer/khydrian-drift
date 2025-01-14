@@ -10,6 +10,8 @@
       "@bessemer/mui/*": ["./bessemer/mui/src/*"],
       "@bessemer/framework": ["./bessemer/framework/src"],
       "@bessemer/framework/*": ["./bessemer/framework/src/*"],
+      "@bessemer/framework-next": ["./bessemer/framework-next/src"],
+      "@bessemer/framework-next/*": ["./bessemer/framework-next/src/*"],
       "@bessemer/core": ["./bessemer/core/src"],
       "@bessemer/core/*": ["./bessemer/core/src/*"],
       "@bessemer/foundry": ["./bessemer/foundry/src"],

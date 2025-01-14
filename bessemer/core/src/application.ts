@@ -1,19 +1,17 @@
 import { CodexOptions, CodexRuntime } from '@bessemer/core/codex'
 import { InternationalizationOptions } from '@bessemer/core/internationalization'
-import {
-  ApplicationRuntimeType,
-  BessemerApplicationContext,
-  BessemerApplicationModule,
-  BessemerClientContext,
-  BessemerOptions,
-  ClientContextType
-} from '@bessemer/framework'
+import { ApplicationRuntimeType, BessemerApplicationModule, ClientContextType } from '@bessemer/framework'
 import { Arrays, Objects } from '@bessemer/cornerstone'
 import { Tiptap } from '@bessemer/core'
 import { TiptapExtension } from '@bessemer/core/tiptap'
-import { BaseApplicationModule } from '@bessemer/framework/application'
+import {
+  BessemerNextApplicationContext,
+  BessemerNextApplicationModule,
+  BessemerNextClientContext,
+  BessemerNextOptions
+} from '@bessemer/framework-next/application'
 
-export type CoreOptions = BessemerOptions & {
+export type CoreOptions = BessemerNextOptions & {
   codex?: CodexOptions
   tiptapExtensions?: Array<TiptapExtension>
 
@@ -22,7 +20,7 @@ export type CoreOptions = BessemerOptions & {
   }
 }
 
-export type CoreApplicationContext = BessemerApplicationContext & {
+export type CoreApplicationContext = BessemerNextApplicationContext & {
   codex?: CodexOptions
   tiptapExtensions: Array<TiptapExtension>
 
@@ -34,17 +32,17 @@ export type CoreApplicationContext = BessemerApplicationContext & {
   }
 }
 
-export type CoreClientContext = BessemerClientContext &
+export type CoreClientContext = BessemerNextClientContext &
   ClientContextType<CoreApplicationContext> & {
   pathname: string
 }
 
 export const CoreApplicationModule: BessemerApplicationModule<CoreApplicationContext, CoreOptions> = {
-  globalTags: BaseApplicationModule.globalTags,
-  configure: BaseApplicationModule.configure,
-  applicationTags: BaseApplicationModule.applicationTags,
+  globalTags: BessemerNextApplicationModule.globalTags,
+  configure: BessemerNextApplicationModule.configure,
+  applicationTags: BessemerNextApplicationModule.applicationTags,
   initializeApplication: async (options: CoreOptions, runtime: ApplicationRuntimeType<CoreApplicationContext>): Promise<CoreApplicationContext> => {
-    const baseApplication = await BaseApplicationModule.initializeApplication(options, runtime)
+    const baseApplication = await BessemerNextApplicationModule.initializeApplication(options, runtime)
 
     const application = Objects.merge(baseApplication, {
       codex: options.codex && {

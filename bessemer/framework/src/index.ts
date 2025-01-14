@@ -1,22 +1,16 @@
 import * as Bessemer from '@bessemer/framework/bessemer'
 import * as Environments from '@bessemer/framework/environment'
 import { Environment } from '@bessemer/framework/environment'
-import * as Routes from '@bessemer/framework/route'
-import { RouteErrorHandler } from '@bessemer/framework/route'
 import * as Contexts from '@bessemer/framework/context'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
 import { LoggerOptions } from '@bessemer/cornerstone/logger'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { Tag } from '@bessemer/cornerstone/tag'
 
-// JOHN @bessemer/framework should not depend on React
-export { Bessemer, Routes, Environments, Contexts }
+export { Bessemer, Environments, Contexts }
 
 export type BessemerOptions = {
   logger?: LoggerOptions
-  route?: {
-    errorHandler?: RouteErrorHandler<any>
-  }
   public?: {}
 }
 
@@ -25,10 +19,6 @@ export type PublicOptions<T extends BessemerOptions> = T['public'] & {}
 export type PublicProperties<T extends BessemerOptions> = PropertyRecord<PublicOptions<T>>
 
 export type BessemerApplicationContext = AbstractApplicationContext & {
-  route: {
-    // TODO add some notion of middleware/interceptors/filters as well maybe?
-    errorHandler: RouteErrorHandler
-  }
   client: {
     environment: Environment
     tags: Array<Tag>

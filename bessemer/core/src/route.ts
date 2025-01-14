@@ -1,4 +1,4 @@
-import { RouteErrorHandler } from '@bessemer/framework/route'
+import { RouteErrorHandler } from '@bessemer/framework-next/route'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import { ErrorEvents, Loggers, Objects, Strings } from '@bessemer/cornerstone'
 import { Codex, Tiptap } from '@bessemer/core/index'

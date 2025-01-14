@@ -1,5 +1,4 @@
 import { ContentData, ContentKey, ContentType } from '@bessemer/cornerstone/content'
-import { Bessemer } from '@bessemer/framework'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import { Codex, CodexClient } from '@bessemer/core'
 import { useQuery } from '@tanstack/react-query'
@@ -7,6 +6,7 @@ import { RscRuntimes } from '@bessemer/react'
 import { FetchContentOptions } from '@bessemer/core/codex'
 import { AsyncValue } from '@bessemer/cornerstone/async'
 import { useAsync } from '@bessemer/react/hook/use-async'
+import { BessemerNext } from '@bessemer/framework-next'
 
 export const useFetchContent = <Type extends ContentType>(
   key: ContentKey,
@@ -14,7 +14,7 @@ export const useFetchContent = <Type extends ContentType>(
 ): AsyncValue<ContentData<Type> | undefined> => {
   if (RscRuntimes.isServer) {
     return useAsync(async () => {
-      const application = await Bessemer.getApplication<CoreApplicationContext>()
+      const application = await BessemerNext.getApplication<CoreApplicationContext>()
       const content = await Codex.fetchContentByKey(key, application, options)
       return content
     })

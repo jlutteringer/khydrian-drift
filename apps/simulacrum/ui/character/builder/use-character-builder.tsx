@@ -8,7 +8,7 @@ import { CharacterChoice } from '@simulacrum/common/character/character-option'
 import { Objects, Preconditions } from '@bessemer/cornerstone'
 import { Expressions } from '@bessemer/cornerstone/expression'
 import { ApplicationContext } from '@simulacrum/common/application'
-import { Bessemer } from '@bessemer/framework'
+import { BessemerNext } from '@bessemer/framework-next'
 
 export type CharacterBuilderProps = {
   character: CharacterRecord
@@ -23,7 +23,7 @@ export type CharacterBuilderState = {
 }
 
 export const useCharacterBuilder = ({ character }: CharacterBuilderProps): CharacterBuilderState => {
-  const application = use(Bessemer.getApplication<ApplicationContext>())
+  const application = use(BessemerNext.getApplication<ApplicationContext>())
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterRecord>(character)
   const [selectedEntryKey, setSelectedEntryKey] = useState<string | null>(null)
 

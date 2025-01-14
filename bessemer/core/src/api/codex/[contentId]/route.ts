@@ -1,4 +1,4 @@
-import { Routes } from '@bessemer/framework'
+import { Routes } from '@bessemer/framework-next'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import { Codex } from '@bessemer/core'
 import { Objects } from '@bessemer/cornerstone'

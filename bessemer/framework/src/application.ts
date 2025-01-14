@@ -19,13 +19,10 @@ export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicatio
     return []
   },
   initializeApplication: async (
-    options: BessemerOptions,
+    _: BessemerOptions,
     runtime: ApplicationRuntimeType<BessemerApplicationContext>
   ): Promise<BessemerApplicationContext> => {
     const application: BessemerApplicationContext = {
-      route: {
-        errorHandler: options.route?.errorHandler ?? null!,
-      },
       client: {
         environment: Environments.getEnvironment(),
         tags: [],

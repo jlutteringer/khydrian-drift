@@ -1,8 +1,14 @@
-import { ContentData, ContentDisplayType, ContentDisplayTypes, ContentKey, ContentTypeConstructor } from '@bessemer/cornerstone/content'
+import {
+  ContentData,
+  ContentDisplayType,
+  ContentDisplayTypes,
+  ContentKey,
+  ContentTypeConstructor
+} from '@bessemer/cornerstone/content'
 import { FetchContentOptions } from '@bessemer/core/codex'
 import { useFetchContent } from '@bessemer/core/codex/hooks/use-fetch-content'
 import { Arrays, Async, Objects } from '@bessemer/cornerstone'
-import { useBessemerCommonContext } from '@bessemer/framework/hooks/use-common-context'
+import { useBessemerCommonContext } from '@bessemer/framework-next/hooks/use-common-context'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import { ReactNode } from 'react'
 

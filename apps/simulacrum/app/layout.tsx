@@ -5,13 +5,16 @@ import Head from 'next/head'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter'
 import { Roboto } from 'next/font/google'
 import { CssBaseline } from '@mui/material'
-import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext, ApplicationModule, ApplicationOptions } from '@simulacrum/common/application'
 import { ClientApplicationProvider } from '@simulacrum/ui/application/use-client-context'
 import { ReactNode, use } from 'react'
 import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { ApplicationProperties } from '@simulacrum/common/application/properties'
 import { QueryClientProvider } from '@simulacrum/app/QueryClientProvider'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '@simulacrum/ui/theme'
+import { Bessemer } from '@bessemer/framework'
+import { BessemerNext } from '@bessemer/framework-next'
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -37,7 +40,7 @@ const RootLayout = ({
 }: Readonly<{
   children: ReactNode
 }>) => {
-  const { clientProps } = use(Bessemer.getInstance<ApplicationContext, ApplicationOptions>())
+  const { clientProps } = use(BessemerNext.getInstance<ApplicationContext, ApplicationOptions>())
 
   return (
     <html lang="en">
@@ -61,10 +64,10 @@ const RootLayout = ({
         <QueryClientProvider>
           <ClientApplicationProvider props={clientProps}>
             <AppRouterCacheProvider>
-              {/*<ThemeProvider theme={theme}>*/}
+              <ThemeProvider theme={theme}>
                 <CssBaseline />
                 {children}
-              {/*</ThemeProvider>*/}
+              </ThemeProvider>
             </AppRouterCacheProvider>
           </ClientApplicationProvider>
         </QueryClientProvider>

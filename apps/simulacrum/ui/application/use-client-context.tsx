@@ -5,7 +5,7 @@ import { ApplicationClientModule } from '@simulacrum/common/application/client'
 import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
 import { BessemerClientProps } from '@bessemer/framework/bessemer'
 import { ApplicationContext, ApplicationOptions, ClientContext } from '@simulacrum/common/application'
-import { BessemerClientProvider, useBessemerClientContext } from '@bessemer/framework/hooks/use-client-context'
+import { BessemerClientProvider, useBessemerClientContext } from '@bessemer/framework-next/hooks/use-client-context'
 
 export const ClientApplicationProvider = ({
   props,

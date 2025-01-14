@@ -1,9 +1,9 @@
 import { use } from 'react'
-import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext } from '@simulacrum/common/application'
+import { BessemerNext } from '@bessemer/framework-next'
 
 const CampaignsPage = () => {
-  const application = use(Bessemer.getApplication<ApplicationContext>())
+  const application = use(BessemerNext.getApplication<ApplicationContext>())
   return <div>Page Under Construction</div>
 }
 

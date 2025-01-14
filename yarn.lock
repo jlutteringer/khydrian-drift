@@ -397,12 +397,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@bessemer/core@workspace:bessemer/core"
   dependencies:
-    "@bessemer/framework": "workspace:*"
+    "@bessemer/framework-next": "workspace:*"
     "@tiptap/core": "npm:2.11.0"
     "@tiptap/html": "npm:2.11.0"
     "@tiptap/pm": "npm:2.11.0"
     "@tiptap/starter-kit": "npm:2.11.0"
-    next: "npm:15.1.2"
   languageName: unknown
   linkType: soft
 
@@ -426,11 +425,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@bessemer/framework-next@workspace:*, @bessemer/framework-next@workspace:bessemer/framework-next":
+  version: 0.0.0-use.local
+  resolution: "@bessemer/framework-next@workspace:bessemer/framework-next"
+  dependencies:
+    "@bessemer/framework": "workspace:*"
+    "@bessemer/react": "workspace:*"
+    next: "npm:15.1.2"
+  languageName: unknown
+  linkType: soft
+
 "@bessemer/framework@workspace:*, @bessemer/framework@workspace:bessemer/framework":
   version: 0.0.0-use.local
   resolution: "@bessemer/framework@workspace:bessemer/framework"
   dependencies:
-    "@bessemer/react": "workspace:*"
+    "@bessemer/cornerstone": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -460,9 +469,8 @@ __metadata:
     react: "npm:19.0.0"
     react-dom: "npm:19.0.0"
     react-hook-form: "npm:7.54.2"
+    rsc-env: "npm:0.0.2"
     server-only: "npm:0.0.1"
-  peerDependencies:
-    rsc-env: 0.0.2
   languageName: unknown
   linkType: soft
 
@@ -5727,7 +5735,6 @@ __metadata:
   resolution: "simulacrum@workspace:apps/simulacrum"
   dependencies:
     "@bessemer/foundry": "workspace:*"
-    rsc-env: "npm:0.0.2"
   languageName: unknown
   linkType: soft
 

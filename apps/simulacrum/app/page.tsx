@@ -1,6 +1,5 @@
 import Image from 'next/image'
 import React, { use } from 'react'
-import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext } from '@simulacrum/common/application'
 import { CharacterRecord } from '@simulacrum/common/character/character'
 import { ProgressionTables } from '@simulacrum/common'
@@ -12,9 +11,10 @@ import Link from '@mui/material/Link'
 import Button from '@mui/material/Button'
 import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
 import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
+import { BessemerNext } from '@bessemer/framework-next'
 
 export default function Home() {
-  const application = use(Bessemer.getApplication<ApplicationContext>())
+  const application = use(BessemerNext.getApplication<ApplicationContext>())
   let character: CharacterRecord = {
     name: 'Bob the Fighter',
     level: 3,

@@ -23,11 +23,10 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/framework": "workspace:*",
+    "@bessemer/framework-next": "workspace:*",
     "@tiptap/core": "2.11.0",
     "@tiptap/html": "2.11.0",
     "@tiptap/pm": "2.11.0",
-    "@tiptap/starter-kit": "2.11.0",
-    "next": "15.1.2"
+    "@tiptap/starter-kit": "2.11.0"
   }
 }

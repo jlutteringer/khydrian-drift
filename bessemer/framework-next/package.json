@@ -1,5 +1,5 @@
 {
-  "name": "@bessemer/framework",
+  "name": "@bessemer/framework-next",
   "type": "module",
   "version": "0.0.0",
   "main": "./dist/index.cjs",
@@ -23,6 +23,8 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/cornerstone": "workspace:*"
+    "@bessemer/framework": "workspace:*",
+    "@bessemer/react": "workspace:*",
+    "next": "15.1.2"
   }
 }
