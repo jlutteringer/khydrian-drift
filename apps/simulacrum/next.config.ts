@@ -2,13 +2,11 @@ import type { NextConfig } from 'next'
 
 // JOHN
 const nextConfig: NextConfig = {
-  // transpilePackages: ['@bessemer/cornerstone', '@bessemer/react', '@bessemer/mui', '@bessemer/framework', '@bessemer/core', '@bessemer/foundry'],
-  // outputFileTracingRoot: path.join(__dirname, '../../'),
   typescript: (process.env.NODE_ENV === 'production') ? {
     tsconfigPath: './tsconfig.build.json'
   } : {},
 
-  // serverExternalPackages: ['pino'],
+  serverExternalPackages: ['pino'],
 
   webpack: (config) => {
     config.resolve.extensionAlias = {

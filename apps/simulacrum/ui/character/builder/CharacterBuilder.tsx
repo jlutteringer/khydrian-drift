@@ -2,6 +2,7 @@ import Grid from '@mui/material/Grid2'
 import * as React from 'react'
 import Box from '@mui/material/Box'
 import { StandardPageHeader } from '@simulacrum/ui/layout/StandardPageHeader'
+import { ContentLabel } from '@bessemer/core/codex/component/ContentLabel'
 
 // TODO
 export const CharacterBuilder = () => {
@@ -18,12 +19,10 @@ export const CharacterBuilder = () => {
     <Box>
       <StandardPageHeader
         title={
-        'TODO'
-        // JOHN
-          // <ContentLabel
-          //   contentKey="character-builder.title"
-          //   defaultValue="Character Builder"
-          // />
+          <ContentLabel
+            contentKey="character-builder.title"
+            defaultValue="Character Builder"
+          />
         }
       />
 

@@ -17,7 +17,6 @@ export const ofMilliseconds = (value: Millisecond) => {
 }
 
 export const inMilliseconds = (duration: Duration) => {
-  console.log('Hello.')
   return duration.value
 }
 

@@ -5,6 +5,7 @@ import {
   BessemerOptions,
   Environments
 } from '@bessemer/framework'
+import { Loggers } from '@bessemer/cornerstone'
 
 export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicationContext, BessemerOptions> = {
   globalTags: () => {
@@ -12,8 +13,7 @@ export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicatio
   },
   // TODO I can start to see the importance of a global context... lots of stuff that probably doesn't need to vary on profile
   configure: (options: BessemerOptions): void => {
-    // JOHN
-    // Loggers.configure(options.logger)
+    Loggers.configure(options.logger)
   },
   applicationTags: async () => {
     return []

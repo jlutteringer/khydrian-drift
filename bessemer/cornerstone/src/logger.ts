@@ -1,16 +1,15 @@
-// import pino from 'pino'
+import pino from 'pino'
 import { Lazy, Objects } from '@bessemer/cornerstone'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { LazyValue } from '@bessemer/cornerstone/lazy'
 import { GenericRecord } from '@bessemer/cornerstone/types'
 
-// JOHN
-// export type PinoLogger = pino.Logger
-// export type PinoBindings = pino.Bindings
-// export type LoggerOptions = pino.LoggerOptions
-export type PinoLogger = any
-export type PinoBindings = any
-export type LoggerOptions = any
+export type PinoLogger = pino.Logger
+export type PinoBindings = pino.Bindings
+export type LoggerOptions = pino.LoggerOptions
+// export type PinoLogger = any
+// export type PinoBindings = any
+// export type LoggerOptions = any
 
 type LogOptions = { error?: unknown; context?: GenericRecord }
 type LogFunction = (message: LazyValue<string>, options?: LogOptions) => void
@@ -118,19 +117,11 @@ const createProxyHandler = (getLogger: () => PinoLogger): ProxyHandler<PinoLogge
 
 const GlobalLoggerState = createGlobalVariable<{
   version: number
-  logger: PinoLogger
+  logger: pino.Logger
 }>('GlobalLoggerState', () => ({
   version: 0,
-  logger: null!,
+  logger: pino(applyDefaultOptions({ level: 'info' })),
 }))
-// JOHN
-// const GlobalLoggerState = createGlobalVariable<{
-//   version: number
-//   logger: pino.Logger
-// }>('GlobalLoggerState', () => ({
-//   version: 0,
-//   logger: pino(applyDefaultOptions({ level: 'info' })),
-// }))
 
 const LoggerProxy: PinoLogger = new Proxy(
   {} as PinoLogger,
@@ -141,8 +132,7 @@ const Primary: Logger = new Logger(LoggerProxy)
 
 export const configure = (initialOptions?: LoggerOptions): void => {
   const options = applyDefaultOptions(initialOptions)
-  // JOHN
-  // GlobalLoggerState.setValue({ version: GlobalLoggerState.getValue().version++, logger: pino(options) })
+  GlobalLoggerState.setValue({ version: GlobalLoggerState.getValue().version++, logger: pino(options) })
 }
 
 export const child = (module: string): Logger => {

@@ -9,8 +9,8 @@
     "dev": "turbo watch build",
     "build": "turbo run build",
     "test": "turbo run test",
-    "clean": "turbo run clean && rm -rf node_modules && rm -rf .turbo",
-    "clean-cache": "rm -rf .turbo"
+    "clean": "turbo run clean && rm -rf .turbo",
+    "clean-install": "turbo run clean && rm -rf node_modules && rm -rf .turbo"
   },
   "devDependencies": {
     "@babel/core": "7.26.0",

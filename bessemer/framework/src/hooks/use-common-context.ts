@@ -1,11 +1,12 @@
-import { BessemerApplicationContext, ClientContextType } from '@bessemer/framework'
+import { Bessemer, BessemerApplicationContext, ClientContextType } from '@bessemer/framework'
+import { RscRuntimes } from '@bessemer/react'
+import { use } from 'react'
+import { useBessemerClientContext } from '@bessemer/framework/hooks/use-client-context'
 
 export const useBessemerCommonContext = <T extends BessemerApplicationContext>(): ClientContextType<T> => {
-  // JOHN
-  // if (RscRuntimes.isServer) {
-  //   return use(Bessemer.getApplication())
-  // } else {
-  //   return useBessemerClientContext()
-  // }
-  return null!
+  if (RscRuntimes.isServer) {
+    return use(Bessemer.getApplication())
+  } else {
+    return useBessemerClientContext()
+  }
 }

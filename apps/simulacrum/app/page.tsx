@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { use } from 'react'
+import React, { use } from 'react'
 import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext } from '@simulacrum/common/application'
 import { CharacterRecord } from '@simulacrum/common/character/character'
@@ -11,6 +11,7 @@ import { Fighter, Fighter2, Fighter3 } from '@simulacrum/rulesets/dnd-5e/class/c
 import Link from '@mui/material/Link'
 import Button from '@mui/material/Button'
 import { TestClientComponent } from '@simulacrum/app/TestClientComponent'
+import { TestServerComponent } from '@simulacrum/app/TestServerComponent'
 
 export default function Home() {
   const application = use(Bessemer.getApplication<ApplicationContext>())
@@ -43,8 +44,13 @@ export default function Home() {
       >
         This is a Mui Button that Links
       </Button>
-      <TestClientComponent />
-      {/*<TestServerComponent />*/}
+
+      <div>
+        <TestClientComponent />
+      </div>
+      <div>
+        <TestServerComponent />
+      </div>
 
       <main>
         <Image

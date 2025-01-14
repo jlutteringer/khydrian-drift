@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { createContext, PropsWithChildren, use } from 'react'
 import { BessemerClientProps } from '@bessemer/framework/bessemer'
@@ -12,9 +14,8 @@ import {
   DehydratedContextType
 } from '@bessemer/framework'
 import { Preconditions, Properties } from '@bessemer/cornerstone'
-import { RscRuntimes } from '@bessemer/react'
 
-const BessemerContext = !RscRuntimes.isServer ? createContext<BessemerClientContext | null>(null) : null!
+const BessemerContext = createContext<BessemerClientContext | null>(null)
 
 export function BessemerClientProvider<
   Application extends BessemerApplicationContext,

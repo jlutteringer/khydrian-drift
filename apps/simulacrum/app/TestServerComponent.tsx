@@ -1,6 +1,7 @@
 import { Bessemer } from '@bessemer/framework'
 import { ApplicationContext } from '@simulacrum/common/application'
 import { use } from 'react'
+import { ContentElement } from '@bessemer/core/codex/component/ContentElement'
 
 export const TestServerComponent = () => {
   // console.log('TestServerComponent')
@@ -10,6 +11,5 @@ export const TestServerComponent = () => {
   // console.log('application.test', application.client.runtime.test())
   // console.log('application.coreRuntimeTest', application.client.runtime.coreRuntimeTest())
   // console.log('application', application)
-  // return <ContentElement contentKey="test-content" />
-  return 'hello'
+  return <ContentElement contentKey="test-content-server" />
 }
