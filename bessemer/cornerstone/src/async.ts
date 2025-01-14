@@ -25,12 +25,11 @@ export type ErrorValue = {
   data: unknown
 }
 
-// JOHN grumble gruble really want fecting: true in this type...
 export type FetchingValueSuccess<T> = {
   isSuccess: true
   isError: false
   isLoading: false
-  isFetching: boolean
+  isFetching: true
   data: T
 }
 

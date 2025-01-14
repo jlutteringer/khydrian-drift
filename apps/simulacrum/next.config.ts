@@ -1,6 +1,5 @@
 import type { NextConfig } from 'next'
 
-// JOHN
 const nextConfig: NextConfig = {
   typescript: (process.env.NODE_ENV === 'production') ? {
     tsconfigPath: './tsconfig.build.json'
@@ -14,7 +13,6 @@ const nextConfig: NextConfig = {
       '.mjs': ['.mjs', '.mts']
     }
 
-    // config.externals.push({ 'thread-stream': 'commonjs thread-stream' })
     return config
   }
 }
