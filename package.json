@@ -6,8 +6,8 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "turbo run dev-turbo",
-    "build": "turbo run build-turbo",
+    "dev": "turbo watch build",
+    "build": "turbo run build",
     "test": "turbo run test",
     "clean": "turbo run clean && rm -rf node_modules && rm -rf .turbo",
     "clean-cache": "rm -rf .turbo"

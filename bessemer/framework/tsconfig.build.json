@@ -9,5 +9,5 @@
       "@bessemer/framework/*": ["src/*"]
     }
   },
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "node_modules", "test" ,"tsup.config.ts"]
 }

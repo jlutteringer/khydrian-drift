@@ -137,10 +137,10 @@ test('Patch Objects', () => {
     )
 
     expect(updatedPerson.residences.length).toEqual(2)
-    expect(updatedPerson.residences[0].name).toEqual('Winter Chalet')
-    expect(updatedPerson.residences[0].address.addressLine1).toEqual('Siberia')
-    expect(updatedPerson.residences[1].name).toEqual('Summer Palace')
-    expect(updatedPerson.residences[1].address.addressLine1).toEqual('Address Line 1 Changed!')
+    expect(updatedPerson.residences[0]!.name).toEqual('Winter Chalet')
+    expect(updatedPerson.residences[0]!.address.addressLine1).toEqual('Siberia')
+    expect(updatedPerson.residences[1]!.name).toEqual('Summer Palace')
+    expect(updatedPerson.residences[1]!.address.addressLine1).toEqual('Address Line 1 Changed!')
   }
 
   {
@@ -162,7 +162,7 @@ test('Patch Objects', () => {
       Expressions.defaultEvaluator()
     )
 
-    expect(updatedPerson.residences[1].address).toEqual({
+    expect(updatedPerson.residences[1]!.address).toEqual({
       addressLine1: 'Liberia',
       addressLine2: null,
     })

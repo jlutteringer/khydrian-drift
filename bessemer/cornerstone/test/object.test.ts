@@ -94,7 +94,7 @@ test('Objects.applyPathValue', () => {
 
   {
     const modifiedPerson = Objects.applyPathValue(person, 'residences[0].address', 'Changed!') as Person
-    expect(modifiedPerson.residences[0].address).toEqual('Changed!')
+    expect(modifiedPerson.residences[0]!.address).toEqual('Changed!')
   }
 
   {

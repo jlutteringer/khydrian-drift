@@ -17,8 +17,7 @@
     }
   },
   "scripts": {
-    "build-turbo": "tsup",
-    "dev-turbo": "tsup --watch --external=none",
+    "build": "tsup && tsc --project tsconfig.build.json --emitDeclarationOnly",
     "test": "jest",
     "prettier-fix": "prettier --write .",
     "clean": "rm -rf dist && rm -rf .turbo"
