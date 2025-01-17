@@ -4,6 +4,8 @@ interface NominalTyping<NominalTypingT> {
 
 export type NominalType<T, NominalTypingT> = T & NominalTyping<NominalTypingT>
 
+export type Throwable = unknown
+
 // TODO i question if Primitive should include null and undefined. Its technically true but I think could lead to bugs
 export type Primitive = string | number | boolean | symbol | bigint | null | undefined
 export type Dictionary<T> = Record<string, T>

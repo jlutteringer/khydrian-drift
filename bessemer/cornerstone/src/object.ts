@@ -11,7 +11,7 @@ import {
   isUndefined as _isUndefined,
   mapValues as _mapValues,
   merge as unsafeMerge,
-  mergeWith as unsafeMergeWith
+  mergeWith as unsafeMergeWith,
 } from 'lodash-es'
 import { produce } from 'immer'
 import { GenericRecord, NominalType, Primitive } from '@bessemer/cornerstone/types'
@@ -62,10 +62,6 @@ export function mergeInto<Source1, Source2>(source: Source1, values: Source2): a
 export const mergeWith: typeof unsafeMergeWith = (...args: Array<any>) => {
   const clone = cloneDeep(args[0])
   return unsafeMergeWith.apply(null, [clone, ...args.slice(1)])
-}
-
-export const isPromise = <T>(element: T | Promise<T>): element is Promise<T> => {
-  return typeof (element as Promise<T>).then === 'function'
 }
 
 export type ObjectDiffResult = {

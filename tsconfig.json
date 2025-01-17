@@ -16,6 +16,8 @@
       "@bessemer/core/*": ["./bessemer/core/src/*"],
       "@bessemer/foundry": ["./bessemer/foundry/src"],
       "@bessemer/foundry/*": ["./bessemer/foundry/src/*"],
+      "@bessemer/redis": ["./bessemer/redis/src"],
+      "@bessemer/redis/*": ["./bessemer/redis/src/*"],
       "@simulacrum": ["./apps/simulacrum"],
       "@simulacrum/*": ["./apps/simulacrum/*"]
     }

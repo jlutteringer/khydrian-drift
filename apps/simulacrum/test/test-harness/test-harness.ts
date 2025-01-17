@@ -12,6 +12,7 @@ export const buildTestContext = (): ApplicationContext => {
     },
     serverOnlyTest: () => 'asdasd',
     client: { ruleset: Dnd5e, tags: [], environment: 'test', runtime: { test: () => 'hello', codex: { renderers: [] } } },
+    advisoryLockProvider: null!,
   }
 }
 

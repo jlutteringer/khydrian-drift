@@ -1,5 +1,5 @@
 import { Arrays, Errors, Objects } from '@bessemer/cornerstone'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { NominalType, Throwable } from '@bessemer/cornerstone/types'
 import { RecordAttribute } from '@bessemer/cornerstone/object'
 
 /*
@@ -36,11 +36,19 @@ export class ErrorEventException extends Error {
   }
 }
 
-export const isErrorEventException = (exception: unknown): exception is ErrorEventException => {
-  return exception instanceof ErrorEventException
+export const isErrorEvent = (throwable: Throwable): throwable is ErrorEvent => {
+  if (!Objects.isObject(throwable)) {
+    return false
+  }
+
+  // JOHN maybe this check should be more thorough? Zod?
+  return 'code' in throwable
 }
 
-// Creates a new ErrorEvent from a builder, defaulting fields that weren't specified
+export const isErrorEventException = (throwable: Throwable): throwable is ErrorEventException => {
+  return throwable instanceof ErrorEventException
+}
+
 export const of = (builder: ErrorEventBuilder): ErrorEvent => {
   const code = builder.code
 
@@ -52,12 +60,16 @@ export const of = (builder: ErrorEventBuilder): ErrorEvent => {
   }
 }
 
-export const from = (error: unknown): ErrorEvent => {
-  if (!Errors.isError(error)) {
+export const from = (throwable: Throwable): ErrorEvent => {
+  if (isErrorEvent(throwable)) {
+    return throwable
+  }
+
+  if (!Errors.isError(throwable)) {
     return unhandled()
   }
 
-  const errorEventException = Errors.findInCausalChain(error, isErrorEventException) as ErrorEventException | undefined
+  const errorEventException = Errors.findInCausalChain(throwable, isErrorEventException) as ErrorEventException | undefined
   if (Objects.isNil(errorEventException)) {
     return unhandled()
   }

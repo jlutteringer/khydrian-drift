@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BessemerApplicationContext } from '@bessemer/framework'
-import { GenericRecord } from '@bessemer/cornerstone/types'
+import { GenericRecord, Throwable } from '@bessemer/cornerstone/types'
 import { Tags } from '@bessemer/cornerstone'
 import { ApplicationRuntime, ApplicationRuntimeTag } from '@bessemer/framework/runtime'
 import { BessemerNext } from '@bessemer/framework-next'
@@ -18,13 +18,13 @@ export type RouteHandler<ApplicationContext extends BessemerApplicationContext =
 ) => Promise<NextResponse>
 
 export type RouteErrorHandler<ApplicationContext extends BessemerApplicationContext = BessemerApplicationContext> = (
-  error: unknown,
+  error: Throwable,
   context: ApplicationContext,
   request: NextRequest,
   nextContext: { params: Promise<GenericRecord> }
 ) => Promise<NextResponse>
 
-export const DefaultRouteErrorHandler: RouteErrorHandler = (error: unknown) => {
+export const DefaultRouteErrorHandler: RouteErrorHandler = (error: Throwable) => {
   throw error
 }
 
@@ -36,7 +36,7 @@ export const route = <ApplicationContext extends BessemerNextApplicationContext,
 
     try {
       return await handler(context, request, nextContext)
-    } catch (e) {
+    } catch (e: any) {
       return await context.route.errorHandler(e, context, request, nextContext)
     }
   }

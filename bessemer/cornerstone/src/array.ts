@@ -7,9 +7,9 @@ import {
   isEmpty as _isEmpty,
   last as _last,
   range as _range,
-  remove,
+  remove as _remove,
   uniqBy,
-  uniqWith
+  uniqWith,
 } from 'lodash-es'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
 import { Signable } from '@bessemer/cornerstone/signature'
@@ -43,6 +43,18 @@ export const differenceBy = <T>(first: Array<T>, second: Array<T>, mapper: (elem
 
 export const difference = <T extends Signable>(first: Array<T>, second: Array<T>): Array<T> => {
   return differenceBy(first, second, Signatures.sign)
+}
+
+export const removeWith = <T>(array: Array<T>, element: T, equalitor: Equalitor<T>): Array<T> => {
+  return differenceWith(array, [element], equalitor)
+}
+
+export const removeBy = <T>(array: Array<T>, element: T, mapper: (element: T) => Signable): Array<T> => {
+  return differenceBy(array, [element], mapper)
+}
+
+export const remove = <T extends Signable>(array: Array<T>, element: T): Array<T> => {
+  return difference(array, [element])
 }
 
 export const containsWith = <T>(array: Array<T>, element: T, equalitor: Equalitor<T>): boolean => {
@@ -110,12 +122,26 @@ export const rest = <T>(array: Array<T>, elementsToSkip: number = 1): Array<T> =
 }
 
 export const clear = (array: Array<unknown>): void => {
-  remove(array, () => true)
+  _remove(array, () => true)
 }
 
 export const bisect = <T, L, R>(array: Array<T>, bisector: (element: T, index: number) => Either<L, R>): [Array<L>, Array<R>] => {
-  const bisected = array.map(bisector)
-  const lefts = bisected.filter(Eithers.isLeft).map((it) => it.value)
-  const rights = bisected.filter(Eithers.isRight).map((it) => it.value)
+  return split(array.map(bisector))
+}
+
+// JOHN is this the right location?
+export const split = <L, R>(array: Array<Either<L, R>>): [Array<L>, Array<R>] => {
+  const lefts = array.filter(Eithers.isLeft).map((it) => it.value)
+  const rights = array.filter(Eithers.isRight).map((it) => it.value)
   return [lefts, rights]
+}
+
+export type MaybeArray<T> = T | Array<T>
+
+export const toArray = <T>(array: MaybeArray<T>): Array<T> => {
+  if (Array.isArray(array)) {
+    return array
+  }
+
+  return [array]
 }

@@ -4,11 +4,12 @@ import { ErrorEvents, Loggers, Objects, Strings } from '@bessemer/cornerstone'
 import { Codex, Tiptap } from '@bessemer/core/index'
 import { NextRequest, NextResponse } from 'next/server'
 import { ContentKey } from '@bessemer/cornerstone/content'
+import { Throwable } from '@bessemer/cornerstone/types'
 
 const logger = Loggers.child('RouteErrorHandler')
 
 export const CoreRouteErrorHandler: RouteErrorHandler<CoreApplicationContext> = async (
-  error: unknown,
+  error: Throwable,
   context: CoreApplicationContext,
   request: NextRequest
 ) => {

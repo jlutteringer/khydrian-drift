@@ -126,3 +126,7 @@ export const roundHalfEven = (value: number, scale: number): number => {
   const resolvedIntPart = parseInt(intPart, 10) + carriedOver
   return parseFloat(`${resolvedIntPart}.${newFractPart}${nextDig}`)
 }
+
+export const random = (min: number, max: number): number => {
+  return Math.random() * (max - min) + min
+}

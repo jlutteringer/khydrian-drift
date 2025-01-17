@@ -51,3 +51,7 @@ export const ofDays = (value: Day) => {
 export const inDays = (duration: Duration) => {
   return inHours(duration) / 24
 }
+
+export const Zero = ofMilliseconds(0)
+export const OneDay = ofDays(1)
+export const OneHour = ofHours(1)

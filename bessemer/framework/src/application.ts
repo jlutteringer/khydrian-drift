@@ -1,11 +1,6 @@
-import {
-  ApplicationRuntimeType,
-  BessemerApplicationContext,
-  BessemerApplicationModule,
-  BessemerOptions,
-  Environments
-} from '@bessemer/framework'
+import { ApplicationRuntimeType, BessemerApplicationContext, BessemerApplicationModule, BessemerOptions, Environments } from '@bessemer/framework'
 import { Loggers } from '@bessemer/cornerstone'
+import { LocalAdvisoryLockProvider } from '@bessemer/framework/advisory-lock/LocalAdvisoryLockProvider'
 
 export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicationContext, BessemerOptions> = {
   globalTags: () => {
@@ -23,6 +18,7 @@ export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicatio
     runtime: ApplicationRuntimeType<BessemerApplicationContext>
   ): Promise<BessemerApplicationContext> => {
     const application: BessemerApplicationContext = {
+      advisoryLockProvider: new LocalAdvisoryLockProvider(),
       client: {
         environment: Environments.getEnvironment(),
         tags: [],

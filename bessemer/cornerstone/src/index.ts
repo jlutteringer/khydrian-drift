@@ -5,6 +5,7 @@ import * as Strings from '@bessemer/cornerstone/string'
 import * as Async from '@bessemer/cornerstone/async'
 import * as Maths from '@bessemer/cornerstone/math'
 import * as Sets from '@bessemer/cornerstone/set'
+import * as Dates from '@bessemer/cornerstone/date'
 import * as Comparators from '@bessemer/cornerstone/comparator'
 import * as Equalitors from '@bessemer/cornerstone/equalitor'
 import * as Durations from '@bessemer/cornerstone/duration'
@@ -21,12 +22,14 @@ import * as Promises from '@bessemer/cornerstone/promise'
 import * as References from '@bessemer/cornerstone/reference'
 import * as Signatures from '@bessemer/cornerstone/signature'
 import * as Eithers from '@bessemer/cornerstone/either'
+import * as Results from '@bessemer/cornerstone/result'
 import * as Lazy from '@bessemer/cornerstone/lazy'
 import * as Patches from '@bessemer/cornerstone/patch'
 import * as Content from '@bessemer/cornerstone/content'
 import * as Combinables from '@bessemer/cornerstone/combinable'
 import * as Properties from '@bessemer/cornerstone/property'
 import * as RichTexts from '@bessemer/cornerstone/rich-text'
+import * as Retry from '@bessemer/cornerstone/retry'
 import * as Misc from '@bessemer/cornerstone/misc'
 
 export {
@@ -37,6 +40,7 @@ export {
   Async,
   Maths,
   Sets,
+  Dates,
   Comparators,
   Equalitors,
   Durations,
@@ -52,11 +56,13 @@ export {
   References,
   Signatures,
   Eithers,
+  Results,
   Lazy,
   Patches,
   Content,
   Combinables,
   Properties,
   RichTexts,
+  Retry,
   Misc,
 }

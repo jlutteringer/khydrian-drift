@@ -1,5 +1,6 @@
 import { Objects, Strings } from '@bessemer/cornerstone'
 
+// JOHN we also want to add ULID support: https://github.com/ulid/javascript
 export type Uuid = string
 
 export const random = (): Uuid => {
