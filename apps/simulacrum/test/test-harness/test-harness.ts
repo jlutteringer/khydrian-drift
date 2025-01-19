@@ -6,12 +6,21 @@ import { ApplicationContext } from '@simulacrum/common/application'
 // TODO
 export const buildTestContext = (): ApplicationContext => {
   return {
+    cache: null!,
     tiptapExtensions: [],
     route: {
       errorHandler: null!,
     },
     serverOnlyTest: () => 'asdasd',
-    client: { ruleset: Dnd5e, tags: [], environment: 'test', runtime: { test: () => 'hello', codex: { renderers: [] } } },
+    client: {
+      buildId: '123',
+      instanceId: '123',
+      correlationId: '123',
+      ruleset: Dnd5e,
+      tags: [],
+      environment: 'test',
+      runtime: { test: () => 'hello', codex: { renderers: [] } },
+    },
     advisoryLockProvider: null!,
   }
 }

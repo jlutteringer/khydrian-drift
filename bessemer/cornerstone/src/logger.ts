@@ -4,12 +4,9 @@ import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { LazyValue } from '@bessemer/cornerstone/lazy'
 import { GenericRecord } from '@bessemer/cornerstone/types'
 
-export type PinoLogger = pino.Logger
-export type PinoBindings = pino.Bindings
+type PinoLogger = pino.Logger
+type PinoBindings = pino.Bindings
 export type LoggerOptions = pino.LoggerOptions
-// export type PinoLogger = any
-// export type PinoBindings = any
-// export type LoggerOptions = any
 
 type LogOptions = { error?: unknown; context?: GenericRecord }
 type LogFunction = (message: LazyValue<string>, options?: LogOptions) => void
@@ -55,7 +52,7 @@ export class Logger {
 }
 
 const getPrettyTransport = (): LoggerOptions => {
-  if (process.env.NODE_ENV === 'production' || typeof window !== 'undefined' ) {
+  if (process.env.NODE_ENV === 'production' || typeof window !== 'undefined') {
     return {}
   }
 

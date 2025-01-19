@@ -2,14 +2,39 @@ import { AbstractLocalKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } f
 import { Dates, Durations, Objects, Strings } from '@bessemer/cornerstone'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
+import { NominalType } from '@bessemer/cornerstone/types'
+
+// JOHN should this even be in cornerstone? especially consider the config types down at the bottom
 
 export type CacheKey = ResourceKey
-export type CacheValue = NonNullable<unknown> | null
 
 export type CacheProps = {
   maxSize: number | null
   timeToLive: Duration | null
   timeToStale: Duration | null
+}
+
+export type CacheOptions = Partial<CacheProps>
+
+export namespace CacheProps {
+  const DefaultCacheProps = {
+    maxSize: 50000,
+    timeToLive: Durations.OneDay,
+    timeToStale: Durations.OneHour,
+  }
+
+  export const buildCacheProps = (options?: CacheOptions): CacheProps => {
+    options = options ?? {}
+
+    const props = Objects.merge(options, DefaultCacheProps)
+
+    if (props.maxSize === null && props.timeToLive === null) {
+      throw new Error('Invalid cache configuration, both maxSize and timeToLive are null')
+    }
+
+    return props
+  }
 }
 
 export namespace CacheKey {
@@ -32,7 +57,17 @@ export type CacheSection = {
   prefix: ResourceKey
 }
 
-export interface Cache<T extends CacheValue> {
+export namespace CacheSection {
+  export const of = (prefix: CacheKey) => {
+    return { prefix }
+  }
+
+  export const namespace = (section: CacheSection, namespace: string): CacheSection => {
+    return of(CacheKey.namespace(section.prefix, namespace))
+  }
+}
+
+export interface Cache<T> {
   name: string
 
   fetchValue(key: CacheKey, fetch: () => Promise<T>): Promise<T>
@@ -42,13 +77,13 @@ export interface Cache<T extends CacheValue> {
   evictAll(section: CacheSection): Promise<void>
 }
 
-export interface CacheProvider<T extends CacheValue> extends RemoteKeyValueStore<CacheEntry<T>> {
-  type: string
+export interface CacheProvider<T> extends RemoteKeyValueStore<CacheEntry<T>> {
+  type: CacheProviderType
 
   evictAll(section: CacheSection): Promise<void>
 }
 
-export interface LocalCache<T extends CacheValue> {
+export interface LocalCache<T> {
   name: string
 
   getValue(key: CacheKey, fetch: () => T): T
@@ -56,15 +91,12 @@ export interface LocalCache<T extends CacheValue> {
   setValue(key: CacheKey, value: T | undefined): void
 }
 
-export interface LocalCacheProvider<T extends CacheValue> extends LocalKeyValueStore<CacheEntry<T>>, CacheProvider<T> {
+export interface LocalCacheProvider<T> extends LocalKeyValueStore<CacheEntry<T>>, CacheProvider<T> {
   removeAll(section: CacheSection): void
 }
 
-export abstract class AbstractLocalCacheProvider<T extends CacheValue>
-  extends AbstractLocalKeyValueStore<CacheEntry<T>>
-  implements LocalCacheProvider<T>
-{
-  abstract type: string
+export abstract class AbstractLocalCacheProvider<T> extends AbstractLocalKeyValueStore<CacheEntry<T>> implements LocalCacheProvider<T> {
+  abstract type: CacheProviderType
 
   abstract removeAll(section: CacheSection): void
 
@@ -73,14 +105,14 @@ export abstract class AbstractLocalCacheProvider<T extends CacheValue>
   }
 }
 
-export type CacheEntry<T extends CacheValue> = {
+export type CacheEntry<T> = {
   value: T
   liveTimestamp: Date | null
   staleTimestamp: Date | null
 }
 
 export namespace CacheEntry {
-  export const isActive = <T extends CacheValue>(entry: CacheEntry<T>): boolean => {
+  export const isActive = <T>(entry: CacheEntry<T>): boolean => {
     if (isDead(entry) || isStale(entry)) {
       return false
     }
@@ -88,7 +120,7 @@ export namespace CacheEntry {
     return true
   }
 
-  export const isDead = <T extends CacheValue>(entry: CacheEntry<T> | undefined): boolean => {
+  export const isDead = <T>(entry: CacheEntry<T> | undefined): boolean => {
     if (Objects.isNil(entry)) {
       return true
     }
@@ -100,7 +132,7 @@ export namespace CacheEntry {
     return Dates.isBefore(entry.liveTimestamp, Dates.now())
   }
 
-  export const isStale = <T extends CacheValue>(entry: CacheEntry<T>): boolean => {
+  export const isStale = <T>(entry: CacheEntry<T>): boolean => {
     if (Objects.isNil(entry.staleTimestamp)) {
       return false
     }
@@ -108,7 +140,7 @@ export namespace CacheEntry {
     return Dates.isBefore(entry.staleTimestamp, Dates.now())
   }
 
-  export const of = <T extends CacheValue>(value: T) => {
+  export const of = <T>(value: T) => {
     const entry: CacheEntry<T> = {
       value,
       liveTimestamp: null,
@@ -119,7 +151,7 @@ export namespace CacheEntry {
   }
 
   // JOHN do we want to enforce some kind of minimum liveness threshold?
-  export const limit = <T extends CacheValue>(originalEntry: CacheEntry<T>, props: CacheProps): CacheEntry<T> => {
+  export const limit = <T>(originalEntry: CacheEntry<T>, props: CacheProps): CacheEntry<T> => {
     let liveTimestamp: Date | null = originalEntry.liveTimestamp
     if (!Objects.isNil(props.timeToLive)) {
       const limit = Dates.addMilliseconds(Dates.now(), Durations.inMilliseconds(props.timeToLive))
@@ -146,38 +178,12 @@ export namespace CacheEntry {
   }
 }
 
-export namespace CacheProps {
-  const DEFAULT_CACHE_PROPS = {
-    maxSize: 50000,
-    timeToLive: Durations.OneDay,
-    timeToStale: Durations.OneHour,
-  }
-
-  export const buildCacheProps = (options?: CacheOptions): CacheProps => {
-    options = options ?? {}
-
-    const props = Objects.merge(options, DEFAULT_CACHE_PROPS)
-
-    if (props.maxSize === null && props.timeToLive === null) {
-      throw new Error('Invalid cache configuration, both maxSize and timeToLive are null')
-    }
-
-    return props
-  }
-}
-
-export type CacheOptions = Partial<CacheProps>
-
-export type CacheProviderConfiguration = CacheOptions & {
-  type: string
-}
-
-export type CacheDefinition = {
-  providers: Array<CacheProviderConfiguration>
+export type CacheConfigurationOptions = CacheConfigurationSection & {
+  local: CacheConfigurationSection
 }
 
 export type CacheConfigurationSection = {
-  defaultOptions: CacheDefinition
+  defaults: CacheDefinition
 
   /**
    * These options map from cache name key to configuration. They are a way for the tenant to override the configurations
@@ -186,13 +192,26 @@ export type CacheConfigurationSection = {
   caches?: Record<string, Partial<CacheDefinition>>
 }
 
-export type CacheProviderRegistry = {
-  type: string
-  // JOHN context has type any
-  constructor: <T extends CacheValue>(props: CacheProps, context: any) => CacheProvider<T> | null
+export type CacheDefinition = {
+  options?: CacheOptions
+  providers: Array<CacheProviderConfiguration>
+}
+
+export type CacheProviderType = NominalType<string, 'CacheProviderType'>
+export type CacheProviderConfiguration = CacheOptions & {
+  type: CacheProviderType
 }
 
 export type CacheConfiguration = CacheConfigurationSection & {
-  registry: Array<CacheProviderRegistry>
   local: CacheConfigurationSection
+}
+
+export type CacheProviderRegistry<ContextType extends AbstractApplicationContext> = {
+  type: CacheProviderType
+  constructor: <T>(props: CacheProps, context: ContextType) => CacheProvider<T>
+}
+
+export type CacheContext = {
+  providers: Array<CacheProviderRegistry<any>>
+  configuration: CacheConfiguration
 }

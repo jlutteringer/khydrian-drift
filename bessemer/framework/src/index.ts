@@ -8,11 +8,14 @@ import { PropertyRecord } from '@bessemer/cornerstone/property'
 import { LoggerOptions } from '@bessemer/cornerstone/logger'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { Tag } from '@bessemer/cornerstone/tag'
+import { CacheConfiguration, CacheContext } from '@bessemer/cornerstone/cache'
+import * as Caches from '@bessemer/framework/cache'
 
-export { Bessemer, Environments, Contexts, AdvisoryLocks }
+export { Bessemer, Environments, Contexts, AdvisoryLocks, Caches }
 
 export type BessemerOptions = {
   logger?: LoggerOptions
+  cache?: CacheConfiguration
   public?: {}
 }
 
@@ -21,8 +24,13 @@ export type PublicOptions<T extends BessemerOptions> = T['public'] & {}
 export type PublicProperties<T extends BessemerOptions> = PropertyRecord<PublicOptions<T>>
 
 export type BessemerApplicationContext = AbstractApplicationContext & {
+  cache: CacheContext
   advisoryLockProvider: AdvisoryLockProvider<any>
   client: {
+    buildId: string
+    instanceId: string
+    correlationId: string
+
     environment: Environment
     tags: Array<Tag>
   }

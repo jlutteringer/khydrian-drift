@@ -23,6 +23,7 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/cornerstone": "workspace:*"
+    "@bessemer/cornerstone": "workspace:*",
+    "lru-cache": "11.0.2"
   }
 }

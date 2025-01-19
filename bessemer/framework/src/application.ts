@@ -1,4 +1,11 @@
-import { ApplicationRuntimeType, BessemerApplicationContext, BessemerApplicationModule, BessemerOptions, Environments } from '@bessemer/framework'
+import {
+  ApplicationRuntimeType,
+  BessemerApplicationContext,
+  BessemerApplicationModule,
+  BessemerOptions,
+  Caches,
+  Environments,
+} from '@bessemer/framework'
 import { Loggers } from '@bessemer/cornerstone'
 import { LocalAdvisoryLockProvider } from '@bessemer/framework/advisory-lock/LocalAdvisoryLockProvider'
 
@@ -14,12 +21,17 @@ export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicatio
     return []
   },
   initializeApplication: async (
-    _: BessemerOptions,
+    options: BessemerOptions,
     runtime: ApplicationRuntimeType<BessemerApplicationContext>
   ): Promise<BessemerApplicationContext> => {
     const application: BessemerApplicationContext = {
+      cache: Caches.configure(options.cache),
       advisoryLockProvider: new LocalAdvisoryLockProvider(),
       client: {
+        // JOHN we need to actually set these of course
+        buildId: '1234',
+        instanceId: '5678',
+        correlationId: 'asdf',
         environment: Environments.getEnvironment(),
         tags: [],
         runtime: runtime,
