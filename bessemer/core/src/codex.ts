@@ -1,5 +1,5 @@
 import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
-import { Arrays, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Entries, Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import {
@@ -11,10 +11,11 @@ import {
   ContentType,
   ContentTypeConstructor,
   TextContent,
-  TextContentType
+  TextContentType,
 } from '@bessemer/cornerstone/content'
 import { Tag } from '@bessemer/cornerstone/tag'
-import { Contexts } from '@bessemer/framework'
+import { Caches, Contexts } from '@bessemer/framework'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 export type CodexOptions = {
   provider: ContentProvider<any>
@@ -132,18 +133,29 @@ export const fetchContentByKeys = async <Type extends ContentType>(
   context: CoreApplicationContext,
   options?: FetchContentOptions<Type>
 ): Promise<Array<ContentData<Type>>> => {
-  Preconditions.isPresent(context.codex)
+  const cache = Caches.getCache<ContentData<Type>>('Codex.fetchContentByKeys', context)
+  const namespace = Contexts.getResourceNamespace(context)
 
-  const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
-  const content = await context.codex.provider.fetchContentByKeys(keys, tags, context)
+  const results = await cache.fetchValues(namespace, keys, async (keys) => {
+    Preconditions.isPresent(context.codex)
 
-  if (Objects.isPresent(options?.type)) {
-    const illegalContent = content.find((it) => it.type !== options?.type)
-    Preconditions.isNil(
-      illegalContent,
-      () => `ContentData: [${illegalContent?.key}] with type: [${illegalContent?.type}] did not match requested ContentType: ${options?.type}`
-    )
-  }
+    const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
+    const content = await context.codex.provider.fetchContentByKeys(keys, tags, context)
 
-  return content as Array<ContentData<Type>>
+    if (Objects.isPresent(options?.type)) {
+      const illegalContent = content.find((it) => it.type !== options?.type)
+      Preconditions.isNil(
+        illegalContent,
+        () => `ContentData: [${illegalContent?.key}] with type: [${illegalContent?.type}] did not match requested ContentType: ${options?.type}`
+      )
+    }
+
+    const entries: Array<Entry<ContentData<Type>>> = content.map((it) => {
+      return [it.key, it as ContentData<Type>]
+    })
+
+    return entries
+  })
+
+  return Entries.values(results)
 }

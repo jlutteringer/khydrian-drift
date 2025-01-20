@@ -1,88 +1,111 @@
 import { Cache, CacheEntry, CacheKey, CacheProvider, CacheSection } from '@bessemer/cornerstone/cache'
 import { AdvisoryLocks, BessemerApplicationContext } from '@bessemer/framework'
-import { Async, Objects } from '@bessemer/cornerstone'
-
-const DistributedLockPrefix: CacheKey = 'DistributedCache'
+import { Arrays, Async, Entries } from '@bessemer/cornerstone'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 export class CacheImpl<T> implements Cache<T> {
+  // JOHN we really need to think through the implications of how we handle context here
   constructor(readonly name: string, private readonly providers: Array<CacheProvider<T>>, private readonly context: BessemerApplicationContext) {}
 
-  async fetchValue(initialKey: CacheKey, fetch: () => Promise<T>): Promise<T> {
-    if (CacheKey.isDisabled(initialKey)) {
-      return fetch()
+  fetchValue = async (namespace: ResourceNamespace, key: ResourceKey, fetch: () => Promise<T>): Promise<T> => {
+    const results = await this.fetchValues(namespace, [key], async () => {
+      return [Entries.of(key, await fetch())]
+    })
+
+    return Arrays.first(results)![1]
+  }
+
+  fetchValues = async (
+    initialNamespace: ResourceNamespace,
+    keys: Array<ResourceKey>,
+    fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
+  ): Promise<Array<Entry<T>>> => {
+    if (CacheKey.isDisabled(initialNamespace)) {
+      return await fetch(keys)
     }
 
-    const key: CacheKey = CacheKey.namespace(initialKey, this.name)
+    const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
+    const namespacedKeys = ResourceKey.namespaceAll(namespace, keys)
 
-    const fetchedValue = AdvisoryLocks.usingOptimisticLock(
-      CacheKey.namespace(initialKey, DistributedLockPrefix),
+    const entries = await AdvisoryLocks.usingIncrementalLocks(
+      namespacedKeys,
       this.context,
-      async () => {
-        const entry = await this.getValidCachedValue(key)
-        if (Objects.isPresent(entry)) {
-          if (CacheEntry.isStale(entry)) {
-            this.revalidate(key, fetch)
-          }
-
-          return entry.value
-        }
+      async (keys) => {
+        const entries = await this.getCachedValues(keys)
+        return entries
       },
-      async () => {
-        const fetchedValue = await fetch()
-        await this.writeValueInternal(key, fetchedValue)
-        return fetchedValue
+      async (keys) => {
+        const fetchedValues = Entries.mapValues(await fetch(keys), CacheEntry.of)
+        await this.writeValueInternal(fetchedValues)
+        return fetchedValues
       }
     )
 
-    return fetchedValue
+    this.revalidate(entries, fetch)
+
+    const results = entries.map(([key, value]) => {
+      return Entries.of(ResourceKey.stripNamespace(namespace, key), value.value)
+    })
+
+    return results
   }
 
-  private async getValidCachedValue(key: CacheKey, allowStale: boolean = true): Promise<CacheEntry<T> | undefined> {
-    const cacheMisses: Array<CacheProvider<T>> = []
-    for (const provider of this.providers) {
-      const entry = await provider.fetchValue(key)
-      if (Objects.isPresent(entry)) {
-        if (!CacheEntry.isStale(entry)) {
-          // JOHN should there be minimums here?
-          Async.execute(async () => {
-            cacheMisses.forEach((it) => it.writeValue(key, entry))
-          })
+  private async getCachedValues(namespacedKeys: Array<ResourceKey>, allowStale: boolean = true): Promise<Array<Entry<CacheEntry<T>>>> {
+    let remainingKeys = namespacedKeys
+    const results: Array<Entry<CacheEntry<T>>> = []
 
-          return entry
-        } else if (allowStale) {
-          return entry
-        }
-      } else {
-        cacheMisses.push(provider)
+    for (const provider of this.providers) {
+      if (Arrays.isEmpty(remainingKeys)) {
+        break
       }
+
+      const entries = (await provider.fetchValues(remainingKeys)).filter(([_, value]) => {
+        return !CacheEntry.isStale(value) || allowStale
+      })
+
+      results.push(...entries)
+      remainingKeys = remainingKeys.filter((it) => entries.find(([key, _]) => key === it))
     }
 
-    return undefined
+    return results
   }
 
   // JOHN do we want to implement soft revalidates?
-  private async revalidate(key: CacheKey, fetch: () => Promise<T>, hard: boolean = false): Promise<T> {
-    const fetchedValue = await AdvisoryLocks.usingLock(CacheKey.namespace(key, DistributedLockPrefix), this.context, async () => {
-      const fetchedValue = await fetch()
-      await this.writeValueInternal(key, fetchedValue)
-      return fetchedValue
-    })
+  private revalidate(
+    entries: Array<Entry<CacheEntry<T>>>,
+    fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
+    hard: boolean = false
+  ): void {
+    Async.execute(async () => {
+      const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
 
-    return fetchedValue
+      await AdvisoryLocks.usingLock(staleKeys, this.context, async () => {
+        const fetchedValues = Entries.mapValues(await fetch(staleKeys), CacheEntry.of)
+        await this.writeValueInternal(fetchedValues)
+      })
+    })
   }
 
-  writeValue = async (initialKey: CacheKey, value: T | undefined): Promise<void> => {
-    if (CacheKey.isDisabled(initialKey)) {
+  writeValue = async (namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): Promise<void> => {
+    await this.writeValues(namespace, [Entries.of(key, value)])
+  }
+
+  writeValues = async (initialNamespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): Promise<void> => {
+    if (CacheKey.isDisabled(initialNamespace)) {
       return
     }
 
-    const key = CacheKey.namespace(initialKey, this.name)
-    return this.writeValueInternal(key, value)
+    const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
+    const namespacedEntries = entries.map(([key, value]) => {
+      return Entries.of(ResourceKey.namespace(namespace, key), value !== undefined ? CacheEntry.of(value) : undefined)
+    })
+
+    return this.writeValueInternal(namespacedEntries)
   }
 
-  private writeValueInternal = async (key: CacheKey, value: T | undefined): Promise<void> => {
-    const entry = value !== undefined ? CacheEntry.of(value) : undefined
-    await Promise.all(this.providers.map((provider) => provider.writeValue(key, entry)))
+  private writeValueInternal = async (entries: Array<Entry<CacheEntry<T> | undefined>>): Promise<void> => {
+    await Promise.all(this.providers.map((provider) => provider.writeValues(entries)))
   }
 
   evictAll = async (initialSection: CacheSection): Promise<void> => {

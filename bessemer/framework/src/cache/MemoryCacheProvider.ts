@@ -1,15 +1,16 @@
 import {
   AbstractLocalCacheProvider,
   CacheEntry,
-  CacheKey,
   CacheProps,
   CacheProviderRegistry,
   CacheProviderType,
   CacheSection,
 } from '@bessemer/cornerstone/cache'
 import { LRUCache } from 'lru-cache'
-import { Durations, Objects } from '@bessemer/cornerstone'
+import { Durations, Entries, Objects } from '@bessemer/cornerstone'
 import { BessemerApplicationContext } from '@bessemer/framework'
+import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 export namespace MemoryCacheProvider {
   export const Type: CacheProviderType = 'MemoryCacheProvider'
@@ -28,32 +29,40 @@ export class MemoryCacheProviderImpl<T> extends AbstractLocalCacheProvider<T> {
   constructor(readonly props: CacheProps) {
     super()
 
-    // JOHN check null coercion here
-    this.cache = new LRUCache({
-      max: props.maxSize!,
-      ttl: Durations.inMilliseconds(props.timeToLive!),
-      allowStale: false,
-    })
+    if (Objects.isNil(props.maxSize)) {
+      this.cache = new LRUCache({
+        ttl: Durations.inMilliseconds(props.timeToLive),
+        ttlAutopurge: true,
+        allowStale: false,
+      })
+    } else {
+      this.cache = new LRUCache({
+        max: props.maxSize,
+        ttl: Durations.inMilliseconds(props.timeToLive),
+        allowStale: false,
+      })
+    }
   }
 
   type = MemoryCacheProvider.Type
 
-  getValue = (key: CacheKey): CacheEntry<T> | undefined => {
-    const entry: CacheEntry<T> | undefined = this.cache.get(key)
-    if (CacheEntry.isDead(entry)) {
-      return undefined
-    }
+  getValues = (keys: Array<ResourceKey>): Array<Entry<CacheEntry<T>>> => {
+    const results = keys
+      .map((it) => Entries.of(it, this.cache.get(it) as CacheEntry<T> | undefined))
+      .filter(([_, value]) => Objects.isPresent(value))
+      .filter(([_, value]) => CacheEntry.isAlive(value)) as Array<Entry<CacheEntry<T>>>
 
-    return entry
+    return results
   }
 
-  setValue = (key: CacheKey, entry: CacheEntry<T> | undefined): void => {
-    if (entry === undefined) {
-      this.cache.delete(key)
-      return
-    }
-
-    this.cache.set(key, CacheEntry.limit(entry, this.props))
+  setValues = (entries: Array<Entry<CacheEntry<T> | undefined>>): void => {
+    entries.forEach(([key, value]) => {
+      if (Objects.isUndefined(value)) {
+        this.cache.delete(key)
+      } else {
+        this.cache.set(key, CacheEntry.limit(value, this.props))
+      }
+    })
   }
 
   // JOHN this implementation doesn't actually reference the section????

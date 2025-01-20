@@ -4,6 +4,12 @@ interface NominalTyping<NominalTypingT> {
 
 export type NominalType<T, NominalTypingT> = T & NominalTyping<NominalTypingT>
 
+interface TaggedTyping<TaggedTypingT> {
+  _type: TaggedTypingT
+}
+
+export type TaggedType<T, TaggedTypingT> = T & TaggedTyping<TaggedTypingT>
+
 export type Throwable = unknown
 
 // TODO i question if Primitive should include null and undefined. Its technically true but I think could lead to bugs

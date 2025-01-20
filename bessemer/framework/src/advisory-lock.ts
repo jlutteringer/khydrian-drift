@@ -8,6 +8,7 @@ import { AsyncResult } from '@bessemer/cornerstone/result'
 import { Unit } from '@bessemer/cornerstone/unit'
 import { MaybeArray } from '@bessemer/cornerstone/array'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 export type AdvisoryLockProps = {
   duration: Duration
@@ -54,6 +55,46 @@ export const usingLock = async <T>(
   }
 
   return withLock(lock.value, context, computeValue, options)
+}
+
+export const usingIncrementalLocks = async <T>(
+  resourceKeys: Array<ResourceKey>,
+  context: BessemerApplicationContext,
+  fetchIncrementalValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
+  computeValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
+  options: AdvisoryLockOptions = {}
+): Promise<Array<Entry<T>>> => {
+  let remainingKeys = resourceKeys
+  const incrementalResults: Array<Entry<T>> = []
+
+  const result = await Retry.usingRetry(async () => {
+    const incrementalValues = await fetchIncrementalValues(remainingKeys)
+
+    incrementalResults.push(...incrementalValues)
+    remainingKeys = remainingKeys.filter((it) => incrementalValues.find(([key, _]) => key === it))
+
+    if (Arrays.isEmpty(remainingKeys)) {
+      return Results.success(incrementalResults)
+    }
+
+    const lock = await tryAcquireLock(remainingKeys, context, options)
+    if (lock.isSuccess) {
+      const values = await withLock(lock.value, context, async () => {
+        return await computeValues(remainingKeys)
+      })
+
+      return Results.success([...incrementalResults, ...values])
+    }
+
+    return Results.failure()
+  }, options.retry)
+
+  if (!result.isSuccess) {
+    const values = await computeValues(remainingKeys)
+    return [...incrementalResults, ...values]
+  }
+
+  return result.value
 }
 
 export const usingOptimisticLock = async <T>(

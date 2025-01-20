@@ -1,4 +1,5 @@
 import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 export interface LocalStore<T> {
   setValue: (value: T | undefined) => void
@@ -6,8 +7,8 @@ export interface LocalStore<T> {
 }
 
 export interface LocalKeyValueStore<T> {
-  setValue: (key: ResourceKey, value: T | undefined) => void
-  getValue: (key: ResourceKey) => T | undefined
+  setValues: (entries: Array<Entry<T | undefined>>) => void
+  getValues: (keys: Array<ResourceKey>) => Array<Entry<T>>
 }
 
 export interface RemoteStore<T> {
@@ -16,19 +17,19 @@ export interface RemoteStore<T> {
 }
 
 export interface RemoteKeyValueStore<T> {
-  writeValue: (key: ResourceKey, value: T | undefined) => Promise<void>
-  fetchValue: (key: ResourceKey) => Promise<T | undefined>
+  writeValues: (entries: Array<Entry<T | undefined>>) => Promise<void>
+  fetchValues: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
 }
 
 export abstract class AbstractLocalKeyValueStore<T> implements LocalKeyValueStore<T>, RemoteKeyValueStore<T> {
-  abstract setValue: (key: ResourceKey, value: T | undefined) => void
-  abstract getValue: (key: ResourceKey) => T | undefined
+  abstract getValues: (keys: Array<ResourceKey>) => Array<Entry<T>>
+  abstract setValues: (entries: Array<Entry<T | undefined>>) => void
 
-  async writeValue(key: ResourceKey, value: T | undefined): Promise<void> {
-    this.setValue(key, value)
+  async fetchValues(keys: Array<ResourceKey>): Promise<Array<Entry<T>>> {
+    return this.getValues(keys)
   }
 
-  async fetchValue(key: ResourceKey): Promise<T | undefined> {
-    return this.getValue(key)
+  async writeValues(entries: Array<Entry<T | undefined>>): Promise<void> {
+    this.setValues(entries)
   }
 }

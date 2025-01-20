@@ -1,50 +1,69 @@
 import { RemoteKeyValueStore } from '@bessemer/cornerstone/store'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { Redis } from '@bessemer/redis'
-import { Durations, Objects } from '@bessemer/cornerstone'
+import { Arrays, Durations, Eithers, Entries, Objects } from '@bessemer/cornerstone'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 export type RedisStoreProps = {
-  namespace: ResourceKey
+  namespace: ResourceNamespace
   timeToLive: Duration
 }
 
 export class RedisStore<T> implements RemoteKeyValueStore<T> {
   constructor(private readonly props: RedisStoreProps, private readonly context: RedisApplicationContext) {}
 
-  getKeyString = (key: ResourceKey): ResourceKey => {
-    return ResourceKey.namespace(key, ResourceKey.of([this.context.client.buildId, this.props.namespace]))
+  namespaceKey = (key: ResourceKey): ResourceKey => {
+    const namespace = ResourceKey.extendNamespace(this.context.client.buildId, this.props.namespace)
+    return ResourceKey.namespace(namespace, key)
   }
 
-  fetchValue = async (key: ResourceKey): Promise<T | undefined> => {
+  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<Entry<T>>> => {
     const client = Redis.getClient(this.context)
-    const keyString = this.getKeyString(key)
+    const namespacedKeys = keys.map(this.namespaceKey)
 
-    const result = await client.get(keyString)
-    if (Objects.isNil(result)) {
-      return undefined
-    }
+    const redisResults = await client.mget(namespacedKeys)
+    const results = redisResults
+      .map((result, index) => {
+        if (Objects.isNil(result)) {
+          return null
+        }
 
-    const payload = JSON.parse(result) as RedisStoreEntry<T>
-    return payload.value
+        const storeEntry = JSON.parse(result) as RedisStoreEntry<T>
+        return Entries.of(keys[index]!, storeEntry.value)
+      })
+      .filter(Objects.isPresent)
+
+    return results
   }
 
-  writeValue = async (key: ResourceKey, newEntry: T | undefined): Promise<void> => {
+  writeValues = async (entries: Array<Entry<T | undefined>>): Promise<void> => {
     const client = Redis.getClient(this.context)
-    const keyString = this.getKeyString(key)
+    const namespacedEntries = Entries.mapKeys(entries, this.namespaceKey)
+    const [deletes, writes] = Arrays.bisect(namespacedEntries, (entry) =>
+      Objects.isUndefined(entry[1]) ? Eithers.left(entry[0]) : Eithers.right(entry as Entry<T>)
+    )
 
-    if (newEntry === undefined) {
-      await client.del(keyString)
-      return
+    if (!Arrays.isEmpty(deletes)) {
+      await client.del(deletes)
     }
 
-    const entry = {
-      value: newEntry,
-    }
+    if (!Arrays.isEmpty(writes)) {
+      const storeEntries = Entries.mapValues(writes, (it) => {
+        const entry: RedisStoreEntry<T> = {
+          value: it,
+        }
 
-    const rawValue = JSON.stringify(entry)
-    await client.set(keyString, rawValue, 'PX', Durations.inMilliseconds(this.props.timeToLive))
+        return JSON.stringify(entry)
+      })
+
+      const commands = storeEntries.map(([key, value]) => {
+        return ['set', key, value, 'PX', Durations.inMilliseconds(this.props.timeToLive)]
+      })
+
+      await client.multi(commands).exec()
+    }
   }
 }
 

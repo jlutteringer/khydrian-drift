@@ -1,17 +1,16 @@
 import { AbstractLocalKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } from '@bessemer/cornerstone/store'
 import { Dates, Durations, Objects, Strings } from '@bessemer/cornerstone'
 import { Duration } from '@bessemer/cornerstone/duration'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { NominalType } from '@bessemer/cornerstone/types'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 // JOHN should this even be in cornerstone? especially consider the config types down at the bottom
 
-export type CacheKey = ResourceKey
-
 export type CacheProps = {
   maxSize: number | null
-  timeToLive: Duration | null
+  timeToLive: Duration
   timeToStale: Duration | null
 }
 
@@ -32,6 +31,7 @@ export namespace CacheProps {
     if (props.maxSize === null && props.timeToLive === null) {
       throw new Error('Invalid cache configuration, both maxSize and timeToLive are null')
     }
+    ;``
 
     return props
   }
@@ -41,39 +41,46 @@ export namespace CacheKey {
   // We use a hardcoded UUID to represent a unique token value that serves as a flag to disable caching
   const DisableCacheToken = 'f6822c1a-d527-4c65-b9dd-ddc24620b684'
 
-  export const disableCaching = (): CacheKey => {
+  export const disableCaching = (): ResourceNamespace => {
     return DisableCacheToken
   }
 
-  export const isDisabled = (key: CacheKey): boolean => {
+  export const isDisabled = (key: ResourceNamespace): boolean => {
     return Strings.contains(key, DisableCacheToken)
   }
-
-  export const of = ResourceKey.of
-  export const namespace = ResourceKey.namespace
 }
 
+// JOHN reconsider this whole API
 export type CacheSection = {
   prefix: ResourceKey
 }
 
 export namespace CacheSection {
-  export const of = (prefix: CacheKey) => {
+  export const of = (prefix: ResourceKey) => {
     return { prefix }
   }
 
   export const namespace = (section: CacheSection, namespace: string): CacheSection => {
-    return of(CacheKey.namespace(section.prefix, namespace))
+    return of(ResourceKey.namespace(section.prefix, namespace))
   }
 }
 
 export interface Cache<T> {
   name: string
 
-  fetchValue(key: CacheKey, fetch: () => Promise<T>): Promise<T>
+  fetchValue(namespace: ResourceNamespace, key: ResourceKey, fetch: () => Promise<T>): Promise<T>
 
-  writeValue(key: CacheKey, value: T | undefined): Promise<void>
+  fetchValues(
+    namespace: ResourceNamespace,
+    keys: Array<ResourceKey>,
+    fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
+  ): Promise<Array<Entry<T>>>
 
+  writeValue(namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): Promise<void>
+
+  writeValues(namespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): Promise<void>
+
+  // JOHN reconsider api
   evictAll(section: CacheSection): Promise<void>
 }
 
@@ -86,9 +93,13 @@ export interface CacheProvider<T> extends RemoteKeyValueStore<CacheEntry<T>> {
 export interface LocalCache<T> {
   name: string
 
-  getValue(key: CacheKey, fetch: () => T): T
+  getValue(namespace: ResourceNamespace, key: ResourceKey, fetch: () => T): T
 
-  setValue(key: CacheKey, value: T | undefined): void
+  getValues(namespace: ResourceNamespace, keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>): Array<Entry<T>>
+
+  setValue(namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): void
+
+  setValues(namespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): void
 }
 
 export interface LocalCacheProvider<T> extends LocalKeyValueStore<CacheEntry<T>>, CacheProvider<T> {
@@ -131,6 +142,8 @@ export namespace CacheEntry {
 
     return Dates.isBefore(entry.liveTimestamp, Dates.now())
   }
+
+  export const isAlive = <T>(entry: CacheEntry<T> | undefined): boolean => !isDead(entry)
 
   export const isStale = <T>(entry: CacheEntry<T>): boolean => {
     if (Objects.isNil(entry.staleTimestamp)) {

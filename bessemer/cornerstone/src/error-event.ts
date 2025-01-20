@@ -41,8 +41,7 @@ export const isErrorEvent = (throwable: Throwable): throwable is ErrorEvent => {
     return false
   }
 
-  // JOHN maybe this check should be more thorough? Zod?
-  return 'code' in throwable
+  return 'code' in throwable && 'message' in throwable && 'attributes' in throwable && 'causes' in throwable
 }
 
 export const isErrorEventException = (throwable: Throwable): throwable is ErrorEventException => {

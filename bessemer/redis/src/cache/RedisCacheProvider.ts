@@ -1,11 +1,9 @@
-// JOHN can be rewritten to use the RedisStore?
-// JOHN need to deal with cache values changing in between application version changes ;_;
-import { CacheEntry, CacheKey, CacheProps, CacheProvider, CacheProviderRegistry, CacheProviderType, CacheSection } from '@bessemer/cornerstone/cache'
-import { Objects, Preconditions } from '@bessemer/cornerstone'
-import { Redis } from '@bessemer/redis'
+import { CacheEntry, CacheProps, CacheProvider, CacheProviderRegistry, CacheProviderType, CacheSection } from '@bessemer/cornerstone/cache'
+import { Entries, Objects, Preconditions } from '@bessemer/cornerstone'
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { RedisStore } from '@bessemer/redis/store/RedisStore'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 export namespace RedisCacheProvider {
   export const Type: CacheProviderType = 'RedisCacheProvider'
@@ -27,35 +25,28 @@ export class RedisCacheProviderImpl<T> implements CacheProvider<T> {
     Preconditions.isNil(props.maxSize, 'RedisCacheProvider does not support the maxSize property.')
     Preconditions.isPresent(props.timeToLive, 'RedisCacheProvider requires the timeToLive property to be set.')
 
-    this.store = new RedisStore({ namespace: RedisCacheProvider.Type as ResourceKey, timeToLive: props.timeToLive }, context)
+    this.store = new RedisStore({ namespace: RedisCacheProvider.Type as ResourceNamespace, timeToLive: props.timeToLive }, context)
   }
 
   type = RedisCacheProvider.Type
 
-  fetchValue = async (key: CacheKey): Promise<CacheEntry<T> | undefined> => {
-    const result = await this.store.fetchValue(key)
-    if (Objects.isNil(result) || CacheEntry.isDead(result)) {
-      return undefined
-    }
-
-    return result
+  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<Entry<CacheEntry<T>>>> => {
+    const results = await this.store.fetchValues(keys)
+    return results.filter(([_, value]) => CacheEntry.isAlive(value))
   }
 
-  writeValue = async (key: CacheKey, newEntry: CacheEntry<T> | undefined): Promise<void> => {
-    if (Objects.isUndefined(newEntry)) {
-      await this.store.writeValue(key, undefined)
-    } else {
-      const entry = CacheEntry.limit(newEntry, this.props)
-      await this.store.writeValue(key, entry)
-    }
+  writeValues = async (entries: Array<Entry<CacheEntry<T> | undefined>>): Promise<void> => {
+    const limitedEntries = Entries.mapValues(entries, (it) => (Objects.isUndefined(it) ? it : CacheEntry.limit(it, this.props)))
+    await this.store.writeValues(limitedEntries)
   }
 
+  // JOHN implement me
   // JOHN should this method be moved to RedisStore?
   evictAll = async (section: CacheSection): Promise<void> => {
-    const client = Redis.getClient(this.context)
-    const keyPrefix = this.store.getKeyString(section.prefix)
-
-    // JOHN escape ' ?
-    await client.eval(`for _,k in ipairs(redis.call('keys','${keyPrefix}*')) do redis.call('del',k) end`, 0)
+    // const client = Redis.getClient(this.context)
+    // const keyPrefix = this.store.getKeyString(section.prefix)
+    //
+    // // JOHN escape ' ?
+    // await client.eval(`for _,k in ipairs(redis.call('keys','${keyPrefix}*')) do redis.call('del',k) end`, 0)
   }
 }

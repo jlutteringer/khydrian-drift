@@ -1,7 +1,7 @@
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
-import { Arrays, Objects, References, Tags, Uuids } from '@bessemer/cornerstone'
+import { Arrays, Objects, References, Tags, Ulids } from '@bessemer/cornerstone'
 import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 import { Tag } from '@bessemer/cornerstone/tag'
 
@@ -82,7 +82,7 @@ export const staticData = <Type extends ContentType = ContentType, Data = Conten
   tags?: Array<Tag>
 ): StaticContentData<Type, Data> => {
   return {
-    reference: References.reference(Uuids.random(), 'Content'),
+    reference: References.reference(Ulids.generateString(), 'Content'),
     key,
     type,
     data,

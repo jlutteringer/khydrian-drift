@@ -126,14 +126,7 @@ export const clear = (array: Array<unknown>): void => {
 }
 
 export const bisect = <T, L, R>(array: Array<T>, bisector: (element: T, index: number) => Either<L, R>): [Array<L>, Array<R>] => {
-  return split(array.map(bisector))
-}
-
-// JOHN is this the right location?
-export const split = <L, R>(array: Array<Either<L, R>>): [Array<L>, Array<R>] => {
-  const lefts = array.filter(Eithers.isLeft).map((it) => it.value)
-  const rights = array.filter(Eithers.isRight).map((it) => it.value)
-  return [lefts, rights]
+  return Eithers.split(array.map(bisector))
 }
 
 export type MaybeArray<T> = T | Array<T>

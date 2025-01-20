@@ -23,6 +23,7 @@ export type PublicOptions<T extends BessemerOptions> = T['public'] & {}
 
 export type PublicProperties<T extends BessemerOptions> = PropertyRecord<PublicOptions<T>>
 
+// TODO we need the notion of a GLOBAL context :(
 export type BessemerApplicationContext = AbstractApplicationContext & {
   cache: CacheContext
   advisoryLockProvider: AdvisoryLockProvider<any>

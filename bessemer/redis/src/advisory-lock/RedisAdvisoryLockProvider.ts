@@ -3,9 +3,9 @@ import { AdvisoryLock, AdvisoryLockProps, AdvisoryLockProvider, ProviderAdvisory
 import { Results } from '@bessemer/cornerstone'
 import { Unit } from '@bessemer/cornerstone/unit'
 import { RedisApplicationContext } from '@bessemer/redis/application'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { RedlockClient, RedlockLock } from '@bessemer/redis/redlock/RedlockClient'
 import { Redis } from '@bessemer/redis'
+import { ResourceKey } from '@bessemer/cornerstone/resource'
 
 export class RedisAdvisoryLockProvider implements AdvisoryLockProvider<RedisApplicationContext> {
   acquireLock = async (

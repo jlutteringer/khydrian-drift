@@ -1,18 +1,18 @@
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { AdvisoryLock, AdvisoryLockProps, AdvisoryLockProvider, ProviderAdvisoryLock } from '@bessemer/framework/advisory-lock'
-import { Arrays, Dates, Durations, Eithers, Objects, Results, Retry, Uuids } from '@bessemer/cornerstone'
-import { Uuid } from '@bessemer/cornerstone/uuid'
+import { Arrays, Dates, Durations, Eithers, Objects, Results, Retry, Ulids } from '@bessemer/cornerstone'
 import { Unit } from '@bessemer/cornerstone/unit'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Either } from '@bessemer/cornerstone/either'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { AdvisoryLockUtil } from '@bessemer/framework/advisory-lock/util'
+import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { Ulid } from '@bessemer/cornerstone/ulid'
 
 export type LocalProviderAdvisoryLock = Array<LocalResourceLock> & ProviderAdvisoryLock
 
 type LocalResourceLock = {
-  id: Uuid
+  id: Ulid
   resourceKey: ResourceKey
   expires: Date
 }
@@ -30,39 +30,36 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
     props: AdvisoryLockProps,
     _: AbstractApplicationContext
   ): AsyncResult<ProviderAdvisoryLock> => {
-    const locks: LocalProviderAdvisoryLock = []
-    let resourceKeysToProcess = resourceKeys
-
     const result = await Retry.usingRetry(async () => {
-      for (const resourceKey of resourceKeysToProcess) {
+      const locks: Array<LocalResourceLock> = []
+      for (const resourceKey of resourceKeys) {
         const existingLock = this.expiryMap.get(resourceKey)
         if (Objects.isPresent(existingLock) && Dates.isAfter(existingLock.expires, Dates.now())) {
           return Results.failure(AdvisoryLockUtil.buildLockLockedError(resourceKey))
         }
 
         const lock: LocalResourceLock = {
-          id: Uuids.random(),
+          id: Ulids.generate(),
           resourceKey,
           expires: Dates.addDuration(Dates.now(), props.duration),
         }
 
         locks.push(lock)
-        resourceKeysToProcess = Arrays.remove(resourceKeysToProcess, resourceKey)
       }
 
-      return Results.success(Unit)
+      return Results.success(locks)
     }, props.retry)
 
     if (!result.isSuccess) {
       return result
     }
 
-    const extendedLocks = this.extendLocks(locks, props.duration)
+    const extendedLocks = this.extendLocks(result.value, props.duration)
     return Results.success(extendedLocks)
   }
 
   extendLock = async (lock: AdvisoryLock, context: AbstractApplicationContext): AsyncResult<ProviderAdvisoryLock> => {
-    const [resources, locks] = Arrays.split(this.getUnderlyingLocks(lock))
+    const [resources, locks] = Eithers.split(this.getUnderlyingLocks(lock))
 
     let locksToExtend = locks
 
@@ -82,7 +79,7 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
   private extendLocks = (locks: Array<LocalResourceLock>, duration: Duration): LocalProviderAdvisoryLock => {
     const extendedLocks: LocalProviderAdvisoryLock = locks.map((it) => {
       const newLock: LocalResourceLock = {
-        id: Uuids.random(),
+        id: Ulids.generate(),
         resourceKey: it.resourceKey,
         expires: Dates.addDuration(Dates.now(), duration),
       }

@@ -1,58 +1,89 @@
 import { CacheEntry, CacheKey, LocalCache, LocalCacheProvider } from '@bessemer/cornerstone/cache'
-import { Async, Objects } from '@bessemer/cornerstone'
+import { Arrays, Async, Entries } from '@bessemer/cornerstone'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
+import { Entry } from '@bessemer/cornerstone/entry'
 
 export class LocalCacheImpl<T> implements LocalCache<T> {
   constructor(readonly name: string, private readonly providers: Array<LocalCacheProvider<T>>) {}
 
-  getValue(initialKey: CacheKey, fetch: () => T): T {
-    if (CacheKey.isDisabled(initialKey)) {
-      return fetch()
-    }
+  getValue = (namespace: ResourceNamespace, key: ResourceKey, fetch: () => T): T => {
+    const results = this.getValues(namespace, [key], () => {
+      return [Entries.of(key, fetch())]
+    })
 
-    const key: CacheKey = CacheKey.namespace(initialKey, this.name)
-    const entry = this.getValidCachedValue(key)
-    if (Objects.isPresent(entry)) {
-      if (CacheEntry.isStale(entry)) {
-        this.revalidate(key, fetch)
-      }
-
-      return entry.value
-    }
-
-    const fetchedValue = fetch()
-    this.setValue(key, fetchedValue)
-    return fetchedValue
+    return Arrays.first(results)![1]
   }
 
-  setValue(initialKey: CacheKey, value: T | undefined): void {
-    if (CacheKey.isDisabled(initialKey)) {
+  getValues = (
+    initialNamespace: ResourceNamespace,
+    keys: Array<ResourceKey>,
+    fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>
+  ): Array<Entry<T>> => {
+    if (CacheKey.isDisabled(initialNamespace)) {
+      return fetch(keys)
+    }
+
+    const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
+    const namespacedKeys = ResourceKey.namespaceAll(namespace, keys)
+    const entries = this.getCachedValues(namespacedKeys)
+    this.revalidate(namespace, entries, fetch)
+
+    const remainingKeys = namespacedKeys.filter((it) => entries.find(([key, _]) => key === it))
+    const fetchedValues = Entries.mapKeys(fetch(remainingKeys), (it) => ResourceKey.stripNamespace(namespace, it))
+    this.setValues(initialNamespace, fetchedValues)
+
+    const results = [...entries.map(([key, value]) => Entries.of(ResourceKey.stripNamespace(namespace, key), value.value)), ...fetchedValues]
+    return results
+  }
+
+  setValue = (namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): void => {
+    this.setValues(namespace, [Entries.of(key, value)])
+  }
+
+  setValues = (initialNamespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): void => {
+    if (CacheKey.isDisabled(initialNamespace)) {
       return
     }
 
-    const key: CacheKey = CacheKey.namespace(initialKey, this.name)
-    const entry = value !== undefined ? CacheEntry.of(value) : undefined
-    this.providers.forEach((provider) => provider.setValue(key, entry))
+    const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
+    const namespacedEntries = entries.map(([key, value]) => {
+      return Entries.of(ResourceKey.namespace(namespace, key), value !== undefined ? CacheEntry.of(value) : undefined)
+    })
+
+    this.providers.forEach((provider) => provider.setValues(namespacedEntries))
   }
 
-  private getValidCachedValue(key: CacheKey, allowStale: boolean = true): CacheEntry<T> | undefined {
+  private getCachedValues(namespacedKeys: Array<ResourceKey>, allowStale: boolean = true): Array<Entry<CacheEntry<T>>> {
+    let remainingKeys = namespacedKeys
+    const results: Array<Entry<CacheEntry<T>>> = []
+
     for (const provider of this.providers) {
-      const entry = provider.getValue(key)
-      if (Objects.isPresent(entry)) {
-        if (!CacheEntry.isStale(entry) || allowStale) {
-          return entry
-        }
+      if (Arrays.isEmpty(remainingKeys)) {
+        break
       }
+
+      const entries = provider.getValues(remainingKeys).filter(([_, value]) => {
+        return !CacheEntry.isStale(value) || allowStale
+      })
+
+      results.push(...entries)
+      remainingKeys = remainingKeys.filter((it) => entries.find(([key, _]) => key === it))
     }
 
-    return undefined
+    return results
   }
 
   // JOHN do we want to implement soft revalidates?
-  private revalidate(key: CacheKey, fetch: () => T, hard: boolean = false): void {
+  private revalidate(
+    namespace: ResourceNamespace,
+    entries: Array<Entry<CacheEntry<T>>>,
+    fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>,
+    hard: boolean = false
+  ): void {
     Async.execute(async () => {
-      const fetchedValue = fetch()
-      this.setValue(key, fetchedValue)
-      return fetchedValue
+      const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
+      const fetchedValues = Entries.mapKeys(fetch(staleKeys), (it) => ResourceKey.stripNamespace(namespace, it))
+      this.setValues(namespace, fetchedValues)
     })
   }
 }
