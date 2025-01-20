@@ -27,7 +27,7 @@ export type RetryState = {
 
 export const initialize = (initialOptions?: RetryOptions): RetryState => {
   const props = Objects.merge(DefaultRetryProps, initialOptions)
-  Preconditions.isTrue(props.attempts > 0, () => 'usingRetry attempts must be > 0')
+  Preconditions.isTrue(props.attempts >= 0, () => 'usingRetry attempts must be >= 0')
 
   return {
     attempt: 0,
@@ -46,7 +46,7 @@ export const retry = async (state: RetryState): Promise<RetryState | undefined> 
 
   return {
     props: state.props,
-    attempt: state.attempt++,
+    attempt: state.attempt + 1,
   }
 }
 
@@ -55,7 +55,8 @@ export const usingRetry = async <T>(runnable: () => Promise<Result<T>>, initialO
   let previousResult: Result<T> = Results.failure()
 
   do {
-    const result = await Results.tryResult(runnable)
+    // JOHN Should this be a try/catch? it was causing debugging problems
+    const result = await runnable()
     previousResult = result
 
     if (result.isSuccess) {

@@ -9,6 +9,9 @@ import { ApplicationContent } from '@simulacrum/common/application/content'
 const contentProvider = Content.staticProvider<ApplicationContext>(ApplicationContent, [TextContentNormalizer])
 
 export const ApplicationProperties: PropertyRecord<ApplicationOptions> = Properties.properties({
+  logger: {
+    level: 'trace',
+  },
   route: {
     errorHandler: CoreRouteErrorHandler,
   },

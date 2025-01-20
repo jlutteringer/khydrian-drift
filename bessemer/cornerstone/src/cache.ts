@@ -221,7 +221,7 @@ export type CacheConfiguration = CacheConfigurationSection & {
 
 export type CacheProviderRegistry<ContextType extends AbstractApplicationContext> = {
   type: CacheProviderType
-  constructor: <T>(props: CacheProps, context: ContextType) => CacheProvider<T>
+  construct: <T>(props: CacheProps, context: ContextType) => CacheProvider<T>
 }
 
 export type CacheContext = {

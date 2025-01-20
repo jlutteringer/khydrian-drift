@@ -1,8 +1,10 @@
 import { Cache, CacheEntry, CacheKey, CacheProvider, CacheSection } from '@bessemer/cornerstone/cache'
 import { AdvisoryLocks, BessemerApplicationContext } from '@bessemer/framework'
-import { Arrays, Async, Entries } from '@bessemer/cornerstone'
+import { Arrays, Async, Entries, Loggers } from '@bessemer/cornerstone'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
+
+const logger = Loggers.child('CacheImpl')
 
 export class CacheImpl<T> implements Cache<T> {
   // JOHN we really need to think through the implications of how we handle context here
@@ -26,23 +28,26 @@ export class CacheImpl<T> implements Cache<T> {
     }
 
     const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
+    logger.trace(() => `Fetching values: ${JSON.stringify(keys)} under namespace: [${namespace}]`)
+
     const namespacedKeys = ResourceKey.namespaceAll(namespace, keys)
 
     const entries = await AdvisoryLocks.usingIncrementalLocks(
       namespacedKeys,
       this.context,
-      async (keys) => {
-        const entries = await this.getCachedValues(keys)
+      async (namespacedKeys) => {
+        const entries = await this.getCachedValues(namespacedKeys)
         return entries
       },
-      async (keys) => {
-        const fetchedValues = Entries.mapValues(await fetch(keys), CacheEntry.of)
+      async (namespacedKeys) => {
+        const keys = ResourceKey.stripNamespaceAll(namespace, namespacedKeys)
+        const fetchedValues = (await fetch(keys)).map(([key, value]) => Entries.of(ResourceKey.namespace(namespace, key), CacheEntry.of(value)))
         await this.writeValueInternal(fetchedValues)
         return fetchedValues
       }
     )
 
-    this.revalidate(entries, fetch)
+    this.revalidate(namespace, entries, fetch)
 
     const results = entries.map(([key, value]) => {
       return Entries.of(ResourceKey.stripNamespace(namespace, key), value.value)
@@ -73,15 +78,20 @@ export class CacheImpl<T> implements Cache<T> {
 
   // JOHN do we want to implement soft revalidates?
   private revalidate(
+    namespace: ResourceNamespace,
     entries: Array<Entry<CacheEntry<T>>>,
     fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
     hard: boolean = false
   ): void {
     Async.execute(async () => {
       const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
+      if (Arrays.isEmpty(staleKeys)) {
+        return
+      }
 
       await AdvisoryLocks.usingLock(staleKeys, this.context, async () => {
-        const fetchedValues = Entries.mapValues(await fetch(staleKeys), CacheEntry.of)
+        const keys = ResourceKey.stripNamespaceAll(namespace, staleKeys)
+        const fetchedValues = (await fetch(keys)).map(([key, value]) => Entries.of(ResourceKey.namespace(namespace, key), CacheEntry.of(value)))
         await this.writeValueInternal(fetchedValues)
       })
     })

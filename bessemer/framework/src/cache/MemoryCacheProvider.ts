@@ -18,7 +18,9 @@ export namespace MemoryCacheProvider {
   export const register = (): CacheProviderRegistry<BessemerApplicationContext> => {
     return {
       type: Type,
-      constructor: (props: CacheProps) => new MemoryCacheProviderImpl(props),
+      construct: (props: CacheProps) => {
+        return new MemoryCacheProviderImpl(props)
+      },
     }
   }
 }

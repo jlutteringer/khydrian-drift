@@ -1,7 +1,7 @@
 import { Duration } from '@bessemer/cornerstone/duration'
 import { RetryProps } from '@bessemer/cornerstone/retry'
 import { DeepPartial, NominalType } from '@bessemer/cornerstone/types'
-import { Arrays, Durations, Objects, Results, Retry } from '@bessemer/cornerstone'
+import { Arrays, Durations, Loggers, Objects, Preconditions, Results, Retry } from '@bessemer/cornerstone'
 import { BessemerApplicationContext } from '@bessemer/framework/index'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { AsyncResult } from '@bessemer/cornerstone/result'
@@ -9,6 +9,8 @@ import { Unit } from '@bessemer/cornerstone/unit'
 import { MaybeArray } from '@bessemer/cornerstone/array'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
+
+const logger = Loggers.child('AdvisoryLock')
 
 export type AdvisoryLockProps = {
   duration: Duration
@@ -68,10 +70,12 @@ export const usingIncrementalLocks = async <T>(
   const incrementalResults: Array<Entry<T>> = []
 
   const result = await Retry.usingRetry(async () => {
+    logger.trace(() => `usingIncrementalLocks - Fetching values: ${JSON.stringify(remainingKeys)}`)
     const incrementalValues = await fetchIncrementalValues(remainingKeys)
 
     incrementalResults.push(...incrementalValues)
-    remainingKeys = remainingKeys.filter((it) => incrementalValues.find(([key, _]) => key === it))
+    remainingKeys = remainingKeys.filter((it) => !incrementalValues.find(([key, _]) => key === it))
+    logger.trace(() => `usingIncrementalLocks - Unresolved keys: ${JSON.stringify(remainingKeys)}`)
 
     if (Arrays.isEmpty(remainingKeys)) {
       return Results.success(incrementalResults)
@@ -80,6 +84,7 @@ export const usingIncrementalLocks = async <T>(
     const lock = await tryAcquireLock(remainingKeys, context, options)
     if (lock.isSuccess) {
       const values = await withLock(lock.value, context, async () => {
+        logger.trace(() => `usingIncrementalLocks - Computing values: ${JSON.stringify(remainingKeys)}`)
         return await computeValues(remainingKeys)
       })
 
@@ -146,11 +151,11 @@ const withLock = async <T>(
 }
 
 export const tryAcquireLock = async (
-  resources: MaybeArray<ResourceKey>,
+  resourceKeys: MaybeArray<ResourceKey>,
   context: BessemerApplicationContext,
   options: AdvisoryLockOptions = {}
 ): AsyncResult<AdvisoryLock> => {
-  return await acquireLock(resources, context, { ...options, retry: Retry.None })
+  return await acquireLock(resourceKeys, context, { ...options, retry: Retry.None })
 }
 
 export const acquireLock = async (
@@ -158,9 +163,22 @@ export const acquireLock = async (
   context: BessemerApplicationContext,
   options: AdvisoryLockOptions = {}
 ): AsyncResult<AdvisoryLock> => {
+  Preconditions.isFalse(Arrays.isEmpty(resourceKeys), () => `Illegal call to acquireLock with empty resourceKeys`)
+
   const sortedKeys = Arrays.sort(Arrays.toArray(resourceKeys))
   const props = Objects.merge(DefaultAdvisoryLockProps, options)
+
+  logger.trace(() => `acquireLock - Attempting to acquire lock for keys: ${JSON.stringify(sortedKeys)}`)
+
   const providerLock = await getProvider(context).acquireLock(sortedKeys, props, context)
+
+  logger.trace(() => {
+    if (providerLock.isSuccess) {
+      return `acquireLock - Successfully acquired lock for keys: ${JSON.stringify(sortedKeys)}`
+    } else {
+      return `acquireLock - Failed to acquire lock for keys: ${JSON.stringify(sortedKeys)}`
+    }
+  })
 
   return Results.map(providerLock, (it) => {
     return {

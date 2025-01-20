@@ -11,7 +11,7 @@ export namespace RedisCacheProvider {
   export const register = (): CacheProviderRegistry<RedisApplicationContext> => {
     return {
       type: Type,
-      constructor: (props: CacheProps, context: RedisApplicationContext) => {
+      construct: (props: CacheProps, context: RedisApplicationContext) => {
         return new RedisCacheProviderImpl(props, context)
       },
     }

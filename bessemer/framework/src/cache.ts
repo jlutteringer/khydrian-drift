@@ -28,6 +28,7 @@ const DefaultCacheConfiguration: CacheConfiguration = {
 
 export const configure = (cache?: CacheConfiguration): CacheContext => {
   const configuration = Objects.merge(DefaultCacheConfiguration, cache)
+
   return {
     providers: [MemoryCacheProvider.register()],
     configuration,
@@ -104,7 +105,7 @@ const getProviders = <T>(name: string, configuration: CacheConfigurationSection,
     }
 
     const props = CacheProps.buildCacheProps(provider)
-    const providerInstance = targetRegistry.constructor<T>(props, context)
+    const providerInstance = targetRegistry.construct<T>(props, context)
     return providerInstance
   })
 

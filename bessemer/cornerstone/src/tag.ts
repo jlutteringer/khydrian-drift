@@ -44,7 +44,7 @@ export type SerializedTags = NominalType<string, 'SerializedTags'>
 
 export const serializeTags = <T>(tags: Array<Tag<T>>): SerializedTags => {
   const serializedTags: SerializedTags = Arrays.sortWith(tags, tagComparator())
-    .map(({ type, value }) => `${type}-${JSON.stringify(value)}`)
+    .map(({ type, value }) => `${type}:${JSON.stringify(value)}`)
     .join('.')
 
   return serializedTags
