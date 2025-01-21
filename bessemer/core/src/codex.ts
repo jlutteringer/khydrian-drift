@@ -37,19 +37,19 @@ export const defaultRuntime = (): CodexRuntime => {
   }
 }
 
-// export type CodexDefinitionResolver<T extends GenericRecord> = (
+// export type CodexDefinitionResolver<T extends UnknownRecord> = (
 //   reference: ReferenceType<ContentReference>,
 //   application: CoreApplicationContext
 // ) => Promise<T | undefined>
 //
 // export type CodexDefinitionRenderer<T> = (data: T) => ReactNode
 //
-// export type CodexFunctions<T extends GenericRecord> = {
+// export type CodexFunctions<T extends UnknownRecord> = {
 //   resolve: CodexDefinitionResolver<T>
 //   render: CodexDefinitionRenderer<T>
 // }
 
-// export type CodexDefinition<T extends GenericRecord> = CodexFunctions<T> & {
+// export type CodexDefinition<T extends UnknownRecord> = CodexFunctions<T> & {
 //   type: ContentType
 // }
 
@@ -75,7 +75,7 @@ export const text = (reference: ReferenceType<ContentReference>, defaultValue?: 
   }
 }
 
-// export const definition = <T extends GenericRecord>(
+// export const definition = <T extends UnknownRecord>(
 //   type: ContentType,
 //   resolve: CodexDefinitionResolver<T>,
 //   render: CodexDefinitionRenderer<T>

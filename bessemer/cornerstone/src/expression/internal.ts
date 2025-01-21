@@ -1,8 +1,8 @@
-import { GenericRecord } from '@bessemer/cornerstone/types'
 import { EvaluateExpression, Expression, ExpressionContext, ExpressionDefinition, ExpressionKey, IExpression } from '@bessemer/cornerstone/expression'
 import { Objects } from '@bessemer/cornerstone'
+import { UnknownRecord } from 'type-fest'
 
-export const defineExpression = <ReturnType, ArgumentType extends Array<unknown>, PayloadType extends GenericRecord>(options: {
+export const defineExpression = <ReturnType, ArgumentType extends Array<unknown>, PayloadType extends UnknownRecord>(options: {
   expressionKey: ExpressionKey<ReturnType, ArgumentType>
   builder: (...parameters: ArgumentType) => PayloadType
   resolver: (expression: PayloadType, evaluate: EvaluateExpression, context: ExpressionContext) => ReturnType

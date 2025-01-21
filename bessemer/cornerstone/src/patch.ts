@@ -1,6 +1,13 @@
-import { ArrayExpressions, EvaluateExpression, Expression, Expressions, NumericExpressions, ReducingExpression } from '@bessemer/cornerstone/expression'
+import {
+  ArrayExpressions,
+  EvaluateExpression,
+  Expression,
+  Expressions,
+  NumericExpressions,
+  ReducingExpression,
+} from '@bessemer/cornerstone/expression'
 import { Objects, Preconditions } from '@bessemer/cornerstone'
-import { GenericRecord } from '@bessemer/cornerstone/types'
+import { UnknownRecord } from 'type-fest'
 
 export enum PatchType {
   Set = 'Set',
@@ -54,7 +61,7 @@ export const apply = <T>(value: Expression<T>, reducer: ReducingExpression<T, T>
   }
 }
 
-export const patch = <T extends GenericRecord, N extends Patchable<T> = Patchable<T>>(patch: N): Patch<T> => {
+export const patch = <T extends UnknownRecord, N extends Patchable<T> = Patchable<T>>(patch: N): Patch<T> => {
   return {
     _PatchType: PatchType.Patch,
     patch,

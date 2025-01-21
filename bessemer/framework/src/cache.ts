@@ -94,8 +94,8 @@ export const createLocalCache = <T>(name: string, context: BessemerApplicationCo
 }
 
 const getProviders = <T>(name: string, configuration: CacheConfigurationSection, context: BessemerApplicationContext): Array<CacheProvider<T>> => {
-  const defaultOptions = configuration?.defaults
-  const specificOptions = configuration?.caches?.[name]
+  const defaultOptions = configuration.defaults
+  const specificOptions = configuration.caches?.[name]
   const resolvedOptions = { ...defaultOptions, ...specificOptions }
 
   const constructedProviders = resolvedOptions.providers.map((provider) => {

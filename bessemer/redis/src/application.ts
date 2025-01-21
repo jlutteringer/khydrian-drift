@@ -2,6 +2,7 @@ import { ApplicationRuntimeType, BessemerApplicationContext, BessemerApplication
 import { BaseApplicationModule } from '@bessemer/framework/application'
 import { RedisAdvisoryLockProvider } from '@bessemer/redis/advisory-lock/RedisAdvisoryLockProvider'
 import { Objects } from '@bessemer/cornerstone'
+import { RedisCacheProvider } from '@bessemer/redis/cache/RedisCacheProvider'
 
 export type RedisOptions = BessemerOptions & {
   redis?: {
@@ -24,9 +25,24 @@ export const RedisApplicationModule: BessemerApplicationModule<RedisApplicationC
     runtime: ApplicationRuntimeType<RedisApplicationContext>
   ): Promise<RedisApplicationContext> => {
     const baseApplication = await BaseApplicationModule.initializeApplication(options, runtime)
-    if (Objects.isPresent(options.redis)) {
-      baseApplication.advisoryLockProvider = new RedisAdvisoryLockProvider()
+
+    if (Objects.isNil(options.redis)) {
+      return baseApplication
     }
-    return baseApplication
+
+    const redisApplication: RedisApplicationContext = Objects.merge(baseApplication, {
+      redis: options.redis,
+      advisoryLockProvider: new RedisAdvisoryLockProvider(),
+      cache: {
+        providers: [...baseApplication.cache.providers, RedisCacheProvider.register()],
+        configuration: {
+          defaults: {
+            providers: [...baseApplication.cache.configuration.defaults.providers, { type: RedisCacheProvider.Type, maxSize: null }],
+          },
+        },
+      },
+    })
+
+    return redisApplication
   },
 }

@@ -1,20 +1,18 @@
-import { GenericRecord } from '@bessemer/cornerstone/types'
 import { evaluate, LazyValue } from '@bessemer/cornerstone/lazy'
 import { isUndefined } from '@bessemer/cornerstone/object'
+import { UnknownRecord } from 'type-fest'
 
 export type GlobalVariable<T> = {
   getValue: () => T
   setValue: (value: T) => void
 }
 
-let Global: { BessemerGlobalVariables: GenericRecord }
-if(typeof window !== 'undefined') {
+let Global: { BessemerGlobalVariables: UnknownRecord }
+if (typeof window !== 'undefined') {
   Global = window as any
-}
-else if(typeof global !== 'undefined'){
+} else if (typeof global !== 'undefined') {
   Global = global as any
-}
-else {
+} else {
   Global = globalThis as any
 }
 

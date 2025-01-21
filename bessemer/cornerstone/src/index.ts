@@ -18,6 +18,8 @@ import * as Preconditions from '@bessemer/cornerstone/precondition'
 import * as Uuids from '@bessemer/cornerstone/uuid'
 import * as Ulids from '@bessemer/cornerstone/ulid'
 import * as Entries from '@bessemer/cornerstone/entry'
+import * as Hashes from '@bessemer/cornerstone/hash'
+import * as Crypto from '@bessemer/cornerstone/crypto'
 
 import * as Tags from '@bessemer/cornerstone/tag'
 import * as Promises from '@bessemer/cornerstone/promise'
@@ -55,6 +57,8 @@ export {
   Uuids,
   Ulids,
   Entries,
+  Hashes,
+  Crypto,
   Tags,
   Promises,
   References,

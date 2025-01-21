@@ -14,7 +14,8 @@ import {
   mergeWith as unsafeMergeWith,
 } from 'lodash-es'
 import { produce } from 'immer'
-import { GenericRecord, NominalType, Primitive } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
+import { Primitive, UnknownRecord } from 'type-fest'
 
 export const update: typeof produce = produce
 
@@ -66,11 +67,11 @@ export const mergeWith: typeof unsafeMergeWith = (...args: Array<any>) => {
 
 export type ObjectDiffResult = {
   elementsUpdated: Record<string, { originalValue: unknown; updatedValue: unknown }>
-  elementsAdded: GenericRecord
-  elementsRemoved: GenericRecord
+  elementsAdded: UnknownRecord
+  elementsRemoved: UnknownRecord
 }
 
-export function diffShallow(original: GenericRecord, updated: GenericRecord): ObjectDiffResult {
+export function diffShallow(original: UnknownRecord, updated: UnknownRecord): ObjectDiffResult {
   const result: ObjectDiffResult = {
     elementsUpdated: {},
     elementsAdded: {},
@@ -139,7 +140,7 @@ const pathify = (path: ObjectPath | string): ObjectPath => {
   return path as ObjectPath
 }
 
-export const getPathValue = (object: GenericRecord, initialPath: ObjectPath | string): unknown | undefined => {
+export const getPathValue = (object: UnknownRecord, initialPath: ObjectPath | string): unknown | undefined => {
   const path = pathify(initialPath)
   let current: any = object
 
@@ -154,7 +155,7 @@ export const getPathValue = (object: GenericRecord, initialPath: ObjectPath | st
   return current
 }
 
-export const applyPathValue = (object: GenericRecord, initialPath: ObjectPath | string, value: unknown): GenericRecord | undefined => {
+export const applyPathValue = (object: UnknownRecord, initialPath: ObjectPath | string, value: unknown): UnknownRecord | undefined => {
   const path = pathify(initialPath)
 
   const newObject = update(object, (draft) => {
@@ -226,6 +227,6 @@ const walk = (value: any, transform: TransformFunction, path: (string | number)[
 export type RecordAttribute<Type = unknown, Class extends string = 'RecordAttribute'> = NominalType<string, [Type, Class]>
 type RecordAttributeType<Attribute> = Attribute extends RecordAttribute<infer Type, string> ? Type : never
 
-export const getAttribute = <T extends RecordAttribute<unknown, string>>(record: GenericRecord, attribute: T): RecordAttributeType<T> | undefined => {
+export const getAttribute = <T extends RecordAttribute<unknown, string>>(record: UnknownRecord, attribute: T): RecordAttributeType<T> | undefined => {
   return record[attribute] as RecordAttributeType<T> | undefined
 }

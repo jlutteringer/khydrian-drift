@@ -28,7 +28,7 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     const entries = this.getCachedValues(namespacedKeys)
     this.revalidate(namespace, entries, fetch)
 
-    const remainingKeys = namespacedKeys.filter((it) => entries.find(([key, _]) => key === it))
+    const remainingKeys = namespacedKeys.filter((it) => !entries.find(([key, _]) => key === it))
     const fetchedValues = Entries.mapKeys(fetch(remainingKeys), (it) => ResourceKey.stripNamespace(namespace, it))
     this.setValues(initialNamespace, fetchedValues)
 
@@ -57,6 +57,8 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     let remainingKeys = namespacedKeys
     const results: Array<Entry<CacheEntry<T>>> = []
 
+    const providerMisses = new Map<LocalCacheProvider<T>, Array<Entry<CacheEntry<T>>>>()
+
     for (const provider of this.providers) {
       if (Arrays.isEmpty(remainingKeys)) {
         break
@@ -66,8 +68,20 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
         return !CacheEntry.isStale(value) || allowStale
       })
 
+      for (const misses of providerMisses.values()) {
+        misses.push(...entries)
+      }
+
       results.push(...entries)
-      remainingKeys = remainingKeys.filter((it) => entries.find(([key, _]) => key === it))
+      remainingKeys = remainingKeys.filter((it) => !entries.find(([key, _]) => key === it))
+
+      providerMisses.set(provider, [])
+    }
+
+    for (const [provider, misses] of providerMisses.entries()) {
+      if (!Arrays.isEmpty(misses)) {
+        provider.setValues(misses)
+      }
     }
 
     return results

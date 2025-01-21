@@ -1,12 +1,11 @@
-import { createHash, randomBytes } from 'crypto'
 import { EventEmitter } from 'events'
 import { RedisClient } from '@bessemer/redis/redis'
-import { Durations, Objects, Preconditions, Results, Retry } from '@bessemer/cornerstone'
+import { Async, Crypto, Durations, Hashes, Objects, Preconditions, Results, Retry } from '@bessemer/cornerstone'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { AdvisoryLockProps } from '@bessemer/framework/advisory-lock'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { Hash } from '@bessemer/cornerstone/hash'
+import { PartialDeep } from 'type-fest'
 
-// Define script constants.
 const ACQUIRE_SCRIPT = `
   -- Return 0 if an entry already exists.
   for i, key in ipairs(KEYS) do
@@ -91,7 +90,7 @@ export type RedlockProps = {
   automaticExtensionThreshold: number
 }
 
-export type RedlockOptions = DeepPartial<RedlockProps>
+export type RedlockOptions = PartialDeep<RedlockProps>
 
 export const DefaultRedlockProps: RedlockProps = {
   driftFactor: 0.01,
@@ -136,11 +135,11 @@ export type RedlockLock = {
 export class RedlockClient extends EventEmitter {
   public readonly clients: Set<RedisClient>
   public readonly props: RedlockProps
-  public readonly scripts: {
-    readonly acquireScript: { value: string; hash: string }
-    readonly extendScript: { value: string; hash: string }
-    readonly releaseScript: { value: string; hash: string }
-  }
+  public readonly scripts: Promise<{
+    readonly acquireScript: { value: string; hash: Hash }
+    readonly extendScript: { value: string; hash: Hash }
+    readonly releaseScript: { value: string; hash: Hash }
+  }>
 
   public constructor(clients: Iterable<RedisClient>, options: RedlockOptions = DefaultRedlockProps) {
     super()
@@ -164,36 +163,22 @@ export class RedlockClient extends EventEmitter {
 
     this.props = Objects.merge(DefaultRedlockProps, options)
 
-    this.scripts = {
-      acquireScript: {
-        value: ACQUIRE_SCRIPT,
-        hash: this._hash(ACQUIRE_SCRIPT),
-      },
-      extendScript: {
-        value: EXTEND_SCRIPT,
-        hash: this._hash(EXTEND_SCRIPT),
-      },
-      releaseScript: {
-        value: RELEASE_SCRIPT,
-        hash: this._hash(RELEASE_SCRIPT),
-      },
-    }
-  }
-
-  // JOHN utility?
-  /**
-   * Generate a sha1 hash compatible with redis evalsha.
-   */
-  private _hash = (value: string): string => {
-    return createHash('sha1').update(value).digest('hex')
-  }
-
-  // JOHN utility?
-  /**
-   * Generate a cryptographically random string.
-   */
-  private _random = (): string => {
-    return randomBytes(16).toString('hex')
+    this.scripts = Async.execute(async () => {
+      return {
+        acquireScript: {
+          value: ACQUIRE_SCRIPT,
+          hash: await Hashes.insecureHash(ACQUIRE_SCRIPT),
+        },
+        extendScript: {
+          value: EXTEND_SCRIPT,
+          hash: await Hashes.insecureHash(EXTEND_SCRIPT),
+        },
+        releaseScript: {
+          value: RELEASE_SCRIPT,
+          hash: await Hashes.insecureHash(RELEASE_SCRIPT),
+        },
+      }
+    })
   }
 
   /**
@@ -218,10 +203,10 @@ export class RedlockClient extends EventEmitter {
     const durationMs = Durations.inMilliseconds(props.duration)
     Preconditions.isTrue(Number.isInteger(durationMs), () => 'Duration must be an integer value')
 
-    const value = this._random()
+    const value = Crypto.getRandomHex(16)
 
     try {
-      const { attempts, start } = await this.executeScript(this.scripts.acquireScript, resourceKeys, [value, durationMs], props)
+      const { attempts, start } = await this.executeScript((await this.scripts).acquireScript, resourceKeys, [value, durationMs], props)
 
       // Add 2 milliseconds to the drift to account for Redis expires precision,
       // which is 1 ms, plus the configured allowable drift factor.
@@ -237,7 +222,7 @@ export class RedlockClient extends EventEmitter {
       try {
         // If there was an error acquiring the lock, release any partial lock
         // state that may exist on a minority of clients.
-        await this.executeScript(this.scripts.releaseScript, resourceKeys, [value], {
+        await this.executeScript((await this.scripts).releaseScript, resourceKeys, [value], {
           ...props,
           retry: Retry.None,
         })
@@ -261,7 +246,7 @@ export class RedlockClient extends EventEmitter {
     lock.expiration = 0
 
     // Attempt to release the lock.
-    return this.executeScript(this.scripts.releaseScript, lock.resourceKeys, [lock.value], props)
+    return this.executeScript((await this.scripts).releaseScript, lock.resourceKeys, [lock.value], props)
   }
 
   /**
@@ -272,7 +257,14 @@ export class RedlockClient extends EventEmitter {
     Preconditions.isTrue(Number.isInteger(durationMs), () => 'Duration must be an integer value')
     Preconditions.isFalse(existing.expiration < Date.now(), 'Cannot extend an already-expired lock.')
 
-    const { attempts, start } = await this.executeScript(this.scripts.extendScript, existing.resourceKeys, [existing.value, durationMs], props)
+    const { attempts, start } = await this.executeScript(
+      (
+        await this.scripts
+      ).extendScript,
+      existing.resourceKeys,
+      [existing.value, durationMs],
+      props
+    )
 
     // Invalidate the existing lock.
     existing.expiration = 0

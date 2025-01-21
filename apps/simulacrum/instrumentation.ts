@@ -1,10 +1,10 @@
-import { Bessemer } from '@bessemer/framework'
-import { ApplicationModule } from '@simulacrum/common/application'
-import { ApplicationRuntimeModule } from '@simulacrum/common/application/common'
-import { ApplicationProperties } from '@simulacrum/common/application/properties'
+export const register = async () => {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    const { Bessemer } = await import('@bessemer/framework')
+    const { ApplicationModule } = await import('@simulacrum/common/application')
+    const { ApplicationRuntimeModule } = await import('@simulacrum/common/application/common')
+    const { ApplicationProperties } = await import('@simulacrum/common/application/properties')
 
-export const register = () => {
-  if (process.env.NEXT_RUNTIME !== 'edge') {
     Bessemer.configure({
       applicationProvider: ApplicationModule,
       runtimeProvider: ApplicationRuntimeModule,

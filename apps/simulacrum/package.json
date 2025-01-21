@@ -13,6 +13,7 @@
     "clean": "rm -rf .next && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/foundry": "workspace:*"
+    "@bessemer/foundry": "workspace:*",
+    "@bessemer/redis": "workspace:*"
   }
 }

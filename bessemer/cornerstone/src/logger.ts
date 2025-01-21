@@ -2,13 +2,13 @@ import pino from 'pino'
 import { Lazy, Objects } from '@bessemer/cornerstone'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { LazyValue } from '@bessemer/cornerstone/lazy'
-import { GenericRecord } from '@bessemer/cornerstone/types'
+import { UnknownRecord } from 'type-fest'
 
 type PinoLogger = pino.Logger
 type PinoBindings = pino.Bindings
 export type LoggerOptions = pino.LoggerOptions
 
-type LogOptions = { error?: unknown; context?: GenericRecord }
+type LogOptions = { error?: unknown; context?: UnknownRecord }
 type LogFunction = (message: LazyValue<string>, options?: LogOptions) => void
 
 export class Logger {

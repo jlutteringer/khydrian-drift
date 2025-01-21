@@ -7,10 +7,13 @@ import {
   CacheSection,
 } from '@bessemer/cornerstone/cache'
 import { LRUCache } from 'lru-cache'
-import { Durations, Entries, Objects } from '@bessemer/cornerstone'
+import { Durations, Entries, Loggers, Objects } from '@bessemer/cornerstone'
 import { BessemerApplicationContext } from '@bessemer/framework'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
+
+// JOHN this logger doesn't work... indicating a flaw in our proxy :(
+const logger = Loggers.child('MemoryCacheProvider')
 
 export namespace MemoryCacheProvider {
   export const Type: CacheProviderType = 'MemoryCacheProvider'
@@ -49,20 +52,25 @@ export class MemoryCacheProviderImpl<T> extends AbstractLocalCacheProvider<T> {
   type = MemoryCacheProvider.Type
 
   getValues = (keys: Array<ResourceKey>): Array<Entry<CacheEntry<T>>> => {
+    logger.info(() => `Fetching cache values: ${JSON.stringify(keys)}`)
+
     const results = keys
       .map((it) => Entries.of(it, this.cache.get(it) as CacheEntry<T> | undefined))
       .filter(([_, value]) => Objects.isPresent(value))
       .filter(([_, value]) => CacheEntry.isAlive(value)) as Array<Entry<CacheEntry<T>>>
 
+    logger.info(() => `Cache hit on: ${JSON.stringify(Entries.keys(results))}`)
     return results
   }
 
   setValues = (entries: Array<Entry<CacheEntry<T> | undefined>>): void => {
+    logger.info(() => `Writing cache values: ${JSON.stringify(Entries.keys(entries))}`)
+
     entries.forEach(([key, value]) => {
       if (Objects.isUndefined(value)) {
         this.cache.delete(key)
       } else {
-        this.cache.set(key, CacheEntry.limit(value, this.props))
+        this.cache.set(key, CacheEntry.applyProps(value, this.props))
       }
     })
   }

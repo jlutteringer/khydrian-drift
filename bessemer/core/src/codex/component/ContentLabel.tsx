@@ -1,8 +1,8 @@
 import { ContentDisplayTypes, TextContent, TextContentType } from '@bessemer/cornerstone/content'
 import { ContentElement, ContentElementProps } from '@bessemer/core/codex/component/ContentElement'
-import { RequireField } from '@bessemer/cornerstone/types'
+import { SetRequired } from 'type-fest'
 
-export const ContentLabel = ({ contentKey, defaultValue, options }: RequireField<ContentElementProps<TextContent>, 'defaultValue'>) => {
+export const ContentLabel = ({ contentKey, defaultValue, options }: SetRequired<ContentElementProps<TextContent>, 'defaultValue'>) => {
   return (
     <ContentElement
       contentKey={contentKey}

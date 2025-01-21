@@ -28,7 +28,7 @@ export class CacheImpl<T> implements Cache<T> {
     }
 
     const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
-    logger.trace(() => `Fetching values: ${JSON.stringify(keys)} under namespace: [${namespace}]`)
+    logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)} under namespace: [${namespace}]`)
 
     const namespacedKeys = ResourceKey.namespaceAll(namespace, keys)
 
@@ -41,6 +41,8 @@ export class CacheImpl<T> implements Cache<T> {
       },
       async (namespacedKeys) => {
         const keys = ResourceKey.stripNamespaceAll(namespace, namespacedKeys)
+        logger.trace(() => `Cache Miss! Retrieving from source: ${JSON.stringify(keys)} under namespace: [${namespace}]`)
+
         const fetchedValues = (await fetch(keys)).map(([key, value]) => Entries.of(ResourceKey.namespace(namespace, key), CacheEntry.of(value)))
         await this.writeValueInternal(fetchedValues)
         return fetchedValues
@@ -60,6 +62,8 @@ export class CacheImpl<T> implements Cache<T> {
     let remainingKeys = namespacedKeys
     const results: Array<Entry<CacheEntry<T>>> = []
 
+    const providerMisses = new Map<CacheProvider<T>, Array<Entry<CacheEntry<T>>>>()
+
     for (const provider of this.providers) {
       if (Arrays.isEmpty(remainingKeys)) {
         break
@@ -69,9 +73,21 @@ export class CacheImpl<T> implements Cache<T> {
         return !CacheEntry.isStale(value) || allowStale
       })
 
+      for (const misses of providerMisses.values()) {
+        misses.push(...entries)
+      }
+
       results.push(...entries)
-      remainingKeys = remainingKeys.filter((it) => entries.find(([key, _]) => key === it))
+      remainingKeys = remainingKeys.filter((it) => !entries.find(([key, _]) => key === it))
+
+      providerMisses.set(provider, [])
     }
+
+    const writes = Array.from(providerMisses.entries())
+      .filter(([_, misses]) => !Arrays.isEmpty(misses))
+      .map(([provider, misses]) => provider.writeValues(misses))
+
+    await Promise.all(writes)
 
     return results
   }

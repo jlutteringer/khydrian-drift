@@ -26,7 +26,7 @@ export namespace CacheProps {
   export const buildCacheProps = (options?: CacheOptions): CacheProps => {
     options = options ?? {}
 
-    const props = Objects.merge(options, DefaultCacheProps)
+    const props = Objects.merge(DefaultCacheProps, options)
 
     if (props.maxSize === null && props.timeToLive === null) {
       throw new Error('Invalid cache configuration, both maxSize and timeToLive are null')
@@ -164,7 +164,7 @@ export namespace CacheEntry {
   }
 
   // JOHN do we want to enforce some kind of minimum liveness threshold?
-  export const limit = <T>(originalEntry: CacheEntry<T>, props: CacheProps): CacheEntry<T> => {
+  export const applyProps = <T>(originalEntry: CacheEntry<T>, props: CacheProps): CacheEntry<T> => {
     let liveTimestamp: Date | null = originalEntry.liveTimestamp
     if (!Objects.isNil(props.timeToLive)) {
       const limit = Dates.addMilliseconds(Dates.now(), Durations.inMilliseconds(props.timeToLive))

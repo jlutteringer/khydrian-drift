@@ -1,14 +1,14 @@
 import { Duration } from '@bessemer/cornerstone/duration'
-import { DeepPartial } from '@bessemer/cornerstone/types'
 import { Async, Durations, Maths, Objects, Preconditions, Results } from '@bessemer/cornerstone/index'
 import { AsyncResult, Result } from '@bessemer/cornerstone/result'
+import { PartialDeep } from 'type-fest'
 
 export type RetryProps = {
   attempts: number
   delay: Duration
 }
 
-export type RetryOptions = DeepPartial<RetryProps>
+export type RetryOptions = PartialDeep<RetryProps>
 
 export const None: RetryProps = {
   attempts: 0,

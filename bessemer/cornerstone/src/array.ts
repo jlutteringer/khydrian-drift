@@ -16,6 +16,7 @@ import { Signable } from '@bessemer/cornerstone/signature'
 import { Comparators, Eithers, Preconditions, Signatures } from '@bessemer/cornerstone'
 import { Either } from '@bessemer/cornerstone/either'
 import { Comparator } from '@bessemer/cornerstone/comparator'
+import { Arrayable } from 'type-fest'
 
 export const equalWith = <T>(first: Array<T>, second: Array<T>, equalitor: Equalitor<T>): boolean => {
   if (first.length !== second.length) {
@@ -129,9 +130,7 @@ export const bisect = <T, L, R>(array: Array<T>, bisector: (element: T, index: n
   return Eithers.split(array.map(bisector))
 }
 
-export type MaybeArray<T> = T | Array<T>
-
-export const toArray = <T>(array: MaybeArray<T>): Array<T> => {
+export const toArray = <T>(array: Arrayable<T>): Array<T> => {
   if (Array.isArray(array)) {
     return array
   }

@@ -5,23 +5,26 @@ import { serverOnlyTest } from '@simulacrum/common/server-only-test'
 import { ApplicationRuntimeType, BessemerApplicationModule, ClientContextType } from '@bessemer/framework'
 import { headers } from 'next/headers'
 import { FoundryApplicationContext, FoundryApplicationModule, FoundryClientContext, FoundryOptions } from '@bessemer/foundry/application'
+import { RedisApplicationContext, RedisApplicationModule, RedisOptions } from '@bessemer/redis/application'
 
-export type ApplicationOptions = FoundryOptions & {
-  ruleset: string
-  public: {
-    test: string
-  }
-}
-
-export type ApplicationContext = FoundryApplicationContext & {
-  serverOnlyTest: () => string
-  client: {
-    runtime: {
-      test: () => string
+export type ApplicationOptions = FoundryOptions &
+  RedisOptions & {
+    ruleset: string
+    public: {
+      test: string
     }
-    ruleset: Ruleset
   }
-}
+
+export type ApplicationContext = FoundryApplicationContext &
+  RedisApplicationContext & {
+    serverOnlyTest: () => string
+    client: {
+      runtime: {
+        test: () => string
+      }
+      ruleset: Ruleset
+    }
+  }
 
 export type ClientContext = ClientContextType<ApplicationContext> & FoundryClientContext & {}
 
@@ -47,7 +50,8 @@ export const ApplicationModule: BessemerApplicationModule<ApplicationContext, Ap
   },
   initializeApplication: async (options: ApplicationOptions, runtime: ApplicationRuntimeType<ApplicationContext>): Promise<ApplicationContext> => {
     const baseApplication = await FoundryApplicationModule.initializeApplication(options, runtime)
-    const application = Objects.merge(baseApplication, { serverOnlyTest, client: { ruleset: Dnd5e, runtime } })
+    const redisApplication = await RedisApplicationModule.initializeApplication(options, runtime)
+    const application = Objects.merge(baseApplication, redisApplication, { serverOnlyTest, client: { ruleset: Dnd5e, runtime } })
     return application
   },
 }

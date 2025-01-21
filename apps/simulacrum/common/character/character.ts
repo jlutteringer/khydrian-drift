@@ -1,32 +1,23 @@
 import { TraitReference } from '@simulacrum/common/trait'
 import { Effect } from '@simulacrum/common/effect'
-import {
-  CharacterChoice,
-  CharacterSelection,
-  EvaluateCharacterOptionsResult
-} from '@simulacrum/common/character/character-option'
+import { CharacterChoice, CharacterSelection, EvaluateCharacterOptionsResult } from '@simulacrum/common/character/character-option'
 import { CharacterOptions, CharacterProgression } from '@simulacrum/common/character/index'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { AbilityReference, AbilityState } from '@simulacrum/common/ability'
 import { Characteristic, CharacteristicValue } from '@simulacrum/common/characteristic'
 import { ResourcePoolState } from '@simulacrum/common/resource-pool'
-import {
-  EvaluateExpression,
-  ExpressionContext,
-  Expressions,
-  ExpressionVariable
-} from '@bessemer/cornerstone/expression'
-import { GenericRecord } from '@bessemer/cornerstone/types'
+import { EvaluateExpression, ExpressionContext, Expressions, ExpressionVariable } from '@bessemer/cornerstone/expression'
 import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools } from '@simulacrum/common'
 import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { ApplicationContext } from '@simulacrum/common/application'
+import { UnknownRecord } from 'type-fest'
 
 export namespace CharacterValues {
   export const Level: ExpressionVariable<number> = Expressions.variable('Level')
   export const Traits: ExpressionVariable<Array<TraitReference>> = Expressions.variable('Traits')
 }
 
-export type CharacterInitialValues = GenericRecord
+export type CharacterInitialValues = UnknownRecord
 
 export type CharacterRecord = {
   name: string
@@ -223,7 +214,7 @@ export const buildExpressionContext = (character: CharacterState, context: Appli
     return Expressions.buildVariable(it.variable, characteristic.value)
   })
 
-  const variables: GenericRecord = {
+  const variables: UnknownRecord = {
     ...Expressions.buildVariable(CharacterValues.Level, character.level),
     ...Expressions.buildVariable(CharacterValues.Traits, ProgressionTables.getValues(character.traits)),
     ...Objects.mergeAll(attributeVariables),

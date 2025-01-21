@@ -2,8 +2,9 @@ import * as NumericExpressions from '@bessemer/cornerstone/expression/numeric-ex
 import * as StringExpressions from '@bessemer/cornerstone/expression/string-expression'
 import * as ArrayExpressions from '@bessemer/cornerstone/expression/array-expression'
 import * as Expressions from '@bessemer/cornerstone/expression/expression'
-import { GenericRecord, NominalType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import { Signable } from '@bessemer/cornerstone/signature'
+import { UnknownRecord } from 'type-fest'
 
 export { Expressions, NumericExpressions, StringExpressions, ArrayExpressions }
 
@@ -23,10 +24,11 @@ export interface ReducingExpression<ReturnType, ArgumentType> extends Expression
 
 export type EvaluateExpression = <T>(expression: Expression<T>) => T
 
-export type ExpressionDefinition<ReturnType, ArgumentType extends Array<unknown>, ExpressionType extends Expression<ReturnType>> = ExpressionReference<
+export type ExpressionDefinition<
   ReturnType,
-  ArgumentType
-> & {
+  ArgumentType extends Array<unknown>,
+  ExpressionType extends Expression<ReturnType>
+> = ExpressionReference<ReturnType, ArgumentType> & {
   expressionKey: ExpressionKey<ReturnType, ArgumentType>
   builder: (...parameters: ArgumentType) => ExpressionType
   resolver: (expression: ExpressionType, evaluate: EvaluateExpression, context: ExpressionContext) => ReturnType
@@ -42,5 +44,5 @@ export interface ParameterizedVariable<ValueType, ParameterType extends Array<Si
 }
 
 export type ExpressionContext = {
-  variables: GenericRecord
+  variables: UnknownRecord
 }

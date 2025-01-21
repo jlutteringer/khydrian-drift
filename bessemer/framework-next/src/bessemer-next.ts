@@ -10,7 +10,9 @@ const context: ServerContext<BessemerInstance<BessemerApplicationContext, Bessem
 export const getInstance = async <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
   tags?: Array<Tag>
 ): Promise<BessemerInstance<ApplicationContext, ApplicationOptions>> => {
-  const response = (await context.fetchValue(() => Bessemer.initialize(tags))) as BessemerInstance<ApplicationContext, ApplicationOptions>
+  const instance = await context.fetchValue(() => Bessemer.initialize(tags))
+  // JOHN fix cast?
+  const response = instance as any as BessemerInstance<ApplicationContext, ApplicationOptions>
   return response
 }
 

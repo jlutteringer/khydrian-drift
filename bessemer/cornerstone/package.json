@@ -27,6 +27,7 @@
     "immer": "10.1.1",
     "lodash-es": "4.17.21",
     "pino": "9.6.0",
+    "type-fest": "4.32.0",
     "ulid": "2.3.0"
   },
   "devDependencies": {

@@ -415,6 +415,7 @@ __metadata:
     lodash-es: "npm:4.17.21"
     pino: "npm:9.6.0"
     pino-pretty: "npm:13.0.0"
+    type-fest: "npm:4.32.0"
     ulid: "npm:2.3.0"
   languageName: unknown
   linkType: soft
@@ -477,7 +478,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@bessemer/redis@workspace:bessemer/redis":
+"@bessemer/redis@workspace:*, @bessemer/redis@workspace:bessemer/redis":
   version: 0.0.0-use.local
   resolution: "@bessemer/redis@workspace:bessemer/redis"
   dependencies:
@@ -5829,6 +5830,7 @@ __metadata:
   resolution: "simulacrum@workspace:apps/simulacrum"
   dependencies:
     "@bessemer/foundry": "workspace:*"
+    "@bessemer/redis": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -6383,6 +6385,13 @@ __metadata:
   version: 4.0.8
   resolution: "type-detect@npm:4.0.8"
   checksum: 10c0/8fb9a51d3f365a7de84ab7f73b653534b61b622aa6800aecdb0f1095a4a646d3f5eb295322127b6573db7982afcd40ab492d038cf825a42093a58b1e1353e0bd
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:4.32.0":
+  version: 4.32.0
+  resolution: "type-fest@npm:4.32.0"
+  checksum: 10c0/e2e877055487d109eba99afc58211db4a480837ff7b243c7de0b3e2ac29fdce55ab55e201c64cb1a8b2aeffce7e8f60ae3ce3a2f7e6fb68261d62743e54288ba
   languageName: node
   linkType: hard
 

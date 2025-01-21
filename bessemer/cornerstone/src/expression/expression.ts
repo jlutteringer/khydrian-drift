@@ -13,8 +13,8 @@ import {
 } from '@bessemer/cornerstone/expression'
 import { Arrays, Objects, Preconditions, Signatures } from '@bessemer/cornerstone'
 import { Signable } from '@bessemer/cornerstone/signature'
-import { GenericRecord } from '@bessemer/cornerstone/types'
 import { defineExpression } from '@bessemer/cornerstone/expression/internal'
+import { UnknownRecord } from 'type-fest'
 
 export const evaluate = <T>(expression: Expression<T>, context: ExpressionContext): T => {
   return new ExpressionEvaluator(DEFAULT_EXPRESSION_DEFINITIONS).evaluate(expression, context)
@@ -43,7 +43,9 @@ export const dereference = <ReturnType, ArgumentType extends Array<unknown>>(
   return new ExpressionEvaluator(DEFAULT_EXPRESSION_DEFINITIONS).dereference(reference, ...args)
 }
 
-export const parameterizedVariable = <ValueType, ParameterType extends Array<Signable>>(name: string): ParameterizedVariable<ValueType, ParameterType> => {
+export const parameterizedVariable = <ValueType, ParameterType extends Array<Signable>>(
+  name: string
+): ParameterizedVariable<ValueType, ParameterType> => {
   return {
     apply(...parameters: ParameterType): ExpressionVariable<ValueType> {
       const parameterString = parameters.map(Signatures.sign).join('.')
@@ -52,7 +54,7 @@ export const parameterizedVariable = <ValueType, ParameterType extends Array<Sig
   }
 }
 
-export const buildVariable = <T>(variable: ExpressionVariable<T>, value: T): GenericRecord => {
+export const buildVariable = <T>(variable: ExpressionVariable<T>, value: T): UnknownRecord => {
   return { [variable.name]: value }
 }
 

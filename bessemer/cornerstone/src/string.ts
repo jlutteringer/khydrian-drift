@@ -8,7 +8,7 @@ import {
   startsWith as _startsWith,
 } from 'lodash-es'
 import { Arrays } from '@bessemer/cornerstone'
-import { GenericRecord } from '@bessemer/cornerstone/types'
+import { UnknownRecord } from 'type-fest'
 
 export const isString = (value?: any): value is string => {
   return _isString(value)
@@ -157,7 +157,7 @@ export const mostCentralOccurrence = (str: string, substr: string): number | nul
   return closestIndex
 }
 
-export const replacePlaceholders = (string: string, parameters: GenericRecord, getParamPlaceholder = (paramName: string) => `{{${paramName}}}`) => {
+export const replacePlaceholders = (string: string, parameters: UnknownRecord, getParamPlaceholder = (paramName: string) => `{{${paramName}}}`) => {
   return Object.entries(parameters).reduce(
     (intermediateString, [paramName, paramValue]) => intermediateString.replaceAll(getParamPlaceholder(paramName), `${paramValue}`),
     string

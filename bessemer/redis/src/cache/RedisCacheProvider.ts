@@ -1,9 +1,12 @@
 import { CacheEntry, CacheProps, CacheProvider, CacheProviderRegistry, CacheProviderType, CacheSection } from '@bessemer/cornerstone/cache'
-import { Entries, Objects, Preconditions } from '@bessemer/cornerstone'
+import { Entries, Loggers, Objects, Preconditions } from '@bessemer/cornerstone'
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { RedisStore } from '@bessemer/redis/store/RedisStore'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
+
+// JOHN this logger doesn't work
+const logger = Loggers.child('RedisCacheProvider')
 
 export namespace RedisCacheProvider {
   export const Type: CacheProviderType = 'RedisCacheProvider'
@@ -31,13 +34,20 @@ export class RedisCacheProviderImpl<T> implements CacheProvider<T> {
   type = RedisCacheProvider.Type
 
   fetchValues = async (keys: Array<ResourceKey>): Promise<Array<Entry<CacheEntry<T>>>> => {
-    const results = await this.store.fetchValues(keys)
-    return results.filter(([_, value]) => CacheEntry.isAlive(value))
+    logger.info(() => `Fetching cache values: ${JSON.stringify(keys)}`)
+
+    const initialResults = await this.store.fetchValues(keys)
+    const results = initialResults.filter(([_, value]) => CacheEntry.isAlive(value))
+
+    logger.info(() => `Cache hit on: ${JSON.stringify(Entries.keys(results))}`)
+    return results
   }
 
   writeValues = async (entries: Array<Entry<CacheEntry<T> | undefined>>): Promise<void> => {
-    const limitedEntries = Entries.mapValues(entries, (it) => (Objects.isUndefined(it) ? it : CacheEntry.limit(it, this.props)))
-    await this.store.writeValues(limitedEntries)
+    logger.info(() => `Writing cache values: ${JSON.stringify(Entries.keys(entries))}`)
+
+    const hydratedEntries = Entries.mapValues(entries, (it) => (Objects.isUndefined(it) ? it : CacheEntry.applyProps(it, this.props)))
+    await this.store.writeValues(hydratedEntries)
   }
 
   // JOHN implement me
