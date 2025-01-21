@@ -3,6 +3,7 @@ import {
   differenceBy as _differenceBy,
   differenceWith as _differenceWith,
   first as _first,
+  flatten as _flatten,
   groupBy as _groupBy,
   isEmpty as _isEmpty,
   last as _last,
@@ -137,3 +138,5 @@ export const toArray = <T>(array: Arrayable<T>): Array<T> => {
 
   return [array]
 }
+
+export const flatten = _flatten

@@ -86,6 +86,14 @@ export const handle = <T, N>(
   return handlers.success(value.data)
 }
 
+export const map = <T, N>(value: AsyncValue<T>, mapper: (value: T) => N): AsyncValue<N> => {
+  if (!value.isSuccess) {
+    return value
+  }
+
+  return { ...value, data: mapper(value.data) }
+}
+
 export const execute = <T>(runnable: () => Promise<T>): Promise<T> => {
   return new Promise(async (resolve, reject) => {
     setTimeout(async () => {

@@ -5,6 +5,7 @@ import { Arrays, Objects, References, Tags, Ulids } from '@bessemer/cornerstone'
 import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 import { Tag } from '@bessemer/cornerstone/tag'
 
+export type ContentSector = NominalType<string, 'ContentSector'>
 export type ContentKey = NominalType<string, 'ContentKey'>
 export type ContentType<Data = unknown> = NominalType<string, ['ContentType', Data]>
 
@@ -16,6 +17,7 @@ export type ContentData<Type extends ContentType = ContentType, Data = ContentDa
   key: ContentKey
   type: Type
   data: Data
+  sector: ContentSector | null
 }
 
 export type ContentTypeConstructor<Content extends ContentData> = Content['type']
@@ -37,7 +39,9 @@ export type TextContent = ContentData<typeof TextContentType>
 export interface ContentProvider<ContextType extends AbstractApplicationContext = AbstractApplicationContext> {
   fetchContentByIds: (references: Array<ReferenceType<ContentReference>>, context: ContextType) => Promise<Array<ContentData>>
 
-  fetchContentByKeys: (references: Array<ContentKey>, tags: Array<Tag>, context: ContextType) => Promise<Array<ContentData>>
+  fetchContentByKeys: (keys: Array<ContentKey>, tags: Array<Tag>, context: ContextType) => Promise<Array<ContentData>>
+
+  fetchContentBySectors: (sectors: Array<ContentSector>, tags: Array<Tag>, context: ContextType) => Promise<Array<ContentData>>
 
   // JOHN pagination...
   fetchContentByModel: <Type extends ContentType>(type: Type, context: ContextType) => Promise<Array<ContentData<Type>>>
@@ -72,21 +76,22 @@ export const normalizeContent = async <ApplicationContext extends AbstractApplic
 }
 
 export type StaticContentData<Type extends ContentType = ContentType, Data = ContentDataType<Type>> = ContentData<Type, Data> & {
-  tags?: Array<Tag>
+  tags: Array<Tag>
 }
 
 export const staticData = <Type extends ContentType = ContentType, Data = ContentDataType<Type>>(
   key: ContentKey,
   type: Type,
   data: Data,
-  tags?: Array<Tag>
+  options?: { tags?: Array<Tag>; sector?: ContentSector }
 ): StaticContentData<Type, Data> => {
   return {
     reference: References.reference(Ulids.generateString(), 'Content'),
     key,
     type,
     data,
-    tags,
+    tags: options?.tags ?? [],
+    sector: options?.sector ?? null,
   }
 }
 
@@ -101,6 +106,16 @@ export const staticProvider = <ApplicationContext extends AbstractApplicationCon
     },
     async fetchContentByKeys(keys: Array<ContentKey>, tags: Array<Tag>, context: ApplicationContext): Promise<Array<ContentData>> {
       const matchingContent = content.filter((it) => Arrays.contains(keys, it.key))
+
+      const resolvedContent = Object.values(Arrays.groupBy(matchingContent, (it) => it.key)).map((it) => {
+        const resolvedContent = Tags.resolveBy(it, (it) => it.tags ?? [], tags)
+        return Arrays.first(resolvedContent)!
+      })
+
+      return normalizeContent(resolvedContent, normalizers ?? [], context)
+    },
+    async fetchContentBySectors(sectors: Array<ContentSector>, tags: Array<Tag>, context: ApplicationContext): Promise<Array<ContentData>> {
+      const matchingContent = content.filter((it) => Objects.isPresent(it.sector)).filter((it) => Arrays.contains(sectors, it.sector!))
 
       const resolvedContent = Object.values(Arrays.groupBy(matchingContent, (it) => it.key)).map((it) => {
         const resolvedContent = Tags.resolveBy(it, (it) => it.tags ?? [], tags)

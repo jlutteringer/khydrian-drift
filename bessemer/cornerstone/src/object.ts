@@ -230,3 +230,7 @@ type RecordAttributeType<Attribute> = Attribute extends RecordAttribute<infer Ty
 export const getAttribute = <T extends RecordAttribute<unknown, string>>(record: UnknownRecord, attribute: T): RecordAttributeType<T> | undefined => {
   return record[attribute] as RecordAttributeType<T> | undefined
 }
+
+export const coerceNil = <T>(value: T | null | undefined): T | undefined => {
+  return isNil(value) ? undefined : value
+}

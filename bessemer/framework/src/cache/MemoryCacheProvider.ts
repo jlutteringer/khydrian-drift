@@ -13,6 +13,7 @@ import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
 
 // JOHN this logger doesn't work... indicating a flaw in our proxy :(
+// JOHN and the logs come out of order :( :(
 const logger = Loggers.child('MemoryCacheProvider')
 
 export namespace MemoryCacheProvider {

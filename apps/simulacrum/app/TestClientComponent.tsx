@@ -11,7 +11,10 @@ export const TestClientComponent = () => {
   // console.log('client', clientApplication)
   return (
     <div>
-      <ContentElement contentKey="test-content-client" />
+      <ContentElement
+        contentKey="test-content-client"
+        sector="test"
+      />
     </div>
   )
 }

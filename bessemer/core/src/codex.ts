@@ -1,5 +1,5 @@
 import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
-import { Arrays, Entries, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Async, Entries, Objects, Preconditions, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import {
@@ -8,6 +8,7 @@ import {
   ContentKey,
   ContentProvider,
   ContentReference,
+  ContentSector,
   ContentType,
   ContentTypeConstructor,
   TextContent,
@@ -118,8 +119,6 @@ export const fetchTextByKeys = async (keys: Array<ContentKey>, context: CoreAppl
 
 export type FetchContentOptions<Type extends ContentType> = { type?: Type; tags?: Array<Tag> }
 
-// JOHN implement content sectors
-// TODO we probably should consider a more robust caching solution...
 export const fetchContentByKey = async <Type extends ContentType>(
   key: ContentKey,
   context: CoreApplicationContext,
@@ -128,12 +127,15 @@ export const fetchContentByKey = async <Type extends ContentType>(
   return Arrays.first(await fetchContentByKeys([key], context, options))
 }
 
+const IndividualContentCacheKey = 'Codex.fetchContentByKeys'
+
+// JOHN lots of code duplication
 export const fetchContentByKeys = async <Type extends ContentType>(
   keys: Array<ContentKey>,
   context: CoreApplicationContext,
   options?: FetchContentOptions<Type>
 ): Promise<Array<ContentData<Type>>> => {
-  const cache = Caches.getCache<ContentData<Type>>('Codex.fetchContentByKeys', context)
+  const cache = Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context)
   const namespace = Contexts.getResourceNamespace(context)
 
   const results = await cache.fetchValues(namespace, keys, async (keys) => {
@@ -158,4 +160,51 @@ export const fetchContentByKeys = async <Type extends ContentType>(
   })
 
   return Entries.values(results)
+}
+
+export const fetchContentBySector = async <Type extends ContentType>(
+  sector: ContentSector,
+  context: CoreApplicationContext,
+  options?: FetchContentOptions<Type>
+): Promise<Array<ContentData<Type>>> => {
+  return await fetchContentBySectors([sector], context, options)
+}
+
+export const fetchContentBySectors = async <Type extends ContentType>(
+  sectors: Array<ContentSector>,
+  context: CoreApplicationContext,
+  options?: FetchContentOptions<Type>
+): Promise<Array<ContentData<Type>>> => {
+  const cache = Caches.getCache<Array<ContentData<Type>>>('Codex.fetchContentBySectors', context)
+  const namespace = Contexts.getResourceNamespace(context)
+
+  const results = await cache.fetchValues(namespace, sectors, async (sectors) => {
+    Preconditions.isPresent(context.codex)
+
+    const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
+    const genericContent = await context.codex.provider.fetchContentBySectors(sectors, tags, context)
+
+    if (Objects.isPresent(options?.type)) {
+      const illegalContent = genericContent.find((it) => it.type !== options?.type)
+      Preconditions.isNil(
+        illegalContent,
+        () => `ContentData: [${illegalContent?.key}] with type: [${illegalContent?.type}] did not match requested ContentType: ${options?.type}`
+      )
+    }
+
+    const content = genericContent as Array<ContentData<Type>>
+
+    Async.execute(async () => {
+      const entries: Array<Entry<ContentData<Type>>> = content.map((it) => {
+        return [it.key, it]
+      })
+
+      await Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context).writeValues(namespace, entries)
+    })
+
+    const entries: Array<Entry<Array<ContentData<Type>>>> = Object.entries(Arrays.groupBy(content, (it) => it.sector))
+    return entries
+  })
+
+  return Arrays.flatten(Entries.values(results))
 }

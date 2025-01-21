@@ -24,7 +24,7 @@ export namespace RedisCacheProvider {
 export class RedisCacheProviderImpl<T> implements CacheProvider<T> {
   private store: RedisStore<CacheEntry<T>>
 
-  constructor(private readonly props: CacheProps, private readonly context: RedisApplicationContext) {
+  constructor(private readonly props: CacheProps, context: RedisApplicationContext) {
     Preconditions.isNil(props.maxSize, 'RedisCacheProvider does not support the maxSize property.')
     Preconditions.isPresent(props.timeToLive, 'RedisCacheProvider requires the timeToLive property to be set.')
 

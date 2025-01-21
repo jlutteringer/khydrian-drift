@@ -3,7 +3,8 @@ import {
   ContentDisplayType,
   ContentDisplayTypes,
   ContentKey,
-  ContentTypeConstructor
+  ContentSector,
+  ContentTypeConstructor,
 } from '@bessemer/cornerstone/content'
 import { FetchContentOptions } from '@bessemer/core/codex'
 import { useFetchContent } from '@bessemer/core/codex/hooks/use-fetch-content'
@@ -14,14 +15,21 @@ import { ReactNode } from 'react'
 
 export type ContentElementProps<Content extends ContentData = ContentData> = {
   contentKey: ContentKey
+  sector?: ContentSector
   displayType?: ContentDisplayType
   defaultValue?: ReactNode
   options?: FetchContentOptions<ContentTypeConstructor<Content>>
 }
 
 // JOHN better api... cant reference typography here ;_;
-export const ContentElement = <Content extends ContentData>({ contentKey, displayType, defaultValue, options }: ContentElementProps<Content>) => {
-  const response = useFetchContent(contentKey, options)
+export const ContentElement = <Content extends ContentData>({
+  contentKey,
+  sector,
+  displayType,
+  defaultValue,
+  options,
+}: ContentElementProps<Content>) => {
+  const response = useFetchContent(contentKey, sector, options)
 
   return Async.handle(response, {
     // TODO better loading indicator
