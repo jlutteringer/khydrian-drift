@@ -1,14 +1,8 @@
-import {
-  ApplicationRuntimeType,
-  BessemerApplicationContext,
-  BessemerApplicationModule,
-  BessemerClientContext,
-  BessemerOptions,
-  ClientContextType
-} from '@bessemer/framework'
-import { BaseApplicationModule } from '@bessemer/framework/application'
+import { BessemerApplicationContext, BessemerClientContext, BessemerModule, BessemerOptions, ClientContextType } from '@bessemer/framework'
 import { RouteErrorHandler } from '@bessemer/framework-next/route'
-import { Objects } from '@bessemer/cornerstone'
+import { BaseApplicationModule } from '@bessemer/framework/application'
+import * as fs from 'node:fs'
+import { Ulids } from '@bessemer/cornerstone'
 
 export type BessemerNextOptions = BessemerOptions & {
   route?: {
@@ -23,30 +17,31 @@ export type BessemerNextApplicationContext = BessemerApplicationContext & {
   }
 }
 
-export type BessemerNextClientContext = BessemerClientContext &
-  ClientContextType<BessemerNextApplicationContext> & {
+export type BessemerNextClientContext = BessemerClientContext & ClientContextType<BessemerNextApplicationContext> & {}
 
-}
+export const BessemerNextApplicationModule: BessemerModule<BessemerNextApplicationContext, BessemerNextOptions> = {
+  global: {
+    configure: () => {
+      let buildId: string
+      try {
+        buildId = fs.readFileSync('.next/BUILD_ID').toString()
+      } catch {
+        buildId = Ulids.generate()
+      }
 
-export const BessemerNextApplicationModule: BessemerApplicationModule<BessemerNextApplicationContext, BessemerNextOptions> = {
-  globalTags: BaseApplicationModule.globalTags,
-  configure: BaseApplicationModule.configure,
-  applicationTags: BaseApplicationModule.applicationTags,
-  initializeApplication: async (
-    options: BessemerNextOptions,
-    runtime: ApplicationRuntimeType<BessemerNextApplicationContext>
-  ): Promise<BessemerNextApplicationContext> => {
-    const baseApplication = await BaseApplicationModule.initializeApplication(options, runtime)
-
-    const application = Objects.merge(baseApplication, {
+      return {
+        global: {
+          buildId,
+        },
+      }
+    },
+  },
+  configure: async (options) => {
+    return {
       route: {
         errorHandler: options.route?.errorHandler ?? null!,
       },
-      client: {
-        runtime: runtime,
-      },
-    })
-
-    return application
+    }
   },
+  dependencies: [BaseApplicationModule],
 }

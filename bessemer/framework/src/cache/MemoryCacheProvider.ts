@@ -4,16 +4,14 @@ import {
   CacheProps,
   CacheProviderRegistry,
   CacheProviderType,
-  CacheSection,
+  CacheSector,
 } from '@bessemer/cornerstone/cache'
 import { LRUCache } from 'lru-cache'
-import { Durations, Entries, Loggers, Objects } from '@bessemer/cornerstone'
+import { Durations, Entries, Globs, Loggers, Objects } from '@bessemer/cornerstone'
 import { BessemerApplicationContext } from '@bessemer/framework'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
 
-// JOHN this logger doesn't work... indicating a flaw in our proxy :(
-// JOHN and the logs come out of order :( :(
 const logger = Loggers.child('MemoryCacheProvider')
 
 export namespace MemoryCacheProvider {
@@ -53,19 +51,23 @@ export class MemoryCacheProviderImpl<T> extends AbstractLocalCacheProvider<T> {
   type = MemoryCacheProvider.Type
 
   getValues = (keys: Array<ResourceKey>): Array<Entry<CacheEntry<T>>> => {
-    logger.info(() => `Fetching cache values: ${JSON.stringify(keys)}`)
+    logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)}`)
 
     const results = keys
       .map((it) => Entries.of(it, this.cache.get(it) as CacheEntry<T> | undefined))
       .filter(([_, value]) => Objects.isPresent(value))
       .filter(([_, value]) => CacheEntry.isAlive(value)) as Array<Entry<CacheEntry<T>>>
 
-    logger.info(() => `Cache hit on: ${JSON.stringify(Entries.keys(results))}`)
+    logger.trace(() => `Cache hit on: ${JSON.stringify(Entries.keys(results))}`)
     return results
   }
 
+  getEntries = (): Array<Entry<CacheEntry<T>>> => {
+    return Array.of(...this.cache.entries())
+  }
+
   setValues = (entries: Array<Entry<CacheEntry<T> | undefined>>): void => {
-    logger.info(() => `Writing cache values: ${JSON.stringify(Entries.keys(entries))}`)
+    logger.trace(() => `Writing cache values: ${JSON.stringify(Entries.keys(entries))}`)
 
     entries.forEach(([key, value]) => {
       if (Objects.isUndefined(value)) {
@@ -76,14 +78,14 @@ export class MemoryCacheProviderImpl<T> extends AbstractLocalCacheProvider<T> {
     })
   }
 
-  // JOHN this implementation doesn't actually reference the section????
-  removeAll = async (section: CacheSection): Promise<void> => {
+  removeAll = async (section: CacheSector): Promise<void> => {
     const iterator = this.cache.keys()
     let iterable: IteratorResult<string | void>
     do {
       iterable = iterator.next()
       const value = iterable.value
-      if (!Objects.isNil(value)) {
+
+      if (Objects.isPresent(value) && Globs.anyMatch(value, section.globs)) {
         this.cache.delete(value)
       }
     } while (!iterable.done)

@@ -8,8 +8,11 @@ import { PropertyRecord } from '@bessemer/cornerstone/property'
 import { LoggerOptions } from '@bessemer/cornerstone/logger'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { Tag } from '@bessemer/cornerstone/tag'
-import { CacheConfiguration, CacheContext } from '@bessemer/cornerstone/cache'
+import { CacheConfiguration } from '@bessemer/cornerstone/cache'
 import * as Caches from '@bessemer/framework/cache'
+import { CacheContext } from '@bessemer/framework/cache'
+import { DeepPartial } from '@bessemer/cornerstone/types'
+import { Ulid } from '@bessemer/cornerstone/ulid'
 
 export { Bessemer, Environments, Contexts, AdvisoryLocks, Caches }
 
@@ -23,25 +26,31 @@ export type PublicOptions<T extends BessemerOptions> = T['public'] & {}
 
 export type PublicProperties<T extends BessemerOptions> = PropertyRecord<PublicOptions<T>>
 
-// TODO we need the notion of a GLOBAL context :(
 export type BessemerApplicationContext = AbstractApplicationContext & {
-  cache: CacheContext
-  advisoryLockProvider: AdvisoryLockProvider<any>
-  client: {
+  id: string
+  global: {
     buildId: string
-    instanceId: string
-    correlationId: string
+    instanceId: Ulid
 
+    cache: CacheContext
+    advisoryLockProvider: AdvisoryLockProvider<any>
+  }
+  client: {
+    correlationId: string
     environment: Environment
     tags: Array<Tag>
   }
 }
 
-export type DehydratedContextType<T extends BessemerApplicationContext> = {
+export type GlobalContextType<T extends AbstractApplicationContext> = {
+  global: T['global']
+}
+
+export type DehydratedContextType<T extends AbstractApplicationContext> = {
   client: Omit<T['client'], 'runtime'>
 }
 
-export type ClientContextType<T extends BessemerApplicationContext> = {
+export type ClientContextType<T extends AbstractApplicationContext> = {
   client: T['client']
 }
 
@@ -49,11 +58,18 @@ export type BessemerClientContext = ClientContextType<BessemerApplicationContext
 
 export type ApplicationRuntimeType<T extends BessemerApplicationContext> = T['client']['runtime']
 
-export type BessemerApplicationModule<ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
-  globalTags: () => Array<Tag>
-  configure: (options: ApplicationOptions) => void
-  applicationTags: () => Promise<Array<Tag>>
-  initializeApplication: (options: ApplicationOptions, runtime: ApplicationRuntimeType<ApplicationContext>) => Promise<ApplicationContext>
+export type BessemerModule<ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {
+  global?: {
+    tags?: (tags: Array<Tag>) => Array<Tag>
+    configure?: (
+      options: ApplicationOptions,
+      context: DeepPartial<GlobalContextType<ApplicationContext>>
+    ) => DeepPartial<GlobalContextType<ApplicationContext>>
+    initialize?: (options: ApplicationOptions, context: GlobalContextType<ApplicationContext>) => void
+  }
+  tags?: (tags: Array<Tag>) => Promise<Array<Tag>>
+  configure?: (options: ApplicationOptions, context: DeepPartial<ApplicationContext>) => Promise<DeepPartial<ApplicationContext>>
+  dependencies?: Array<BessemerModule<ApplicationContext, ApplicationOptions>>
 }
 
 export type BessemerRuntimeModule<Application extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions> = {

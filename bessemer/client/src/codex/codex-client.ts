@@ -1,13 +1,13 @@
 import { ContentData, ContentKey, ContentSector, ContentType } from '@bessemer/cornerstone/content'
-import { FetchContentOptions } from '@bessemer/core/codex'
 import { Urls } from '@bessemer/cornerstone'
+import { CodexClientContext, FetchContentOptions } from '@bessemer/client/codex/types'
 
 // JOHN fully implement me
-// JOHN
 export const fetchContentByKey = async <Type extends ContentType>(
   key: ContentKey,
+  context: CodexClientContext,
   options?: FetchContentOptions<Type>
-): Promise<ContentData<Type> | undefined> => {
+): Promise<ContentData<Type> | null> => {
   const response = await fetch(
     Urls.buildString({
       location: {
@@ -21,18 +21,19 @@ export const fetchContentByKey = async <Type extends ContentType>(
   )
 
   if (response.status === 404) {
-    return undefined
+    return null
   }
   if (response.status !== 200) {
     throw new Error('oh noes')
   }
 
-  const data = (await response.json()).content as ContentData<Type>
+  const data = (await response.json()) as ContentData<Type>
   return data
 }
 
 export const fetchContentBySector = async <Type extends ContentType>(
   sector: ContentSector,
+  context: CodexClientContext,
   options?: FetchContentOptions<Type>
 ): Promise<Array<ContentData<Type>>> => {
   const response = await fetch(
@@ -54,6 +55,6 @@ export const fetchContentBySector = async <Type extends ContentType>(
     throw new Error('oh noes')
   }
 
-  const data = (await response.json()).content as Array<ContentData<Type>>
+  const data = (await response.json()) as Array<ContentData<Type>>
   return data
 }

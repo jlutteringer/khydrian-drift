@@ -14,6 +14,6 @@ export const GET = Routes.route(
     const tags = Urls.getJsonParameter<Array<Tag>>(url, 'tags')
     const content = await Codex.fetchContentBySector(sectorKey, context, { type, tags })
 
-    return NextResponse.json({ content })
+    return NextResponse.json(content)
   }
 )

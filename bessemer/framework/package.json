@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@bessemer/cornerstone": "workspace:*",
+    "@bessemer/client": "workspace:*",
     "lru-cache": "11.0.2"
   }
 }

@@ -1,40 +1,33 @@
-import {
-  ApplicationRuntimeType,
-  BessemerApplicationContext,
-  BessemerApplicationModule,
-  BessemerOptions,
-  Caches,
-  Environments,
-} from '@bessemer/framework'
-import { Loggers } from '@bessemer/cornerstone'
+import { BessemerApplicationContext, BessemerModule, BessemerOptions, Caches, Environments } from '@bessemer/framework'
+import { Loggers, Ulids } from '@bessemer/cornerstone'
 import { LocalAdvisoryLockProvider } from '@bessemer/framework/advisory-lock/LocalAdvisoryLockProvider'
+import { DeepPartial } from '@bessemer/cornerstone/types'
 
-export const BaseApplicationModule: BessemerApplicationModule<BessemerApplicationContext, BessemerOptions> = {
-  globalTags: () => {
-    return [Environments.getEnvironmentTag()]
+export const BaseApplicationModule: BessemerModule<BessemerApplicationContext, BessemerOptions> = {
+  global: {
+    tags: (tags) => {
+      return [...tags, Environments.getEnvironmentTag()]
+    },
+    configure: (options) => {
+      return {
+        global: {
+          cache: Caches.configure(options.cache),
+          instanceId: Ulids.generate(),
+          advisoryLockProvider: new LocalAdvisoryLockProvider(),
+        },
+      }
+    },
+    initialize: (options, context) => {
+      Loggers.initialize(options.logger)
+
+      context.global.cache.manager.initialize(context)
+    },
   },
-  // TODO I can start to see the importance of a global context... lots of stuff that probably doesn't need to vary on profile
-  configure: (options: BessemerOptions): void => {
-    Loggers.configure(options.logger)
-  },
-  applicationTags: async () => {
-    return []
-  },
-  initializeApplication: async (
-    options: BessemerOptions,
-    runtime: ApplicationRuntimeType<BessemerApplicationContext>
-  ): Promise<BessemerApplicationContext> => {
-    const application: BessemerApplicationContext = {
-      cache: Caches.configure(options.cache),
-      advisoryLockProvider: new LocalAdvisoryLockProvider(),
+  configure: async (options) => {
+    const application: DeepPartial<BessemerApplicationContext> = {
       client: {
-        // JOHN we need to actually set these of course
-        buildId: '1234',
-        instanceId: '5678',
         correlationId: 'asdf',
         environment: Environments.getEnvironment(),
-        tags: [],
-        runtime: runtime,
       },
     }
 

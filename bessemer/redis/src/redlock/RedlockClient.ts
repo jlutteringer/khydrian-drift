@@ -118,7 +118,6 @@ export class ExecutionError extends Error {
   }
 }
 
-// JOHN the lock object is still not serializeable because of execution stats... should it be?
 export type RedlockLock = {
   resourceKeys: Array<ResourceKey>
   value: string
@@ -395,7 +394,6 @@ export class RedlockClient extends EventEmitter {
       let result: number
       try {
         // Attempt to evaluate the script by its hash.
-        // JOHN i modified this line from the original source...
         const shaResult = (await client.evalsha(script.hash, resourceKeys.length, ...[...resourceKeys, ...args])) as unknown
 
         if (typeof shaResult !== 'number') {
@@ -409,7 +407,7 @@ export class RedlockClient extends EventEmitter {
         if (!(error instanceof Error) || !error.message.startsWith('NOSCRIPT')) {
           throw error
         }
-        // JOHN i modified this line from the original source...
+
         const rawResult = (await client.eval(script.value, resourceKeys.length, ...[...resourceKeys, ...args])) as unknown
 
         if (typeof rawResult !== 'number') {

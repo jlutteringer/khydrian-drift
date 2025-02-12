@@ -8,6 +8,7 @@ import { Duration } from '@bessemer/cornerstone/duration'
 import { AdvisoryLockUtil } from '@bessemer/framework/advisory-lock/util'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Ulid } from '@bessemer/cornerstone/ulid'
+import { GlobalContextType } from '@bessemer/framework'
 
 export type LocalProviderAdvisoryLock = Array<LocalResourceLock> & ProviderAdvisoryLock
 
@@ -28,7 +29,7 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
   acquireLock = async (
     resourceKeys: Array<ResourceKey>,
     props: AdvisoryLockProps,
-    _: AbstractApplicationContext
+    _: GlobalContextType<AbstractApplicationContext>
   ): AsyncResult<ProviderAdvisoryLock> => {
     const result = await Retry.usingRetry(async () => {
       const locks: Array<LocalResourceLock> = []
@@ -58,7 +59,7 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
     return Results.success(extendedLocks)
   }
 
-  extendLock = async (lock: AdvisoryLock, context: AbstractApplicationContext): AsyncResult<ProviderAdvisoryLock> => {
+  extendLock = async (lock: AdvisoryLock, context: GlobalContextType<AbstractApplicationContext>): AsyncResult<ProviderAdvisoryLock> => {
     const [resources, locks] = Eithers.split(this.getUnderlyingLocks(lock))
 
     let locksToExtend = locks
@@ -91,7 +92,7 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
     return extendedLocks
   }
 
-  releaseLock = async (lock: AdvisoryLock, _: AbstractApplicationContext): AsyncResult<Unit> => {
+  releaseLock = async (lock: AdvisoryLock, _: GlobalContextType<AbstractApplicationContext>): AsyncResult<Unit> => {
     const result = this.getUnderlyingLocks(lock).filter(Eithers.isRight)
     result.forEach((it) => this.expiryMap.delete(it.value.resourceKey))
     return Results.success(Unit)

@@ -1,6 +1,6 @@
 import { ContentData, ContentKey, ContentSector, ContentType } from '@bessemer/cornerstone/content'
-import { CoreApplicationContext } from '@bessemer/core/application'
-import { Codex, CodexClient } from '@bessemer/core'
+import { CoreApplicationContext, CoreClientContext } from '@bessemer/core/application'
+import { Codex } from '@bessemer/core'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { RscRuntimes } from '@bessemer/react'
 import { FetchContentOptions } from '@bessemer/core/codex'
@@ -8,13 +8,15 @@ import { AsyncValue } from '@bessemer/cornerstone/async'
 import { useAsync } from '@bessemer/react/hook/use-async'
 import { BessemerNext } from '@bessemer/framework-next'
 import { Async, Objects } from '@bessemer/cornerstone'
+import { CodexClient } from '@bessemer/client'
+import { useBessemerClientContext } from '@bessemer/framework-next/hooks/use-client-context'
 
 // JOHN lots of type coercion in here...
 export const useFetchContent = <Type extends ContentType>(
   key: ContentKey,
   sector?: ContentSector,
   options?: FetchContentOptions<Type>
-): AsyncValue<ContentData<Type> | undefined> => {
+): AsyncValue<ContentData<Type> | null> => {
   if (RscRuntimes.isServer) {
     return useAsync(async () => {
       const application = await BessemerNext.getApplication<CoreApplicationContext>()
@@ -33,6 +35,7 @@ export const useFetchContent = <Type extends ContentType>(
     })
   }
 
+  const context = useBessemerClientContext<CoreClientContext>()
   const queryClient = useQueryClient()
   const contentItemQueryKey = ['useFetchContentByKey', key, sector]
 
@@ -43,7 +46,7 @@ export const useFetchContent = <Type extends ContentType>(
         return []
       }
 
-      const content = await CodexClient.fetchContentBySector(sector, options)
+      const content = await CodexClient.fetchContentBySector(sector, context, options)
       content.forEach((it) => {
         queryClient.setQueryData(contentItemQueryKey, it)
       })
@@ -52,7 +55,7 @@ export const useFetchContent = <Type extends ContentType>(
     },
   })
 
-  const targetContentResult = Async.map(contentSectorResult, (it) => it.find((it) => it.key === key))
+  const targetContentResult = Async.map(contentSectorResult, (it) => it.find((it) => it.key === key) ?? null)
 
   const useSector = Objects.isPresent(sector) && (targetContentResult.isLoading || Objects.isPresent(targetContentResult.data))
 
@@ -63,7 +66,7 @@ export const useFetchContent = <Type extends ContentType>(
         return null
       }
 
-      return (await CodexClient.fetchContentByKey(key, options)) ?? null
+      return (await CodexClient.fetchContentByKey(key, context, options)) ?? null
     },
     enabled: !targetContentResult.isLoading,
   })
@@ -71,6 +74,6 @@ export const useFetchContent = <Type extends ContentType>(
   if (useSector) {
     return targetContentResult
   } else {
-    return Async.map(contentItemResult, Objects.coerceNil)
+    return contentItemResult
   }
 }

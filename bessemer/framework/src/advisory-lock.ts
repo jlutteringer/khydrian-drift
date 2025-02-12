@@ -2,7 +2,7 @@ import { Duration } from '@bessemer/cornerstone/duration'
 import { RetryProps } from '@bessemer/cornerstone/retry'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Arrays, Durations, Loggers, Objects, Preconditions, Results, Retry } from '@bessemer/cornerstone'
-import { BessemerApplicationContext } from '@bessemer/framework/index'
+import { BessemerApplicationContext, GlobalContextType } from '@bessemer/framework/index'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { Unit } from '@bessemer/cornerstone/unit'
@@ -36,18 +36,22 @@ export type AdvisoryLock = {
 export type ProviderAdvisoryLock = NominalType<unknown, 'ProviderAdvisoryLock'>
 
 export interface AdvisoryLockProvider<ContextType extends AbstractApplicationContext = AbstractApplicationContext> {
-  acquireLock: (resourceKeys: Array<ResourceKey>, props: AdvisoryLockProps, context: ContextType) => AsyncResult<ProviderAdvisoryLock>
-  extendLock: (lock: AdvisoryLock, context: ContextType) => AsyncResult<ProviderAdvisoryLock>
-  releaseLock: (lock: AdvisoryLock, context: ContextType) => AsyncResult<Unit>
+  acquireLock: (
+    resourceKeys: Array<ResourceKey>,
+    props: AdvisoryLockProps,
+    context: GlobalContextType<ContextType>
+  ) => AsyncResult<ProviderAdvisoryLock>
+  extendLock: (lock: AdvisoryLock, context: GlobalContextType<ContextType>) => AsyncResult<ProviderAdvisoryLock>
+  releaseLock: (lock: AdvisoryLock, context: GlobalContextType<ContextType>) => AsyncResult<Unit>
 }
 
-const getProvider = (context: BessemerApplicationContext): AdvisoryLockProvider => {
-  return context.advisoryLockProvider
+const getProvider = (context: GlobalContextType<BessemerApplicationContext>): AdvisoryLockProvider => {
+  return context.global.advisoryLockProvider
 }
 
 export const usingLock = async <T>(
   resourceKeys: Arrayable<ResourceKey>,
-  context: BessemerApplicationContext,
+  context: GlobalContextType<BessemerApplicationContext>,
   computeValue: () => Promise<T>,
   options: AdvisoryLockOptions = {}
 ): Promise<T> => {
@@ -61,7 +65,7 @@ export const usingLock = async <T>(
 
 export const usingIncrementalLocks = async <T>(
   resourceKeys: Array<ResourceKey>,
-  context: BessemerApplicationContext,
+  context: GlobalContextType<BessemerApplicationContext>,
   fetchIncrementalValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
   computeValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
   options: AdvisoryLockOptions = {}
@@ -103,7 +107,7 @@ export const usingIncrementalLocks = async <T>(
 
 export const usingOptimisticLock = async <T>(
   resourceKeys: Arrayable<ResourceKey>,
-  context: BessemerApplicationContext,
+  context: GlobalContextType<BessemerApplicationContext>,
   testValue: () => Promise<T | undefined>,
   computeValue: () => Promise<T>,
   options: AdvisoryLockOptions = {}
@@ -135,7 +139,7 @@ export const usingOptimisticLock = async <T>(
 
 const withLock = async <T>(
   lock: AdvisoryLock,
-  context: BessemerApplicationContext,
+  context: GlobalContextType<BessemerApplicationContext>,
   computeValue: () => Promise<T>,
   options: AdvisoryLockOptions = {}
 ): Promise<T> => {
@@ -151,7 +155,7 @@ const withLock = async <T>(
 
 export const tryAcquireLock = async (
   resourceKeys: Arrayable<ResourceKey>,
-  context: BessemerApplicationContext,
+  context: GlobalContextType<BessemerApplicationContext>,
   options: AdvisoryLockOptions = {}
 ): AsyncResult<AdvisoryLock> => {
   return await acquireLock(resourceKeys, context, { ...options, retry: Retry.None })
@@ -159,7 +163,7 @@ export const tryAcquireLock = async (
 
 export const acquireLock = async (
   resourceKeys: Arrayable<ResourceKey>,
-  context: BessemerApplicationContext,
+  context: GlobalContextType<BessemerApplicationContext>,
   options: AdvisoryLockOptions = {}
 ): AsyncResult<AdvisoryLock> => {
   Preconditions.isFalse(Arrays.isEmpty(resourceKeys), () => `Illegal call to acquireLock with empty resourceKeys`)
@@ -188,7 +192,7 @@ export const acquireLock = async (
   })
 }
 
-export const extendLock = async (lock: AdvisoryLock, context: BessemerApplicationContext): AsyncResult<AdvisoryLock> => {
+export const extendLock = async (lock: AdvisoryLock, context: GlobalContextType<BessemerApplicationContext>): AsyncResult<AdvisoryLock> => {
   const providerLock = await getProvider(context).extendLock(lock, context)
 
   return Results.map(providerLock, (it) => {
@@ -200,6 +204,6 @@ export const extendLock = async (lock: AdvisoryLock, context: BessemerApplicatio
   })
 }
 
-export const releaseLock = (lock: AdvisoryLock, context: BessemerApplicationContext): AsyncResult<Unit> => {
+export const releaseLock = (lock: AdvisoryLock, context: GlobalContextType<BessemerApplicationContext>): AsyncResult<Unit> => {
   return getProvider(context).releaseLock(lock, context)
 }

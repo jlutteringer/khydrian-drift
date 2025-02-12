@@ -5,6 +5,7 @@ import {
   isString as _isString,
   padEnd as _padEnd,
   padStart as _padStart,
+  replace as _replace,
   startsWith as _startsWith,
 } from 'lodash-es'
 import { Arrays } from '@bessemer/cornerstone'
@@ -168,3 +169,5 @@ export const padStart = _padStart
 export const padEnd = _padEnd
 
 export const contains = _includes
+
+export const replace = _replace

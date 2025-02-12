@@ -1,10 +1,12 @@
-import { AbstractLocalKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } from '@bessemer/cornerstone/store'
-import { Dates, Durations, Objects, Strings } from '@bessemer/cornerstone'
+import { AbstractLocalKeyValueStore, AbstractRemoteKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } from '@bessemer/cornerstone/store'
+import { Arrays, Dates, Durations, Objects, Strings } from '@bessemer/cornerstone'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Entry } from '@bessemer/cornerstone/entry'
+import { GlobPattern } from '@bessemer/cornerstone/glob'
+import { Arrayable } from 'type-fest'
 
 // JOHN should this even be in cornerstone? especially consider the config types down at the bottom
 
@@ -31,7 +33,6 @@ export namespace CacheProps {
     if (props.maxSize === null && props.timeToLive === null) {
       throw new Error('Invalid cache configuration, both maxSize and timeToLive are null')
     }
-    ;``
 
     return props
   }
@@ -50,24 +51,27 @@ export namespace CacheKey {
   }
 }
 
-// JOHN reconsider this whole API
-export type CacheSection = {
-  prefix: ResourceKey
+export type CacheSector = {
+  globs: Array<GlobPattern>
 }
 
-export namespace CacheSection {
-  export const of = (prefix: ResourceKey) => {
-    return { prefix }
+export namespace CacheSector {
+  export const of = (globs: Arrayable<GlobPattern>) => {
+    return { globs: Arrays.toArray(globs) }
   }
 
-  export const namespace = (section: CacheSection, namespace: string): CacheSection => {
-    return of(ResourceKey.namespace(section.prefix, namespace))
+  export const namespace = (namespace: ResourceNamespace, sector: CacheSector): CacheSector => {
+    return { globs: ResourceKey.namespaceAll(namespace, sector.globs) }
   }
 }
 
-export interface Cache<T> {
-  name: string
+export type CacheName = NominalType<string, 'CacheName'>
 
+export interface AbstractCache<T> {
+  name: CacheName
+}
+
+export interface Cache<T> extends AbstractCache<T> {
   fetchValue(namespace: ResourceNamespace, key: ResourceKey, fetch: () => Promise<T>): Promise<T>
 
   fetchValues(
@@ -80,19 +84,22 @@ export interface Cache<T> {
 
   writeValues(namespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): Promise<void>
 
-  // JOHN reconsider api
-  evictAll(section: CacheSection): Promise<void>
+  evictAll(sector: CacheSector): Promise<void>
 }
 
 export interface CacheProvider<T> extends RemoteKeyValueStore<CacheEntry<T>> {
   type: CacheProviderType
 
-  evictAll(section: CacheSection): Promise<void>
+  evictAll(sector: CacheSector): Promise<void>
 }
 
-export interface LocalCache<T> {
-  name: string
+export abstract class AbstractCacheProvider<T> extends AbstractRemoteKeyValueStore<CacheEntry<T>> implements CacheProvider<T> {
+  abstract type: CacheProviderType
 
+  abstract evictAll(sector: CacheSector): Promise<void>
+}
+
+export interface LocalCache<T> extends AbstractCache<T> {
   getValue(namespace: ResourceNamespace, key: ResourceKey, fetch: () => T): T
 
   getValues(namespace: ResourceNamespace, keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>): Array<Entry<T>>
@@ -100,19 +107,21 @@ export interface LocalCache<T> {
   setValue(namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): void
 
   setValues(namespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): void
+
+  removeAll(sector: CacheSector): void
 }
 
 export interface LocalCacheProvider<T> extends LocalKeyValueStore<CacheEntry<T>>, CacheProvider<T> {
-  removeAll(section: CacheSection): void
+  removeAll(sector: CacheSector): void
 }
 
 export abstract class AbstractLocalCacheProvider<T> extends AbstractLocalKeyValueStore<CacheEntry<T>> implements LocalCacheProvider<T> {
   abstract type: CacheProviderType
 
-  abstract removeAll(section: CacheSection): void
+  abstract removeAll(sector: CacheSector): void
 
-  async evictAll(section: CacheSection): Promise<void> {
-    this.removeAll(section)
+  async evictAll(sector: CacheSector): Promise<void> {
+    this.removeAll(sector)
   }
 }
 
@@ -222,9 +231,4 @@ export type CacheConfiguration = CacheConfigurationSection & {
 export type CacheProviderRegistry<ContextType extends AbstractApplicationContext> = {
   type: CacheProviderType
   construct: <T>(props: CacheProps, context: ContextType) => CacheProvider<T>
-}
-
-export type CacheContext = {
-  providers: Array<CacheProviderRegistry<any>>
-  configuration: CacheConfiguration
 }

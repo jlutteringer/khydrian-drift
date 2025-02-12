@@ -2,18 +2,28 @@ import {
   Cache,
   CacheConfiguration,
   CacheConfigurationSection,
-  CacheContext,
+  CacheName,
   CacheProps,
   CacheProvider,
+  CacheProviderRegistry,
   LocalCache,
   LocalCacheProvider,
 } from '@bessemer/cornerstone/cache'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
-import { BessemerApplicationContext } from '@bessemer/framework/index'
+import { BessemerApplicationContext, GlobalContextType } from '@bessemer/framework/index'
 import { Objects, Preconditions } from '@bessemer/cornerstone'
 import { CacheImpl } from '@bessemer/framework/cache/CacheImpl'
 import { MemoryCacheProvider } from '@bessemer/framework/cache/MemoryCacheProvider'
 import { LocalCacheImpl } from '@bessemer/framework/cache/LocalCacheImpl'
+import { CacheManager, LocalCacheManager } from '@bessemer/framework/cache/cache-manager'
+import { CacheStore } from '@bessemer/framework/cache/CacheStore'
+import { CacheDetail, CacheEvictRequest, CacheSummary, CacheWriteRequest } from '@bessemer/client/cache/types'
+
+export type CacheContext = {
+  providers: Array<CacheProviderRegistry<any>>
+  configuration: CacheConfiguration
+  manager: CacheManager
+}
 
 const DefaultCacheConfiguration: CacheConfiguration = {
   defaults: {
@@ -26,37 +36,24 @@ const DefaultCacheConfiguration: CacheConfiguration = {
   },
 }
 
+const CacheStoreState = createGlobalVariable<CacheStore>('CacheStore', () => new CacheStore())
+
+export const getStore = (): CacheStore => {
+  return CacheStoreState.getValue()
+}
+
 export const configure = (cache?: CacheConfiguration): CacheContext => {
   const configuration = Objects.merge(DefaultCacheConfiguration, cache)
 
   return {
     providers: [MemoryCacheProvider.register()],
     configuration,
+    manager: new LocalCacheManager(),
   }
 }
 
-type CacheManagerState = {
-  cacheDirectory: Map<string, Cache<any>>
-  localCacheDirectory: Map<string, LocalCache<any>>
-}
-
-const CacheManagerState = createGlobalVariable<CacheManagerState>('CacheManagerState', () => ({
-  cacheDirectory: new Map(),
-  localCacheDirectory: new Map(),
-}))
-
-// export const initialize = (context: TenantContext) => {
-//   const applicationKeys = Object.keys(context.tenant.application.applicationDirectory)
-//   const sections = applicationKeys.map((it) => CacheSection.of(Contexts.getApplicationStoreKey(it)))
-//
-//   // JOHN is this where this check should live?
-//   if (typeof window === 'undefined') {
-//     monitor.manage(new CacheMonitor(sections, context))
-//   }
-// }
-
-export const getCache = <T>(name: string, context: BessemerApplicationContext): Cache<T> => {
-  const cache = CacheManagerState.getValue().cacheDirectory.get(name)
+export const getCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): Cache<T> => {
+  const cache = getStore().caches.getValue(name) as Cache<T> | undefined
   if (!Objects.isNil(cache)) {
     return cache
   }
@@ -64,8 +61,8 @@ export const getCache = <T>(name: string, context: BessemerApplicationContext): 
   return createCache<T>(name, context)
 }
 
-export const getLocalCache = <T>(name: string, context: BessemerApplicationContext): LocalCache<T> => {
-  const cache = CacheManagerState.getValue().localCacheDirectory.get(name)
+export const getLocalCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): LocalCache<T> => {
+  const cache = getStore().localCaches.getValue(name) as LocalCache<T> | undefined
   if (!Objects.isNil(cache)) {
     return cache
   }
@@ -73,33 +70,37 @@ export const getLocalCache = <T>(name: string, context: BessemerApplicationConte
   return createLocalCache<T>(name, context)
 }
 
-export const createCache = <T>(name: string, context: BessemerApplicationContext): Cache<T> => {
-  const existingCache = CacheManagerState.getValue().cacheDirectory.get(name)
+export const createCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): Cache<T> => {
+  const existingCache = getStore().caches.getValue(name)
   Preconditions.isNil(existingCache, () => `Cache: ${name} already exists`)
 
-  const providers = getProviders<T>(name, context.cache.configuration, context)
+  const providers = getProviders<T>(name, getContext(context).configuration, context)
   const cache = new CacheImpl<T>(name, providers, context)
-  CacheManagerState.getValue().cacheDirectory.set(name, cache)
+  getStore().caches.setValue(name, cache)
   return cache
 }
 
-export const createLocalCache = <T>(name: string, context: BessemerApplicationContext): LocalCache<T> => {
-  const existingCache = CacheManagerState.getValue().localCacheDirectory.get(name)
+export const createLocalCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): LocalCache<T> => {
+  const existingCache = getStore().caches.getValue(name)
   Preconditions.isNil(existingCache, () => `Cache: ${name} already exists`)
 
-  const providers = getProviders<T>(name, context.cache.configuration.local, context)
+  const providers = getProviders<T>(name, getContext(context).configuration.local, context)
   const cache = new LocalCacheImpl<T>(name, providers as Array<LocalCacheProvider<T>>)
-  CacheManagerState.getValue().localCacheDirectory.set(name, cache)
+  getStore().localCaches.setValue(name, cache)
   return cache
 }
 
-const getProviders = <T>(name: string, configuration: CacheConfigurationSection, context: BessemerApplicationContext): Array<CacheProvider<T>> => {
+const getProviders = <T>(
+  name: string,
+  configuration: CacheConfigurationSection,
+  context: GlobalContextType<BessemerApplicationContext>
+): Array<CacheProvider<T>> => {
   const defaultOptions = configuration.defaults
   const specificOptions = configuration.caches?.[name]
   const resolvedOptions = { ...defaultOptions, ...specificOptions }
 
   const constructedProviders = resolvedOptions.providers.map((provider) => {
-    const targetRegistry = context.cache.providers.find((it) => it.type === provider.type)
+    const targetRegistry = getContext(context).providers.find((it) => it.type === provider.type)
     if (Objects.isNil(targetRegistry)) {
       throw new Error(`Unrecognized CacheProvider type: ${provider.type}`)
     }
@@ -112,10 +113,26 @@ const getProviders = <T>(name: string, configuration: CacheConfigurationSection,
   return constructedProviders
 }
 
-// export const getCaches = (): Array<Cache<any>> => {
-//   return [...state.cacheDirectory.values()]
-// }
-//
-// export const invalidateSection = async (section: CacheSection): Promise<void> => {
-//   await monitor.value.invalidateSection(section)
-// }
+export const getCaches = async (context: GlobalContextType<BessemerApplicationContext>): Promise<Array<CacheSummary>> => {
+  return await getManager(context).getCaches(context)
+}
+
+export const getCacheDetails = async (name: CacheName, context: GlobalContextType<BessemerApplicationContext>): Promise<CacheDetail | null> => {
+  return await getManager(context).getCacheDetails(name, context)
+}
+
+export const evictValues = async (request: CacheEvictRequest, context: GlobalContextType<BessemerApplicationContext>): Promise<void> => {
+  await getManager(context).evictValues(request, context)
+}
+
+export const writeValues = async (request: CacheWriteRequest, context: GlobalContextType<BessemerApplicationContext>): Promise<void> => {
+  await getManager(context).writeValues(request, context)
+}
+
+const getContext = (context: GlobalContextType<BessemerApplicationContext>): CacheContext => {
+  return context.global.cache
+}
+
+const getManager = (context: GlobalContextType<BessemerApplicationContext>): CacheManager => {
+  return getContext(context).manager
+}

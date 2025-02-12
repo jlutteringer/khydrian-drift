@@ -2,7 +2,7 @@ import { BessemerApplicationContext, BessemerClientContext, BessemerClientModule
 
 export const BaseClientModule: BessemerClientModule<BessemerApplicationContext, BessemerClientContext> = {
   useTags: () => {
-    return null
+    return []
   },
   useInitializeClient: (initialClient) => initialClient,
 }

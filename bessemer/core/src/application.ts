@@ -1,15 +1,16 @@
 import { CodexOptions, CodexRuntime } from '@bessemer/core/codex'
 import { InternationalizationOptions } from '@bessemer/core/internationalization'
-import { ApplicationRuntimeType, BessemerApplicationModule, ClientContextType } from '@bessemer/framework'
-import { Arrays, Objects } from '@bessemer/cornerstone'
+import { BessemerModule, ClientContextType } from '@bessemer/framework'
+import { Arrays } from '@bessemer/cornerstone'
 import { Tiptap } from '@bessemer/core'
 import { TiptapExtension } from '@bessemer/core/tiptap'
 import {
   BessemerNextApplicationContext,
   BessemerNextApplicationModule,
   BessemerNextClientContext,
-  BessemerNextOptions
+  BessemerNextOptions,
 } from '@bessemer/framework-next/application'
+import { DeepPartial } from '@bessemer/cornerstone/types'
 
 export type CoreOptions = BessemerNextOptions & {
   codex?: CodexOptions
@@ -34,26 +35,19 @@ export type CoreApplicationContext = BessemerNextApplicationContext & {
 
 export type CoreClientContext = BessemerNextClientContext &
   ClientContextType<CoreApplicationContext> & {
-  pathname: string
-}
+    pathname: string
+  }
 
-export const CoreApplicationModule: BessemerApplicationModule<CoreApplicationContext, CoreOptions> = {
-  globalTags: BessemerNextApplicationModule.globalTags,
-  configure: BessemerNextApplicationModule.configure,
-  applicationTags: BessemerNextApplicationModule.applicationTags,
-  initializeApplication: async (options: CoreOptions, runtime: ApplicationRuntimeType<CoreApplicationContext>): Promise<CoreApplicationContext> => {
-    const baseApplication = await BessemerNextApplicationModule.initializeApplication(options, runtime)
-
-    const application = Objects.merge(baseApplication, {
+export const CoreApplicationModule: BessemerModule<CoreApplicationContext, CoreOptions> = {
+  configure: async (options) => {
+    const application: DeepPartial<CoreApplicationContext> = {
       codex: options.codex && {
         provider: options.codex.provider,
       },
       tiptapExtensions: Arrays.concatenate(Tiptap.DefaultExtensions, options.tiptapExtensions ?? []),
-      client: {
-        runtime: runtime,
-      },
-    })
+    }
 
     return application
   },
+  dependencies: [BessemerNextApplicationModule],
 }

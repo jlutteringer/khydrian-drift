@@ -1,5 +1,5 @@
-import { Cache, CacheEntry, CacheKey, CacheProvider, CacheSection } from '@bessemer/cornerstone/cache'
-import { AdvisoryLocks, BessemerApplicationContext } from '@bessemer/framework'
+import { Cache, CacheEntry, CacheKey, CacheProvider, CacheSector } from '@bessemer/cornerstone/cache'
+import { AdvisoryLocks, BessemerApplicationContext, GlobalContextType } from '@bessemer/framework'
 import { Arrays, Async, Entries, Loggers } from '@bessemer/cornerstone'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
@@ -7,8 +7,11 @@ import { Entry } from '@bessemer/cornerstone/entry'
 const logger = Loggers.child('CacheImpl')
 
 export class CacheImpl<T> implements Cache<T> {
-  // JOHN we really need to think through the implications of how we handle context here
-  constructor(readonly name: string, private readonly providers: Array<CacheProvider<T>>, private readonly context: BessemerApplicationContext) {}
+  constructor(
+    readonly name: string,
+    private readonly providers: Array<CacheProvider<T>>,
+    private readonly context: GlobalContextType<BessemerApplicationContext>
+  ) {}
 
   fetchValue = async (namespace: ResourceNamespace, key: ResourceKey, fetch: () => Promise<T>): Promise<T> => {
     const results = await this.fetchValues(namespace, [key], async () => {
@@ -92,12 +95,10 @@ export class CacheImpl<T> implements Cache<T> {
     return results
   }
 
-  // JOHN do we want to implement soft revalidates?
   private revalidate(
     namespace: ResourceNamespace,
     entries: Array<Entry<CacheEntry<T>>>,
-    fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
-    hard: boolean = false
+    fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
   ): void {
     Async.execute(async () => {
       const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
@@ -134,8 +135,8 @@ export class CacheImpl<T> implements Cache<T> {
     await Promise.all(this.providers.map((provider) => provider.writeValues(entries)))
   }
 
-  evictAll = async (initialSection: CacheSection): Promise<void> => {
-    const section = CacheSection.namespace(initialSection, this.name)
-    await Promise.all(this.providers.map((provider) => provider.evictAll(section)))
+  evictAll = async (initialSector: CacheSector): Promise<void> => {
+    const sector = CacheSector.namespace(this.name, initialSector)
+    await Promise.all(this.providers.map((provider) => provider.evictAll(sector)))
   }
 }

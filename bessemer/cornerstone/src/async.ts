@@ -70,7 +70,7 @@ export const settled = <T>(data: T): SettledValue<T> => ({ isSuccess: true, isEr
 export const error = (error: unknown): ErrorValue => ({ isSuccess: false, isError: true, isLoading: false, isFetching: false, data: error })
 
 export const handle = <T, N>(
-  value: AsyncValue<T | undefined>,
+  value: AsyncValue<T | null>,
   handlers: { loading: () => N; error: (error: unknown) => N; absent: () => N; success: (data: T) => N }
 ): N => {
   if (value.isLoading || (value.isError && value.isFetching)) {

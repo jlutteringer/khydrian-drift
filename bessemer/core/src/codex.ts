@@ -111,7 +111,7 @@ export const fetchTextById = async (
   return content[0] as TextContent
 }
 
-export const fetchTextByKey = async (key: ContentKey, context: CoreApplicationContext, tags: Array<Tag> = []): Promise<TextContent | undefined> =>
+export const fetchTextByKey = async (key: ContentKey, context: CoreApplicationContext, tags: Array<Tag> = []): Promise<TextContent | null> =>
   fetchContentByKey(key, context, { type: TextContentType, tags: tags })
 
 export const fetchTextByKeys = async (keys: Array<ContentKey>, context: CoreApplicationContext, tags: Array<Tag> = []): Promise<Array<TextContent>> =>
@@ -123,8 +123,8 @@ export const fetchContentByKey = async <Type extends ContentType>(
   key: ContentKey,
   context: CoreApplicationContext,
   options?: FetchContentOptions<Type>
-): Promise<ContentData<Type> | undefined> => {
-  return Arrays.first(await fetchContentByKeys([key], context, options))
+): Promise<ContentData<Type> | null> => {
+  return Arrays.first(await fetchContentByKeys([key], context, options)) ?? null
 }
 
 const IndividualContentCacheKey = 'Codex.fetchContentByKeys'
@@ -135,8 +135,8 @@ export const fetchContentByKeys = async <Type extends ContentType>(
   context: CoreApplicationContext,
   options?: FetchContentOptions<Type>
 ): Promise<Array<ContentData<Type>>> => {
-  const cache = Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context)
-  const namespace = Contexts.getResourceNamespace(context)
+  const cache = Caches.getCache<ContentData<Type>>('Codex.fetchContentByKeys', context)
+  const namespace = Contexts.getNamespace(context)
 
   const results = await cache.fetchValues(namespace, keys, async (keys) => {
     Preconditions.isPresent(context.codex)
@@ -176,7 +176,7 @@ export const fetchContentBySectors = async <Type extends ContentType>(
   options?: FetchContentOptions<Type>
 ): Promise<Array<ContentData<Type>>> => {
   const cache = Caches.getCache<Array<ContentData<Type>>>('Codex.fetchContentBySectors', context)
-  const namespace = Contexts.getResourceNamespace(context)
+  const namespace = Contexts.getNamespace(context)
 
   const results = await cache.fetchValues(namespace, sectors, async (sectors) => {
     Preconditions.isPresent(context.codex)

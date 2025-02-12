@@ -89,7 +89,7 @@ const createProxyHandler = (getLogger: () => PinoLogger): ProxyHandler<PinoLogge
       cachedVersion = GlobalLoggerState.getValue().version
     }
 
-    if (!cachedLogger) {
+    if (Objects.isNil(cachedLogger)) {
       cachedLogger = getLogger()
     }
 
@@ -127,9 +127,9 @@ const LoggerProxy: PinoLogger = new Proxy(
 
 const Primary: Logger = new Logger(LoggerProxy)
 
-export const configure = (initialOptions?: LoggerOptions): void => {
+export const initialize = (initialOptions?: LoggerOptions): void => {
   const options = applyDefaultOptions(initialOptions)
-  GlobalLoggerState.setValue({ version: GlobalLoggerState.getValue().version++, logger: pino(options) })
+  GlobalLoggerState.setValue({ version: GlobalLoggerState.getValue().version + 1, logger: pino(options) })
 }
 
 export const child = (module: string): Logger => {

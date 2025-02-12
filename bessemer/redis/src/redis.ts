@@ -1,5 +1,5 @@
 import IoRedis, { Cluster as IORedisCluster, Redis as IORedisClient } from 'ioredis'
-import { RedisApplicationContext } from '@bessemer/redis/application'
+import { RedisClientContext } from '@bessemer/redis/application'
 import { Preconditions } from '@bessemer/cornerstone'
 
 export type RedisSingletonClient = IORedisClient
@@ -11,10 +11,8 @@ export type RedisClient = RedisSingletonClient | RedisClusterClient
 //   return new RedisStore<T>(namespace, context, timeToLive)
 // }
 
-export const getClient = (context: RedisApplicationContext): RedisClient => {
-  Preconditions.isPresent(context.redis, () => 'Application attempted to obtain a RedisClient without setting options.redis configuration')
-
-  const options = context.redis
+export const getClient = (context: RedisClientContext | undefined): RedisClient => {
+  Preconditions.isPresent(context, () => 'Application attempted to obtain a RedisClient without setting options.redis configuration')
 
   // const redisClientCache = CacheService.getLocalCache<RedisClient>('RedisProvider.clientCache', context)
   // return redisClientCache.getValue(['RedisClient'], () => {
@@ -22,5 +20,5 @@ export const getClient = (context: RedisApplicationContext): RedisClient => {
   //   return client
   // })
 
-  return new IoRedis(options.connectionUrl)
+  return new IoRedis(context.connectionUrl)
 }

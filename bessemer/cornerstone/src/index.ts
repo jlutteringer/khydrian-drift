@@ -20,6 +20,7 @@ import * as Ulids from '@bessemer/cornerstone/ulid'
 import * as Entries from '@bessemer/cornerstone/entry'
 import * as Hashes from '@bessemer/cornerstone/hash'
 import * as Crypto from '@bessemer/cornerstone/crypto'
+import * as Globs from '@bessemer/cornerstone/glob'
 
 import * as Tags from '@bessemer/cornerstone/tag'
 import * as Promises from '@bessemer/cornerstone/promise'
@@ -34,6 +35,7 @@ import * as Combinables from '@bessemer/cornerstone/combinable'
 import * as Properties from '@bessemer/cornerstone/property'
 import * as RichTexts from '@bessemer/cornerstone/rich-text'
 import * as Retry from '@bessemer/cornerstone/retry'
+import * as Stores from '@bessemer/cornerstone/store'
 import * as Misc from '@bessemer/cornerstone/misc'
 
 export {
@@ -59,6 +61,7 @@ export {
   Entries,
   Hashes,
   Crypto,
+  Globs,
   Tags,
   Promises,
   References,
@@ -72,5 +75,6 @@ export {
   Properties,
   RichTexts,
   Retry,
+  Stores,
   Misc,
 }

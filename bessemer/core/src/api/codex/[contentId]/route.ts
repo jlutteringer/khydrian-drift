@@ -12,5 +12,5 @@ export const GET = Routes.route(async (context: CoreApplicationContext, _: NextR
     return NextResponse.json({ error: `Content Item: [${contentId}] Not Found` }, { status: 404 })
   }
 
-  return NextResponse.json({ content })
+  return NextResponse.json(content)
 })

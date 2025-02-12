@@ -2,10 +2,11 @@ import { Ruleset } from '@simulacrum/common/ruleset'
 import { Dnd5e } from '@simulacrum/rulesets/dnd-5e'
 import { Objects, Tags, Urls } from '@bessemer/cornerstone'
 import { serverOnlyTest } from '@simulacrum/common/server-only-test'
-import { ApplicationRuntimeType, BessemerApplicationModule, ClientContextType } from '@bessemer/framework'
+import { BessemerModule, ClientContextType } from '@bessemer/framework'
 import { headers } from 'next/headers'
 import { FoundryApplicationContext, FoundryApplicationModule, FoundryClientContext, FoundryOptions } from '@bessemer/foundry/application'
 import { RedisApplicationContext, RedisApplicationModule, RedisOptions } from '@bessemer/redis/application'
+import { DeepPartial } from '@bessemer/cornerstone/types'
 
 export type ApplicationOptions = FoundryOptions &
   RedisOptions & {
@@ -28,30 +29,27 @@ export type ApplicationContext = FoundryApplicationContext &
 
 export type ClientContext = ClientContextType<ApplicationContext> & FoundryClientContext & {}
 
-export const ApplicationModule: BessemerApplicationModule<ApplicationContext, ApplicationOptions> = {
-  globalTags: FoundryApplicationModule.globalTags,
-  configure: FoundryApplicationModule.configure,
-  applicationTags: async () => {
+export const ApplicationModule: BessemerModule<ApplicationContext, ApplicationOptions> = {
+  tags: async (tags) => {
     // TODO this is all janky test code
-    const coreTags = await FoundryApplicationModule.applicationTags()
     const headersList = await headers()
     const urlString = headersList.get('x-url')
 
     if (Objects.isNil(urlString)) {
-      return coreTags
+      return tags
     }
 
     const url = Urls.parse(urlString)
     if (url.location.path === '/subscription') {
-      return [...coreTags, Tags.tag('Tenant', 'subscription')]
+      return [...tags, Tags.tag('Tenant', 'subscription')]
     }
 
-    return coreTags
+    return tags
   },
-  initializeApplication: async (options: ApplicationOptions, runtime: ApplicationRuntimeType<ApplicationContext>): Promise<ApplicationContext> => {
-    const baseApplication = await FoundryApplicationModule.initializeApplication(options, runtime)
-    const redisApplication = await RedisApplicationModule.initializeApplication(options, runtime)
-    const application = Objects.merge(baseApplication, redisApplication, { serverOnlyTest, client: { ruleset: Dnd5e, runtime } })
+  configure: async (options) => {
+    // JOHN concerning cast here...
+    const application: DeepPartial<ApplicationContext> = { serverOnlyTest, client: { ruleset: Dnd5e as DeepPartial<Ruleset> } }
     return application
   },
+  dependencies: [FoundryApplicationModule, RedisApplicationModule],
 }

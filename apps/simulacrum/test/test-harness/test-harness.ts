@@ -2,26 +2,30 @@ import { Dnd5e } from '@simulacrum/rulesets/dnd-5e'
 import { CharacterRecord } from '@simulacrum/common/character/character'
 import { ProgressionTables } from '@simulacrum/common'
 import { ApplicationContext } from '@simulacrum/common/application'
+import { Ulids } from '@bessemer/cornerstone'
 
 // TODO
 export const buildTestContext = (): ApplicationContext => {
   return {
-    cache: null!,
+    id: '',
+    global: {
+      cache: null!,
+      advisoryLockProvider: null!,
+      buildId: '123',
+      instanceId: Ulids.generate(),
+    },
     tiptapExtensions: [],
     route: {
       errorHandler: null!,
     },
     serverOnlyTest: () => 'asdasd',
     client: {
-      buildId: '123',
-      instanceId: '123',
       correlationId: '123',
       ruleset: Dnd5e,
       tags: [],
       environment: 'test',
       runtime: { test: () => 'hello', codex: { renderers: [] } },
     },
-    advisoryLockProvider: null!,
   }
 }
 

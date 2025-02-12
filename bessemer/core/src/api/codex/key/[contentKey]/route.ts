@@ -18,6 +18,6 @@ export const GET = Routes.route(
       return NextResponse.json({ error: `Content Item: [${contentKey}] Not Found` }, { status: 404 })
     }
 
-    return NextResponse.json({ content })
+    return NextResponse.json(content)
   }
 )

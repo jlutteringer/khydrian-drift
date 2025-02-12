@@ -5,10 +5,10 @@ export type ResourceKey = string
 export type ResourceNamespace = NominalType<string, 'ResourceNamespace'>
 
 export namespace ResourceKey {
-  const ResourceKeySeparator = '--'
+  const ResourceNamespaceSeparator = '/'
 
   export const namespace = (namespace: ResourceNamespace, key: ResourceKey): ResourceKey => {
-    return `${namespace}${ResourceKeySeparator}${key}`
+    return `${namespace}${ResourceNamespaceSeparator}${key}`
   }
 
   export const namespaceAll = (namespace: ResourceNamespace, keys: Array<ResourceKey>): Array<ResourceKey> => {
@@ -16,7 +16,7 @@ export namespace ResourceKey {
   }
 
   export const stripNamespace = (namespace: ResourceNamespace, key: ResourceKey): ResourceKey => {
-    return Strings.removeStart(key, `${namespace}${ResourceKeySeparator}`)
+    return Strings.removeStart(key, `${namespace}${ResourceNamespaceSeparator}`)
   }
 
   export const stripNamespaceAll = (namespace: ResourceNamespace, keys: Array<ResourceKey>): Array<ResourceKey> => {
@@ -24,6 +24,6 @@ export namespace ResourceKey {
   }
 
   export const extendNamespace = (...namespaces: Array<ResourceNamespace>): ResourceNamespace => {
-    return namespaces.join(ResourceKeySeparator)
+    return namespaces.join(ResourceNamespaceSeparator)
   }
 }

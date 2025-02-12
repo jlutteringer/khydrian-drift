@@ -1,4 +1,4 @@
-import { CacheEntry, CacheKey, LocalCache, LocalCacheProvider } from '@bessemer/cornerstone/cache'
+import { CacheEntry, CacheKey, CacheSector, LocalCache, LocalCacheProvider } from '@bessemer/cornerstone/cache'
 import { Arrays, Async, Entries } from '@bessemer/cornerstone'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
@@ -87,17 +87,15 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     return results
   }
 
-  // JOHN do we want to implement soft revalidates?
-  private revalidate(
-    namespace: ResourceNamespace,
-    entries: Array<Entry<CacheEntry<T>>>,
-    fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>,
-    hard: boolean = false
-  ): void {
+  private revalidate(namespace: ResourceNamespace, entries: Array<Entry<CacheEntry<T>>>, fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>): void {
     Async.execute(async () => {
       const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
       const fetchedValues = Entries.mapKeys(fetch(staleKeys), (it) => ResourceKey.stripNamespace(namespace, it))
       this.setValues(namespace, fetchedValues)
     })
+  }
+
+  removeAll = (sector: CacheSector): void => {
+    this.providers.map((provider) => provider.removeAll(sector))
   }
 }
