@@ -42,9 +42,6 @@ export interface ContentProvider<ContextType extends AbstractApplicationContext 
   fetchContentByKeys: (keys: Array<ContentKey>, tags: Array<Tag>, context: ContextType) => Promise<Array<ContentData>>
 
   fetchContentBySectors: (sectors: Array<ContentSector>, tags: Array<Tag>, context: ContextType) => Promise<Array<ContentData>>
-
-  // JOHN pagination...
-  fetchContentByModel: <Type extends ContentType>(type: Type, context: ContextType) => Promise<Array<ContentData<Type>>>
 }
 
 export type ContentNormalizer<
@@ -123,11 +120,6 @@ export const staticProvider = <ApplicationContext extends AbstractApplicationCon
       })
 
       return normalizeContent(resolvedContent, normalizers ?? [], context)
-    },
-    async fetchContentByModel<Type extends ContentType>(type: Type, context: ApplicationContext): Promise<Array<ContentData<Type>>> {
-      const matchingContent = content.filter((it) => it.type === type)
-      const normalizedContent = await normalizeContent(matchingContent, normalizers ?? [], context)
-      return normalizedContent as Array<ContentData<Type>>
     },
   }
 }

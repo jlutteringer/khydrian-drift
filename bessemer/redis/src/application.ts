@@ -22,7 +22,7 @@ export type RedisApplicationContext = BessemerApplicationContext & {
 
 export const RedisApplicationModule: BessemerModule<RedisApplicationContext, RedisOptions> = {
   global: {
-    configure: (options: RedisOptions, context) => {
+    configure: (options, context) => {
       if (Objects.isNil(options.redis)) {
         return {}
       }

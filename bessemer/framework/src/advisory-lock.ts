@@ -79,11 +79,12 @@ export const usingIncrementalLocks = async <T>(
 
     incrementalResults.push(...incrementalValues)
     remainingKeys = remainingKeys.filter((it) => !incrementalValues.find(([key, _]) => key === it))
-    logger.trace(() => `usingIncrementalLocks - Unresolved incremental values: ${JSON.stringify(remainingKeys)}`)
 
     if (Arrays.isEmpty(remainingKeys)) {
       return Results.success(incrementalResults)
     }
+
+    logger.trace(() => `usingIncrementalLocks - Unresolved incremental values: ${JSON.stringify(remainingKeys)}`)
 
     const lock = await tryAcquireLock(remainingKeys, context, options)
     if (lock.isSuccess) {

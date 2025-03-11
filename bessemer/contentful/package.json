@@ -1,5 +1,5 @@
 {
-  "name": "@bessemer/framework",
+  "name": "@bessemer/contentful",
   "type": "module",
   "version": "0.0.0",
   "main": "./dist/index.cjs",
@@ -23,8 +23,7 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/client": "workspace:*",
-    "@bessemer/cornerstone": "workspace:*",
-    "lru-cache": "11.0.2"
+    "@bessemer/core": "workspace:*",
+    "graphql-request": "7.1.2"
   }
 }

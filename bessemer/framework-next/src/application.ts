@@ -1,4 +1,11 @@
-import { BessemerApplicationContext, BessemerClientContext, BessemerModule, BessemerOptions, ClientContextType } from '@bessemer/framework'
+import {
+  BessemerApplicationContext,
+  BessemerClientContext,
+  BessemerModule,
+  BessemerOptions,
+  ClientContextType,
+  Environments,
+} from '@bessemer/framework'
 import { RouteErrorHandler } from '@bessemer/framework-next/route'
 import { BaseApplicationModule } from '@bessemer/framework/application'
 import * as fs from 'node:fs'
@@ -26,7 +33,12 @@ export const BessemerNextApplicationModule: BessemerModule<BessemerNextApplicati
       try {
         buildId = fs.readFileSync('.next/BUILD_ID').toString()
       } catch {
-        buildId = Ulids.generate()
+        // JOHN this should be an enum? flag? something?
+        if (Environments.getEnvironment() === 'development') {
+          buildId = 'static'
+        } else {
+          buildId = Ulids.generate()
+        }
       }
 
       return {

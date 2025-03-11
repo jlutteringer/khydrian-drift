@@ -18,6 +18,8 @@
       "@bessemer/foundry/*": ["./bessemer/foundry/src/*"],
       "@bessemer/redis": ["./bessemer/redis/src"],
       "@bessemer/redis/*": ["./bessemer/redis/src/*"],
+      "@bessemer/contentful": ["./bessemer/contentful/src"],
+      "@bessemer/contentful/*": ["./bessemer/contentful/src/*"],
       "@bessemer/client": ["./bessemer/client/src"],
       "@bessemer/client/*": ["./bessemer/client/src/*"],
       "@simulacrum": ["./apps/simulacrum"],
