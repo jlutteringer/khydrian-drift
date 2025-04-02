@@ -1,8 +1,11 @@
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Strings } from '@bessemer/cornerstone/index'
+import { Strings, Zod } from '@bessemer/cornerstone/index'
+import { ZodType } from 'zod'
 
 export type ResourceKey = string
+
 export type ResourceNamespace = NominalType<string, 'ResourceNamespace'>
+export const ResourceNamespaceSchema: ZodType<ResourceNamespace> = Zod.string()
 
 export namespace ResourceKey {
   const ResourceNamespaceSeparator = '/'

@@ -29,7 +29,8 @@
     "minimatch": "10.0.1",
     "pino": "9.6.0",
     "type-fest": "4.32.0",
-    "ulid": "2.3.0"
+    "ulid": "2.3.0",
+    "zod": "3.24.2"
   },
   "devDependencies": {
     "@types/lodash-es": "4.17.12",

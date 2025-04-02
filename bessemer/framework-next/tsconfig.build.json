@@ -9,5 +9,5 @@
       "@bessemer/framework-next/*": ["src/*"]
     }
   },
-  "exclude": ["dist", "node_modules", "test" ,"tsup.config.ts"]
+  "exclude": ["dist", "node_modules", "test" ,"tsup.config.ts", "jest.config.js"]
 }

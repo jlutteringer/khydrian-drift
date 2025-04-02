@@ -1,17 +1,30 @@
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
-import { Arrays, Objects, References, Tags, Ulids } from '@bessemer/cornerstone'
+import { Arrays, Objects, References, Tags, Ulids, Zod } from '@bessemer/cornerstone'
 import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 import { Tag } from '@bessemer/cornerstone/tag'
+import { ZodType } from 'zod'
 
 export type ContentSector = NominalType<string, 'ContentSector'>
+export const ContentSectorSchema: ZodType<ContentSector> = Zod.string()
+
 export type ContentKey = NominalType<string, 'ContentKey'>
+export const ContentKeySchema: ZodType<ContentKey> = Zod.string()
+
 export type ContentType<Data = unknown> = NominalType<string, ['ContentType', Data]>
+export const ContentTypeSchema: ZodType<ContentType> = Zod.string()
 
 export type ContentReference = Reference<'Content'>
 
 type ContentDataType<Type> = Type extends ContentType<infer Data> ? Data : never
+
+export const ContentDataSchema = Zod.object({
+  key: ContentKeySchema,
+  type: ContentTypeSchema,
+  data: Zod.unknown(),
+  sector: ContentSectorSchema.nullable(),
+})
 
 export type ContentData<Type extends ContentType = ContentType, Data = ContentDataType<Type>> = Referencable<ContentReference> & {
   key: ContentKey

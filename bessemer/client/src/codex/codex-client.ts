@@ -1,6 +1,38 @@
-import { ContentData, ContentKey, ContentSector, ContentType } from '@bessemer/cornerstone/content'
-import { Urls } from '@bessemer/cornerstone'
+import { ContentData, ContentDataSchema, ContentKey, ContentSector, ContentType } from '@bessemer/cornerstone/content'
+import { Urls, Zod } from '@bessemer/cornerstone'
 import { CodexClientContext, FetchContentOptions } from '@bessemer/client/codex/types'
+import { isErrorFromPath, makeApi, Zodios } from '@zodios/core'
+
+const CodexApi = makeApi([
+  {
+    alias: 'fetchContentByKey',
+    method: 'get',
+    path: '/codex/key/:key',
+    response: ContentDataSchema,
+    parameters: [
+      {
+        name: 'type',
+        description: 'TODO',
+        type: 'Query',
+        schema: Zod.string(),
+      },
+      {
+        name: 'tags',
+        description: 'TODO',
+        type: 'Query',
+        schema: Zod.string(),
+      },
+    ],
+    errors: [
+      {
+        status: 404,
+        schema: Zod.unknown(),
+      },
+    ],
+  },
+])
+
+const client = new Zodios('/api', CodexApi)
 
 // JOHN fully implement me
 export const fetchContentByKey = async <Type extends ContentType>(
@@ -8,6 +40,19 @@ export const fetchContentByKey = async <Type extends ContentType>(
   context: CodexClientContext,
   options?: FetchContentOptions<Type>
 ): Promise<ContentData<Type> | null> => {
+  try {
+    const content = await client.fetchContentByKey()
+    return content as ContentData<Type>
+  } catch (e) {
+    if (isErrorFromPath(CodexApi, 'get', '/codex/key/:key', e)) {
+      if (e.response.status === 404) {
+        return null
+      }
+    }
+
+    throw e
+  }
+
   const response = await fetch(
     Urls.buildString({
       location: {

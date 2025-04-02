@@ -23,6 +23,8 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/cornerstone": "workspace:*"
+    "@bessemer/cornerstone": "workspace:*",
+    "@zodios/core": "10.9.6",
+    "axios": "1.8.3"
   }
 }

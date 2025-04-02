@@ -1,4 +1,4 @@
-interface NominalTyping<NominalTypingT> {
+export interface NominalTyping<NominalTypingT> {
   _type?: NominalTypingT
 }
 

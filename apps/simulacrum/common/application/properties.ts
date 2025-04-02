@@ -20,7 +20,8 @@ export const ApplicationProperties: PropertyRecord<ApplicationOptions> = Propert
     provider: contentProvider,
   },
   public: { test: 'hello' },
-  redis: {
-    connectionUrl: 'localhost:6379',
-  },
+  // JOHN enable for redis
+  // redis: {
+  //   connectionUrl: 'localhost:6379',
+  // },
 })

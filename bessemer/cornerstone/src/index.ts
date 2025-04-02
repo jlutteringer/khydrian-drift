@@ -22,6 +22,7 @@ import * as Hashes from '@bessemer/cornerstone/hash'
 import * as Crypto from '@bessemer/cornerstone/crypto'
 import * as Globs from '@bessemer/cornerstone/glob'
 
+import * as Zod from '@bessemer/cornerstone/zod'
 import * as Tags from '@bessemer/cornerstone/tag'
 import * as Promises from '@bessemer/cornerstone/promise'
 import * as References from '@bessemer/cornerstone/reference'
@@ -62,6 +63,7 @@ export {
   Hashes,
   Crypto,
   Globs,
+  Zod,
   Tags,
   Promises,
   References,

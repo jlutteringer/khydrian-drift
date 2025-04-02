@@ -1,33 +1,32 @@
-import { CacheName } from '@bessemer/cornerstone/cache'
-import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
-import { Arrayable } from 'type-fest'
-import { Entry } from '@bessemer/cornerstone/entry'
-import { GlobPattern } from '@bessemer/cornerstone/glob'
+import { CacheNameSchema } from '@bessemer/cornerstone/cache'
+import { ResourceNamespaceSchema } from '@bessemer/cornerstone/resource'
+import { Zod } from '@bessemer/cornerstone'
+import { GlobPatternSchema } from '@bessemer/cornerstone/glob'
 
 export type CacheClientContext = {}
 
-export type CacheSummary = {
-  name: CacheName
-}
+export const CacheSummarySchema = Zod.object({ name: CacheNameSchema })
+export type CacheSummary = Zod.infer<typeof CacheSummarySchema>
 
-export type CacheDetail = CacheSummary & {
-  detail: string
-}
+export const CacheDetailSchema = CacheSummarySchema.extend({ detail: Zod.string() })
+export type CacheDetail = Zod.infer<typeof CacheDetailSchema>
 
-export type CacheTarget = Arrayable<GlobPattern>
-export type CacheSectorTarget = Arrayable<GlobPattern>
+export const CacheTargetSchema = Zod.arrayable(GlobPatternSchema)
+export type CacheTarget = Zod.infer<typeof CacheTargetSchema>
 
-export type CacheWriteRequest = {
-  caches: CacheTarget
+export const CacheWriteRequestSchema = Zod.object({
+  caches: CacheTargetSchema,
+  namespace: ResourceNamespaceSchema,
+  values: Zod.arrayable(Zod.entry(Zod.unknown())),
+})
 
-  namespace: ResourceNamespace
-  values: Arrayable<Entry<unknown>>
-}
+export type CacheWriteRequest = Zod.infer<typeof CacheWriteRequestSchema>
 
-export type CacheEvictRequest = {
-  caches: CacheTarget
-  sectors?: CacheSectorTarget
+export const CacheEvictRequestSchema = Zod.object({
+  caches: CacheTargetSchema,
+  sectors: Zod.arrayable(GlobPatternSchema).optional(),
+  namespace: ResourceNamespaceSchema.optional(),
+  keys: Zod.arrayable(Zod.key()).optional(),
+})
 
-  namespace?: ResourceNamespace
-  keys?: Arrayable<ResourceKey>
-}
+export type CacheEvictRequest = Zod.infer<typeof CacheEvictRequestSchema>
