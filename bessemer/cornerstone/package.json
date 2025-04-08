@@ -1,8 +1,7 @@
 {
   "name": "@bessemer/cornerstone",
   "type": "module",
-  "version": "0.5.1",
-  "main": "./dist/index.cjs",
+  "version": "0.5.3",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
@@ -35,5 +34,8 @@
   "devDependencies": {
     "@types/lodash-es": "4.17.12",
     "pino-pretty": "13.0.0"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
