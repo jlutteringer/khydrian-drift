@@ -73,7 +73,8 @@ const applyDefaultOptions = (options?: LoggerOptions): LoggerOptions => {
     browser: {
       asObject: true,
     },
-    ...getPrettyTransport(),
+    // JOHN need to find a better way to include
+    // ...getPrettyTransport(),
   }
 
   return Objects.merge(defaultOptions, options)
