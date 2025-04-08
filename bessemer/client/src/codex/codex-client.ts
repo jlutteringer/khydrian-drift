@@ -14,13 +14,13 @@ const CodexApi = makeApi([
         name: 'type',
         description: 'TODO',
         type: 'Query',
-        schema: Zod.string(),
+        schema: Zod.string().optional(),
       },
       {
         name: 'tags',
         description: 'TODO',
         type: 'Query',
-        schema: Zod.string(),
+        schema: Zod.string().optional(),
       },
     ],
     errors: [
@@ -41,7 +41,7 @@ export const fetchContentByKey = async <Type extends ContentType>(
   options?: FetchContentOptions<Type>
 ): Promise<ContentData<Type> | null> => {
   try {
-    const content = await client.fetchContentByKey()
+    const content = await client.fetchContentByKey({ params: { key } })
     return content as ContentData<Type>
   } catch (e) {
     if (isErrorFromPath(CodexApi, 'get', '/codex/key/:key', e)) {

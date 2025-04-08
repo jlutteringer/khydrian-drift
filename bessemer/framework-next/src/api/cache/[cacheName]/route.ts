@@ -1,13 +1,13 @@
 import { Routes } from '@bessemer/framework-next'
-import { CoreApplicationContext } from '@bessemer/core/application'
 import { NextRequest, NextResponse } from 'next/server'
 import { Caches } from '@bessemer/framework'
 import { CacheDetail } from '@bessemer/client/cache/types'
 import { Objects } from '@bessemer/cornerstone'
+import { BessemerNextApplicationContext } from '@bessemer/framework-next/application'
 
 export const GET = Routes.route(
   async (
-    context: CoreApplicationContext,
+    context: BessemerNextApplicationContext,
     _: NextRequest,
     { params }: { params: Promise<{ cacheName: string }> }
   ): Promise<NextResponse<CacheDetail>> => {
