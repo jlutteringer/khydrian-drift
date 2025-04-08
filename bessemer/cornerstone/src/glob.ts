@@ -1,13 +1,13 @@
 import { minimatch } from 'minimatch'
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Zod } from '@bessemer/cornerstone'
 import { ZodType } from 'zod'
+import { string } from '@bessemer/cornerstone/zod'
 
 export type GlobPattern = NominalType<string, 'GlobPattern'>
-export const GlobPatternSchema: ZodType<GlobPattern> = Zod.string()
+export const GlobPatternSchema: ZodType<GlobPattern> = string()
 
 export const schema = (): ZodType<GlobPattern> => {
-  return Zod.string()
+  return string()
 }
 
 export const match = (str: string, pattern: GlobPattern): boolean => {
