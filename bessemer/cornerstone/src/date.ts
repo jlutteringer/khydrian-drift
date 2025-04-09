@@ -1,6 +1,9 @@
 import { addHours as _addHours, addMilliseconds as _addMilliseconds, isAfter as _isAfter, isBefore as _isBefore, parseISO } from 'date-fns'
+import { isDate as _isDate } from 'lodash-es'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { Durations } from '@bessemer/cornerstone/index'
+
+export const isDate = _isDate
 
 export const now = (): Date => {
   return new Date()

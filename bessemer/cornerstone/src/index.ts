@@ -21,6 +21,7 @@ import * as Entries from '@bessemer/cornerstone/entry'
 import * as Hashes from '@bessemer/cornerstone/hash'
 import * as Crypto from '@bessemer/cornerstone/crypto'
 import * as Globs from '@bessemer/cornerstone/glob'
+import * as Ranges from '@bessemer/cornerstone/range'
 
 import * as Zod from '@bessemer/cornerstone/zod'
 import * as Tags from '@bessemer/cornerstone/tag'
@@ -63,6 +64,7 @@ export {
   Hashes,
   Crypto,
   Globs,
+  Ranges,
   Zod,
   Tags,
   Promises,

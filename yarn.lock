@@ -464,7 +464,6 @@ __metadata:
   resolution: "@bessemer/framework@workspace:bessemer/framework"
   dependencies:
     "@bessemer/client": "workspace:*"
-    "@bessemer/core": "workspace:*"
     "@bessemer/cornerstone": "workspace:*"
     lru-cache: "npm:11.0.2"
   languageName: unknown

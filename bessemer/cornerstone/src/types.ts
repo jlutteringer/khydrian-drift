@@ -1,14 +1,18 @@
+import { BRAND as ZODBRAND } from 'zod'
+
 export interface NominalTyping<NominalTypingT> {
   _type?: NominalTypingT
 }
 
 export type NominalType<T, NominalTypingT> = T & NominalTyping<NominalTypingT>
 
-interface TaggedTyping<TaggedTypingT> {
-  _type: TaggedTypingT
-}
+export type TaggedTyping<TaggedTypingT extends string | number | symbol> = {
+  [ZODBRAND]: {
+    [k in TaggedTypingT]: true;
+  };
+};
 
-export type TaggedType<T, TaggedTypingT> = T & TaggedTyping<TaggedTypingT>
+export type TaggedType<T, TaggedTypingT extends string | number | symbol> = T & TaggedTyping<TaggedTypingT>
 
 export type Throwable = unknown
 
@@ -19,3 +23,5 @@ export type Nil = null | undefined
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer U> ? DeepPartial<U>[] : T[P] extends object | undefined ? DeepPartial<T[P]> : T[P]
 }
+
+export type BasicType = string | number | boolean | Date

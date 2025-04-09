@@ -1,7 +1,7 @@
 {
   "name": "@bessemer/cornerstone",
   "type": "module",
-  "version": "0.5.10",
+  "version": "0.5.17",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
@@ -22,6 +22,7 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
+    "@types/lodash-es": "4.17.12",
     "date-fns": "4.1.0",
     "immer": "10.1.1",
     "lodash-es": "4.17.21",
@@ -32,7 +33,6 @@
     "zod": "3.24.2"
   },
   "devDependencies": {
-    "@types/lodash-es": "4.17.12",
     "pino-pretty": "13.0.0"
   },
   "files": [

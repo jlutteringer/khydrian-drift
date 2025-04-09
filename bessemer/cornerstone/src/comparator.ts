@@ -1,4 +1,5 @@
-import { Maths, Strings } from '@bessemer/cornerstone'
+import { Dates, Maths, Objects, Strings } from '@bessemer/cornerstone'
+import { BasicType } from '@bessemer/cornerstone/types'
 
 export type Comparator<T> = (first: T, second: T) => number
 
@@ -31,7 +32,7 @@ export const trueFirst = (): Comparator<boolean> => {
   return (first, second) => natural()(first ? 1 : 0, second ? 1 : 0)
 }
 
-export const natural = (): Comparator<string | number | null> => {
+export const natural = (): Comparator<BasicType | null> => {
   // Comparing by nulls first allows us to assume the elements are non-null for future comparisons
   return aggregate([
     nullsLast(),
@@ -40,10 +41,17 @@ export const natural = (): Comparator<string | number | null> => {
         return first.localeCompare(second)
       } else if (Maths.isNumber(first) && Maths.isNumber(second)) {
         return first! - second!
-      } else if (Maths.isNumber(first)) {
-        return -1
-      } else {
-        return 1
+      } else if (Dates.isDate(first) && Dates.isDate(second)) {
+        return first.getTime() - second.getTime()
+      } else if (Objects.isBoolean(first) && Objects.isBoolean(second)) {
+        if(first !== second) {
+          return second ? 1 : 0
+        }
+        else {
+          return 0
+        }
+      } {
+        return 0
       }
     },
   ])

@@ -1,6 +1,4 @@
-import { NominalType } from '@bessemer/cornerstone/types'
-import { Zod } from '@bessemer/cornerstone/index'
-import { ZodType } from 'zod'
+import { Zod } from '@bessemer/cornerstone'
 
-export type HexCode = NominalType<string, 'HexCode'>
-export const HexCodeSchema: ZodType<HexCode> = Zod.string().length(7).startsWith('#').describe('A 6-digit hex code starting a # sign')
+export const HexCodeSchema = Zod.string().length(7).startsWith('#').describe('A 6-digit hex code starting a # sign').brand('HexCode')
+export type HexCode = Zod.infer<typeof HexCodeSchema>

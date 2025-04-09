@@ -1,7 +1,7 @@
 import {
   clone as _clone,
   cloneDeep as _cloneDeep,
-  invert as _invert,
+  invert as _invert, isBoolean as _isBoolean, isDate,
   isEqual as _isEqual,
   isNil as _isNil,
   isNumber,
@@ -11,10 +11,10 @@ import {
   isUndefined as _isUndefined,
   mapValues as _mapValues,
   merge as unsafeMerge,
-  mergeWith as unsafeMergeWith,
+  mergeWith as unsafeMergeWith
 } from 'lodash-es'
 import { produce } from 'immer'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { BasicType, NominalType } from '@bessemer/cornerstone/types'
 import { Primitive, UnknownRecord } from 'type-fest'
 
 export const update: typeof produce = produce
@@ -194,9 +194,15 @@ export const applyPathValue = (object: UnknownRecord, initialPath: ObjectPath | 
   return newObject
 }
 
-const isPrimitive = (value: any): value is Primitive => {
+export const isPrimitive = (value: any): value is Primitive => {
   return value === null || (typeof value !== 'object' && typeof value !== 'function')
 }
+
+export const isBasic = (value: any): value is BasicType => {
+  return isNumber(value) || isString(value) || isDate(value) || isBoolean(value)
+}
+
+export const isBoolean = _isBoolean
 
 type TransformFunction = (value: any, path: (string | number)[], key: string | number, parent: any) => any
 

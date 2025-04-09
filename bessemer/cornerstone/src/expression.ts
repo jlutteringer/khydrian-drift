@@ -1,3 +1,4 @@
+import * as BasicExpressions from '@bessemer/cornerstone/expression/basic-expression'
 import * as NumericExpressions from '@bessemer/cornerstone/expression/numeric-expression'
 import * as StringExpressions from '@bessemer/cornerstone/expression/string-expression'
 import * as ArrayExpressions from '@bessemer/cornerstone/expression/array-expression'
@@ -6,7 +7,7 @@ import { NominalType } from '@bessemer/cornerstone/types'
 import { Signable } from '@bessemer/cornerstone/signature'
 import { UnknownRecord } from 'type-fest'
 
-export { Expressions, NumericExpressions, StringExpressions, ArrayExpressions }
+export { Expressions, BasicExpressions, NumericExpressions, StringExpressions, ArrayExpressions }
 
 export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = NominalType<string, ['ExpressionKey', ReturnType, ArgumentType]>
 

@@ -45,30 +45,7 @@ export const MultiplyExpression = defineExpression({
 
 export const multiply = MultiplyExpression.builder
 
-export const LessThanExpression = defineExpression({
-  expressionKey: 'Numeric.LessThan',
-  builder: (left: Expression<number>, right: Expression<number>) => {
-    return { left, right }
-  },
-  resolver: ({ left, right }, evaluate) => {
-    return evaluate(left) < evaluate(right)
-  },
-})
-
-export const lessThan = LessThanExpression.builder
-
-export const GreaterThanExpression = defineExpression({
-  expressionKey: 'Numeric.GreaterThan',
-  builder: (left: Expression<number>, right: Expression<number>) => {
-    return { left, right }
-  },
-  resolver: ({ left, right }, evaluate) => {
-    return evaluate(left) > evaluate(right)
-  },
-})
-
-export const greaterThan = GreaterThanExpression.builder
-
+// JOHN convert to using the Bounds type and maybe rename to indicate that this bounds the value rather than tests to see if it is in bounds?
 export const BoundsExpression = defineExpression({
   expressionKey: 'Numeric.Bounds',
   builder: (value: Expression<number>, minimumThreshold: Expression<number> | null, maximumThreshold: Expression<number> | null) => {

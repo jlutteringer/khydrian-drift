@@ -1,6 +1,5 @@
 import { Strings } from '@bessemer/cornerstone'
 
-// JOHN need to get test suite to actually run again
 test('Strings.splitFirst', () => {
   expect(Strings.splitFirst('this.is.a.string.', '.')).toEqual({ selection: 'this', separator: '.', rest: 'is.a.string.' })
   expect(Strings.splitFirst('', '/')).toEqual({ selection: null, separator: null, rest: '' })

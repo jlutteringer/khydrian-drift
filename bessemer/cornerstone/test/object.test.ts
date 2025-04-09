@@ -102,3 +102,17 @@ test('Objects.applyPathValue', () => {
     expect(modifiedPerson).toEqual(undefined)
   }
 })
+
+
+test('Objects.mapValues', () => {
+  Objects.mapValues(
+    {
+      fred: { user: "fred", age: 40 },
+      pebbles: { user: "pebbles", age: 1 },
+    },
+    (value) => {
+      return 1;
+    }
+  );
+})
+

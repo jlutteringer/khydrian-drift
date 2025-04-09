@@ -1,6 +1,6 @@
 import { ExpressionEvaluator } from '@bessemer/cornerstone/expression/expression-evaluator'
 import {
-  ArrayExpressions,
+  ArrayExpressions, BasicExpressions,
   EvaluateExpression,
   Expression,
   ExpressionContext,
@@ -9,12 +9,13 @@ import {
   ExpressionVariable,
   NumericExpressions,
   ParameterizedVariable,
-  StringExpressions,
+  StringExpressions
 } from '@bessemer/cornerstone/expression'
 import { Arrays, Objects, Preconditions, Signatures } from '@bessemer/cornerstone'
 import { Signable } from '@bessemer/cornerstone/signature'
 import { defineExpression } from '@bessemer/cornerstone/expression/internal'
 import { UnknownRecord } from 'type-fest'
+import { BasicType } from '@bessemer/cornerstone/types'
 
 export const evaluate = <T>(expression: Expression<T>, context: ExpressionContext): T => {
   return new ExpressionEvaluator(DEFAULT_EXPRESSION_DEFINITIONS).evaluate(expression, context)
@@ -170,10 +171,12 @@ const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<
   OrExpression,
   ContainsExpression,
   EqualsExpression,
+  BasicExpressions.LessThanExpression,
+  BasicExpressions.LessThanOrEqualExpression,
+  BasicExpressions.GreaterThanExpression,
+  BasicExpressions.GreaterThanOrEqualExpression,
   NumericExpressions.SumExpression,
   NumericExpressions.MultiplyExpression,
-  NumericExpressions.GreaterThanExpression,
-  NumericExpressions.LessThanExpression,
   NumericExpressions.FloorExpression,
   NumericExpressions.CeilingExpression,
   NumericExpressions.BoundsExpression,
