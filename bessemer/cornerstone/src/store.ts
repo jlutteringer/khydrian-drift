@@ -1,6 +1,6 @@
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
-import { Arrays, Entries, Objects } from '@bessemer/cornerstone/index'
+import { Arrays, Entries, Objects } from '@bessemer/cornerstone'
 
 export interface LocalStore<T> {
   setValue: (value: T | undefined) => void

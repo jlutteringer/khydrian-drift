@@ -1,5 +1,5 @@
 import { Duration } from '@bessemer/cornerstone/duration'
-import { Async, Durations, Maths, Objects, Preconditions, Results } from '@bessemer/cornerstone/index'
+import { Async, Durations, Maths, Objects, Preconditions, Results } from '@bessemer/cornerstone'
 import { AsyncResult, Result } from '@bessemer/cornerstone/result'
 import { PartialDeep } from 'type-fest'
 

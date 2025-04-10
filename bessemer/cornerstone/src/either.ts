@@ -1,4 +1,4 @@
-import { Eithers } from '@bessemer/cornerstone/index'
+import { Eithers } from '@bessemer/cornerstone'
 
 export enum EitherType {
   Left = 'Left',

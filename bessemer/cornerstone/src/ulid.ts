@@ -1,6 +1,6 @@
 import { ulid } from 'ulid'
 import { TaggedType } from '@bessemer/cornerstone/types'
-import { Preconditions, Strings } from '@bessemer/cornerstone/index'
+import { Preconditions, Strings } from '@bessemer/cornerstone'
 
 export type Ulid = TaggedType<string, 'Ulid'>
 
