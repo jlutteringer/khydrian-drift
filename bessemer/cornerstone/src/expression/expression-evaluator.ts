@@ -1,6 +1,8 @@
-import { Expression, ExpressionContext, ExpressionDefinition, ExpressionReference, IExpression } from '@bessemer/cornerstone/expression'
-import { Objects, Preconditions } from '@bessemer/cornerstone'
+import { Expression, ExpressionContext, ExpressionDefinition, ExpressionReference } from '@bessemer/cornerstone/expression'
+import { Preconditions } from '@bessemer/cornerstone'
+import { isValue } from '@bessemer/cornerstone/expression/internal'
 
+// JOHN need to add tests...
 export class ExpressionEvaluator {
   constructor(private readonly expressionDefinitions: Array<ExpressionDefinition<unknown, Array<any>, Expression<any>>>) {}
 
@@ -22,13 +24,4 @@ export class ExpressionEvaluator {
     Preconditions.isPresent(matchingExpressionDefinition, () => `Unable to find Expression Definition for type: ${reference.expressionKey}`)
     return matchingExpressionDefinition.builder(...args)
   }
-}
-
-const isValue = <T>(expression: Expression<T>): expression is T => {
-  if (!Objects.isObject(expression)) {
-    return true
-  }
-
-  const result = (expression as IExpression<T>).expressionKey === undefined
-  return result
 }

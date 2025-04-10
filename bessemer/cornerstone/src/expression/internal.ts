@@ -32,3 +32,12 @@ export const isType = <ReturnValue, ArgumentType extends Array<any>, ExpressionT
 export const isExpression = <T>(expression: Expression<any>): expression is IExpression<T> => {
   return Objects.isObject(expression) && 'expressionKey' in expression
 }
+
+export const isValue = <T>(expression: Expression<T>): expression is T => {
+  if (!Objects.isObject(expression)) {
+    return true
+  }
+
+  const result = (expression as IExpression<T>).expressionKey === undefined
+  return result
+}
