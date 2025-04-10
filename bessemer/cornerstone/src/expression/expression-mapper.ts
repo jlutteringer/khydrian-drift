@@ -1,8 +1,8 @@
 import { Expression, ExpressionDefinition } from '@bessemer/cornerstone/expression'
 import { Dictionary } from '@bessemer/cornerstone/types'
 import { isExpression } from '@bessemer/cornerstone/expression/internal'
-import { ValueExpression } from '@bessemer/cornerstone/expression/expression'
 import { Preconditions } from '@bessemer/cornerstone'
+import { value, ValueExpression } from '@bessemer/cornerstone/expression/expression'
 
 type ExpressionResolver<ExpressionType, MappingType, ContextType> = (
   expression: ExpressionType,
@@ -14,20 +14,24 @@ export class ExpressionMapper<MappingType, ContextType> {
   private readonly resolverMap: Dictionary<ExpressionResolver<any, MappingType, ContextType>> = {}
 
   map(expression: Expression<unknown>, context: ContextType): MappingType {
-    let expressionKey: string
     if (isExpression(expression)) {
-      expressionKey = expression.expressionKey
+      const resolver = this.resolverMap[expression.expressionKey]
+      Preconditions.isPresent(
+        resolver,
+        `Illegal Argument - Attempted to map unknown expression: ${expression.expressionKey}. You must register(...) a handler for this expression type.`
+      )
+
+      return resolver(expression, (expression) => this.map(expression, context), context)
     } else {
-      expressionKey = ValueExpression.expressionKey
+      const resolver = this.resolverMap[ValueExpression.expressionKey]
+      Preconditions.isPresent(
+        resolver,
+        `Illegal Argument - Attempted to map unknown expression: ${ValueExpression.expressionKey}. You must register(...) a handler for this expression type.`
+      )
+
+      const valueExpression = value(expression)
+      return resolver(valueExpression, (expression) => this.map(expression, context), context)
     }
-
-    const resolver = this.resolverMap[expressionKey]
-    Preconditions.isPresent(
-      resolver,
-      `Illegal Argument - Attempted to map unknown expression: ${expressionKey}. You must register(...) a handler for this expression type.`
-    )
-
-    return resolver(expression, (expression) => this.map(expression, context), context)
   }
 
   register<ExpressionType>(

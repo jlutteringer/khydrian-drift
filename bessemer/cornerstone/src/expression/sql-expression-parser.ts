@@ -1,5 +1,5 @@
 import { BasicExpressions, Expressions } from '@bessemer/cornerstone/expression'
-import { ExpressionMapper } from '@bessemer/cornerstone/expression/expression-parser'
+import { ExpressionMapper } from '@bessemer/cornerstone/expression/expression-mapper'
 import { Arrays, Objects, Preconditions, Ulids } from '@bessemer/cornerstone'
 import { BasicType, Dictionary } from '@bessemer/cornerstone/types'
 
