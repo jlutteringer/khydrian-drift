@@ -2,7 +2,8 @@ import { Expression, ExpressionDefinition } from '@bessemer/cornerstone/expressi
 import { Dictionary } from '@bessemer/cornerstone/types'
 import { isExpression } from '@bessemer/cornerstone/expression/internal'
 import { Preconditions } from '@bessemer/cornerstone'
-import { value, ValueExpression } from '@bessemer/cornerstone/expression/expression'
+import { value } from '@bessemer/cornerstone/expression/expression'
+import { ValueExpression } from '@bessemer/cornerstone/expression/core-expression'
 
 type ExpressionResolver<ExpressionType, MappingType, ContextType> = (
   expression: ExpressionType,

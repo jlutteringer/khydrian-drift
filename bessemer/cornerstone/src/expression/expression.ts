@@ -1,7 +1,6 @@
 import { ExpressionEvaluator } from '@bessemer/cornerstone/expression/expression-evaluator'
 import {
   ArrayExpressions,
-  BasicExpressions,
   EvaluateExpression,
   Expression,
   ExpressionContext,
@@ -12,10 +11,23 @@ import {
   ParameterizedVariable,
   StringExpressions,
 } from '@bessemer/cornerstone/expression'
-import { Arrays, Objects, Preconditions, Signatures } from '@bessemer/cornerstone'
+import { Signatures } from '@bessemer/cornerstone'
 import { Signable } from '@bessemer/cornerstone/signature'
-import { defineExpression } from '@bessemer/cornerstone/expression/internal'
 import { UnknownRecord } from 'type-fest'
+import {
+  AndExpression,
+  ContainsExpression,
+  EqualsExpression,
+  GreaterThanExpression,
+  GreaterThanOrEqualExpression,
+  LessThanExpression,
+  LessThanOrEqualExpression,
+  NotExpression,
+  OrExpression,
+  ValueExpression,
+  VariableExpression,
+} from '@bessemer/cornerstone/expression/core-expression'
+import { ExpressionMapper } from '@bessemer/cornerstone/expression/expression-mapper'
 
 export const evaluate = <T>(expression: Expression<T>, context: ExpressionContext): T => {
   return new ExpressionEvaluator(DEFAULT_EXPRESSION_DEFINITIONS).evaluate(expression, context)
@@ -23,6 +35,14 @@ export const evaluate = <T>(expression: Expression<T>, context: ExpressionContex
 
 export const evaluateDefault = <T>(expression: Expression<T>): T => {
   return evaluate(expression, defaultContext())
+}
+
+export const map = <MappingType, ContextType>(
+  expression: Expression<unknown>,
+  mapper: ExpressionMapper<MappingType, ContextType>,
+  context: ContextType
+): MappingType => {
+  return mapper.map(expression, context)
 }
 
 export const evaluator = (context: ExpressionContext): EvaluateExpression => {
@@ -65,106 +85,31 @@ export const reference = <ReturnType, ArgumentType extends Array<unknown>, Expre
   return { expressionKey: expressionDefinition.expressionKey }
 }
 
-export const ValueExpression = defineExpression({
-  expressionKey: 'Value',
-  builder: (value: unknown) => {
-    return { value }
-  },
-  resolver: ({ value }, evaluate, context) => {
-    return value
-  },
-})
-
 export const value = <T>(value: T): Expression<T> => {
   return ValueExpression.builder(value) as Expression<T>
 }
 
-export const VariableExpression = defineExpression({
-  expressionKey: 'Variable',
-  builder: (name: string) => {
-    return { name }
-  },
-  resolver: ({ name }, evaluate, context) => {
-    const value = context.variables[name]
-    Preconditions.isPresent(value)
-    return value
-  },
-})
-
-export const variable = <T>(name: string): ExpressionVariable<T> => VariableExpression.builder(name) as ExpressionVariable<T>
-
-export const NotExpression = defineExpression({
-  expressionKey: 'Not',
-  builder: (value: Expression<boolean>) => {
-    return { value }
-  },
-  resolver: (expression, evaluate) => {
-    return !evaluate(expression.value)
-  },
-})
+export const variable = <T>(name: string): ExpressionVariable<T> => {
+  return VariableExpression.builder(name) as ExpressionVariable<T>
+}
 
 export const not = NotExpression.builder
 
-export const AndExpression = defineExpression({
-  expressionKey: 'And',
-  builder: (operands: Array<Expression<boolean>>) => {
-    return { operands }
-  },
-  resolver: (expression, evaluate) => {
-    const values = expression.operands.map((it) => evaluate(it))
-    const falseValue = values.find((it) => !it)
-    return Objects.isNil(falseValue)
-  },
-})
-
 export const and = AndExpression.builder
-
-export const OrExpression = defineExpression({
-  expressionKey: 'Or',
-  builder: (operands: Array<Expression<boolean>>) => {
-    return { operands }
-  },
-  resolver: (expression, evaluate) => {
-    const values = expression.operands.map((it) => evaluate(it))
-    const trueValue = values.find((it) => it)
-    return Objects.isPresent(trueValue)
-  },
-})
 
 export const or = OrExpression.builder
 
-export const EqualsExpression = defineExpression({
-  expressionKey: 'Equals',
-  builder: (operands: Array<Expression<Signable>>) => {
-    return { operands }
-  },
-  resolver: (expression, evaluate) => {
-    const values = expression.operands.map((it) => evaluate(it)).map(Signatures.sign)
-
-    if (values.length === 0) {
-      return true
-    }
-
-    const first = values[0]
-    return values.every((val) => val === first)
-  },
-})
-
 export const equals = EqualsExpression.builder
 
-export const ContainsExpression = defineExpression({
-  expressionKey: 'Contains',
-  builder: (collection: Expression<Array<Signable>>, operands: Array<Expression<Signable>>) => {
-    return { collection, operands }
-  },
-  resolver: (expression, evaluate) => {
-    const collection = evaluate(expression.collection)
-    const values = expression.operands.map((it) => evaluate(it))
-    return Arrays.containsAll(collection, values)
-  },
-})
-
 export const contains = ContainsExpression.builder
+
+export const lessThan = LessThanExpression.builder
+
+export const lessThanOrEqual = LessThanOrEqualExpression.builder
+
+export const greaterThan = GreaterThanExpression.builder
+
+export const greaterThanOrEqual = GreaterThanOrEqualExpression.builder
 
 const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<any>, Expression<any>>> = [
   ValueExpression,
@@ -173,15 +118,15 @@ const DEFAULT_EXPRESSION_DEFINITIONS: Array<ExpressionDefinition<unknown, Array<
   OrExpression,
   ContainsExpression,
   EqualsExpression,
-  BasicExpressions.LessThanExpression,
-  BasicExpressions.LessThanOrEqualExpression,
-  BasicExpressions.GreaterThanExpression,
-  BasicExpressions.GreaterThanOrEqualExpression,
+  LessThanExpression,
+  LessThanOrEqualExpression,
+  GreaterThanExpression,
+  GreaterThanOrEqualExpression,
   NumericExpressions.SumExpression,
   NumericExpressions.MultiplyExpression,
   NumericExpressions.FloorExpression,
   NumericExpressions.CeilingExpression,
-  NumericExpressions.BoundsExpression,
+  NumericExpressions.BoundExpression,
   NumericExpressions.RoundExpression,
   NumericExpressions.MaxExpression,
   NumericExpressions.MinExpression,

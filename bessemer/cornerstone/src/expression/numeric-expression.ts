@@ -2,6 +2,7 @@ import { defineExpression, isType } from '@bessemer/cornerstone/expression/inter
 import { Expression } from '@bessemer/cornerstone/expression'
 import { Maths, Objects } from '@bessemer/cornerstone'
 import { RoundingMode } from '@bessemer/cornerstone/math'
+import { Bounds } from '@bessemer/cornerstone/range'
 
 export const SumExpression = defineExpression({
   expressionKey: 'Numeric.Sum',
@@ -45,16 +46,16 @@ export const MultiplyExpression = defineExpression({
 
 export const multiply = MultiplyExpression.builder
 
-// JOHN convert to using the Bounds type and maybe rename to indicate that this bounds the value rather than tests to see if it is in bounds?
-export const BoundsExpression = defineExpression({
-  expressionKey: 'Numeric.Bounds',
-  builder: (value: Expression<number>, minimumThreshold: Expression<number> | null, maximumThreshold: Expression<number> | null) => {
-    return { value, minimumThreshold, maximumThreshold }
+export const BoundExpression = defineExpression({
+  expressionKey: 'Numeric.Bound',
+  builder: (value: Expression<number>, bounds: Bounds<Expression<number>>) => {
+    return { value, bounds }
   },
   resolver: (expression, evaluate) => {
     let value = evaluate(expression.value)
-    const minimumThreshold = Objects.isPresent(expression.minimumThreshold) ? evaluate(expression.minimumThreshold) : null
-    const maximumThreshold = Objects.isPresent(expression.maximumThreshold) ? evaluate(expression.maximumThreshold) : null
+    const minimumThreshold = Objects.isPresent(expression.bounds[0]) ? evaluate(expression.bounds[0]) : null
+    const maximumThreshold = Objects.isPresent(expression.bounds[1]) ? evaluate(expression.bounds[1]) : null
+
     if (Objects.isPresent(minimumThreshold) && value < minimumThreshold) {
       value = minimumThreshold
     }
@@ -66,7 +67,7 @@ export const BoundsExpression = defineExpression({
   },
 })
 
-export const bounds = BoundsExpression.builder
+export const bound = BoundExpression.builder
 
 export const FloorExpression = defineExpression({
   expressionKey: 'Numeric.Floor',
