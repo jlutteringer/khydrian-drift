@@ -65,7 +65,7 @@ DefaultSqlExpressionParser.register(NotExpression, (expression, map, context) =>
 
     const containsExpression = expression.value.operands
       .map(map)
-      .map((sql) => `(${sql} NOT IN :${parameterName})`)
+      .map((sql) => `(${sql} NOT IN (:${parameterName}))`)
       .join(' AND ')
 
     return `(${containsExpression})`
@@ -111,7 +111,7 @@ DefaultSqlExpressionParser.register(ContainsExpression, (expression, map, contex
 
   const containsExpression = expression.operands
     .map(map)
-    .map((sql) => `(${sql} IN :${parameterName})`)
+    .map((sql) => `(${sql} IN (:${parameterName}))`)
     .join(' AND ')
 
   return `(${containsExpression})`
