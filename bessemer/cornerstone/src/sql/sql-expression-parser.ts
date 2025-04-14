@@ -1,5 +1,5 @@
 import { ExpressionMapper } from '@bessemer/cornerstone/expression/expression-mapper'
-import { Arrays, Objects, Preconditions, Ulids } from '@bessemer/cornerstone'
+import { Arrays, Entries, Objects, Preconditions, Ulids } from '@bessemer/cornerstone'
 import { BasicType, Dictionary } from '@bessemer/cornerstone/types'
 import {
   AndExpression,
@@ -60,12 +60,19 @@ DefaultSqlExpressionParser.register(NotExpression, (expression, map, context) =>
       }
     })
 
-    const parameterName = `_${Ulids.generate()}`
-    context.parameters[parameterName] = value
+    const parameters = value.map((it) => Entries.of(`_${Ulids.generate()}`, it))
+    parameters.forEach(([key, value]) => {
+      context.parameters[key] = value
+    })
 
     const containsExpression = expression.value.operands
       .map(map)
-      .map((sql) => `(${sql} NOT IN (:${parameterName}))`)
+      .map(
+        (sql) =>
+          `(${sql} NOT IN (${Entries.keys(parameters)
+            .map((it) => `:${it}`)
+            .join(',')}))`
+      )
       .join(' AND ')
 
     return `(${containsExpression})`
@@ -106,12 +113,19 @@ DefaultSqlExpressionParser.register(ContainsExpression, (expression, map, contex
     }
   })
 
-  const parameterName = `_${Ulids.generate()}`
-  context.parameters[parameterName] = value
+  const parameters = value.map((it) => Entries.of(`_${Ulids.generate()}`, it))
+  parameters.forEach(([key, value]) => {
+    context.parameters[key] = value
+  })
 
   const containsExpression = expression.operands
     .map(map)
-    .map((sql) => `(${sql} IN (:${parameterName}))`)
+    .map(
+      (sql) =>
+        `(${sql} IN (${Entries.keys(parameters)
+          .map((it) => `:${it}`)
+          .join(',')}))`
+    )
     .join(' AND ')
 
   return `(${containsExpression})`
