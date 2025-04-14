@@ -61,4 +61,9 @@ test('Sql.parseExpression', () => {
     const [fragment, parameters] = Sql.parseExpression(Expressions.contains([1, 2, 3], [Expressions.variable('test')]), variables)
     console.log(fragment)
   }
+
+  {
+    const [fragment, parameters] = Sql.parseExpression(Expressions.not(Expressions.contains([1, 2, 3], [Expressions.variable('test')])), variables)
+    console.log(fragment)
+  }
 })

@@ -39,8 +39,39 @@ DefaultSqlExpressionParser.register(VariableExpression, (expression, _, context)
   Preconditions.isPresent(variableName, `SqlExpressionParser - Unable to resolve VariableExpression with name: ${expression.name}`)
   return variableName
 })
-DefaultSqlExpressionParser.register(NotExpression, (expression, map) => {
-  return `(NOT ${map(expression.value)})`
+DefaultSqlExpressionParser.register(NotExpression, (expression, map, context) => {
+  if (isType(expression.value, ContainsExpression)) {
+    // JOHN tons of gross duplicated code that is duped across the contains resolver
+    const collection = expression.value.collection
+
+    // JOHN parsing expressions like this should be easier...
+    let value: Array<BasicType> = []
+    if (isType(collection, ValueExpression)) {
+      value = collection.value as Array<BasicType>
+    } else if (isValue(collection)) {
+      value = collection as Array<BasicType>
+    } else {
+      throw new Error(`SqlExpressionParser - Unable to resolve ContainsExpression with non-value collection: ${JSON.stringify(collection)}`)
+    }
+
+    value.forEach((it) => {
+      if (!Objects.isBasic(it)) {
+        throw new Error(`SqlExpressionParser - Unable to resolve complex ValueExpression as Sql: ${JSON.stringify(it)}`)
+      }
+    })
+
+    const parameterName = `_${Ulids.generate()}`
+    context.parameters[parameterName] = value
+
+    const containsExpression = expression.value.operands
+      .map(map)
+      .map((sql) => `(${sql} NOT IN :${parameterName})`)
+      .join(' AND ')
+
+    return `(${containsExpression})`
+  } else {
+    return `(NOT ${map(expression.value)})`
+  }
 })
 DefaultSqlExpressionParser.register(AndExpression, (expression, map) => {
   return `(${expression.operands.map(map).join(' AND ')})`
