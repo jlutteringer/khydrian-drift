@@ -21,6 +21,14 @@ export const failure = (failure?: Throwable): Failure => {
   return { ...Eithers.left(failure ?? null), isSuccess: false }
 }
 
+export const getValueOrThrow = <T>(result: Result<T>): T => {
+  if (result.isSuccess) {
+    return result.value
+  } else {
+    throw result.value
+  }
+}
+
 export function tryValue<SOURCE_VALUE>(resolver: () => Promise<SOURCE_VALUE>): AsyncResult<SOURCE_VALUE>
 export function tryValue<SOURCE_VALUE>(resolver: () => SOURCE_VALUE): Result<SOURCE_VALUE>
 export function tryValue<SOURCE_VALUE>(resolver: () => SOURCE_VALUE | Promise<SOURCE_VALUE>): Result<SOURCE_VALUE> | Promise<Result<SOURCE_VALUE>> {

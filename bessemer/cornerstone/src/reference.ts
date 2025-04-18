@@ -35,7 +35,7 @@ export const isReferencable = (element: unknown): element is Referencable<Refere
     return false
   }
 
-  const referencable = element as Referencable<Reference<string>>
+  const referencable = element as unknown as Referencable<Reference<string>>
   return !Objects.isUndefined(referencable.reference)
 }
 

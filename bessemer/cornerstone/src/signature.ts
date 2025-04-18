@@ -9,20 +9,21 @@ export type Signable = BasicType | { id: string } | { reference: Reference<strin
 
 export const sign = (value: Signable): string | number => {
   if (Objects.isObject(value)) {
-    if(Dates.isDate(value)) {
-      return value.getTime()
-    }
-    else if (References.isReferencable(value)) {
+    if (References.isReferencable(value)) {
       return value.reference.id
     } else {
       return value.id
     }
   }
 
-  if(value === true) {
+  if (Dates.isDate(value)) {
+    return value.getTime()
+  }
+
+  if (value === true) {
     return 1
   }
-  if(value === false) {
+  if (value === false) {
     return 0
   }
 

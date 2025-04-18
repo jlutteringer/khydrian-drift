@@ -39,6 +39,7 @@ import * as RichTexts from '@bessemer/cornerstone/rich-text'
 import * as Retry from '@bessemer/cornerstone/retry'
 import * as Stores from '@bessemer/cornerstone/store'
 import * as Misc from '@bessemer/cornerstone/misc'
+import * as Json from '@bessemer/cornerstone/json'
 
 export {
   Objects,
@@ -81,4 +82,5 @@ export {
   Retry,
   Stores,
   Misc,
+  Json,
 }

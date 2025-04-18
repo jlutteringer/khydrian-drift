@@ -1,20 +1,22 @@
 import {
   clone as _clone,
   cloneDeep as _cloneDeep,
-  invert as _invert, isBoolean as _isBoolean, isDate,
+  invert as _invert,
+  isBoolean as _isBoolean,
+  isDate,
+  isEmpty as _isEmpty,
   isEqual as _isEqual,
   isNil as _isNil,
   isNumber,
-  isObject as _isObject,
-  isPlainObject as _isPlainObject,
+  isPlainObject,
   isString,
   isUndefined as _isUndefined,
   mapValues as _mapValues,
   merge as unsafeMerge,
-  mergeWith as unsafeMergeWith
+  mergeWith as unsafeMergeWith,
 } from 'lodash-es'
 import { produce } from 'immer'
-import { BasicType, NominalType } from '@bessemer/cornerstone/types'
+import { BasicType, Dictionary, NominalType } from '@bessemer/cornerstone/types'
 import { Primitive, UnknownRecord } from 'type-fest'
 
 export const update: typeof produce = produce
@@ -24,8 +26,10 @@ export const isNil = _isNil
 export const isPresent = <T>(value: T): value is NonNullable<T> => {
   return !isNil(value)
 }
-export const isObject = _isObject
-export const isPlainObject = _isPlainObject
+export const isObject = (value?: any): value is Dictionary<unknown> => {
+  return isPlainObject(value)
+}
+export const isEmpty = _isEmpty
 export const deepEqual = _isEqual
 export const invert = _invert
 export const mapValues = _mapValues

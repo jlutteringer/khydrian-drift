@@ -38,6 +38,6 @@ export const isValue = <T>(expression: Expression<T>): expression is T => {
     return true
   }
 
-  const result = (expression as IExpression<T>).expressionKey === undefined
+  const result = (expression as unknown as IExpression<T>).expressionKey === undefined
   return result
 }

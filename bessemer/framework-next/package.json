@@ -24,6 +24,6 @@
   "dependencies": {
     "@bessemer/framework": "workspace:*",
     "@bessemer/react": "workspace:*",
-    "next": "15.1.2"
+    "next": "15.3.0"
   }
 }
