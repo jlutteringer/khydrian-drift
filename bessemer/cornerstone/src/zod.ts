@@ -43,7 +43,12 @@ export const parseOrThrow = <T extends ZodType>(type: T, data: unknown): Zod.inf
 }
 
 export const parseJson = <T extends ZodType>(type: T, data: string): Result<Zod.infer<T>> => {
-  return parse(type, Json.parse(data))
+  const result = Json.parse(data)
+  if (!result.isSuccess) {
+    return result
+  }
+
+  return parse(type, result.value)
 }
 
 export const parseJsonOrThrow = <T extends ZodType>(type: T, data: string): Zod.infer<T> => {
