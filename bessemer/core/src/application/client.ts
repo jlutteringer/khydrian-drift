@@ -9,7 +9,7 @@ export const CoreClientModule: BessemerClientModule<CoreApplicationContext, Core
   useInitializeClient: (initialClient) => {
     const baseClient = BessemerNextClientModule.useInitializeClient(initialClient)
     const pathname = usePathname()
-    return Objects.merge(baseClient, initialClient, {
+    return Objects.deepMerge(baseClient, initialClient, {
       pathname,
     })
   },

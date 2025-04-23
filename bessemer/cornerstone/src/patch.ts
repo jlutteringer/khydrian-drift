@@ -114,7 +114,7 @@ export const resolve = <T>(value: T, patches: Array<Patch<T>>, evaluate: Evaluat
 }
 
 const applyPatch = <T>(value: T, patch: Patchable<T>, evaluate: EvaluateExpression): T => {
-  return Objects.mergeWith(value, patch, (value, patch) => {
+  return Objects.deepMergeWith(value, patch, (value, patch) => {
     if (Objects.isNil(patch)) {
       return value
     }

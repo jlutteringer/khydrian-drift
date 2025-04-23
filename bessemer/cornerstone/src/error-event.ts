@@ -109,7 +109,7 @@ export const HttpStatusCodeAttribute: ErrorAttribute<number> = 'httpStatusCode'
 
 export const unhandled = (builder?: ErrorEventBuilder) =>
   of(
-    Objects.merge(builder, {
+    Objects.deepMerge(builder, {
       code: UnhandledErrorCode,
       message: 'An Unhandled Error has occurred.',
       attributes: { [HttpStatusCodeAttribute]: 500 },
@@ -118,7 +118,7 @@ export const unhandled = (builder?: ErrorEventBuilder) =>
 
 export const notFound = (builder?: ErrorEventBuilder) =>
   of(
-    Objects.merge(builder, {
+    Objects.deepMerge(builder, {
       code: NotFoundErrorCode,
       message: 'The requested Resource could not be found.',
       attributes: { [HttpStatusCodeAttribute]: 404 },

@@ -37,34 +37,34 @@ export const mapValues = _mapValues
 export const clone = _clone
 export const cloneDeep = _cloneDeep
 
-export const mergeAll = <T>(objects: Array<T>): T => {
-  return objects.reduce((x, y) => merge(x, y))
-}
-
-export function merge<TObject, TSource>(object: TObject, source: TSource): TObject & TSource
-export function merge<TObject, TSource1, TSource2>(object: TObject, source1: TSource1, source2: TSource2): TObject & TSource1 & TSource2
-export function merge<TObject, TSource1, TSource2, TSource3>(
+export function deepMerge<TObject, TSource>(object: TObject, source: TSource): TObject & TSource
+export function deepMerge<TObject, TSource1, TSource2>(object: TObject, source1: TSource1, source2: TSource2): TObject & TSource1 & TSource2
+export function deepMerge<TObject, TSource1, TSource2, TSource3>(
   object: TObject,
   source1: TSource1,
   source2: TSource2,
   source3: TSource3
 ): TObject & TSource1 & TSource2 & TSource3
-export function merge<TObject, TSource1, TSource2, TSource3, TSource4>(
+export function deepMerge<TObject, TSource1, TSource2, TSource3, TSource4>(
   object: TObject,
   source1: TSource1,
   source2: TSource2,
   source3: TSource3,
   source4: TSource4
 ): TObject & TSource1 & TSource2 & TSource3 & TSource4
-export function merge(object: any, ...otherArgs: any[]): any {
+export function deepMerge(object: any, ...otherArgs: any[]): any {
   return unsafeMerge({}, object, ...otherArgs)
 }
 
-export function mergeInto<Source1, Source2>(source: Source1, values: Source2): asserts source is Source1 & Source2 {
+export const deepMergeAll = <T>(objects: Array<T>): T => {
+  return objects.reduce((x, y) => deepMerge(x, y))
+}
+
+export function deepMergeInto<Source1, Source2>(source: Source1, values: Source2): asserts source is Source1 & Source2 {
   unsafeMerge(source, values)
 }
 
-export const mergeWith: typeof unsafeMergeWith = (...args: Array<any>) => {
+export const deepMergeWith: typeof unsafeMergeWith = (...args: Array<any>) => {
   const clone = cloneDeep(args[0])
   return unsafeMergeWith.apply(null, [clone, ...args.slice(1)])
 }

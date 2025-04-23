@@ -17,7 +17,7 @@ const defaultHandlers: Dictionary<RichTextElement> = {
 
 export const MuiRichLabelRenderer = ({ content, handlers }: RichTextRendererProps): ReactNode => {
   const mergedHandlers = useMemo(() => {
-    return Objects.merge(defaultHandlers, handlers)
+    return Objects.deepMerge(defaultHandlers, handlers)
   }, [handlers])
 
   return (

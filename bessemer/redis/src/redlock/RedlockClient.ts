@@ -160,7 +160,7 @@ export class RedlockClient extends EventEmitter {
     this.clients = new Set(clients)
     Preconditions.isTrue(this.clients.size !== 0, 'Redlock must be instantiated with at least one redis client.')
 
-    this.props = Objects.merge(DefaultRedlockProps, options)
+    this.props = Objects.deepMerge(DefaultRedlockProps, options)
 
     this.scripts = Async.execute(async () => {
       return {

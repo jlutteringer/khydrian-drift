@@ -171,7 +171,7 @@ const buildInitialCharacteristics = (character: CharacterRecord, context: Applic
     return Objects.applyPathValue({}, characteristic.path, attributeValue)
   })
 
-  return Objects.mergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
+  return Objects.deepMergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
 }
 
 const evaluateCharacteristics = (
@@ -189,7 +189,7 @@ const evaluateCharacteristics = (
     return Objects.applyPathValue({}, characteristic.path, characteristicValue)
   })
 
-  return Objects.mergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
+  return Objects.deepMergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
 }
 
 const evaluateCharacterAbilities = (character: CharacterState, context: ApplicationContext): Array<AbilityState> => {
@@ -217,7 +217,7 @@ export const buildExpressionContext = (character: CharacterState, context: Appli
   const variables: UnknownRecord = {
     ...Expressions.buildVariable(CharacterValues.Level, character.level),
     ...Expressions.buildVariable(CharacterValues.Traits, ProgressionTables.getValues(character.traits)),
-    ...Objects.mergeAll(attributeVariables),
+    ...Objects.deepMergeAll(attributeVariables),
   }
 
   return { variables }

@@ -7,6 +7,6 @@ export const ApplicationClientModule: BessemerClientModule<ApplicationContext, C
   useTags: FoundryClientModule.useTags,
   useInitializeClient: (initialClient): ClientContext => {
     const coreClient = FoundryClientModule.useInitializeClient(initialClient)
-    return Objects.merge(coreClient, initialClient, {})
+    return Objects.deepMerge(coreClient, initialClient)
   },
 }

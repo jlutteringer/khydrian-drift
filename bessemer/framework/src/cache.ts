@@ -43,7 +43,7 @@ export const getStore = (): CacheStore => {
 }
 
 export const configure = (cache?: CacheConfiguration): CacheContext => {
-  const configuration = Objects.merge(DefaultCacheConfiguration, cache)
+  const configuration = Objects.deepMerge(DefaultCacheConfiguration, cache)
 
   return {
     providers: [MemoryCacheProvider.register()],

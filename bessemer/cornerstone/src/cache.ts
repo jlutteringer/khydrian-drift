@@ -29,7 +29,7 @@ export namespace CacheProps {
   export const buildCacheProps = (options?: CacheOptions): CacheProps => {
     options = options ?? {}
 
-    const props = Objects.merge(DefaultCacheProps, options)
+    const props = Objects.deepMerge(DefaultCacheProps, options)
 
     if (props.maxSize === null && props.timeToLive === null) {
       throw new Error('Invalid cache configuration, both maxSize and timeToLive are null')

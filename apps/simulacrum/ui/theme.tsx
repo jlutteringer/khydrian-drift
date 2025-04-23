@@ -6,4 +6,4 @@ import { DefaultTheme, MuiTheme } from '@bessemer/mui/theme'
 
 const theme: MuiTheme = {}
 
-export default createTheme(Objects.merge(DefaultTheme, theme))
+export default createTheme(Objects.deepMerge(DefaultTheme, theme))

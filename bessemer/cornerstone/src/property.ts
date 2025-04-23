@@ -25,5 +25,5 @@ export const properties = <T extends UnknownRecord>(values: T, overrides?: Array
 
 export const resolve = <T extends UnknownRecord>(properties: PropertyRecord<T>, tags: Array<Tag>): T => {
   const overrides = Tags.resolve(Object.values(properties.overrides), tags)
-  return Objects.mergeAll([properties.values, ...overrides.reverse()]) as T
+  return Objects.deepMergeAll([properties.values, ...overrides.reverse()]) as T
 }

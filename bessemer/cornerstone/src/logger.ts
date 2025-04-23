@@ -77,7 +77,7 @@ const applyDefaultOptions = (options?: LoggerOptions): LoggerOptions => {
     // ...getPrettyTransport(),
   }
 
-  return Objects.merge(defaultOptions, options)
+  return Objects.deepMerge(defaultOptions, options)
 }
 
 const createProxyHandler = (getLogger: () => PinoLogger): ProxyHandler<PinoLogger> => {

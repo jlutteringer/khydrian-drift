@@ -7,6 +7,6 @@ export const BessemerNextClientModule: BessemerClientModule<BessemerNextApplicat
   useTags: BaseClientModule.useTags,
   useInitializeClient: (initialClient): BessemerNextClientContext => {
     const coreClient = BaseClientModule.useInitializeClient(initialClient)
-    return Objects.merge(coreClient, initialClient, {})
+    return Objects.deepMerge(coreClient, initialClient, {})
   },
 }

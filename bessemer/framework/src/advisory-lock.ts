@@ -170,7 +170,7 @@ export const acquireLock = async (
   Preconditions.isFalse(Arrays.isEmpty(resourceKeys), () => `Illegal call to acquireLock with empty resourceKeys`)
 
   const sortedKeys = Arrays.sort(Arrays.toArray(resourceKeys))
-  const props = Objects.merge(DefaultAdvisoryLockProps, options)
+  const props = Objects.deepMerge(DefaultAdvisoryLockProps, options)
 
   logger.trace(() => `acquireLock - Attempting to acquire lock for keys: ${JSON.stringify(sortedKeys)}`)
 

@@ -26,7 +26,7 @@ export type RetryState = {
 }
 
 export const initialize = (initialOptions?: RetryOptions): RetryState => {
-  const props = Objects.merge(DefaultRetryProps, initialOptions)
+  const props = Objects.deepMerge(DefaultRetryProps, initialOptions)
   Preconditions.isTrue(props.attempts >= 0, () => 'usingRetry attempts must be >= 0')
 
   return {

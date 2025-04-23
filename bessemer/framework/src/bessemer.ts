@@ -55,7 +55,7 @@ export const configure = <ApplicationContext extends BessemerApplicationContext,
   const options = Properties.resolve(properties, tags)
   const globalContext = dependencyList.reduce((context, module) => {
     const partialContext = module?.global?.configure?.(options, context as DeepPartial<GlobalContextType<ApplicationContext>>) ?? {}
-    return Objects.merge(context, partialContext)
+    return Objects.deepMerge(context, partialContext)
   }, {} as GlobalContextType<ApplicationContext>)
 
   dependencyList
@@ -108,7 +108,7 @@ export const initialize = async <ApplicationContext extends BessemerApplicationC
   const context = await dependencyList.reduce(async (context, module) => {
     const awaitedContext = await context
     const partialContext = (await module?.configure?.(options, awaitedContext as DeepPartial<ApplicationContext>)) ?? {}
-    return Objects.merge(awaitedContext, partialContext)
+    return Objects.deepMerge(awaitedContext, partialContext)
   }, Promise.resolve(globalContext as ApplicationContext))
 
   context.id = await Hashes.insecureHash(JSON.stringify(options))
