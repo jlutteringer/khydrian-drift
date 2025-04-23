@@ -1,4 +1,4 @@
-import { Objects, Strings } from '@bessemer/cornerstone'
+import { Arrays, Objects, Strings } from '@bessemer/cornerstone'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { StringSplitResult } from '@bessemer/cornerstone/string'
 
@@ -266,13 +266,19 @@ export const build = (builder: UriBuilder): Uri => {
   }
 }
 
-export const format = (uri: Uri): UriString => {
+export enum UriComponentType {
+  Scheme = 'Scheme',
+  Host = 'Host',
+  Location = 'Location',
+}
+
+export const format = (uri: Uri, format: Array<UriComponentType> = Object.values(UriComponentType)): UriString => {
   let urlString = ''
-  if (Objects.isPresent(uri.scheme)) {
+  if (Objects.isPresent(uri.scheme) && Arrays.contains(format, UriComponentType.Scheme)) {
     urlString = urlString + uri.scheme
   }
 
-  if (Objects.isPresent(uri.host)) {
+  if (Objects.isPresent(uri.host) && Arrays.contains(format, UriComponentType.Host)) {
     if (Objects.isPresent(uri.scheme)) {
       urlString = urlString + '://'
     }
@@ -294,11 +300,13 @@ export const format = (uri: Uri): UriString => {
     }
   }
 
-  urlString = urlString + formatLocation(uri.location)
+  if (Arrays.contains(format, UriComponentType.Location)) {
+    urlString = urlString + formatLocation(uri.location, format)
+  }
   return urlString
 }
 
-const formatLocation = (location: UriLocation): string => {
+const formatLocation = (location: UriLocation, format: Array<UriComponentType>): string => {
   let urlString = ''
 
   if (!Strings.isEmpty(location.path)) {
