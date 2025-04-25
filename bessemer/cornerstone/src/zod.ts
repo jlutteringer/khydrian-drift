@@ -5,6 +5,8 @@ import { Json, Results } from '@bessemer/cornerstone'
 import { Result } from '@bessemer/cornerstone/result'
 
 export type infer<T extends ZodType<any, any, any>> = Zod.infer<T>
+export type input<T extends ZodType<any, any, any>> = Zod.input<T>
+export type output<T extends ZodType<any, any, any>> = Zod.output<T>
 export const object = Zod.object
 export const string = Zod.string
 export const union = Zod.union
@@ -16,6 +18,8 @@ export const date = Zod.date
 export const boolean = Zod.boolean
 export const number = Zod.number
 export const tuple = Zod.tuple
+export const record = Zod.record
+export const lazy = Zod.lazy
 
 export const arrayable = <T>(type: ZodType<T>) => {
   return union([type, array(type)])

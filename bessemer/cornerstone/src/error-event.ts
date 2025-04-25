@@ -1,6 +1,7 @@
-import { Arrays, Errors, Objects } from '@bessemer/cornerstone'
+import { Arrays, Errors, Objects, Zod } from '@bessemer/cornerstone'
 import { NominalType, Throwable } from '@bessemer/cornerstone/types'
 import { RecordAttribute } from '@bessemer/cornerstone/object'
+import { ZodType } from 'zod'
 
 /*
   Represents a structured error event. The code can be mapped to a unique type of error while the
@@ -8,14 +9,24 @@ import { RecordAttribute } from '@bessemer/cornerstone/object'
   an ErrorEvent could have multiple causes which get aggregated into a single parent error.
  */
 export type ErrorCode = NominalType<string, 'ErrorCode'>
-export type ErrorAttribute<Type = unknown> = RecordAttribute<Type, 'ErrorAttribute'>
+export const ErrorCodeSchema: ZodType<ErrorCode> = Zod.string()
 
-export type ErrorEvent = {
-  code: ErrorCode
-  message: string
-  attributes: Record<ErrorAttribute, unknown>
+export type ErrorAttribute<Type = unknown> = RecordAttribute<Type, 'ErrorAttribute'>
+export const ErrorAttributeSchema: ZodType<ErrorAttribute> = Zod.string()
+
+const baseErrorEventSchema = Zod.object({
+  code: ErrorCodeSchema,
+  message: Zod.string(),
+  attributes: Zod.record(ErrorAttributeSchema, Zod.unknown()),
+})
+
+export type ErrorEvent = Zod.infer<typeof baseErrorEventSchema> & {
   causes: Array<ErrorEvent>
 }
+
+const ErrorEventSchema: ZodType<ErrorEvent> = baseErrorEventSchema.extend({
+  causes: Zod.lazy(() => Zod.array(ErrorEventSchema)),
+})
 
 // Builder object that allows for 'partial' representation of ErrorEvents
 export type ErrorEventBuilder = {
@@ -103,6 +114,7 @@ export const aggregate = (builder: ErrorEventBuilder, causes: Array<ErrorEvent>)
 
 export const UnhandledErrorCode: ErrorCode = 'error-event.unhandled'
 export const NotFoundErrorCode: ErrorCode = 'error-event.not-found'
+export const UnauthorizedErrorCode: ErrorCode = 'error-event.unauthorized'
 
 export const RequestCorrelationIdAttribute: ErrorAttribute<string> = 'requestCorrelationId'
 export const HttpStatusCodeAttribute: ErrorAttribute<number> = 'httpStatusCode'
@@ -122,5 +134,14 @@ export const notFound = (builder?: ErrorEventBuilder) =>
       code: NotFoundErrorCode,
       message: 'The requested Resource could not be found.',
       attributes: { [HttpStatusCodeAttribute]: 404 },
+    })
+  )
+
+export const unauthorized = (builder?: ErrorEventBuilder) =>
+  of(
+    Objects.deepMerge(builder, {
+      code: UnauthorizedErrorCode,
+      message: 'The requested Resource requires authentication.',
+      attributes: { [HttpStatusCodeAttribute]: 401 },
     })
   )
