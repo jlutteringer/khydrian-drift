@@ -1,8 +1,8 @@
 import Zod, { ZodType } from 'zod'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
-import { Json, Results } from '@bessemer/cornerstone'
-import { Result } from '@bessemer/cornerstone/result'
+import { parse as jsonParse } from '@bessemer/cornerstone/json'
+import { failure, getValueOrThrow, Result, success } from '@bessemer/cornerstone/result'
 
 export type infer<T extends ZodType<any, any, any>> = Zod.infer<T>
 export type input<T extends ZodType<any, any, any>> = Zod.input<T>
@@ -36,18 +36,18 @@ export const entry = <Value, Key = string>(value: ZodType<Value>, key?: ZodType<
 export const parse = <T extends ZodType>(type: T, data: unknown): Result<Zod.infer<T>> => {
   const result = type.safeParse(data)
   if (result.success) {
-    return Results.success(result.data)
+    return success(result.data)
   } else {
-    return Results.failure(result.error)
+    return failure(result.error)
   }
 }
 
 export const parseOrThrow = <T extends ZodType>(type: T, data: unknown): Zod.infer<T> => {
-  return Results.getValueOrThrow(parse(type, data))
+  return getValueOrThrow(parse(type, data))
 }
 
 export const parseJson = <T extends ZodType>(type: T, data: string): Result<Zod.infer<T>> => {
-  const result = Json.parse(data)
+  const result = jsonParse(data)
   if (!result.isSuccess) {
     return result
   }

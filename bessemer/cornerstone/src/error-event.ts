@@ -1,7 +1,7 @@
-import { Arrays, Errors, Objects, Zod } from '@bessemer/cornerstone'
+import { Arrays, Errors, Objects } from '@bessemer/cornerstone'
 import { NominalType, Throwable } from '@bessemer/cornerstone/types'
 import { RecordAttribute } from '@bessemer/cornerstone/object'
-import { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod'
 
 /*
   Represents a structured error event. The code can be mapped to a unique type of error while the
