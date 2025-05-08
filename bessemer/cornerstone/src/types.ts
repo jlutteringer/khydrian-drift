@@ -6,11 +6,13 @@ export interface NominalTyping<NominalTypingT> {
 
 export type NominalType<T, NominalTypingT> = T & NominalTyping<NominalTypingT>
 
+export type Alias<T> = NominalType<T, any>
+
 export type TaggedTyping<TaggedTypingT extends string | number | symbol> = {
   [ZODBRAND]: {
-    [k in TaggedTypingT]: true;
-  };
-};
+    [k in TaggedTypingT]: true
+  }
+}
 
 export type TaggedType<T, TaggedTypingT extends string | number | symbol> = T & TaggedTyping<TaggedTypingT>
 
