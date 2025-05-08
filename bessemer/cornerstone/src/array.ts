@@ -1,14 +1,10 @@
 import {
-  concat,
   differenceBy as _differenceBy,
   differenceWith as _differenceWith,
-  first as _first,
   flatten as _flatten,
   groupBy as _groupBy,
   isEmpty as _isEmpty,
-  last as _last,
   range as _range,
-  remove as _remove,
   uniqBy,
   uniqWith,
 } from 'lodash-es'
@@ -102,16 +98,40 @@ export const sortBy = <T>(array: Array<T>, mapper: (element: T) => Signable): Ar
 
 export const sort = <T extends Signable>(array: Array<T>): Array<T> => sortBy(array, Signatures.sign)
 
-export const concatenate = concat
+export const concatenate = <T>(array: Array<T> | null | undefined, ...values: Array<T | T[]>): Array<T> => {
+  if (array == null) {
+    return []
+  }
 
-export const first = _first
+  const result = [...array]
+
+  if (values.length === 0) {
+    return result
+  }
+
+  for (const value of values) {
+    if (Array.isArray(value)) {
+      result.push(...value)
+    } else {
+      result.push(value as T)
+    }
+  }
+
+  return result
+}
+
+export const first = <T>(array: Array<T> | null | undefined): T | undefined => {
+  return array != null && array.length ? array[0] : undefined
+}
 
 export const only = <T>(array: Array<T>): T => {
   Preconditions.isTrue(array.length === 1)
   return first(array)!
 }
 
-export const last = _last
+export const last = <T>(array: Array<T> | null | undefined): T | undefined => {
+  return array != null && array.length ? array[array.length - 1] : undefined
+}
 
 export const isEmpty = _isEmpty
 // TODO make a better range function
@@ -123,8 +143,21 @@ export const rest = <T>(array: Array<T>, elementsToSkip: number = 1): Array<T> =
   return array.slice(elementsToSkip)
 }
 
+export const filterInPlace = <T>(array: Array<T> | null | undefined, predicate: (value: T, index: number, array: Array<T>) => boolean): void => {
+  if (array == null || !array.length) {
+    return
+  }
+
+  for (let i = array.length - 1; i >= 0; i--) {
+    const value = array[i]
+    if (value !== undefined && !predicate(value, i, array)) {
+      array.splice(i, 1)
+    }
+  }
+}
+
 export const clear = (array: Array<unknown>): void => {
-  _remove(array, () => true)
+  filterInPlace(array, () => false)
 }
 
 export const bisect = <T, L, R>(array: Array<T>, bisector: (element: T, index: number) => Either<L, R>): [Array<L>, Array<R>] => {
