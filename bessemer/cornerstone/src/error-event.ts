@@ -115,6 +115,7 @@ export const aggregate = (builder: ErrorEventBuilder, causes: Array<ErrorEvent>)
 export const UnhandledErrorCode: ErrorCode = 'error-event.unhandled'
 export const NotFoundErrorCode: ErrorCode = 'error-event.not-found'
 export const UnauthorizedErrorCode: ErrorCode = 'error-event.unauthorized'
+export const BadRequestErrorCode: ErrorCode = 'error-event.bad-request'
 
 export const RequestCorrelationIdAttribute: ErrorAttribute<string> = 'requestCorrelationId'
 export const HttpStatusCodeAttribute: ErrorAttribute<number> = 'httpStatusCode'
@@ -143,5 +144,14 @@ export const unauthorized = (builder?: ErrorEventBuilder) =>
       code: UnauthorizedErrorCode,
       message: 'The requested Resource requires authentication.',
       attributes: { [HttpStatusCodeAttribute]: 401 },
+    })
+  )
+
+export const badRequest = (builder?: ErrorEventBuilder) =>
+  of(
+    Objects.deepMerge(builder, {
+      code: BadRequestErrorCode,
+      message: 'The request is invalid and cannot be processed.',
+      attributes: { [HttpStatusCodeAttribute]: 400 },
     })
   )
