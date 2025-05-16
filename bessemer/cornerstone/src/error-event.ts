@@ -120,7 +120,7 @@ export const BadRequestErrorCode: ErrorCode = 'error-event.bad-request'
 export const RequestCorrelationIdAttribute: ErrorAttribute<string> = 'requestCorrelationId'
 export const HttpStatusCodeAttribute: ErrorAttribute<number> = 'httpStatusCode'
 
-export const unhandled = (builder?: ErrorEventBuilder) =>
+export const unhandled = (builder?: Partial<ErrorEventBuilder>) =>
   of(
     Objects.deepMerge(builder, {
       code: UnhandledErrorCode,
@@ -129,7 +129,7 @@ export const unhandled = (builder?: ErrorEventBuilder) =>
     })
   )
 
-export const notFound = (builder?: ErrorEventBuilder) =>
+export const notFound = (builder?: Partial<ErrorEventBuilder>) =>
   of(
     Objects.deepMerge(builder, {
       code: NotFoundErrorCode,
@@ -138,7 +138,7 @@ export const notFound = (builder?: ErrorEventBuilder) =>
     })
   )
 
-export const unauthorized = (builder?: ErrorEventBuilder) =>
+export const unauthorized = (builder?: Partial<ErrorEventBuilder>) =>
   of(
     Objects.deepMerge(builder, {
       code: UnauthorizedErrorCode,
@@ -147,7 +147,7 @@ export const unauthorized = (builder?: ErrorEventBuilder) =>
     })
   )
 
-export const badRequest = (builder?: ErrorEventBuilder) =>
+export const badRequest = (builder?: Partial<ErrorEventBuilder>) =>
   of(
     Objects.deepMerge(builder, {
       code: BadRequestErrorCode,
