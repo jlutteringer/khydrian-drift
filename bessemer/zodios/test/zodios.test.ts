@@ -1,14 +1,14 @@
 import { AxiosError } from 'axios'
 import express from 'express'
 import { AddressInfo } from 'net'
-import { z, ZodError } from 'zod'
-import { Zodios } from './zodios'
-import { ZodiosError } from './zodios-error'
+import { z, ZodError } from 'zod/v4'
+import { Zodios } from '../src/zodios'
+import { ZodiosError } from '../src/zodios-error'
 import multer from 'multer'
-import { ZodiosPlugin } from './zodios.types'
-import { apiBuilder } from './api'
-import { isErrorFromAlias, isErrorFromPath } from './zodios-error.utils'
-import { Assert } from './utils.types'
+import { ZodiosPlugin } from '../src/zodios.types'
+import { apiBuilder } from '../src/api'
+import { isErrorFromAlias, isErrorFromPath } from '../src/zodios-error.utils'
+import { Assert } from '../src/utils.types'
 
 globalThis.FormData = require('form-data')
 

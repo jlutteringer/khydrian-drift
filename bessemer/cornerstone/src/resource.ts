@@ -1,6 +1,6 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Strings, Zod } from '@bessemer/cornerstone'
-import { ZodType } from 'zod'
+import { ZodType } from 'zod/v4'
 
 export type ResourceKey = string
 

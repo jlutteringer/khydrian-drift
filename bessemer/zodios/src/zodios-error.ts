@@ -13,7 +13,7 @@ export class ZodiosError extends Error {
     message: string,
     public readonly config?: ReadonlyDeep<AnyZodiosRequestOptions>,
     public readonly data?: unknown,
-    public readonly cause?: Error
+    public override readonly cause?: Error
   ) {
     super(message)
   }

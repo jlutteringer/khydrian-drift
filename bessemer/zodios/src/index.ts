@@ -42,6 +42,6 @@ export type {
   ZodiosRequestOptionsByAlias,
   ZodiosPlugin,
 } from './zodios.types'
-export { PluginId, zodValidationPlugin, formDataPlugin, formURLPlugin, headerPlugin } from './plugins'
+export { type PluginId, zodValidationPlugin, formDataPlugin, formURLPlugin, headerPlugin } from './plugins'
 
 export { makeApi, makeCrudApi, apiBuilder, parametersBuilder, makeParameters, makeEndpoint, makeErrors, checkApi, prefixApi, mergeApis } from './api'

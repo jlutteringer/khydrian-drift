@@ -7,7 +7,7 @@ import { NominalType } from '@bessemer/cornerstone/types'
 import { Entry } from '@bessemer/cornerstone/entry'
 import { GlobPattern } from '@bessemer/cornerstone/glob'
 import { Arrayable } from 'type-fest'
-import { ZodType } from 'zod'
+import { ZodType } from 'zod/v4'
 
 // JOHN should this even be in cornerstone? especially consider the config types down at the bottom
 

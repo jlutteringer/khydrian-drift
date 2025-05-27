@@ -1,6 +1,6 @@
 import { minimatch } from 'minimatch'
 import { NominalType } from '@bessemer/cornerstone/types'
-import { ZodType } from 'zod'
+import { ZodType } from 'zod/v4'
 import { string } from '@bessemer/cornerstone/zod'
 
 export type GlobPattern = NominalType<string, 'GlobPattern'>

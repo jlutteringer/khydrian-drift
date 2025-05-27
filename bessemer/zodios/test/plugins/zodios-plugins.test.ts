@@ -1,5 +1,5 @@
-import { ZodiosPlugin } from '../zodios.types'
-import { ZodiosPlugins } from './zodios-plugins'
+import { ZodiosPlugin } from '../../src/zodios.types'
+import { ZodiosPlugins } from '../../src/plugins/zodios-plugins'
 
 describe('ZodiosPlugins', () => {
   it('should be defined', () => {

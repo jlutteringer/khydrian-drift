@@ -1,4 +1,4 @@
-import { omit, pick } from './utils'
+import { omit, pick } from '../src/utils'
 
 describe('omit', () => {
   it('should be defined', () => {

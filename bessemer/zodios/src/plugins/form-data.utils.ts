@@ -11,7 +11,7 @@ export function getFormDataStream(data: Record<string, string | Blob>): {
 } {
   const formData = new FormData()
   for (const key in data) {
-    formData.append(key, data[key])
+    formData.append(key, data[key]!)
   }
   return {
     data: formData,

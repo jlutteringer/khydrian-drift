@@ -1,7 +1,7 @@
 import { Arrays, Errors, Objects } from '@bessemer/cornerstone'
 import { NominalType, Throwable } from '@bessemer/cornerstone/types'
 import { RecordAttribute } from '@bessemer/cornerstone/object'
-import Zod, { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod/v4'
 
 /*
   Represents a structured error event. The code can be mapped to a unique type of error while the
@@ -12,7 +12,7 @@ export type ErrorCode = NominalType<string, 'ErrorCode'>
 export const ErrorCodeSchema: ZodType<ErrorCode> = Zod.string()
 
 export type ErrorAttribute<Type = unknown> = RecordAttribute<Type, 'ErrorAttribute'>
-export const ErrorAttributeSchema: ZodType<ErrorAttribute> = Zod.string()
+export const ErrorAttributeSchema: ZodType<ErrorAttribute, string> = Zod.string()
 
 const baseErrorEventSchema = Zod.object({
   code: ErrorCodeSchema,

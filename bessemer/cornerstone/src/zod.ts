@@ -1,12 +1,12 @@
-import Zod, { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod/v4'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { Entry } from '@bessemer/cornerstone/entry'
 import { parse as jsonParse } from '@bessemer/cornerstone/json'
 import { failure, getValueOrThrow, Result, success } from '@bessemer/cornerstone/result'
 
-export type infer<T extends ZodType<any, any, any>> = Zod.infer<T>
-export type input<T extends ZodType<any, any, any>> = Zod.input<T>
-export type output<T extends ZodType<any, any, any>> = Zod.output<T>
+export type infer<T extends ZodType<any, any>> = Zod.infer<T>
+export type input<T extends ZodType<any, any>> = Zod.input<T>
+export type output<T extends ZodType<any, any>> = Zod.output<T>
 export const object = Zod.object
 export const string = Zod.string
 export const union = Zod.union

@@ -2,7 +2,7 @@
 // indeed typescript seems to have a bug, where it tries to infer the type of an undecidable generic type
 // but when using the functions, types are inferred correctly
 import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions, ZodiosEndpointError, ZodiosEndpointParameter } from './zodios.types'
-import z from 'zod'
+import z from 'zod/v4'
 import { capitalize } from './utils'
 import { Narrow, TupleFlat, UnionToTuple } from './utils.types'
 
@@ -75,7 +75,7 @@ export function parametersBuilder() {
 
 type ObjectToQueryParameters<
   Type extends 'Query' | 'Path' | 'Header',
-  T extends Record<string, z.ZodType<any, any, any>>,
+  T extends Record<string, z.ZodType<any, any>>,
   Keys = UnionToTuple<keyof T>
 > = {
   [Index in keyof Keys]: {
@@ -89,7 +89,7 @@ type ObjectToQueryParameters<
 class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
   constructor(private params: T) {}
 
-  addParameter<Name extends string, Type extends 'Path' | 'Query' | 'Body' | 'Header', Schema extends z.ZodType<any, any, any>>(
+  addParameter<Name extends string, Type extends 'Path' | 'Query' | 'Body' | 'Header', Schema extends z.ZodType<any, any>>(
     name: Name,
     type: Type,
     schema: Schema
@@ -100,11 +100,11 @@ class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
     ])
   }
 
-  addParameters<Type extends 'Query' | 'Path' | 'Header', Schemas extends Record<string, z.ZodType<any, any, any>>>(type: Type, schemas: Schemas) {
+  addParameters<Type extends 'Query' | 'Path' | 'Header', Schemas extends Record<string, z.ZodType<any, any>>>(type: Type, schemas: Schemas) {
     const parameters = Object.keys(schemas).map((key) => ({
       name: key,
       type,
-      description: schemas[key].description,
+      description: schemas[key]!.description,
       schema: schemas[key],
     }))
     return new ParametersBuilder<[...T, ...Extract<ObjectToQueryParameters<Type, Schemas>, ZodiosEndpointParameter[]>]>([
@@ -113,31 +113,31 @@ class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
     ] as any)
   }
 
-  addBody<Schema extends z.ZodType<any, any, any>>(schema: Schema) {
+  addBody<Schema extends z.ZodType<any, any>>(schema: Schema) {
     return this.addParameter('body', 'Body', schema)
   }
 
-  addQuery<Name extends string, Schema extends z.ZodType<any, any, any>>(name: Name, schema: Schema) {
+  addQuery<Name extends string, Schema extends z.ZodType<any, any>>(name: Name, schema: Schema) {
     return this.addParameter(name, 'Query', schema)
   }
 
-  addPath<Name extends string, Schema extends z.ZodType<any, any, any>>(name: Name, schema: Schema) {
+  addPath<Name extends string, Schema extends z.ZodType<any, any>>(name: Name, schema: Schema) {
     return this.addParameter(name, 'Path', schema)
   }
 
-  addHeader<Name extends string, Schema extends z.ZodType<any, any, any>>(name: Name, schema: Schema) {
+  addHeader<Name extends string, Schema extends z.ZodType<any, any>>(name: Name, schema: Schema) {
     return this.addParameter(name, 'Header', schema)
   }
 
-  addQueries<Schemas extends Record<string, z.ZodType<any, any, any>>>(schemas: Schemas) {
+  addQueries<Schemas extends Record<string, z.ZodType<any, any>>>(schemas: Schemas) {
     return this.addParameters('Query', schemas)
   }
 
-  addPaths<Schemas extends Record<string, z.ZodType<any, any, any>>>(schemas: Schemas) {
+  addPaths<Schemas extends Record<string, z.ZodType<any, any>>>(schemas: Schemas) {
     return this.addParameters('Path', schemas)
   }
 
-  addHeaders<Schemas extends Record<string, z.ZodType<any, any, any>>>(schemas: Schemas) {
+  addHeaders<Schemas extends Record<string, z.ZodType<any, any>>>(schemas: Schemas) {
     return this.addParameters('Header', schemas)
   }
 
@@ -348,5 +348,5 @@ export function prefixApi<Prefix extends string, Api extends ZodiosEndpointDefin
  * ```
  */
 export function mergeApis<Apis extends Record<string, ZodiosEndpointDefinition[]>>(apis: Apis): MergeApis<Apis> {
-  return Object.keys(apis).flatMap((key) => prefixApi(key, apis[key])) as any
+  return Object.keys(apis).flatMap((key) => prefixApi(key, apis[key]!)) as any
 }

@@ -1,8 +1,8 @@
 import express from 'express'
 import { AddressInfo } from 'net'
-import z from 'zod'
-import { apiBuilder, makeApi, makeCrudApi, mergeApis, parametersBuilder, Zodios } from './index'
-import { Assert } from './utils.types'
+import z from 'zod/v4'
+import { apiBuilder, makeApi, makeCrudApi, mergeApis, parametersBuilder, Zodios } from '../src'
+import { Assert } from '../src/utils.types'
 
 const userSchema = z.object({
   id: z.number(),

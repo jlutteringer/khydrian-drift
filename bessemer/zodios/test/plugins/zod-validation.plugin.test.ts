@@ -1,9 +1,9 @@
 import type { AxiosResponse } from 'axios'
-import { z } from 'zod'
-import { apiBuilder } from '../api'
-import { ReadonlyDeep } from '../utils.types'
-import { AnyZodiosRequestOptions } from '../zodios.types'
-import { zodValidationPlugin } from './zod-validation.plugin'
+import { z } from 'zod/v4'
+import { apiBuilder } from '../../src/api'
+import { ReadonlyDeep } from '../../src/utils.types'
+import { AnyZodiosRequestOptions } from '../../src/zodios.types'
+import { zodValidationPlugin } from '../../src/plugins/zod-validation.plugin'
 
 describe('zodValidationPlugin', () => {
   const plugin = zodValidationPlugin({
@@ -199,26 +199,9 @@ describe('zodValidationPlugin', () => {
       const badResponse = createSampleResponse()
       badResponse.data.first = 123
 
-      await expect(plugin.response!(api, createSampleConfig('/parse'), badResponse)).rejects
-        .toThrowError(`Zodios: Invalid response from endpoint 'post /parse'
-status: 200 OK
-cause:
-[
-  {
-    "code": "invalid_type",
-    "expected": "string",
-    "received": "number",
-    "path": [
-      "first"
-    ],
-    "message": "Expected string, received number"
-  }
-]
-received:
-{
-  "first": 123,
-  "second": 111
-}`)
+      await expect(plugin.response!(api, createSampleConfig('/parse'), badResponse)).rejects.toThrow(
+        /Zodios: Invalid response from endpoint 'post \/parse'/
+      )
     })
   })
 

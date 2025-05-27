@@ -1,4 +1,4 @@
-import { z, ZodType } from 'zod'
+import { z, ZodType } from 'zod/v4'
 
 /**
  * filter an array type by a predicate value
@@ -196,7 +196,7 @@ export type MapSchemaParameters<T, Frontend extends boolean = true, Acc = {}> = 
           Frontend,
           Merge<
             {
-              [Key in Name]: Schema extends z.ZodType<any, any, any> ? (Frontend extends true ? z.input<Schema> : z.output<Schema>) : never
+              [Key in Name]: Schema extends z.ZodType<any, any> ? (Frontend extends true ? z.input<Schema> : z.output<Schema>) : never
             },
             Acc
           >

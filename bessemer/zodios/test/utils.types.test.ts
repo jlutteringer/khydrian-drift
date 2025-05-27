@@ -1,4 +1,4 @@
-import type { Assert, FilterArrayByKey, FilterArrayByValue, PathParamNames } from './utils.types'
+import type { Assert, FilterArrayByKey, FilterArrayByValue, PathParamNames } from '../src/utils.types'
 
 describe('utils.types', () => {
   describe('FilterArrayByValue', () => {
