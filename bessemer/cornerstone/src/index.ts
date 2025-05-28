@@ -40,6 +40,7 @@ import * as Retry from '@bessemer/cornerstone/retry'
 import * as Stores from '@bessemer/cornerstone/store'
 import * as Misc from '@bessemer/cornerstone/misc'
 import * as Json from '@bessemer/cornerstone/json'
+import * as AspectRatios from '@bessemer/cornerstone/aspect-ratio'
 
 export {
   Objects,
@@ -83,4 +84,5 @@ export {
   Stores,
   Misc,
   Json,
+  AspectRatios,
 }

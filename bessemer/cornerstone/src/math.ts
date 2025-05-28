@@ -1,6 +1,9 @@
 import { isNumber as _isNumber } from 'lodash-es'
 
 export const isNumber = (value?: unknown): value is number => {
+  if (isNaN(value as any)) {
+    return false
+  }
   return _isNumber(value)
 }
 
@@ -129,4 +132,8 @@ export const roundHalfEven = (value: number, scale: number): number => {
 
 export const random = (min: number, max: number): number => {
   return Math.random() * (max - min) + min
+}
+
+export const greatestCommonFactor = (first: number, second: number): number => {
+  return second === 0 ? first : greatestCommonFactor(second, first % second)
 }
