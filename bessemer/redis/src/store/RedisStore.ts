@@ -40,7 +40,7 @@ export class RedisStore<T> implements RemoteStore<T> {
       if (Objects.isNil(this.props.timeToLive)) {
         await client.set(this.props.key, entryString)
       } else {
-        await client.set(this.props.key, entryString, 'PX', Durations.inMilliseconds(this.props.timeToLive))
+        await client.set(this.props.key, entryString, 'PX', Durations.toMilliseconds(this.props.timeToLive))
       }
     }
   }

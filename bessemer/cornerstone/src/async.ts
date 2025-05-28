@@ -109,6 +109,6 @@ export const execute = <T>(runnable: () => Promise<T>): Promise<T> => {
 
 export const sleep = (duration: Duration): Promise<void> => {
   return new Promise((resolve) => {
-    setTimeout(resolve, Durations.inMilliseconds(duration))
+    setTimeout(resolve, Durations.toMilliseconds(duration))
   })
 }

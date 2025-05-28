@@ -178,7 +178,7 @@ export namespace CacheEntry {
   export const applyProps = <T>(originalEntry: CacheEntry<T>, props: CacheProps): CacheEntry<T> => {
     let liveTimestamp: Date | null = originalEntry.liveTimestamp
     if (!Objects.isNil(props.timeToLive)) {
-      const limit = Dates.addMilliseconds(Dates.now(), Durations.inMilliseconds(props.timeToLive))
+      const limit = Dates.addMilliseconds(Dates.now(), Durations.toMilliseconds(props.timeToLive))
       if (Dates.isBefore(limit, liveTimestamp ?? limit)) {
         liveTimestamp = limit
       }
@@ -186,7 +186,7 @@ export namespace CacheEntry {
 
     let staleTimestamp: Date | null = originalEntry.staleTimestamp
     if (!Objects.isNil(props.timeToStale)) {
-      const limit = Dates.addMilliseconds(Dates.now(), Durations.inMilliseconds(props.timeToStale))
+      const limit = Dates.addMilliseconds(Dates.now(), Durations.toMilliseconds(props.timeToStale))
       if (Dates.isBefore(limit, staleTimestamp ?? limit)) {
         staleTimestamp = limit
       }

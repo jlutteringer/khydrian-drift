@@ -67,7 +67,7 @@ export class RedisKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> {
         if (Objects.isNil(this.props.timeToLive)) {
           return ['set', key, value]
         } else {
-          return ['set', key, value, 'PX', Durations.inMilliseconds(this.props.timeToLive)]
+          return ['set', key, value, 'PX', Durations.toMilliseconds(this.props.timeToLive)]
         }
       })
 

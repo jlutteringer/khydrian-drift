@@ -42,4 +42,4 @@ export const addHours = _addHours
 export const isBefore = _isBefore
 export const isAfter = _isAfter
 
-export const addDuration = (date: Date, duration: Duration): Date => addMilliseconds(date, Durations.inMilliseconds(duration))
+export const addDuration = (date: Date, duration: Duration): Date => addMilliseconds(date, Durations.toMilliseconds(duration))

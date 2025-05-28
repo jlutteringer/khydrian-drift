@@ -20,10 +20,10 @@ export type AdvisoryLockProps = {
 export type AdvisoryLockOptions = PartialDeep<AdvisoryLockProps>
 
 export const DefaultAdvisoryLockProps: AdvisoryLockProps = {
-  duration: Durations.ofSeconds(5),
+  duration: Durations.fromSeconds(5),
   retry: {
     attempts: 10,
-    delay: Durations.ofMilliseconds(300),
+    delay: Durations.fromMilliseconds(300),
   },
 }
 

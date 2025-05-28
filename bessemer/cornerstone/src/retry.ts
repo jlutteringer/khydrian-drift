@@ -17,7 +17,7 @@ export const None: RetryProps = {
 
 export const DefaultRetryProps: RetryProps = {
   attempts: 3,
-  delay: Durations.ofMilliseconds(500),
+  delay: Durations.fromMilliseconds(500),
 }
 
 export type RetryState = {
@@ -40,9 +40,9 @@ export const retry = async (state: RetryState): Promise<RetryState | undefined> 
     return undefined
   }
 
-  const delayMs = Durations.inMilliseconds(state.props.delay)
+  const delayMs = Durations.toMilliseconds(state.props.delay)
   const maxJitterMs = delayMs * 0.3 // We calculate max jitter as 30% of the delay
-  await Async.sleep(Durations.ofMilliseconds(delayMs + Maths.random(0, maxJitterMs)))
+  await Async.sleep(Durations.fromMilliseconds(delayMs + Maths.random(0, maxJitterMs)))
 
   return {
     props: state.props,

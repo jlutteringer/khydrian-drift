@@ -35,14 +35,14 @@ export class MemoryCacheProviderImpl<T> extends AbstractLocalCacheProvider<T> {
 
     if (Objects.isNil(props.maxSize)) {
       this.cache = new LRUCache({
-        ttl: Durations.inMilliseconds(props.timeToLive),
+        ttl: Durations.toMilliseconds(props.timeToLive),
         ttlAutopurge: true,
         allowStale: false,
       })
     } else {
       this.cache = new LRUCache({
         max: props.maxSize,
-        ttl: Durations.inMilliseconds(props.timeToLive),
+        ttl: Durations.toMilliseconds(props.timeToLive),
         allowStale: false,
       })
     }

@@ -199,7 +199,7 @@ export class RedlockClient extends EventEmitter {
   // JOHN maybe shouldnt be using the AdvisoryLockProps here even tho they contain the props we want?
   // JOHN should this take a context object instead of relying on its internal dealio?
   acquire = async (resourceKeys: Array<ResourceKey>, props: AdvisoryLockProps): Promise<RedlockLock> => {
-    const durationMs = Durations.inMilliseconds(props.duration)
+    const durationMs = Durations.toMilliseconds(props.duration)
     Preconditions.isTrue(Number.isInteger(durationMs), () => 'Duration must be an integer value')
 
     const value = Crypto.getRandomHex(16)
@@ -252,7 +252,7 @@ export class RedlockClient extends EventEmitter {
    * This method extends a valid lock by the provided `duration`.
    */
   public async extend(existing: RedlockLock, props: AdvisoryLockProps): Promise<RedlockLock> {
-    const durationMs = Durations.inMilliseconds(props.duration)
+    const durationMs = Durations.toMilliseconds(props.duration)
     Preconditions.isTrue(Number.isInteger(durationMs), () => 'Duration must be an integer value')
     Preconditions.isFalse(existing.expiration < Date.now(), 'Cannot extend an already-expired lock.')
 
