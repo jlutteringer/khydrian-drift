@@ -42,6 +42,7 @@ import * as Misc from '@bessemer/cornerstone/misc'
 import * as Json from '@bessemer/cornerstone/json'
 import * as AspectRatios from '@bessemer/cornerstone/aspect-ratio'
 import * as DataSizes from '@bessemer/cornerstone/data-size'
+import * as MimeTypes from '@bessemer/cornerstone/mime-type'
 
 export {
   Objects,
@@ -87,4 +88,5 @@ export {
   Json,
   AspectRatios,
   DataSizes,
+  MimeTypes,
 }

@@ -12,6 +12,7 @@ export const toBytes = (byte: DataSize): number => {
   return byte
 }
 
+// === SI (Decimal) Units ===
 export const fromKilobytes = (value: number): DataSize => {
   return fromBytes(value * 1000)
 }
@@ -34,4 +35,29 @@ export const fromGigabytes = (value: number): DataSize => {
 
 export const toGigabytes = (byte: DataSize): number => {
   return toMegabytes(byte) / 1000
+}
+
+// === IEC (Binary) Units ===
+export const fromKibibytes = (value: number): DataSize => {
+  return fromBytes(value * 1024)
+}
+
+export const toKibibytes = (byte: DataSize): number => {
+  return toBytes(byte) / 1024
+}
+
+export const fromMebibytes = (value: number): DataSize => {
+  return fromKibibytes(value * 1024)
+}
+
+export const toMebibytes = (byte: DataSize): number => {
+  return toKibibytes(byte) / 1024
+}
+
+export const fromGibibytes = (value: number): DataSize => {
+  return fromMebibytes(value * 1024)
+}
+
+export const toGibibytes = (byte: DataSize): number => {
+  return toMebibytes(byte) / 1024
 }

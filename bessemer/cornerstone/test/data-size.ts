@@ -41,6 +41,36 @@ test('DataSizes.fromGigabytes / DataSizes.toGigabytes', () => {
   expect(DataSizes.toGigabytes(fractional)).toBeCloseTo(0.25)
 })
 
+test('DataSizes.fromKibibytes / DataSizes.toKibibytes', () => {
+  const kib = DataSizes.fromKibibytes(2)
+  expect(DataSizes.toBytes(kib)).toBe(2048)
+  expect(DataSizes.toKibibytes(kib)).toBe(2)
+
+  const fractional = DataSizes.fromKibibytes(1.5)
+  expect(DataSizes.toBytes(fractional)).toBe(1536)
+  expect(DataSizes.toKibibytes(fractional)).toBeCloseTo(1.5)
+})
+
+test('DataSizes.fromMebibytes / DataSizes.toMebibytes', () => {
+  const mib = DataSizes.fromMebibytes(3)
+  expect(DataSizes.toBytes(mib)).toBe(3 * 1024 * 1024)
+  expect(DataSizes.toMebibytes(mib)).toBe(3)
+
+  const fractional = DataSizes.fromMebibytes(0.5)
+  expect(DataSizes.toBytes(fractional)).toBe(0.5 * 1024 * 1024)
+  expect(DataSizes.toMebibytes(fractional)).toBeCloseTo(0.5)
+})
+
+test('DataSizes.fromGibibytes / DataSizes.toGibibytes', () => {
+  const gib = DataSizes.fromGibibytes(1)
+  expect(DataSizes.toBytes(gib)).toBe(1 * 1024 * 1024 * 1024)
+  expect(DataSizes.toGibibytes(gib)).toBe(1)
+
+  const fractional = DataSizes.fromGibibytes(0.25)
+  expect(DataSizes.toBytes(fractional)).toBe(0.25 * 1024 * 1024 * 1024)
+  expect(DataSizes.toGibibytes(fractional)).toBeCloseTo(0.25)
+})
+
 test('DataSizes.DataSizeSchema', () => {
   // Should validate number values
   expect(DataSizes.DataSizeSchema.parse(123)).toBe(123)
