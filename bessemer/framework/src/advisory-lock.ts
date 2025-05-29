@@ -1,7 +1,7 @@
 import { Duration } from '@bessemer/cornerstone/duration'
 import { RetryProps } from '@bessemer/cornerstone/retry'
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Arrays, Durations, Loggers, Objects, Preconditions, Results, Retry } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Durations, Loggers, Objects, Results, Retry } from '@bessemer/cornerstone'
 import { BessemerApplicationContext, GlobalContextType } from '@bessemer/framework/index'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { AsyncResult } from '@bessemer/cornerstone/result'
@@ -167,7 +167,7 @@ export const acquireLock = async (
   context: GlobalContextType<BessemerApplicationContext>,
   options: AdvisoryLockOptions = {}
 ): AsyncResult<AdvisoryLock> => {
-  Preconditions.isFalse(Arrays.isEmpty(resourceKeys), () => `Illegal call to acquireLock with empty resourceKeys`)
+  Assertions.assertFalse(Arrays.isEmpty(resourceKeys), () => `Illegal call to acquireLock with empty resourceKeys`)
 
   const sortedKeys = Arrays.sort(Arrays.toArray(resourceKeys))
   const props = Objects.deepMerge(DefaultAdvisoryLockProps, options)

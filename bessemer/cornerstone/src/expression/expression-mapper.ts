@@ -1,7 +1,7 @@
 import { Expression, ExpressionDefinition } from '@bessemer/cornerstone/expression'
 import { Dictionary } from '@bessemer/cornerstone/types'
 import { isExpression } from '@bessemer/cornerstone/expression/internal'
-import { Preconditions } from '@bessemer/cornerstone'
+import { Assertions } from '@bessemer/cornerstone'
 import { value } from '@bessemer/cornerstone/expression/expression'
 import { ValueExpression } from '@bessemer/cornerstone/expression/core-expression'
 
@@ -17,17 +17,19 @@ export class ExpressionMapper<MappingType, ContextType> {
   map(expression: Expression<unknown>, context: ContextType): MappingType {
     if (isExpression(expression)) {
       const resolver = this.resolverMap[expression.expressionKey]
-      Preconditions.isPresent(
+      Assertions.assertPresent(
         resolver,
-        `Illegal Argument - Attempted to map unknown expression: ${expression.expressionKey}. You must register(...) a handler for this expression type.`
+        () =>
+          `Illegal Argument - Attempted to map unknown expression: ${expression.expressionKey}. You must register(...) a handler for this expression type.`
       )
 
       return resolver(expression, (expression) => this.map(expression, context), context)
     } else {
       const resolver = this.resolverMap[ValueExpression.expressionKey]
-      Preconditions.isPresent(
+      Assertions.assertPresent(
         resolver,
-        `Illegal Argument - Attempted to map unknown expression: ${ValueExpression.expressionKey}. You must register(...) a handler for this expression type.`
+        () =>
+          `Illegal Argument - Attempted to map unknown expression: ${ValueExpression.expressionKey}. You must register(...) a handler for this expression type.`
       )
 
       const valueExpression = value(expression)

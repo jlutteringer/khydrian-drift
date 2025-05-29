@@ -8,7 +8,7 @@ import {
   PublicProperties,
 } from '@bessemer/framework'
 import { PropertyRecord } from '@bessemer/cornerstone/property'
-import { Arrays, Hashes, Loggers, Objects, Preconditions, Properties, Tags } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Hashes, Loggers, Objects, Properties, Tags } from '@bessemer/cornerstone'
 import { RscRuntimes } from '@bessemer/react'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { Tag } from '@bessemer/cornerstone/tag'
@@ -35,12 +35,12 @@ export type BessemerConfiguration<ApplicationContext extends BessemerApplication
 const GlobalConfigurationState = createGlobalVariable<{
   configuration: BessemerConfiguration<any, any>
   globalContext: GlobalContextType<any>
-} | null>('BessemerConfiguration', null)
+} | null>('BessemerConfiguration', () => null)
 
 export const configure = <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
   configuration: BessemerConfiguration<ApplicationContext, ApplicationOptions>
 ): void => {
-  Preconditions.isTrue(RscRuntimes.isServer)
+  Assertions.assertTrue(RscRuntimes.isServer)
 
   if (Objects.isPresent(GlobalConfigurationState.getValue())) {
     return
@@ -75,18 +75,18 @@ const getConfiguration = <ApplicationContext extends BessemerApplicationContext,
   ApplicationContext,
   ApplicationOptions
 > => {
-  Preconditions.isTrue(RscRuntimes.isServer)
+  Assertions.assertTrue(RscRuntimes.isServer)
 
   const state = GlobalConfigurationState.getValue()
-  Preconditions.isPresent(state, 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')
+  Assertions.assertPresent(state, () => 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')
   return state.configuration
 }
 
 export const getGlobalContext = <ApplicationContext extends BessemerApplicationContext>(): GlobalContextType<ApplicationContext> => {
-  Preconditions.isTrue(RscRuntimes.isServer)
+  Assertions.assertTrue(RscRuntimes.isServer)
 
   const state = GlobalConfigurationState.getValue()
-  Preconditions.isPresent(state, 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')
+  Assertions.assertPresent(state, () => 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')
   return state.globalContext
 }
 

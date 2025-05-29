@@ -6,7 +6,7 @@ import {
   NumericExpressions,
   ReducingExpression,
 } from '@bessemer/cornerstone/expression'
-import { Objects, Preconditions } from '@bessemer/cornerstone'
+import { Assertions, Objects } from '@bessemer/cornerstone'
 import { UnknownRecord } from 'type-fest'
 
 export enum PatchType {
@@ -100,7 +100,7 @@ export const resolveWithDetails = <T>(value: T, patches: Array<Patch<T>>, evalua
         currentValue = applyPatch(currentValue, patch.patch, evaluate)
         break
       default:
-        Preconditions.isUnreachable(() => `Unrecognized PatchType for value: ${JSON.stringify(it)}`)
+        Assertions.assertUnreachable(() => `Unrecognized PatchType for value: ${JSON.stringify(it)}`)
     }
 
     return { value: currentValue, patch }

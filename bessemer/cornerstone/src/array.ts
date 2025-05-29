@@ -10,7 +10,7 @@ import {
 } from 'lodash-es'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
 import { Signable } from '@bessemer/cornerstone/signature'
-import { Comparators, Eithers, Preconditions, Signatures } from '@bessemer/cornerstone'
+import { Assertions, Comparators, Eithers, Signatures } from '@bessemer/cornerstone'
 import { Either } from '@bessemer/cornerstone/either'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { Arrayable } from 'type-fest'
@@ -125,7 +125,7 @@ export const first = <T>(array: Array<T> | null | undefined): T | undefined => {
 }
 
 export const only = <T>(array: Array<T>): T => {
-  Preconditions.isTrue(array.length === 1)
+  Assertions.assertTrue(array.length === 1)
   return first(array)!
 }
 

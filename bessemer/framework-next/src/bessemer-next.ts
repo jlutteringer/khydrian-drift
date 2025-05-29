@@ -3,7 +3,7 @@ import { Bessemer, BessemerApplicationContext, BessemerOptions } from '@bessemer
 import { RscRuntimes, ServerContexts } from '@bessemer/react'
 import { BessemerInstance } from '@bessemer/framework/bessemer'
 import { Tag } from '@bessemer/cornerstone/tag'
-import { Preconditions } from '@bessemer/cornerstone'
+import { Assertions } from '@bessemer/cornerstone'
 
 const context: ServerContext<BessemerInstance<BessemerApplicationContext, BessemerOptions>> = ServerContexts.create()
 
@@ -17,7 +17,7 @@ export const getInstance = async <ApplicationContext extends BessemerApplication
 }
 
 export const getApplication = async <ApplicationContext extends BessemerApplicationContext>(tags?: Array<Tag>): Promise<ApplicationContext> => {
-  Preconditions.isTrue(RscRuntimes.isServer)
+  Assertions.assertTrue(RscRuntimes.isServer)
 
   const { context } = await getInstance<ApplicationContext, BessemerOptions>(tags)
   return context

@@ -1,4 +1,4 @@
-import { Objects, Preconditions, Strings } from '@bessemer/cornerstone'
+import { Assertions, Objects, Strings } from '@bessemer/cornerstone'
 import { TaggedType } from '@bessemer/cornerstone/types'
 
 export type Uuid = TaggedType<string, 'Uuid'>
@@ -26,7 +26,7 @@ const randomHex = (characters: number) => {
 }
 
 export const of = (value: string): Uuid => {
-  Preconditions.isTrue(isValid(value), () => `Attempted to coerce invalid value to Uuid: ${value}`)
+  Assertions.assertTrue(isValid(value), () => `Attempted to coerce invalid value to Uuid: ${value}`)
   return value as Uuid
 }
 

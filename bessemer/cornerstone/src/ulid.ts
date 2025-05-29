@@ -1,6 +1,6 @@
 import { ulid } from 'ulid'
 import { TaggedType } from '@bessemer/cornerstone/types'
-import { Preconditions, Strings } from '@bessemer/cornerstone'
+import { Assertions, Strings } from '@bessemer/cornerstone'
 
 export type Ulid = TaggedType<string, 'Ulid'>
 
@@ -17,7 +17,7 @@ export const generateString = (): string => {
 }
 
 export const of = (value: string): Ulid => {
-  Preconditions.isTrue(isValid(value), () => `Attempted to coerce invalid value to Ulid: ${value}`)
+  Assertions.assertTrue(isValid(value), () => `Attempted to coerce invalid value to Ulid: ${value}`)
   return value as Ulid
 }
 

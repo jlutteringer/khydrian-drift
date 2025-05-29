@@ -1,7 +1,7 @@
 import { defineExpression } from '@bessemer/cornerstone/expression/internal'
 import { Expression } from '@bessemer/cornerstone/expression'
 import { BasicType } from '@bessemer/cornerstone/types'
-import { Arrays, Objects, Preconditions, Signatures } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Objects, Signatures } from '@bessemer/cornerstone'
 import { Signable } from '@bessemer/cornerstone/signature'
 
 export const ValueExpression = defineExpression({
@@ -21,7 +21,7 @@ export const VariableExpression = defineExpression({
   },
   resolver: ({ name }, evaluate, context) => {
     const value = context.variables[name]
-    Preconditions.isPresent(value)
+    Assertions.assertPresent(value)
     return value
   },
 })

@@ -11,7 +11,7 @@ import {
 } from '@bessemer/cornerstone/cache'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { BessemerApplicationContext, GlobalContextType } from '@bessemer/framework/index'
-import { Objects, Preconditions } from '@bessemer/cornerstone'
+import { Assertions, Objects } from '@bessemer/cornerstone'
 import { CacheImpl } from '@bessemer/framework/cache/CacheImpl'
 import { MemoryCacheProvider } from '@bessemer/framework/cache/MemoryCacheProvider'
 import { LocalCacheImpl } from '@bessemer/framework/cache/LocalCacheImpl'
@@ -72,7 +72,7 @@ export const getLocalCache = <T>(name: string, context: GlobalContextType<Bessem
 
 export const createCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): Cache<T> => {
   const existingCache = getStore().caches.getValue(name)
-  Preconditions.isNil(existingCache, () => `Cache: ${name} already exists`)
+  Assertions.assertNil(existingCache, () => `Cache: ${name} already exists`)
 
   const providers = getProviders<T>(name, getContext(context).configuration, context)
   const cache = new CacheImpl<T>(name, providers, context)
@@ -82,7 +82,7 @@ export const createCache = <T>(name: string, context: GlobalContextType<Bessemer
 
 export const createLocalCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): LocalCache<T> => {
   const existingCache = getStore().caches.getValue(name)
-  Preconditions.isNil(existingCache, () => `Cache: ${name} already exists`)
+  Assertions.assertNil(existingCache, () => `Cache: ${name} already exists`)
 
   const providers = getProviders<T>(name, getContext(context).configuration.local, context)
   const cache = new LocalCacheImpl<T>(name, providers as Array<LocalCacheProvider<T>>)

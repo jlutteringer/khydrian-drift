@@ -1,5 +1,5 @@
 import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
-import { Arrays, Async, Entries, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Async, Entries, Objects, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import {
@@ -101,13 +101,13 @@ export const fetchTextById = async (
   reference: ReferenceType<ContentReference>,
   context: CoreApplicationContext
 ): Promise<TextContent | undefined> => {
-  Preconditions.isPresent(context.codex)
+  Assertions.assertPresent(context.codex)
   const content = await context.codex.provider.fetchContentByIds([reference], context)
   if (Arrays.isEmpty(content)) {
     return undefined
   }
 
-  Preconditions.isTrue(content[0]?.type === TextContentType)
+  Assertions.assertTrue(content[0]?.type === TextContentType)
   return content[0] as TextContent
 }
 
@@ -139,14 +139,14 @@ export const fetchContentByKeys = async <Type extends ContentType>(
   const namespace = Contexts.getNamespace(context)
 
   const results = await cache.fetchValues(namespace, keys, async (keys) => {
-    Preconditions.isPresent(context.codex)
+    Assertions.assertPresent(context.codex)
 
     const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
     const content = await context.codex.provider.fetchContentByKeys(keys, tags, context)
 
     if (Objects.isPresent(options?.type)) {
       const illegalContent = content.find((it) => it.type !== options?.type)
-      Preconditions.isNil(
+      Assertions.assertNil(
         illegalContent,
         () => `ContentData: [${illegalContent?.key}] with type: [${illegalContent?.type}] did not match requested ContentType: ${options?.type}`
       )
@@ -179,14 +179,14 @@ export const fetchContentBySectors = async <Type extends ContentType>(
   const namespace = Contexts.getNamespace(context)
 
   const results = await cache.fetchValues(namespace, sectors, async (sectors) => {
-    Preconditions.isPresent(context.codex)
+    Assertions.assertPresent(context.codex)
 
     const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
     const genericContent = await context.codex.provider.fetchContentBySectors(sectors, tags, context)
 
     if (Objects.isPresent(options?.type)) {
       const illegalContent = genericContent.find((it) => it.type !== options?.type)
-      Preconditions.isNil(
+      Assertions.assertNil(
         illegalContent,
         () => `ContentData: [${illegalContent?.key}] with type: [${illegalContent?.type}] did not match requested ContentType: ${options?.type}`
       )

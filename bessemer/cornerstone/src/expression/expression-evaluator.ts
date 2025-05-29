@@ -1,5 +1,5 @@
 import { Expression, ExpressionContext, ExpressionDefinition, ExpressionReference } from '@bessemer/cornerstone/expression'
-import { Preconditions } from '@bessemer/cornerstone'
+import { Assertions } from '@bessemer/cornerstone'
 import { isValue } from '@bessemer/cornerstone/expression/internal'
 
 // JOHN need to add tests...
@@ -12,7 +12,7 @@ export class ExpressionEvaluator {
     }
 
     const matchingExpressionDefinition = this.expressionDefinitions.find((it) => it.expressionKey === expression.expressionKey)
-    Preconditions.isPresent(matchingExpressionDefinition)
+    Assertions.assertPresent(matchingExpressionDefinition)
     return matchingExpressionDefinition.resolver(expression, (expression) => this.evaluate(expression, context), context) as T
   }
 
@@ -21,7 +21,7 @@ export class ExpressionEvaluator {
     ...args: ArgumentType
   ): Expression<ReturnType> {
     const matchingExpressionDefinition = this.expressionDefinitions.find((it) => it.expressionKey === reference.expressionKey)
-    Preconditions.isPresent(matchingExpressionDefinition, () => `Unable to find Expression Definition for type: ${reference.expressionKey}`)
+    Assertions.assertPresent(matchingExpressionDefinition, () => `Unable to find Expression Definition for type: ${reference.expressionKey}`)
     return matchingExpressionDefinition.builder(...args)
   }
 }

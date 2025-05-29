@@ -11,7 +11,7 @@ import {
   NumericExpressions,
   ReducingExpression,
 } from '@bessemer/cornerstone/expression'
-import { Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Assertions, Objects, References } from '@bessemer/cornerstone'
 
 export type CharacteristicReference<T> = Reference<'Characteristic'>
 
@@ -61,7 +61,7 @@ export const buildAttribute = <T>(characteristic: Characteristic<T>, initialValu
     baseValue = characteristic.baseValue
   } else {
     const initialValue = Objects.getPathValue(initialValues, characteristic.path)
-    Preconditions.isPresent(initialValue)
+    Assertions.assertPresent(initialValue)
     baseValue = initialValue as T
   }
 

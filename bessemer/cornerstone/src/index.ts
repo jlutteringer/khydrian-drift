@@ -14,7 +14,7 @@ import * as Urls from '@bessemer/cornerstone/url'
 import * as Loggers from '@bessemer/cornerstone/logger'
 import * as Errors from '@bessemer/cornerstone/error'
 import * as ErrorEvents from '@bessemer/cornerstone/error-event'
-import * as Preconditions from '@bessemer/cornerstone/precondition'
+import * as Assertions from '@bessemer/cornerstone/assertion'
 import * as Uuids from '@bessemer/cornerstone/uuid'
 import * as Ulids from '@bessemer/cornerstone/ulid'
 import * as Entries from '@bessemer/cornerstone/entry'
@@ -61,7 +61,7 @@ export {
   Loggers,
   Errors,
   ErrorEvents,
-  Preconditions,
+  Assertions,
   Uuids,
   Ulids,
   Entries,

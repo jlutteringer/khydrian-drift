@@ -8,7 +8,7 @@ import { Characteristic, CharacteristicValue } from '@simulacrum/common/characte
 import { ResourcePoolState } from '@simulacrum/common/resource-pool'
 import { EvaluateExpression, ExpressionContext, Expressions, ExpressionVariable } from '@bessemer/cornerstone/expression'
 import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools } from '@simulacrum/common'
-import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Eithers, Misc, Objects, References } from '@bessemer/cornerstone'
 import { ApplicationContext } from '@simulacrum/common/application'
 import { UnknownRecord } from 'type-fest'
 
@@ -210,7 +210,7 @@ export const buildExpressionContext = (character: CharacterState, context: Appli
   const characterAttributes = context.client.ruleset.playerCharacteristics
   const attributeVariables = characterAttributes.map((it) => {
     const characteristic = Objects.getPathValue(character.characteristics, it.path) as CharacteristicValue<unknown>
-    Preconditions.isPresent(characteristic)
+    Assertions.assertPresent(characteristic)
     return Expressions.buildVariable(it.variable, characteristic.value)
   })
 

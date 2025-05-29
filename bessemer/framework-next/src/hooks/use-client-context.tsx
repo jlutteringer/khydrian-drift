@@ -11,9 +11,9 @@ import {
   BessemerOptions,
   BessemerRuntimeModule,
   ClientContextType,
-  DehydratedContextType
+  DehydratedContextType,
 } from '@bessemer/framework'
-import { Preconditions, Properties } from '@bessemer/cornerstone'
+import { Assertions, Properties } from '@bessemer/cornerstone'
 
 const BessemerContext = createContext<BessemerClientContext | null>(null)
 
@@ -48,7 +48,7 @@ const hydrateApplication = <T extends BessemerApplicationContext>(
 
 export const useBessemerClientContext = <T extends BessemerClientContext>(): T => {
   const clientApplication = use(BessemerContext)
-  Preconditions.isPresent(clientApplication)
+  Assertions.assertPresent(clientApplication)
 
   return clientApplication as T
 }

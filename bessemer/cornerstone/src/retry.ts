@@ -1,5 +1,5 @@
 import { Duration } from '@bessemer/cornerstone/duration'
-import { Async, Durations, Maths, Objects, Preconditions, Results } from '@bessemer/cornerstone'
+import { Assertions, Async, Durations, Maths, Objects, Results } from '@bessemer/cornerstone'
 import { AsyncResult, Result } from '@bessemer/cornerstone/result'
 import { PartialDeep } from 'type-fest'
 
@@ -27,7 +27,7 @@ export type RetryState = {
 
 export const initialize = (initialOptions?: RetryOptions): RetryState => {
   const props = Objects.deepMerge(DefaultRetryProps, initialOptions)
-  Preconditions.isTrue(props.attempts >= 0, () => 'usingRetry attempts must be >= 0')
+  Assertions.assertTrue(props.attempts >= 0, () => 'usingRetry attempts must be >= 0')
 
   return {
     attempt: 0,
