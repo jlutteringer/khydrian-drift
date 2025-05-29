@@ -114,6 +114,7 @@ export const aggregate = (builder: ErrorEventBuilder, causes: Array<ErrorEvent>)
 
 export const UnhandledErrorCode: ErrorCode = 'error-event.unhandled'
 export const NotFoundErrorCode: ErrorCode = 'error-event.not-found'
+export const ForbiddenErrorCode: ErrorCode = 'error-event.forbidden'
 export const UnauthorizedErrorCode: ErrorCode = 'error-event.unauthorized'
 export const BadRequestErrorCode: ErrorCode = 'error-event.bad-request'
 
@@ -144,6 +145,15 @@ export const unauthorized = (builder?: Partial<ErrorEventBuilder>) =>
       code: UnauthorizedErrorCode,
       message: 'The requested Resource requires authentication.',
       attributes: { [HttpStatusCodeAttribute]: 401 },
+    })
+  )
+
+export const forbidden = (builder?: Partial<ErrorEventBuilder>) =>
+  of(
+    Objects.deepMerge(builder, {
+      code: ForbiddenErrorCode,
+      message: 'The requested Resource requires additional permissions to access.',
+      attributes: { [HttpStatusCodeAttribute]: 403 },
     })
   )
 
