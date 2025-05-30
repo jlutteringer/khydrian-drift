@@ -99,24 +99,24 @@ export function withPropagation<ReturnType>(
   try {
     let result = resolver()
     if (Promises.isPromise(result)) {
-      return result.then((it) => it).catch((it) => propagate(it, attributes))
+      return result.then((it) => it).catch((it) => propagate(it, evaluate(attributes)))
     } else {
       return result
     }
   } catch (throwable: Throwable) {
-    throw propagate(throwable, attributes)
+    throw propagate(throwable, evaluate(attributes))
   }
 }
 
-export const propagate = (throwable: Throwable, attributes: LazyValue<Dictionary<unknown>>): never => {
+export const propagate = (throwable: Throwable, attributes: Dictionary<unknown>): never => {
   if (isErrorEventException(throwable)) {
     // We just mutate the existing error event to avoid nested exceptions
     const errorEvent = throwable.errorEvent
-    errorEvent.attributes = { ...errorEvent.attributes, ...evaluate(attributes) }
+    errorEvent.attributes = { ...errorEvent.attributes, ...attributes }
     throw throwable
   } else {
     const errorEvent = from(throwable)
-    const contextualizedEvent = of({ ...errorEvent, attributes: { ...errorEvent.attributes, ...evaluate(attributes) } })
+    const contextualizedEvent = of({ ...errorEvent, attributes: { ...errorEvent.attributes, ...attributes } })
     throw new ErrorEventException(contextualizedEvent, throwable)
   }
 }
