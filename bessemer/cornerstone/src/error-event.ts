@@ -1,7 +1,8 @@
-import { Arrays, Errors, Objects } from '@bessemer/cornerstone'
-import { NominalType, Throwable } from '@bessemer/cornerstone/types'
+import { Arrays, Errors, Objects, Promises } from '@bessemer/cornerstone'
+import { Dictionary, NominalType, Throwable } from '@bessemer/cornerstone/types'
 import { RecordAttribute } from '@bessemer/cornerstone/object'
 import Zod, { ZodType } from 'zod'
+import { evaluate, LazyValue } from '@bessemer/cornerstone/lazy'
 
 /*
   Represents a structured error event. The code can be mapped to a unique type of error while the
@@ -35,6 +36,8 @@ export type ErrorEventBuilder = {
   attributes?: Record<ErrorAttribute, unknown>
   causes?: Array<ErrorEvent>
 }
+
+export type ErrorEventAugment = Partial<ErrorEventBuilder>
 
 // An exception type that contains an ErrorEvent
 export class ErrorEventException extends Error {
@@ -87,6 +90,37 @@ export const from = (throwable: Throwable): ErrorEvent => {
   return errorEventException.errorEvent
 }
 
+export function withPropagation<ReturnType>(runnable: () => ReturnType, attributes: LazyValue<Dictionary<unknown>>): ReturnType
+export function withPropagation<ReturnType>(resolver: () => Promise<ReturnType>, attributes: LazyValue<Dictionary<unknown>>): Promise<ReturnType>
+export function withPropagation<ReturnType>(
+  resolver: () => ReturnType | Promise<ReturnType>,
+  attributes: LazyValue<Dictionary<unknown>>
+): ReturnType | Promise<ReturnType> {
+  try {
+    let result = resolver()
+    if (Promises.isPromise(result)) {
+      return result.then((it) => it).catch((it) => propagate(it, attributes))
+    } else {
+      return result
+    }
+  } catch (throwable: Throwable) {
+    throw propagate(throwable, attributes)
+  }
+}
+
+export const propagate = (throwable: Throwable, attributes: LazyValue<Dictionary<unknown>>): never => {
+  if (isErrorEventException(throwable)) {
+    // We just mutate the existing error event to avoid nested exceptions
+    const errorEvent = throwable.errorEvent
+    errorEvent.attributes = { ...errorEvent.attributes, ...evaluate(attributes) }
+    throw throwable
+  } else {
+    const errorEvent = from(throwable)
+    const contextualizedEvent = of({ ...errorEvent, attributes: { ...errorEvent.attributes, ...evaluate(attributes) } })
+    throw new ErrorEventException(contextualizedEvent, throwable)
+  }
+}
+
 export const findByCodeInCausalChain = (error: ErrorEvent, code: string): ErrorEvent | undefined => {
   return findInCausalChain(error, (it) => it.code === code)
 }
@@ -121,47 +155,62 @@ export const BadRequestErrorCode: ErrorCode = 'error-event.bad-request'
 export const RequestCorrelationIdAttribute: ErrorAttribute<string> = 'requestCorrelationId'
 export const HttpStatusCodeAttribute: ErrorAttribute<number> = 'httpStatusCode'
 
-export const unhandled = (builder?: Partial<ErrorEventBuilder>) =>
+export const unhandled = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(builder, {
-      code: UnhandledErrorCode,
-      message: 'An Unhandled Error has occurred.',
-      attributes: { [HttpStatusCodeAttribute]: 500 },
-    })
+    Objects.deepMerge(
+      {
+        code: UnhandledErrorCode,
+        message: 'An Unhandled Error has occurred.',
+        attributes: { [HttpStatusCodeAttribute]: 500 },
+      },
+      builder
+    )
   )
 
-export const notFound = (builder?: Partial<ErrorEventBuilder>) =>
+export const notFound = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(builder, {
-      code: NotFoundErrorCode,
-      message: 'The requested Resource could not be found.',
-      attributes: { [HttpStatusCodeAttribute]: 404 },
-    })
+    Objects.deepMerge(
+      {
+        code: NotFoundErrorCode,
+        message: 'The requested Resource could not be found.',
+        attributes: { [HttpStatusCodeAttribute]: 404 },
+      },
+      builder
+    )
   )
 
-export const unauthorized = (builder?: Partial<ErrorEventBuilder>) =>
+export const unauthorized = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(builder, {
-      code: UnauthorizedErrorCode,
-      message: 'The requested Resource requires authentication.',
-      attributes: { [HttpStatusCodeAttribute]: 401 },
-    })
+    Objects.deepMerge(
+      {
+        code: UnauthorizedErrorCode,
+        message: 'The requested Resource requires authentication.',
+        attributes: { [HttpStatusCodeAttribute]: 401 },
+      },
+      builder
+    )
   )
 
-export const forbidden = (builder?: Partial<ErrorEventBuilder>) =>
+export const forbidden = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(builder, {
-      code: ForbiddenErrorCode,
-      message: 'The requested Resource requires additional permissions to access.',
-      attributes: { [HttpStatusCodeAttribute]: 403 },
-    })
+    Objects.deepMerge(
+      {
+        code: ForbiddenErrorCode,
+        message: 'The requested Resource requires additional permissions to access.',
+        attributes: { [HttpStatusCodeAttribute]: 403 },
+      },
+      builder
+    )
   )
 
-export const badRequest = (builder?: Partial<ErrorEventBuilder>) =>
+export const badRequest = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(builder, {
-      code: BadRequestErrorCode,
-      message: 'The request is invalid and cannot be processed.',
-      attributes: { [HttpStatusCodeAttribute]: 400 },
-    })
+    Objects.deepMerge(
+      {
+        code: BadRequestErrorCode,
+        message: 'The request is invalid and cannot be processed.',
+        attributes: { [HttpStatusCodeAttribute]: 400 },
+      },
+      builder
+    )
   )
