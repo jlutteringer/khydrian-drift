@@ -9,8 +9,8 @@ import {
   CacheWriteRequest,
   CacheWriteRequestSchema,
 } from '@bessemer/client/cache/types'
-import { Zod } from '@bessemer/cornerstone'
 import { isErrorFromPath, makeApi, Zodios } from '@zodios/core'
+import Zod from 'zod'
 
 const CacheApi = makeApi([
   {

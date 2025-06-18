@@ -1,5 +1,5 @@
 import { ExpressionMapper } from '@bessemer/cornerstone/expression/expression-mapper'
-import { Arrays, Assertions, Entries, Objects, Ulids } from '@bessemer/cornerstone'
+import { Arrays, Entries, Objects, Ulids } from '@bessemer/cornerstone'
 import { BasicType, Dictionary } from '@bessemer/cornerstone/types'
 import {
   AndExpression,
@@ -36,8 +36,7 @@ DefaultSqlExpressionParser.register(ValueExpression, (expression, _, context) =>
 })
 DefaultSqlExpressionParser.register(VariableExpression, (expression, _, context) => {
   const variableName = context.variables[expression.name]
-  Assertions.assertPresent(variableName, () => `SqlExpressionParser - Unable to resolve VariableExpression with name: ${expression.name}`)
-  return variableName
+  return variableName ?? expression.name
 })
 DefaultSqlExpressionParser.register(NotExpression, (expression, map, context) => {
   if (isType(expression.value, ContainsExpression)) {

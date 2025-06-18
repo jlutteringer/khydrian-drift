@@ -129,7 +129,8 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
       return [value, modifierValues]
     })
 
-    const winningPermutationValue = evaluate(Expressions.dereference(attribute.optimizer, permutationValues.map(Arrays.first)))
+    // JOHN we added a cast here as a temporary fix - it should be fixed for real
+    const winningPermutationValue = evaluate(Expressions.dereference(attribute.optimizer, permutationValues.map(Arrays.first) as any))
     const [_, winningModifiers] = permutationValues.find((it) => winningPermutationValue === Arrays.first(it)) ?? []
     return [winningPermutationValue, winningModifiers ?? []]
   })
@@ -140,7 +141,8 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
   if (Arrays.isEmpty(combinationValues)) {
     value = initialValue
   } else {
-    value = evaluate(Expressions.dereference(attribute.optimizer, combinationValues.map(Arrays.first)))
+    // JOHN we added a cast here as a temporary fix - it should be fixed for real
+    value = evaluate(Expressions.dereference(attribute.optimizer, combinationValues.map(Arrays.first) as any))
     const [_, modifierValues] = combinationValues.find((it) => value === Arrays.first(it)) ?? []
     winningModifiers = modifierValues!
     additionalInactiveModifiers = Arrays.differenceWith(

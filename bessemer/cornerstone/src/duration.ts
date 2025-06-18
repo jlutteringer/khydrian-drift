@@ -2,7 +2,7 @@ import { TaggedType } from '@bessemer/cornerstone/types'
 import Zod, { ZodType } from 'zod'
 
 export type Duration = TaggedType<number, 'Duration'>
-export const DurationSchema: ZodType<Duration> = Zod.number() as any
+export const Schema: ZodType<Duration> = Zod.number() as any
 
 export const fromMilliseconds = (value: number): Duration => {
   return value as Duration

@@ -1,5 +1,5 @@
 import { AbstractLocalKeyValueStore, AbstractRemoteKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } from '@bessemer/cornerstone/store'
-import { Arrays, Dates, Durations, Objects, Strings, Zod } from '@bessemer/cornerstone'
+import { Arrays, Dates, Durations, Objects, Strings } from '@bessemer/cornerstone'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
@@ -7,7 +7,7 @@ import { NominalType } from '@bessemer/cornerstone/types'
 import { Entry } from '@bessemer/cornerstone/entry'
 import { GlobPattern } from '@bessemer/cornerstone/glob'
 import { Arrayable } from 'type-fest'
-import { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod'
 
 // JOHN should this even be in cornerstone? especially consider the config types down at the bottom
 

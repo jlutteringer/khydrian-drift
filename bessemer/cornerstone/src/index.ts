@@ -3,6 +3,7 @@ import * as Functions from '@bessemer/cornerstone/function'
 import * as Arrays from '@bessemer/cornerstone/array'
 import * as Strings from '@bessemer/cornerstone/string'
 import * as Async from '@bessemer/cornerstone/async'
+import * as AsyncValues from '@bessemer/cornerstone/async-value'
 import * as Maths from '@bessemer/cornerstone/math'
 import * as Sets from '@bessemer/cornerstone/set'
 import * as Dates from '@bessemer/cornerstone/date'
@@ -23,7 +24,7 @@ import * as Crypto from '@bessemer/cornerstone/crypto'
 import * as Globs from '@bessemer/cornerstone/glob'
 import * as Ranges from '@bessemer/cornerstone/range'
 
-import * as Zod from '@bessemer/cornerstone/zod'
+import * as ZodUtil from '@bessemer/cornerstone/zod-util'
 import * as Tags from '@bessemer/cornerstone/tag'
 import * as Promises from '@bessemer/cornerstone/promise'
 import * as References from '@bessemer/cornerstone/reference'
@@ -50,6 +51,7 @@ export {
   Arrays,
   Strings,
   Async,
+  AsyncValues,
   Maths,
   Sets,
   Dates,
@@ -69,7 +71,7 @@ export {
   Crypto,
   Globs,
   Ranges,
-  Zod,
+  ZodUtil,
   Tags,
   Promises,
   References,

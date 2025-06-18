@@ -4,28 +4,19 @@ import { Duration } from '@bessemer/cornerstone/duration'
 import { Durations } from '@bessemer/cornerstone'
 import Zod from 'zod'
 
-export const buildSchema = (fieldName: string) => {
-  return Zod.union([
-    Zod.string({
-      required_error: `${fieldName} is required`,
-    })
-      .trim()
-      .regex(
-        /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/,
-        `${fieldName} is an invalid Date. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.sssZ`
-      ),
-    Zod.date({
-      required_error: `${fieldName} is required`,
-    }),
-  ]).transform((isoString) => {
-    const date = new Date(isoString)
-    // Additional check to ensure the parsed date is valid
-    if (isNaN(date.getTime())) {
-      throw new Error('Invalid date')
-    }
-    return date
-  })
-}
+export const Schema = Zod.union([
+  Zod.string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/, `Invalid Date. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.sssZ`),
+  Zod.date(),
+]).transform((isoString) => {
+  const date = new Date(isoString)
+  // Additional check to ensure the parsed date is valid
+  if (isNaN(date.getTime())) {
+    throw new Error('Invalid date')
+  }
+  return date
+})
 
 export const isDate = _isDate
 

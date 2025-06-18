@@ -91,13 +91,13 @@ export const from = (throwable: Throwable): ErrorEvent => {
 }
 
 export function withPropagation<ReturnType>(runnable: () => ReturnType, attributes: LazyValue<Dictionary<unknown>>): ReturnType
-export function withPropagation<ReturnType>(resolver: () => Promise<ReturnType>, attributes: LazyValue<Dictionary<unknown>>): Promise<ReturnType>
+export function withPropagation<ReturnType>(runnable: () => Promise<ReturnType>, attributes: LazyValue<Dictionary<unknown>>): Promise<ReturnType>
 export function withPropagation<ReturnType>(
-  resolver: () => ReturnType | Promise<ReturnType>,
+  runnable: () => ReturnType | Promise<ReturnType>,
   attributes: LazyValue<Dictionary<unknown>>
 ): ReturnType | Promise<ReturnType> {
   try {
-    let result = resolver()
+    let result = runnable()
     if (Promises.isPromise(result)) {
       return result.then((it) => it).catch((it) => propagate(it, evaluate(attributes)))
     } else {

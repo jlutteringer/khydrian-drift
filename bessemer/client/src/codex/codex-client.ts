@@ -1,7 +1,8 @@
 import { ContentData, ContentDataSchema, ContentKey, ContentSector, ContentType } from '@bessemer/cornerstone/content'
-import { Urls, Zod } from '@bessemer/cornerstone'
+import { Urls } from '@bessemer/cornerstone'
 import { CodexClientContext, FetchContentOptions } from '@bessemer/client/codex/types'
 import { isErrorFromPath, makeApi, Zodios } from '@zodios/core'
+import Zod from 'zod'
 
 const CodexApi = makeApi([
   {

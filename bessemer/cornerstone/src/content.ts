@@ -1,10 +1,10 @@
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
-import { Arrays, Objects, References, Tags, Ulids, Zod } from '@bessemer/cornerstone'
+import { Arrays, Objects, References, Tags, Ulids } from '@bessemer/cornerstone'
 import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 import { Tag } from '@bessemer/cornerstone/tag'
-import { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod'
 
 export type ContentSector = NominalType<string, 'ContentSector'>
 export const ContentSectorSchema: ZodType<ContentSector> = Zod.string()
@@ -96,7 +96,7 @@ export const staticData = <Type extends ContentType = ContentType, Data = Conten
   options?: { tags?: Array<Tag>; sector?: ContentSector }
 ): StaticContentData<Type, Data> => {
   return {
-    reference: References.reference(Ulids.generateString(), 'Content'),
+    reference: References.reference(Ulids.generate(), 'Content'),
     key,
     type,
     data,

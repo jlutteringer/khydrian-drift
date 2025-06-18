@@ -1,4 +1,10 @@
+import Zod, { ZodType } from 'zod'
+
 export type Entry<Value, Key = string> = [Key, Value]
+
+export const schema = <Value, Key = string>(value: ZodType<Value>, key?: ZodType<Key>): ZodType<Entry<Value, Key>> => {
+  return Zod.tuple([key ?? Zod.string(), value]) as ZodType<Entry<Value, Key>>
+}
 
 export const of = <Value, Key = string>(key: Key, value: Value): Entry<Value, Key> => {
   return [key, value]

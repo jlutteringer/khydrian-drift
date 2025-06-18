@@ -4,12 +4,12 @@ import { Codex } from '@bessemer/core'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { RscRuntimes } from '@bessemer/react'
 import { FetchContentOptions } from '@bessemer/core/codex'
-import { AsyncValue } from '@bessemer/cornerstone/async'
 import { useAsync } from '@bessemer/react/hook/use-async'
 import { BessemerNext } from '@bessemer/framework-next'
-import { Async, Objects } from '@bessemer/cornerstone'
+import { AsyncValues, Objects } from '@bessemer/cornerstone'
 import { CodexClient } from '@bessemer/client'
 import { useBessemerClientContext } from '@bessemer/framework-next/hooks/use-client-context'
+import { AsyncValue } from '@bessemer/cornerstone/async-value'
 
 // JOHN lots of type coercion in here...
 export const useFetchContent = <Type extends ContentType>(
@@ -55,7 +55,7 @@ export const useFetchContent = <Type extends ContentType>(
     },
   })
 
-  const targetContentResult = Async.map(contentSectorResult, (it) => it.find((it) => it.key === key) ?? null)
+  const targetContentResult = AsyncValues.map(contentSectorResult, (it) => it.find((it) => it.key === key) ?? null)
 
   const useSector = Objects.isPresent(sector) && (targetContentResult.isLoading || Objects.isPresent(targetContentResult.data))
 

@@ -20,7 +20,7 @@ export enum RoundingMode {
   HalfEven = 'HalfEven',
 }
 
-export const round = (value: number, scale: number, roundingMode: RoundingMode): number => {
+export const round = (value: number, scale: number, roundingMode: RoundingMode = RoundingMode.Nearest): number => {
   switch (roundingMode) {
     case RoundingMode.Nearest:
       return roundNearest(value, scale)

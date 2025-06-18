@@ -65,10 +65,10 @@ test('Durations.OneDay', () => {
 
 test('Durations.DurationSchema', () => {
   // Should accept valid number
-  expect(Durations.DurationSchema.parse(1234)).toBe(1234)
+  expect(Durations.Schema.parse(1234)).toBe(1234)
 
   // Should reject invalid values
-  expect(() => Durations.DurationSchema.parse('5000')).toThrow()
-  expect(() => Durations.DurationSchema.parse(null)).toThrow()
-  expect(() => Durations.DurationSchema.parse(undefined)).toThrow()
+  expect(() => Durations.Schema.parse('5000')).toThrow()
+  expect(() => Durations.Schema.parse(null)).toThrow()
+  expect(() => Durations.Schema.parse(undefined)).toThrow()
 })
