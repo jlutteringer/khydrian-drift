@@ -1,32 +1,26 @@
 import Zod, { ZodType } from 'zod'
 import { greatestCommonFactor } from '@bessemer/cornerstone/math'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 
-export type AspectRatio = NominalType<string, 'AspectRatio'>
+export type AspectRatio = TaggedType<string, 'AspectRatio'>
 
-export const buildSchema = (fieldName: string = 'Aspect Ratio'): ZodType<AspectRatio> => {
-  return Zod.string({
-    required_error: `${fieldName} is required`,
-  })
-    .trim()
-    .regex(/^[1-9]\d*:[1-9]\d*$/, `${fieldName} must be in the format 'width:height' (e.g., '16:9', '4:3')`)
-}
-
-export const AspectRatioSchema = buildSchema()
+export const Schema: ZodType<AspectRatio> = Zod.string()
+  .trim()
+  .regex(/^[1-9]\d*:[1-9]\d*$/, `Aspect Ratio must be in the format 'width:height' (e.g., '16:9', '4:3')`) as any
 
 export const of = (aspectRatio: string): AspectRatio => {
-  return aspectRatio
+  return aspectRatio as AspectRatio
 }
 
 export const fromString = (aspectRatio: string): AspectRatio => {
-  return AspectRatioSchema.parse(aspectRatio)
+  return Schema.parse(aspectRatio)
 }
 
 export const fromDimensions = (width: number, height: number): AspectRatio => {
   const factor = greatestCommonFactor(width, height)
   const ratioWidth = width / factor
   const ratioHeight = height / factor
-  return `${ratioWidth}:${ratioHeight}`
+  return of(`${ratioWidth}:${ratioHeight}`)
 }
 
 export const numericValue = (aspectRatio: AspectRatio): number => {

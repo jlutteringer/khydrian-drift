@@ -1,7 +1,7 @@
 import Zod, { ZodType } from 'zod'
 import { Objects } from '@bessemer/cornerstone/index'
 
-export const schema = <T extends ZodType>(type: T) => {
+export const schema = <T>(type: ZodType<T>) => {
   return Zod.object({
     isSuccess: Zod.boolean(),
     isError: Zod.boolean(),

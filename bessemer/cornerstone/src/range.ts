@@ -5,8 +5,8 @@ import { TaggedType } from '@bessemer/cornerstone/types'
 export type Bounds<T> = TaggedType<[T | null, T | null], 'Bounds'>
 export type BoundsInput<T> = [lower: T | null, upper?: T | null] | Bounds<T>
 
-export const schema = <T extends ZodType>(type: T) => {
-  return Zod.tuple([type.nullable(), type.nullable()])
+export const schema = <T>(type: ZodType<T>): ZodType<Bounds<T>> => {
+  return Zod.tuple([type.nullable(), type.nullable()]) as any
 }
 
 export type NumericBounds<T> = Bounds<number>
