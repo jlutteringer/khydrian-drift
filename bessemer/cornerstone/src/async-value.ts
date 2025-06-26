@@ -1,16 +1,6 @@
 import Zod, { ZodType } from 'zod'
 import { Objects } from '@bessemer/cornerstone/index'
 
-export const schema = <T>(type: ZodType<T>) => {
-  return Zod.object({
-    isSuccess: Zod.boolean(),
-    isError: Zod.boolean(),
-    isLoading: Zod.boolean(),
-    isFetching: Zod.boolean(),
-    data: Zod.union([type, Zod.unknown()]),
-  })
-}
-
 export type PendingValue = {
   isSuccess: false
   isError: false
@@ -60,6 +50,16 @@ export type SettledValue<T> = {
 }
 
 export type AsyncValue<T> = PendingValue | LoadingValue | ErrorValue | FetchingValueSuccess<T> | FetchingValueError | SettledValue<T>
+
+export const schema = <T>(_: ZodType<T>): ZodType<AsyncValue<T>> => {
+  return Zod.object({
+    isSuccess: Zod.boolean(),
+    isError: Zod.boolean(),
+    isLoading: Zod.boolean(),
+    isFetching: Zod.boolean(),
+    data: Zod.unknown(),
+  }) as any
+}
 
 export const isSettled = <T>(value: AsyncValue<T>): value is SettledValue<T> => {
   return value.isSuccess && !value.isError && !value.isLoading && !value.isFetching
