@@ -9,4 +9,6 @@ test('TODO', () => {
     Expressions.lessThan(NumericExpressions.sum([Expressions.variable('VitalityPoints'), 10]), 15),
     StringExpressions.substring('one', 'two'),
   ])
+
+  Expressions.equals([5, null])
 })

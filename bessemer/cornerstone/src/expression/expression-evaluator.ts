@@ -1,13 +1,13 @@
 import { Expression, ExpressionContext, ExpressionDefinition, ExpressionReference } from '@bessemer/cornerstone/expression'
 import { Assertions } from '@bessemer/cornerstone'
-import { isValue } from '@bessemer/cornerstone/expression/internal'
+import { isRawValue } from '@bessemer/cornerstone/expression/internal'
 
 // JOHN need to add tests...
 export class ExpressionEvaluator {
   constructor(private readonly expressionDefinitions: Array<ExpressionDefinition<unknown, Array<any>, Expression<any>>>) {}
 
   evaluate<T>(expression: Expression<T>, context: ExpressionContext): T {
-    if (isValue(expression)) {
+    if (isRawValue(expression)) {
       return expression
     }
 

@@ -5,9 +5,13 @@ import { BasicType } from '@bessemer/cornerstone/types'
 // JOHN it is probably worth revisiting this in the context of using this library code more frequently... in particular
 // all of these things have similar properties ("primitives", sortable, value equality, etc.) but this method of implementation
 // forces them all to be converted to strings or numbers first which is an expensive operation.
-export type Signable = BasicType | { id: string } | { reference: Reference<string> }
+export type Signable = BasicType | null | { id: string } | { reference: Reference<string> }
 
-export const sign = (value: Signable): string | number => {
+export const sign = (value: Signable): string | number | null => {
+  if (value === null) {
+    return null
+  }
+
   if (Objects.isObject(value)) {
     if (References.isReferencable(value)) {
       return value.reference.id
@@ -30,6 +34,6 @@ export const sign = (value: Signable): string | number => {
   return value
 }
 
-export const signAll = (values: Array<Signable>): Array<string | number> => {
+export const signAll = (values: Array<Signable>): Array<string | number | null> => {
   return values.map(sign)
 }

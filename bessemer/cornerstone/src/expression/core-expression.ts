@@ -1,8 +1,9 @@
-import { defineExpression } from '@bessemer/cornerstone/expression/internal'
+import { defineExpression, isRawValue, isType } from '@bessemer/cornerstone/expression/internal'
 import { Expression } from '@bessemer/cornerstone/expression'
 import { BasicType } from '@bessemer/cornerstone/types'
 import { Arrays, Assertions, Objects, Signatures } from '@bessemer/cornerstone'
 import { Signable } from '@bessemer/cornerstone/signature'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
 
 export const ValueExpression = defineExpression({
   expressionKey: 'Value',
@@ -13,6 +14,20 @@ export const ValueExpression = defineExpression({
     return value
   },
 })
+
+export const isValue = <T>(expression: Expression<T>): boolean => {
+  return isRawValue(expression) || isType(expression, ValueExpression)
+}
+
+export const getValue = <T>(expression: Expression<T>): Result<T> => {
+  if (isType(expression, ValueExpression)) {
+    return success(expression.value as T)
+  } else if (isRawValue(expression)) {
+    return success(expression)
+  } else {
+    return failure()
+  }
+}
 
 export const VariableExpression = defineExpression({
   expressionKey: 'Variable',
