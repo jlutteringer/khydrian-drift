@@ -6,8 +6,9 @@ import { BasicType } from '@bessemer/cornerstone/types'
 // all of these things have similar properties ("primitives", sortable, value equality, etc.) but this method of implementation
 // forces them all to be converted to strings or numbers first which is an expensive operation.
 export type Signable = BasicType | null | { id: string } | { reference: Reference<string> }
+export type Signature = string | number | null
 
-export const sign = (value: Signable): string | number | null => {
+export const sign = (value: Signable): Signature => {
   if (value === null) {
     return null
   }
@@ -34,6 +35,6 @@ export const sign = (value: Signable): string | number | null => {
   return value
 }
 
-export const signAll = (values: Array<Signable>): Array<string | number | null> => {
+export const signAll = (values: Array<Signable>): Array<Signature> => {
   return values.map(sign)
 }

@@ -104,19 +104,13 @@ test('MonetaryAmounts.divide', () => {
 })
 
 test('MonetaryAmounts.sumAll - non-empty array', () => {
-  const amounts = [MonetaryAmounts.of(100, Currencies.USD), MonetaryAmounts.of(50, Currencies.USD), MonetaryAmounts.of(25, Currencies.USD)]
-
+  const amounts = [MonetaryAmounts.of(100, Currencies.USD), MonetaryAmounts.of(50, Currencies.USD), MonetaryAmounts.of(25, Currencies.USD)] as const
   expect(MonetaryAmounts.sumAll(amounts)).toEqual({ amount: 175, currency: Currencies.USD })
 })
 
 test('MonetaryAmounts.sumAll - single item array', () => {
-  const amounts = [MonetaryAmounts.of(100, Currencies.USD)]
-
+  const amounts = [MonetaryAmounts.of(100, Currencies.USD)] as const
   expect(MonetaryAmounts.sumAll(amounts)).toEqual({ amount: 100, currency: Currencies.USD })
-})
-
-test('MonetaryAmounts.sumAll - empty array', () => {
-  expect(MonetaryAmounts.sumAll([])).toBe(null)
 })
 
 test('MonetaryAmounts.negate', () => {

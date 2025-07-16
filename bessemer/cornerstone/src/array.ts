@@ -1,19 +1,11 @@
-import {
-  differenceBy as _differenceBy,
-  differenceWith as _differenceWith,
-  flatten as _flatten,
-  groupBy as _groupBy,
-  isEmpty as _isEmpty,
-  range as _range,
-  uniqBy,
-  uniqWith,
-} from 'lodash-es'
+import { differenceBy as _differenceBy, differenceWith as _differenceWith, groupBy as _groupBy, range as _range, uniqBy } from 'lodash-es'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
-import { Signable } from '@bessemer/cornerstone/signature'
+import { Signable, Signature } from '@bessemer/cornerstone/signature'
 import { Assertions, Comparators, Eithers, Signatures } from '@bessemer/cornerstone'
 import { Either } from '@bessemer/cornerstone/either'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { Arrayable } from 'type-fest'
+import { isNil } from '@bessemer/cornerstone/object'
 
 export const equalWith = <T>(first: Array<T>, second: Array<T>, equalitor: Equalitor<T>): boolean => {
   if (first.length !== second.length) {
@@ -74,7 +66,16 @@ export const containsAllBy = <T>(first: Array<T>, second: Array<T>, mapper: (ele
 export const containsAll = <T extends Signable>(first: Array<T>, second: Array<T>): boolean => isEmpty(difference(second, first))
 
 export const dedupeWith = <T>(array: Array<T>, equalitor: Equalitor<T>): Array<T> => {
-  return uniqWith(array, equalitor)
+  const result: Array<T> = []
+
+  for (const element of array) {
+    const isDuplicate = result.some((existing) => equalitor(existing, element))
+    if (!isDuplicate) {
+      result.push(element)
+    }
+  }
+
+  return result
 }
 
 export const dedupeBy = <T>(array: Array<T>, mapper: (element: T) => Signable): Array<T> => {
@@ -89,20 +90,22 @@ export const sortWith = <T>(array: Array<T>, comparator: Comparator<T>): Array<T
   return [...array].sort(comparator)
 }
 
-export const sortBy = <T>(array: Array<T>, mapper: (element: T) => Signable): Array<T> => {
-  return sortWith(
-    array,
-    Comparators.compareBy((it) => Signatures.sign(mapper(it)), Comparators.natural())
-  )
+export function sortBy<T>(array: Array<T>, mapper: (element: T) => Signable): Array<T>
+export function sortBy<T, N>(array: Array<T>, mapper: (element: T) => N, comparator: Comparator<N>): Array<T>
+export function sortBy<T, N>(array: Array<T>, mapper: (element: T) => N, comparator?: Comparator<N>): Array<T> {
+  if (isNil(comparator)) {
+    return sortWith(
+      array,
+      Comparators.compareBy((it) => Signatures.sign(mapper(it as any) as Signature), Comparators.natural())
+    )
+  } else {
+    return sortWith(array, Comparators.compareBy(mapper, comparator))
+  }
 }
 
 export const sort = <T extends Signable>(array: Array<T>): Array<T> => sortBy(array, Signatures.sign)
 
-export const concatenate = <T>(array: Array<T> | null | undefined, ...values: Array<T | T[]>): Array<T> => {
-  if (array == null) {
-    return []
-  }
-
+export const concatenate = <T>(array: Array<T>, ...values: Array<T | T[]>): Array<T> => {
   const result = [...array]
 
   if (values.length === 0) {
@@ -120,8 +123,8 @@ export const concatenate = <T>(array: Array<T> | null | undefined, ...values: Ar
   return result
 }
 
-export const first = <T>(array: Array<T> | null | undefined): T | undefined => {
-  return array != null && array.length ? array[0] : undefined
+export const first = <T>(array: Array<T>): T | undefined => {
+  return array.length > 0 ? array[0] : undefined
 }
 
 export const only = <T>(array: Array<T>): T => {
@@ -129,13 +132,17 @@ export const only = <T>(array: Array<T>): T => {
   return first(array)!
 }
 
-export const last = <T>(array: Array<T> | null | undefined): T | undefined => {
-  return array != null && array.length ? array[array.length - 1] : undefined
+export const last = <T>(array: Array<T>): T | undefined => {
+  return array.length > 0 ? array[array.length - 1] : undefined
 }
 
-export const isEmpty = _isEmpty
+export const isEmpty = <T>(array: Array<T>): boolean => {
+  return array.length === 0
+}
+
 // TODO make a better range function
 export const range = _range
+
 // TODO should this live in collections?
 export const groupBy = _groupBy
 
@@ -143,11 +150,7 @@ export const rest = <T>(array: Array<T>, elementsToSkip: number = 1): Array<T> =
   return array.slice(elementsToSkip)
 }
 
-export const filterInPlace = <T>(array: Array<T> | null | undefined, predicate: (value: T, index: number, array: Array<T>) => boolean): void => {
-  if (array == null || !array.length) {
-    return
-  }
-
+export const filterInPlace = <T>(array: Array<T>, predicate: (value: T, index: number, array: Array<T>) => boolean): void => {
   for (let i = array.length - 1; i >= 0; i--) {
     const value = array[i]
     if (value !== undefined && !predicate(value, i, array)) {
@@ -172,4 +175,6 @@ export const toArray = <T>(array: Arrayable<T>): Array<T> => {
   return [array]
 }
 
-export const flatten = _flatten
+export const flatten = <T>(array: Array<Array<T>>): Array<T> => {
+  return array.flatMap((it) => it)
+}

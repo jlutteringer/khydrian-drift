@@ -44,15 +44,14 @@ export const natural = (): Comparator<BasicType | null> => {
       } else if (Dates.isDate(first) && Dates.isDate(second)) {
         return first.getTime() - second.getTime()
       } else if (Objects.isBoolean(first) && Objects.isBoolean(second)) {
-        if(first !== second) {
+        if (first !== second) {
           return second ? 1 : 0
-        }
-        else {
+        } else {
           return 0
         }
-      } {
-        return 0
       }
+
+      throw new Error(`Illegal natural comparison on values: [${first}, ${second}]`)
     },
   ])
 }

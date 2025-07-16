@@ -167,7 +167,7 @@ export const acquireLock = async (
   context: GlobalContextType<BessemerApplicationContext>,
   options: AdvisoryLockOptions = {}
 ): AsyncResult<AdvisoryLock> => {
-  Assertions.assertFalse(Arrays.isEmpty(resourceKeys), () => `Illegal call to acquireLock with empty resourceKeys`)
+  Assertions.assertFalse(Arrays.isEmpty(Arrays.toArray(resourceKeys)), () => `Illegal call to acquireLock with empty resourceKeys`)
 
   const sortedKeys = Arrays.sort(Arrays.toArray(resourceKeys))
   const props = Objects.deepMerge(DefaultAdvisoryLockProps, options)

@@ -1,7 +1,7 @@
 import { Arrays, Objects, Strings, Uris } from '@bessemer/cornerstone'
 import { Dictionary } from '@bessemer/cornerstone/types'
 import { Uri, UriBuilder, UriComponent, UriLocation, UriString } from '@bessemer/cornerstone/uri'
-
+// JOHN UPDATING URLS NEEDS WORK
 export const encode = Uris.encode
 
 export const decode = Uris.decode
@@ -112,6 +112,7 @@ export type UrlBuilder = UriBuilder & {
 
 export const build = (builder: UrlBuilder): Url => {
   const uri = Uris.build(builder)
+
   if (Objects.isPresent(builder.location?.parameters)) {
     uri.location.query = formatQueryParameters(builder.location.parameters)
   }

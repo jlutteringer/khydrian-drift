@@ -3,16 +3,27 @@ import Zod, { ZodType } from 'zod'
 import { assertTrue } from '@bessemer/cornerstone/assertion'
 import { isNil } from '@bessemer/cornerstone/object'
 import { roundHalfEven } from '@bessemer/cornerstone/math'
-import { isEmpty } from '@bessemer/cornerstone/array'
+import { Comparators } from '@bessemer/cornerstone/index'
+import { Comparator as IComparator } from '@bessemer/cornerstone/comparator'
+import { Equalitor as IEqualitor } from '@bessemer/cornerstone/equalitor'
 
 export type MonetaryAmount = {
   amount: number
   currency: CurrencyCode
 }
+
 export const Schema: ZodType<MonetaryAmount> = Zod.object({
   amount: Zod.number().int(),
   currency: CurrencyCodeSchema,
 })
+
+export const Equalitor: IEqualitor<MonetaryAmount> = (first: MonetaryAmount, second: MonetaryAmount): boolean => {
+  return equal(first, second)
+}
+
+export const Comparator: IComparator<MonetaryAmount> = (first: MonetaryAmount, second: MonetaryAmount): number => {
+  return apply(first, second, Comparators.natural())
+}
 
 export const of = (amount: number, currency: CurrencyCode): MonetaryAmount => {
   assertTrue(Number.isInteger(amount))
@@ -63,14 +74,11 @@ export const divide = (money: MonetaryAmount, value: number): MonetaryAmount => 
   return of(roundHalfEven(money.amount / value, 0), money.currency)
 }
 
-export function sumAll(monetaryAmounts: [MonetaryAmount, ...MonetaryAmount[]]): MonetaryAmount
-export function sumAll(monetaryAmounts: Array<MonetaryAmount>): MonetaryAmount | null
-export function sumAll(monetaryAmounts: Array<MonetaryAmount>): MonetaryAmount | null {
-  if (isEmpty(monetaryAmounts)) {
-    return null
-  }
-
-  return monetaryAmounts.reduce<MonetaryAmount | null>((first, second) => sum(second, first), null)
+export function sumAll(monetaryAmounts: readonly [MonetaryAmount, ...MonetaryAmount[]]): MonetaryAmount
+export function sumAll(monetaryAmounts: readonly MonetaryAmount[], currency: CurrencyCode): MonetaryAmount
+export function sumAll(monetaryAmounts: readonly MonetaryAmount[], currency?: CurrencyCode): MonetaryAmount {
+  const resolvedCurrency = currency ?? monetaryAmounts[0]!.currency
+  return monetaryAmounts.reduce<MonetaryAmount>((first, second) => sum(second, first), zero(resolvedCurrency))
 }
 
 export const negate = (monetaryAmount: MonetaryAmount): MonetaryAmount => {
@@ -88,6 +96,18 @@ export const isZero = (monetaryAmount: MonetaryAmount): boolean => {
 
 export const greaterThan = (first: MonetaryAmount, second: MonetaryAmount): boolean => {
   return apply(first, second, (first, second) => first > second)
+}
+
+export const lessThan = (first: MonetaryAmount, second: MonetaryAmount): boolean => {
+  return apply(first, second, (first, second) => first < second)
+}
+
+export const greaterThanOrEqual = (first: MonetaryAmount, second: MonetaryAmount): boolean => {
+  return apply(first, second, (first, second) => first >= second)
+}
+
+export const lessThanOrEqual = (first: MonetaryAmount, second: MonetaryAmount): boolean => {
+  return apply(first, second, (first, second) => first <= second)
 }
 
 export type MonetaryAmountFormatOptions = {

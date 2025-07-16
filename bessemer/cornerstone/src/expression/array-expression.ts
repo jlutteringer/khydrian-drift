@@ -9,7 +9,7 @@ export const ConcatenateExpression = defineExpression({
   },
   resolver: ({ operands }, evaluate) => {
     const values = evaluate(operands).map((it) => evaluate(it))
-    return Arrays.concatenate(values[0], ...Arrays.rest(values))
+    return Arrays.concatenate(values[0] ?? [], ...Arrays.rest(values))
   },
 })
 
