@@ -3,9 +3,8 @@ import Zod, { ZodType } from 'zod'
 import { assertTrue } from '@bessemer/cornerstone/assertion'
 import { isNil } from '@bessemer/cornerstone/object'
 import { roundHalfEven } from '@bessemer/cornerstone/math'
-import { Comparators } from '@bessemer/cornerstone/index'
+import { Comparators, Equalitors } from '@bessemer/cornerstone/index'
 import { Comparator as IComparator } from '@bessemer/cornerstone/comparator'
-import { Equalitor as IEqualitor } from '@bessemer/cornerstone/equalitor'
 
 export type MonetaryAmount = {
   amount: number
@@ -17,13 +16,11 @@ export const Schema: ZodType<MonetaryAmount> = Zod.object({
   currency: CurrencyCodeSchema,
 })
 
-export const Equalitor: IEqualitor<MonetaryAmount> = (first: MonetaryAmount, second: MonetaryAmount): boolean => {
-  return equal(first, second)
-}
-
 export const Comparator: IComparator<MonetaryAmount> = (first: MonetaryAmount, second: MonetaryAmount): number => {
   return apply(first, second, Comparators.natural())
 }
+
+export const Equalitor = Equalitors.fromComparator(Comparator)
 
 export const of = (amount: number, currency: CurrencyCode): MonetaryAmount => {
   assertTrue(Number.isInteger(amount))

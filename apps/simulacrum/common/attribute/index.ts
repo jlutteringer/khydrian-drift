@@ -148,7 +148,7 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
     additionalInactiveModifiers = Arrays.differenceWith(
       activeModifiers,
       winningModifiers.map((it) => it.modifier),
-      Equalitors.reference()
+      Equalitors.natural()
     )
   }
 

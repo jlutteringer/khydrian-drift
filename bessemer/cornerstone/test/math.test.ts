@@ -12,17 +12,6 @@ test('Maths.isNumber', () => {
   expect(Maths.isNumber(NaN)).toBe(false)
 })
 
-test('Maths.isPositive', () => {
-  expect(Maths.isPositive(1)).toBe(true)
-  expect(Maths.isPositive(100)).toBe(true)
-
-  expect(Maths.isPositive(0)).toBe(false)
-  expect(Maths.isPositive(-1)).toBe(false)
-
-  expect(Maths.isPositive('1')).toBe(false)
-  expect(Maths.isPositive(undefined)).toBe(false)
-})
-
 test('Maths.isEven', () => {
   expect(Maths.isEven(2)).toBe(true)
   expect(Maths.isEven(0)).toBe(true)

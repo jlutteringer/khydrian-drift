@@ -1,17 +1,14 @@
-import { isNumber as _isNumber } from 'lodash-es'
-
 export const isNumber = (value?: unknown): value is number => {
-  if (isNaN(value as any)) {
+  if (value === null || value === undefined) {
     return false
   }
-  return _isNumber(value)
-}
 
-export const isPositive = (value?: unknown): value is number => {
-  return isNumber(value) && value > 0
+  return typeof value === 'number' && !isNaN(value)
 }
 
 export const isEven = (d: number) => d % 2 === 0
+
+export const isOdd = (d: number) => d % 2 !== 0
 
 export enum RoundingMode {
   Nearest = 'Nearest',

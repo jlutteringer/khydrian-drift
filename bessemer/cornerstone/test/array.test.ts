@@ -1,5 +1,6 @@
-import { Arrays, Comparators } from '@bessemer/cornerstone'
+import { Arrays, Comparators, Equalitors } from '@bessemer/cornerstone'
 import { Dictionary } from '@bessemer/cornerstone/types'
+import { Equalitor } from '@bessemer/cornerstone/equalitor'
 
 test('Arrays.first', () => {
   // Should return the first element when array has items
@@ -297,4 +298,176 @@ test('Arrays.sort', () => {
 
   // Should handle string edge cases
   expect(Arrays.sort(['', 'a', 'A', '1', '10', '2'])).toEqual(['', '1', '10', '2', 'a', 'A'])
+})
+
+test('Arrays.equalWith', () => {
+  // Should return true for identical arrays
+  expect(Arrays.equalWith([1, 2, 3], [1, 2, 3], Equalitors.natural())).toBe(true)
+
+  // Should return false for arrays with different lengths
+  expect(Arrays.equalWith([1, 2, 3], [1, 2, 3, 4], Equalitors.natural())).toBe(false)
+
+  // Should return false for arrays with same values but different order
+  expect(Arrays.equalWith([1, 2, 3], [3, 2, 1], Equalitors.natural())).toBe(false)
+
+  // Should work with custom equalitor for objects
+  const users = [
+    { name: 'Alice', id: 1 },
+    { name: 'Bob', id: 2 },
+  ]
+  const sameUsers = [
+    { name: 'Alice', id: 1 },
+    { name: 'Bob', id: 2 },
+  ]
+  const differentUsers = [
+    { name: 'Alice', id: 1 },
+    { name: 'Charlie', id: 3 },
+  ]
+
+  const idEqualitor: Equalitor<{ id: number }> = (a, b) => a.id === b.id
+  expect(Arrays.equalWith(users, sameUsers, idEqualitor)).toBe(true)
+  expect(Arrays.equalWith(users, differentUsers, idEqualitor)).toBe(false)
+
+  // Should handle empty arrays
+  expect(Arrays.equalWith([], [], Equalitors.natural())).toBe(true)
+})
+
+test('Arrays.equalBy', () => {
+  // Test objects
+  const users = [
+    { name: 'Alice', id: 1, active: true },
+    { name: 'Bob', id: 2, active: false },
+  ]
+  const sameIdUsers = [
+    { name: 'Alice2', id: 1, active: true },
+    { name: 'Bob2', id: 2, active: true },
+  ]
+  const differentIdUsers = [
+    { name: 'Alice', id: 1, active: true },
+    { name: 'Charlie', id: 3, active: false },
+  ]
+
+  // Should compare by mapped property with default equality
+  expect(Arrays.equalBy(users, sameIdUsers, (user) => user.id)).toBe(true)
+  expect(Arrays.equalBy(users, differentIdUsers, (user) => user.id)).toBe(false)
+
+  // Should compare using mapper and custom equalitor
+  const customEqualitor: Equalitor<boolean> = (a, b) => true // Always equal
+  expect(Arrays.equalBy(users, differentIdUsers, (user) => user.active, customEqualitor)).toBe(true)
+
+  // Should handle arrays of different lengths
+  const longerArray = [...users, { name: 'Dan', id: 4, active: true }]
+  expect(Arrays.equalBy(users, longerArray, (user) => user.id)).toBe(false)
+
+  // Should work with primitive arrays
+  expect(Arrays.equalBy([1, 2, 3], [1, 2, 3], (n) => n.toString())).toBe(true)
+  expect(Arrays.equalBy([1, 2, 3], [1, 2, 4], (n) => n.toString())).toBe(false)
+})
+
+test('Arrays.equal', () => {
+  // Should work with primitive values
+  expect(Arrays.equal([1, 2, 3], [1, 2, 3])).toBe(true)
+  expect(Arrays.equal([1, 2, 3], [1, 2, 4])).toBe(false)
+  expect(Arrays.equal(['a', 'b'], ['a', 'b'])).toBe(true)
+  expect(Arrays.equal(['a', 'b'], ['a', 'c'])).toBe(false)
+
+  // Should work with objects that have an id property
+  const objA = { id: '1', value: 'first' }
+  const objB = { id: '2', value: 'second' }
+  const objC = { id: '1', value: 'different value but same id' }
+
+  expect(Arrays.equal([objA, objB], [objA, objB])).toBe(true)
+  expect(Arrays.equal([objA, objB], [objA, objC])).toBe(false)
+  expect(Arrays.equal([objA, objB], [objC, objB])).toBe(true) // objA and objC have same id
+
+  // Should handle empty arrays
+  expect(Arrays.equal([], [])).toBe(true)
+})
+
+test('Arrays.differenceWith', () => {
+  // Should return elements from first array not in second array
+  expect(Arrays.differenceWith([1, 2, 3, 4, 5], [2, 3], Equalitors.natural())).toEqual([1, 4, 5])
+
+  // Should return empty array when arrays are identical
+  expect(Arrays.differenceWith([1, 2, 3], [1, 2, 3], Equalitors.natural())).toEqual([])
+
+  // Should handle custom equalitor for objects
+  const users = [
+    { id: 1, name: 'Alice' },
+    { id: 2, name: 'Bob' },
+    { id: 3, name: 'Charlie' },
+    { id: 4, name: 'Dave' },
+  ]
+
+  const usersToRemove = [
+    { id: 2, name: 'Different Name' }, // Same id as Bob
+    { id: 3, name: 'Charlie' },
+  ]
+
+  const idEqualitor: Equalitor<{ id: number }> = (a, b) => a.id === b.id
+
+  expect(Arrays.differenceWith(users, usersToRemove, idEqualitor)).toEqual([
+    { id: 1, name: 'Alice' },
+    { id: 4, name: 'Dave' },
+  ])
+
+  // Should handle empty arrays
+  expect(Arrays.differenceWith([], [1, 2, 3], Equalitors.natural())).toEqual([])
+  expect(Arrays.differenceWith([1, 2, 3], [], Equalitors.natural())).toEqual([1, 2, 3])
+})
+
+test('Arrays.differenceBy', () => {
+  // Test data
+  const users = [
+    { id: 1, name: 'Alice', age: 30 },
+    { id: 2, name: 'Bob', age: 25 },
+    { id: 3, name: 'Charlie', age: 35 },
+    { id: 4, name: 'Dave', age: 40 },
+  ]
+
+  const usersToRemove = [
+    { id: 2, name: 'Different', age: 50 }, // Same id as Bob
+    { id: 3, name: 'Charlie', age: 35 }, // Same as Charlie
+  ]
+
+  // Should compare using mapper with default equality
+  expect(Arrays.differenceBy(users, usersToRemove, (user) => user.id)).toEqual([
+    { id: 1, name: 'Alice', age: 30 },
+    { id: 4, name: 'Dave', age: 40 },
+  ])
+
+  // Should handle primitive arrays with mapping
+  expect(Arrays.differenceBy([1, 2, 3, 4], ['2', '3'], (n) => n.toString())).toEqual([1, 4])
+
+  // Should handle empty arrays
+  expect(Arrays.differenceBy([], [1, 2, 3], (n) => n)).toEqual([])
+  expect(Arrays.differenceBy([1, 2, 3], [], (n) => n)).toEqual([1, 2, 3])
+})
+
+test('Arrays.difference', () => {
+  // Should work with primitive values
+  expect(Arrays.difference([1, 2, 3, 4, 5], [2, 3])).toEqual([1, 4, 5])
+  expect(Arrays.difference(['a', 'b', 'c', 'd'], ['b', 'c'])).toEqual(['a', 'd'])
+
+  // Should work with objects that have an id property
+  const users = [
+    { id: '1', name: 'Alice' },
+    { id: '2', name: 'Bob' },
+    { id: '3', name: 'Charlie' },
+    { id: '4', name: 'Dave' },
+  ]
+
+  const usersToRemove = [
+    { id: '2', name: 'Different name' }, // Same id as Bob
+    { id: '3', name: 'Charlie' }, // Same as Charlie
+  ]
+
+  expect(Arrays.difference(users, usersToRemove)).toEqual([
+    { id: '1', name: 'Alice' },
+    { id: '4', name: 'Dave' },
+  ])
+
+  // Should handle empty arrays
+  expect(Arrays.difference([], [1, 2, 3])).toEqual([])
+  expect(Arrays.difference([1, 2, 3], [])).toEqual([1, 2, 3])
 })

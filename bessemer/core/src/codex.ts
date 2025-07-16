@@ -202,7 +202,8 @@ export const fetchContentBySectors = async <Type extends ContentType>(
       await Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context).writeValues(namespace, entries)
     })
 
-    const entries: Array<Entry<Array<ContentData<Type>>>> = Object.entries(Arrays.groupBy(content, (it) => it.sector))
+    // JOHN this is wrong
+    const entries: Array<Entry<Array<ContentData<Type>>>> = Object.entries(Arrays.groupBy(content, (it) => it.sector ?? ''))
     return entries
   })
 

@@ -23,7 +23,8 @@ export const DefaultCombinability: Combinability = {
 }
 
 export const combinations = <T extends Combinable>(combinables: Array<T>): Array<Array<T>> => {
-  const classMap = Arrays.groupBy(combinables, (it) => it.combinability.class)
+  // JOHN this is wrong
+  const classMap = Arrays.groupBy(combinables, (it) => it.combinability.class ?? '')
 
   const classCombinations: Array<Array<Array<T>>> = Object.entries(classMap).map(([_, values]) => {
     const totalitarianCombinations = values.filter((it) => it.combinability.type === CombinabilityType.Totalitarian).map((it) => [it])
