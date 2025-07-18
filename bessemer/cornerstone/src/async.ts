@@ -1,5 +1,4 @@
-import { Duration } from '@bessemer/cornerstone/duration'
-import { Durations } from '@bessemer/cornerstone'
+import { Duration, toMilliseconds } from '@bessemer/cornerstone/duration'
 
 export const execute = <T>(runnable: () => Promise<T>): Promise<T> => {
   return new Promise(async (resolve, reject) => {
@@ -16,6 +15,6 @@ export const execute = <T>(runnable: () => Promise<T>): Promise<T> => {
 
 export const sleep = (duration: Duration): Promise<void> => {
   return new Promise((resolve) => {
-    setTimeout(resolve, Durations.toMilliseconds(duration))
+    setTimeout(resolve, toMilliseconds(duration))
   })
 }

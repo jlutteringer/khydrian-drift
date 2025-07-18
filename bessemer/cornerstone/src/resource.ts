@@ -1,6 +1,6 @@
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Strings } from '@bessemer/cornerstone'
 import Zod, { ZodType } from 'zod'
+import { removeStart } from '@bessemer/cornerstone/string'
 
 export type ResourceKey = string
 
@@ -19,7 +19,7 @@ export namespace ResourceKey {
   }
 
   export const stripNamespace = (namespace: ResourceNamespace, key: ResourceKey): ResourceKey => {
-    return Strings.removeStart(key, `${namespace}${ResourceNamespaceSeparator}`)
+    return removeStart(key, `${namespace}${ResourceNamespaceSeparator}`)
   }
 
   export const stripNamespaceAll = (namespace: ResourceNamespace, keys: Array<ResourceKey>): Array<ResourceKey> => {

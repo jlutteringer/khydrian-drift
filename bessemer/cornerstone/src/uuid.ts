@@ -1,6 +1,7 @@
-import { Objects, Strings } from '@bessemer/cornerstone'
 import { TaggedType } from '@bessemer/cornerstone/types'
 import Zod, { ZodType } from 'zod'
+import { isNil } from '@bessemer/cornerstone/object'
+import { padStart } from '@bessemer/cornerstone/string'
 
 export type Uuid = TaggedType<string, 'Uuid'>
 export const Schema: ZodType<Uuid> = Zod.string().uuid() as any
@@ -14,7 +15,7 @@ export const fromString = (value: string): Uuid => {
 }
 
 export const generate = (): Uuid => {
-  if (Objects.isNil(crypto.randomUUID)) {
+  if (isNil(crypto.randomUUID)) {
     return `${randomHex(8)}-${randomHex(4)}-${randomHex(4)}-${randomHex(4)}-${randomHex(12)}` as Uuid
   } else {
     return crypto.randomUUID() as Uuid
@@ -24,5 +25,5 @@ export const generate = (): Uuid => {
 const randomHex = (characters: number) => {
   // Generates a random number between 0x0..0 and 0xF..F for the target number of characters
   const randomNum = Math.floor(Math.random() * (16 ** characters - 1))
-  return Strings.padStart(randomNum.toString(16), characters, '0')
+  return padStart(randomNum.toString(16), characters, '0')
 }

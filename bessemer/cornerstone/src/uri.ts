@@ -1,6 +1,7 @@
-import { Arrays, Objects, Strings } from '@bessemer/cornerstone'
 import { NominalType } from '@bessemer/cornerstone/types'
-import { StringSplitResult } from '@bessemer/cornerstone/string'
+import { isEmpty, isString, removeStart, splitFirst, startsWith, StringSplitResult } from '@bessemer/cornerstone/string'
+import { isNil, isPresent } from '@bessemer/cornerstone/object'
+import { contains } from '@bessemer/cornerstone/array'
 
 export const encode = (uriComponent: UriComponent) => {
   return encodeURIComponent(uriComponent)
@@ -40,15 +41,15 @@ export interface Uri {
 
 const parseSchemePart = (url: UriComponent): [UriScheme | null, UriComponent] => {
   // Search for the colon or double slash
-  const schemeMatch = Strings.splitFirst(url, /(\/\/|:)/)
+  const schemeMatch = splitFirst(url, /(\/\/|:)/)
 
   // If we don't find either, or we hit the double slash before finding a colon, there is no scheme
-  if (Objects.isNil(schemeMatch.selection) || schemeMatch.separator === '//') {
+  if (isNil(schemeMatch.selection) || schemeMatch.separator === '//') {
     return [null, url]
   }
 
   // This means the string started with :, so no protocol. We'll go ahead and remove the : from consideration
-  if (Strings.isEmpty(schemeMatch.selection)) {
+  if (isEmpty(schemeMatch.selection)) {
     return [null, schemeMatch.rest]
   } else {
     return [schemeMatch.selection, schemeMatch.rest]
@@ -57,36 +58,36 @@ const parseSchemePart = (url: UriComponent): [UriScheme | null, UriComponent] =>
 
 const parseAuthenticationPart = (url: UriComponent): [UriAuthentication | null, UriComponent] => {
   let targetPart = url
-  const queryMatch = Strings.splitFirst(targetPart, '?')
-  const fragmentMatch = Strings.splitFirst(targetPart, '#')
-  if (Objects.isPresent(queryMatch.selection)) {
+  const queryMatch = splitFirst(targetPart, '?')
+  const fragmentMatch = splitFirst(targetPart, '#')
+  if (isPresent(queryMatch.selection)) {
     targetPart = queryMatch.selection
-  } else if (Objects.isPresent(fragmentMatch.selection)) {
+  } else if (isPresent(fragmentMatch.selection)) {
     targetPart = fragmentMatch.selection
   }
 
-  const { selection: authentication } = Strings.splitFirst(targetPart, '@')
+  const { selection: authentication } = splitFirst(targetPart, '@')
 
   // If there is no @, then we don't have an authentication
-  if (Objects.isNil(authentication)) {
+  if (isNil(authentication)) {
     return [null, url]
   }
 
-  const { rest } = Strings.splitFirst(url, '@')
+  const { rest } = splitFirst(url, '@')
 
-  return [parseAuthentication(Strings.removeStart(authentication, '//')), '//' + rest]
+  return [parseAuthentication(removeStart(authentication, '//')), '//' + rest]
 }
 
 const parseAuthentication = (authentication: UriComponent): UriAuthentication => {
-  const { selection: principal, rest: authenticationRest } = Strings.splitFirst(authentication, ':')
+  const { selection: principal, rest: authenticationRest } = splitFirst(authentication, ':')
 
   // If there isn't a colon, then there is no password but there is a username
-  if (Objects.isNil(principal)) {
+  if (isNil(principal)) {
     return { principal: authenticationRest, password: null }
   }
 
   // The authentication section started with a :, don't know what to make of this... password but no username?
-  if (Strings.isEmpty(principal)) {
+  if (isEmpty(principal)) {
     throw new Error(`Unable to parse Authentication: ${authentication}`)
   }
 
@@ -96,28 +97,28 @@ const parseAuthentication = (authentication: UriComponent): UriAuthentication =>
 
 const parseHostPart = (url: UriComponent): [UriHost | null, UriComponent] => {
   // Check if the host is starting with reserved characters, if so we should just bail on trying to parse
-  if (Strings.startsWith(url, '?') || Strings.startsWith(url, '#')) {
+  if (startsWith(url, '?') || startsWith(url, '#')) {
     return [null, url]
   }
 
-  let hostRequired = Strings.startsWith(url, '//')
+  let hostRequired = startsWith(url, '//')
   if (!hostRequired) {
     return [null, url]
   }
 
-  url = Strings.removeStart(url, '//')
+  url = removeStart(url, '//')
 
   // Lets grab everything to the left of the first / ? or #, this is the remainder of our authority (if any)
-  const urlMatch = Strings.splitFirst(url, /[\/?#]/)
+  const urlMatch = splitFirst(url, /[\/?#]/)
   let host = urlMatch.rest
   let rest = ''
 
-  if (Objects.isPresent(urlMatch.selection)) {
+  if (isPresent(urlMatch.selection)) {
     host = urlMatch.selection
     rest = urlMatch.separator + urlMatch.rest
   }
 
-  if (Strings.isEmpty(host)) {
+  if (isEmpty(host)) {
     return [null, rest]
   }
 
@@ -126,13 +127,13 @@ const parseHostPart = (url: UriComponent): [UriHost | null, UriComponent] => {
 
 const parseHost = (host: UriComponent): UriHost => {
   // Try to see if we have an ipv6 address like the form [2001:db8::7] and handle it
-  if (Strings.startsWith(host, '[')) {
-    const ipMatch = Strings.splitFirst(host, ']')
+  if (startsWith(host, '[')) {
+    const ipMatch = splitFirst(host, ']')
 
-    if (Objects.isPresent(ipMatch.selection)) {
-      const portMatch = Strings.splitFirst(ipMatch.rest, ':')
-      if (Objects.isPresent(portMatch.selection)) {
-        if (Strings.isEmpty(portMatch.selection)) {
+    if (isPresent(ipMatch.selection)) {
+      const portMatch = splitFirst(ipMatch.rest, ':')
+      if (isPresent(portMatch.selection)) {
+        if (isEmpty(portMatch.selection)) {
           return { value: ipMatch.selection + ']', port: Number(portMatch.rest) }
         }
       } else {
@@ -141,15 +142,15 @@ const parseHost = (host: UriComponent): UriHost => {
     }
   }
 
-  let hostMatch: StringSplitResult = Strings.splitFirst(host, ':')
+  let hostMatch: StringSplitResult = splitFirst(host, ':')
 
   // We have no :, which means no port, so treat the rest as the hostname
-  if (Objects.isNil(hostMatch.selection)) {
+  if (isNil(hostMatch.selection)) {
     return { value: hostMatch.rest, port: null }
   }
 
   // The host started with a :, this is odd
-  if (Strings.isEmpty(hostMatch.selection)) {
+  if (isEmpty(hostMatch.selection)) {
     throw new Error(`Unable to parse Host: ${host}`)
   }
 
@@ -163,14 +164,14 @@ const parseLocation = (url: UriComponent): UriLocation => {
   const location: UriLocation = { path: '', query: null, fragment: null }
 
   // Lets see if we have a fragment and parse it off the end
-  const fragmentMatch = Strings.splitFirst(url, '#')
-  if (Objects.isPresent(fragmentMatch.selection) && !Strings.isEmpty(fragmentMatch.rest)) {
+  const fragmentMatch = splitFirst(url, '#')
+  if (isPresent(fragmentMatch.selection) && !isEmpty(fragmentMatch.rest)) {
     location.fragment = fragmentMatch.rest
   }
 
   // Lets see if we have a query string and parse it off the remainder
-  const queryMatch = Strings.splitFirst(fragmentMatch.selection ?? fragmentMatch.rest, '?')
-  if (Objects.isPresent(queryMatch.selection) && !Strings.isEmpty(queryMatch.rest)) {
+  const queryMatch = splitFirst(fragmentMatch.selection ?? fragmentMatch.rest, '?')
+  if (isPresent(queryMatch.selection) && !isEmpty(queryMatch.rest)) {
     location.query = queryMatch.rest
   }
 
@@ -222,8 +223,8 @@ export const build = (builder: UriBuilder): Uri => {
   const scheme = builder.scheme ?? null
 
   let host: UriHost | null = null
-  if (Objects.isPresent(builder.host)) {
-    if (Strings.isString(builder.host)) {
+  if (isPresent(builder.host)) {
+    if (isString(builder.host)) {
       host = parseHost(builder.host)
     } else {
       host = {
@@ -234,8 +235,8 @@ export const build = (builder: UriBuilder): Uri => {
   }
 
   let authentication: UriAuthentication | null = null
-  if (Objects.isPresent(builder.authentication)) {
-    if (Strings.isString(builder.authentication)) {
+  if (isPresent(builder.authentication)) {
+    if (isString(builder.authentication)) {
       authentication = parseAuthentication(builder.authentication)
     } else {
       authentication = {
@@ -246,8 +247,8 @@ export const build = (builder: UriBuilder): Uri => {
   }
 
   let location: UriLocation = emptyLocation()
-  if (Objects.isPresent(builder.location)) {
-    if (Strings.isString(builder.location)) {
+  if (isPresent(builder.location)) {
+    if (isString(builder.location)) {
       location = parseLocation(builder.location)
     } else {
       location = {
@@ -274,19 +275,19 @@ export enum UriComponentType {
 
 export const format = (uri: Uri, format: Array<UriComponentType> = Object.values(UriComponentType)): UriString => {
   let urlString = ''
-  if (Objects.isPresent(uri.scheme) && Arrays.contains(format, UriComponentType.Scheme)) {
+  if (isPresent(uri.scheme) && contains(format, UriComponentType.Scheme)) {
     urlString = urlString + uri.scheme
   }
 
-  if (Objects.isPresent(uri.host) && Arrays.contains(format, UriComponentType.Host)) {
-    if (Objects.isPresent(uri.scheme)) {
+  if (isPresent(uri.host) && contains(format, UriComponentType.Host)) {
+    if (isPresent(uri.scheme)) {
       urlString = urlString + '://'
     }
 
-    if (Objects.isPresent(uri.authentication)) {
+    if (isPresent(uri.authentication)) {
       urlString = urlString + uri.authentication.principal
 
-      if (Objects.isPresent(uri.authentication.password)) {
+      if (isPresent(uri.authentication.password)) {
         urlString = urlString + ':' + uri.authentication.password
       }
 
@@ -295,12 +296,12 @@ export const format = (uri: Uri, format: Array<UriComponentType> = Object.values
 
     urlString = urlString + uri.host.value
 
-    if (Objects.isPresent(uri.host.port)) {
+    if (isPresent(uri.host.port)) {
       urlString = urlString + ':' + uri.host.port
     }
   }
 
-  if (Arrays.contains(format, UriComponentType.Location)) {
+  if (contains(format, UriComponentType.Location)) {
     urlString = urlString + formatLocation(uri.location, format)
   }
   return urlString
@@ -309,15 +310,15 @@ export const format = (uri: Uri, format: Array<UriComponentType> = Object.values
 const formatLocation = (location: UriLocation, format: Array<UriComponentType>): string => {
   let urlString = ''
 
-  if (!Strings.isEmpty(location.path)) {
+  if (!isEmpty(location.path)) {
     urlString = urlString + location.path
   }
 
-  if (!Strings.isEmpty(location.query)) {
+  if (!isEmpty(location.query)) {
     urlString = urlString + '?' + location.query
   }
 
-  if (!Strings.isEmpty(location.fragment)) {
+  if (!isEmpty(location.fragment)) {
     urlString = urlString + '#' + encode(location.fragment!)
   }
 

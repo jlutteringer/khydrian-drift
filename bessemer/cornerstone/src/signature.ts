@@ -1,6 +1,7 @@
-import { Dates, Objects, References } from '@bessemer/cornerstone'
-import { Reference } from '@bessemer/cornerstone/reference'
+import { isReferencable, Reference } from '@bessemer/cornerstone/reference'
 import { BasicType } from '@bessemer/cornerstone/types'
+import { isObject } from '@bessemer/cornerstone/object'
+import { isDate } from '@bessemer/cornerstone/date'
 
 // JOHN it is probably worth revisiting this in the context of using this library code more frequently... in particular
 // all of these things have similar properties ("primitives", sortable, value equality, etc.) but this method of implementation
@@ -13,15 +14,15 @@ export const sign = (value: Signable): Signature => {
     return null
   }
 
-  if (Objects.isObject(value)) {
-    if (References.isReferencable(value)) {
+  if (isObject(value)) {
+    if (isReferencable(value)) {
       return value.reference.id
     } else {
       return value.id
     }
   }
 
-  if (Dates.isDate(value)) {
+  if (isDate(value)) {
     return value.getTime()
   }
 

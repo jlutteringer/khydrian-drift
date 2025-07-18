@@ -2,35 +2,99 @@ import {
   clone as _clone,
   cloneDeep as _cloneDeep,
   invert as _invert,
-  isBoolean as _isBoolean,
-  isDate,
-  isEmpty as _isEmpty,
-  isEqual as _isEqual,
-  isNil as _isNil,
-  isNumber,
-  isPlainObject,
-  isString,
-  isUndefined as _isUndefined,
   mapValues as _mapValues,
   merge as unsafeMerge,
   mergeWith as unsafeMergeWith,
 } from 'lodash-es'
-import { produce } from 'immer'
+
 import { BasicType, Dictionary, NominalType } from '@bessemer/cornerstone/types'
 import { Primitive, UnknownRecord } from 'type-fest'
+import { produce } from 'immer'
+import { isNumber } from '@bessemer/cornerstone/math'
+import { isString } from '@bessemer/cornerstone/string'
+import { isDate } from '@bessemer/cornerstone/date'
 
-export const update: typeof produce = produce
+export const isUndefined = (value: unknown): value is undefined => {
+  return value === undefined
+}
 
-export const isUndefined = _isUndefined
-export const isNil = _isNil
+export const isNil = (value: unknown): value is null | undefined => {
+  return value === null || value === undefined
+}
+
 export const isPresent = <T>(value: T): value is NonNullable<T> => {
   return !isNil(value)
 }
+
 export const isObject = (value?: any): value is Dictionary<unknown> => {
-  return isPlainObject(value)
+  if (value === null || value === undefined || typeof value !== 'object') {
+    return false
+  }
+
+  const proto = Object.getPrototypeOf(value)
+  return proto !== null && Object.getPrototypeOf(proto) === null
 }
-export const isEmpty = _isEmpty
-export const deepEqual = _isEqual
+
+export const isEmpty = (value: Record<string | number | symbol, unknown>): boolean => {
+  return Object.keys(value).length === 0
+}
+
+export const deepEqual = (value1: unknown, value2: unknown): boolean => {
+  if (value1 === value2) {
+    return true
+  }
+
+  // If either value is null or undefined, they're not equal (since we already checked ===)
+  if (isNil(value1) || isNil(value2)) {
+    return false
+  }
+
+  if (isDate(value1) && isDate(value2)) {
+    return value1.getTime() === value2.getTime()
+  }
+
+  if (value1 instanceof RegExp && value2 instanceof RegExp) {
+    return value1.toString() === value2.toString()
+  }
+
+  if (typeof value1 !== typeof value2) {
+    return false
+  }
+
+  if (Array.isArray(value1) && Array.isArray(value2)) {
+    if (value1.length !== value2.length) {
+      return false
+    }
+
+    for (let i = 0; i < value1.length; i++) {
+      if (!deepEqual(value1[i], value2[i])) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  if (isObject(value1) && isObject(value2)) {
+    const keys1 = Object.keys(value1)
+    const keys2 = Object.keys(value2)
+
+    if (keys1.length !== keys2.length) {
+      return false
+    }
+
+    for (const key of keys1) {
+      if (!deepEqual(value1[key], value2[key])) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  return false
+}
+
 export const invert = _invert
 export const mapValues = _mapValues
 
@@ -162,7 +226,7 @@ export const getPathValue = (object: UnknownRecord, initialPath: ObjectPath | st
 export const applyPathValue = (object: UnknownRecord, initialPath: ObjectPath | string, value: unknown): UnknownRecord | undefined => {
   const path = pathify(initialPath)
 
-  const newObject = update(object, (draft) => {
+  const newObject = produce(object, (draft) => {
     let current: any = draft
 
     for (let i = 0; i < path.path.length; i++) {
@@ -206,7 +270,9 @@ export const isBasic = (value: any): value is BasicType => {
   return isNumber(value) || isString(value) || isDate(value) || isBoolean(value)
 }
 
-export const isBoolean = _isBoolean
+export const isBoolean = (value: unknown): value is boolean => {
+  return typeof value === 'boolean'
+}
 
 type TransformFunction = (value: any, path: (string | number)[], key: string | number, parent: any) => any
 

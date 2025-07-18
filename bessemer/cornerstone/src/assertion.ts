@@ -1,5 +1,4 @@
-import { Lazy, Objects } from '@bessemer/cornerstone'
-import { LazyValue } from '@bessemer/cornerstone/lazy'
+import { evaluate, LazyValue } from '@bessemer/cornerstone/lazy'
 import { Nil } from '@bessemer/cornerstone/types'
 import {
   badRequest,
@@ -11,14 +10,15 @@ import {
   of,
   unauthorized,
 } from '@bessemer/cornerstone/error-event'
+import { isNil, isPresent } from '@bessemer/cornerstone/object'
 
 export function assertUnreachable(message: LazyValue<string> = () => 'Assertions.assertUnreachable was reached'): never {
-  throw new Error(Lazy.evaluate(message))
+  throw new Error(evaluate(message))
 }
 
 export function assertTrue(value: boolean, message: LazyValue<string> = () => 'Assertions.assertTrue failed validation'): asserts value is true {
   if (!value) {
-    throw new Error(Lazy.evaluate(message))
+    throw new Error(evaluate(message))
   }
 }
 
@@ -27,42 +27,42 @@ export function assertFalse(value: boolean, message: LazyValue<string> = () => '
 }
 
 export function assertNil(value: any, message: LazyValue<string> = () => 'Assertions.assertNil failed validation'): asserts value is Nil {
-  return assertTrue(Objects.isNil(value), message)
+  return assertTrue(isNil(value), message)
 }
 
 export function assertPresent<T>(
   value: T,
   message: LazyValue<string> = () => 'Assertions.assertPresent failed validation'
 ): asserts value is NonNullable<T> {
-  return assertTrue(Objects.isPresent(value), message)
+  return assertTrue(isPresent(value), message)
 }
 
 export function expectPresent<T>(value: T, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is NonNullable<T> {
-  if (Objects.isNil(value)) {
-    throw new ErrorEventException(notFound(Lazy.evaluate(builder)))
+  if (isNil(value)) {
+    throw new ErrorEventException(notFound(evaluate(builder)))
   }
 }
 
 export function expectAuthorized<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
   if (!value) {
-    throw new ErrorEventException(unauthorized(Lazy.evaluate(builder)))
+    throw new ErrorEventException(unauthorized(evaluate(builder)))
   }
 }
 
 export function expectPermitted<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
   if (!value) {
-    throw new ErrorEventException(forbidden(Lazy.evaluate(builder)))
+    throw new ErrorEventException(forbidden(evaluate(builder)))
   }
 }
 
 export function expectValid<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
   if (!value) {
-    throw new ErrorEventException(badRequest(Lazy.evaluate(builder)))
+    throw new ErrorEventException(badRequest(evaluate(builder)))
   }
 }
 
 export function expect<T>(value: boolean, builder: LazyValue<ErrorEventBuilder>): asserts value is true {
   if (!value) {
-    throw new ErrorEventException(of(Lazy.evaluate(builder)))
+    throw new ErrorEventException(of(evaluate(builder)))
   }
 }

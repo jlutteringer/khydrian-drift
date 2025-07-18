@@ -2,17 +2,16 @@ import {
   endsWith as _endsWith,
   includes as _includes,
   isEmpty as _isEmpty,
-  isString as _isString,
   padEnd as _padEnd,
   padStart as _padStart,
   replace as _replace,
   startsWith as _startsWith,
 } from 'lodash-es'
-import { Arrays } from '@bessemer/cornerstone'
 import { UnknownRecord } from 'type-fest'
+import { rest } from '@bessemer/cornerstone/array'
 
 export const isString = (value?: any): value is string => {
-  return _isString(value)
+  return typeof value === 'string'
 }
 
 export const isEmpty = _isEmpty
@@ -26,7 +25,7 @@ export const splitFirst = (str: string, splitter: string | RegExp): StringSplitR
       return { selection: null, separator: null, rest: str }
     }
 
-    return { selection: results[0]!, separator: splitter, rest: Arrays.rest(results).join(splitter) }
+    return { selection: results[0]!, separator: splitter, rest: rest(results).join(splitter) }
   } else {
     const match = splitter.exec(str)
 

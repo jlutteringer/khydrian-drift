@@ -1,8 +1,10 @@
-import { Arrays, Errors, Objects, Promises } from '@bessemer/cornerstone'
 import { Dictionary, NominalType, Throwable } from '@bessemer/cornerstone/types'
-import { RecordAttribute } from '@bessemer/cornerstone/object'
+import { deepMerge, isNil, isObject, isPresent, RecordAttribute } from '@bessemer/cornerstone/object'
 import Zod, { ZodType } from 'zod'
 import { evaluate, LazyValue } from '@bessemer/cornerstone/lazy'
+import { findInCausalChain as errorsFindInCausalChain, isError } from '@bessemer/cornerstone/error'
+import { isPromise } from '@bessemer/cornerstone/promise'
+import { first } from '@bessemer/cornerstone/array'
 
 /*
   Represents a structured error event. The code can be mapped to a unique type of error while the
@@ -51,7 +53,7 @@ export class ErrorEventException extends Error {
 }
 
 export const isErrorEvent = (throwable: Throwable): throwable is ErrorEvent => {
-  if (!Objects.isObject(throwable)) {
+  if (!isObject(throwable)) {
     return false
   }
 
@@ -78,12 +80,12 @@ export const from = (throwable: Throwable): ErrorEvent => {
     return throwable
   }
 
-  if (!Errors.isError(throwable)) {
+  if (!isError(throwable)) {
     return unhandled()
   }
 
-  const errorEventException = Errors.findInCausalChain(throwable, isErrorEventException) as ErrorEventException | undefined
-  if (Objects.isNil(errorEventException)) {
+  const errorEventException = errorsFindInCausalChain(throwable, isErrorEventException) as ErrorEventException | undefined
+  if (isNil(errorEventException)) {
     return unhandled()
   }
 
@@ -98,7 +100,7 @@ export function withPropagation<ReturnType>(
 ): ReturnType | Promise<ReturnType> {
   try {
     let result = runnable()
-    if (Promises.isPromise(result)) {
+    if (isPromise(result)) {
       return result.then((it) => it).catch((it) => propagate(it, evaluate(attributes)))
     } else {
       return result
@@ -135,7 +137,7 @@ export const findInCausalChain = (error: ErrorEvent, predicate: (error: ErrorEve
     return error
   }
 
-  return Arrays.first(error.causes.map((it) => findInCausalChain(it, predicate)).filter(Objects.isPresent))
+  return first(error.causes.map((it) => findInCausalChain(it, predicate)).filter(isPresent))
 }
 
 export const aggregate = (builder: ErrorEventBuilder, causes: Array<ErrorEvent>): ErrorEvent | undefined => {
@@ -157,7 +159,7 @@ export const HttpStatusCodeAttribute: ErrorAttribute<number> = 'httpStatusCode'
 
 export const unhandled = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(
+    deepMerge(
       {
         code: UnhandledErrorCode,
         message: 'An Unhandled Error has occurred.',
@@ -169,7 +171,7 @@ export const unhandled = (builder?: ErrorEventAugment) =>
 
 export const notFound = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(
+    deepMerge(
       {
         code: NotFoundErrorCode,
         message: 'The requested Resource could not be found.',
@@ -181,7 +183,7 @@ export const notFound = (builder?: ErrorEventAugment) =>
 
 export const unauthorized = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(
+    deepMerge(
       {
         code: UnauthorizedErrorCode,
         message: 'The requested Resource requires authentication.',
@@ -193,7 +195,7 @@ export const unauthorized = (builder?: ErrorEventAugment) =>
 
 export const forbidden = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(
+    deepMerge(
       {
         code: ForbiddenErrorCode,
         message: 'The requested Resource requires additional permissions to access.',
@@ -205,7 +207,7 @@ export const forbidden = (builder?: ErrorEventAugment) =>
 
 export const badRequest = (builder?: ErrorEventAugment) =>
   of(
-    Objects.deepMerge(
+    deepMerge(
       {
         code: BadRequestErrorCode,
         message: 'The request is invalid and cannot be processed.',

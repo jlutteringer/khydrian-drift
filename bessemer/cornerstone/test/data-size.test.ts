@@ -73,10 +73,10 @@ test('DataSizes.fromGibibytes / DataSizes.toGibibytes', () => {
 
 test('DataSizes.DataSizeSchema', () => {
   // Should validate number values
-  expect(DataSizes.DataSizeSchema.parse(123)).toBe(123)
+  expect(DataSizes.Schema.parse(123)).toBe(123)
 
   // Should reject non-numbers
-  expect(() => DataSizes.DataSizeSchema.parse('123')).toThrow()
-  expect(() => DataSizes.DataSizeSchema.parse(null)).toThrow()
-  expect(() => DataSizes.DataSizeSchema.parse(undefined)).toThrow()
+  expect(() => DataSizes.Schema.parse('123')).toThrow()
+  expect(() => DataSizes.Schema.parse(null)).toThrow()
+  expect(() => DataSizes.Schema.parse(undefined)).toThrow()
 })
