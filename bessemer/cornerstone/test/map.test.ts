@@ -682,6 +682,21 @@ describe('Maps.collectKeys', () => {
     expect(result.get(3)).toEqual({ id: 3, name: 'Charlie' })
   })
 
+  test('should collect signable items without a mapper function at all', () => {
+    const items = [
+      { id: '1', name: 'Alice' },
+      { id: '2', name: 'Bob' },
+      { id: '3', name: 'Charlie' },
+    ]
+
+    const result = Maps.collectKeys(items)
+
+    expect(result.size).toBe(3)
+    expect(result.get('1')).toEqual({ id: '1', name: 'Alice' })
+    expect(result.get('2')).toEqual({ id: '2', name: 'Bob' })
+    expect(result.get('3')).toEqual({ id: '3', name: 'Charlie' })
+  })
+
   test('should handle empty iterable with mapper', () => {
     const items: Array<{ id: number; name: string }> = []
     const result = Maps.collectKeys(items, (item) => item.id)
