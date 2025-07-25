@@ -17,7 +17,7 @@ export type CacheTarget = Zod.infer<typeof CacheTargetSchema>
 export const CacheWriteRequestSchema = Zod.object({
   caches: CacheTargetSchema,
   namespace: ResourceNamespaceSchema,
-  values: ZodUtil.arrayable(Entries.schema(Zod.unknown())),
+  values: ZodUtil.arrayable(Entries.recordSchema(Zod.unknown())),
 })
 
 export type CacheWriteRequest = Zod.infer<typeof CacheWriteRequestSchema>

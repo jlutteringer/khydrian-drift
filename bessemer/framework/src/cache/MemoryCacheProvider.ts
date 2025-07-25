@@ -10,7 +10,7 @@ import { LRUCache } from 'lru-cache'
 import { Durations, Entries, Globs, Loggers, Objects } from '@bessemer/cornerstone'
 import { BessemerApplicationContext } from '@bessemer/framework'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 const logger = Loggers.child('MemoryCacheProvider')
 
@@ -50,23 +50,23 @@ export class MemoryCacheProviderImpl<T> extends AbstractLocalCacheProvider<T> {
 
   type = MemoryCacheProvider.Type
 
-  getValues = (keys: Array<ResourceKey>): Array<Entry<CacheEntry<T>>> => {
+  getValues = (keys: Array<ResourceKey>): Array<RecordEntry<CacheEntry<T>>> => {
     logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)}`)
 
     const results = keys
       .map((it) => Entries.of(it, this.cache.get(it) as CacheEntry<T> | undefined))
       .filter(([_, value]) => Objects.isPresent(value))
-      .filter(([_, value]) => CacheEntry.isAlive(value)) as Array<Entry<CacheEntry<T>>>
+      .filter(([_, value]) => CacheEntry.isAlive(value)) as Array<RecordEntry<CacheEntry<T>>>
 
     logger.trace(() => `Cache hit on: ${JSON.stringify(Entries.keys(results))}`)
     return results
   }
 
-  getEntries = (): Array<Entry<CacheEntry<T>>> => {
+  getEntries = (): Array<RecordEntry<CacheEntry<T>>> => {
     return Array.of(...this.cache.entries())
   }
 
-  setValues = (entries: Array<Entry<CacheEntry<T> | undefined>>): void => {
+  setValues = (entries: Array<RecordEntry<CacheEntry<T> | undefined>>): void => {
     logger.trace(() => `Writing cache values: ${JSON.stringify(Entries.keys(entries))}`)
 
     entries.forEach(([key, value]) => {

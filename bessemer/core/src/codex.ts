@@ -16,7 +16,7 @@ import {
 } from '@bessemer/cornerstone/content'
 import { Tag } from '@bessemer/cornerstone/tag'
 import { Caches, Contexts } from '@bessemer/framework'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 export type CodexOptions = {
   provider: ContentProvider<any>
@@ -152,7 +152,7 @@ export const fetchContentByKeys = async <Type extends ContentType>(
       )
     }
 
-    const entries: Array<Entry<ContentData<Type>>> = content.map((it) => {
+    const entries: Array<RecordEntry<ContentData<Type>>> = content.map((it) => {
       return [it.key, it as ContentData<Type>]
     })
 
@@ -195,7 +195,7 @@ export const fetchContentBySectors = async <Type extends ContentType>(
     const content = genericContent as Array<ContentData<Type>>
 
     Async.execute(async () => {
-      const entries: Array<Entry<ContentData<Type>>> = content.map((it) => {
+      const entries: Array<RecordEntry<ContentData<Type>>> = content.map((it) => {
         return [it.key, it]
       })
 
@@ -203,7 +203,7 @@ export const fetchContentBySectors = async <Type extends ContentType>(
     })
 
     // JOHN this is wrong
-    const entries: Array<Entry<Array<ContentData<Type>>>> = Object.entries(Arrays.groupBy(content, (it) => it.sector ?? ''))
+    const entries: Array<RecordEntry<Array<ContentData<Type>>>> = Object.entries(Arrays.groupBy(content, (it) => it.sector ?? ''))
     return entries
   })
 

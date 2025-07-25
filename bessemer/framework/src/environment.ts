@@ -15,7 +15,7 @@ export const getEnvironment = (): Environment => {
     return nodeEnv
   }
 
-  Assertions.assertUnreachable(() => 'Environments.getEnvironment - unable to resolve environment. (Checking APP_ENV and NODE_ENV)')
+  Assertions.assert(() => 'Environments.getEnvironment - unable to resolve environment. (Checking APP_ENV and NODE_ENV)')
 }
 
 const EnvironmentTag: TagType<Environment> = 'Environment'

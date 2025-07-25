@@ -3,7 +3,7 @@ import { Assertions, Entries, Loggers, Objects } from '@bessemer/cornerstone'
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { RedisKeyValueStore } from '@bessemer/redis/store/RedisKeyValueStore'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { GlobalContextType } from '@bessemer/framework'
 
 const logger = Loggers.child('RedisCacheProvider')
@@ -35,7 +35,7 @@ export class RedisCacheProviderImpl<T> extends AbstractCacheProvider<T> {
 
   type = RedisCacheProvider.Type
 
-  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<Entry<CacheEntry<T>>>> => {
+  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<RecordEntry<CacheEntry<T>>>> => {
     logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)}`)
     const initialResults = await this.store.fetchValues(keys)
     const results = initialResults.filter(([_, value]) => CacheEntry.isAlive(value))
@@ -44,7 +44,7 @@ export class RedisCacheProviderImpl<T> extends AbstractCacheProvider<T> {
     return results
   }
 
-  writeValues = async (entries: Array<Entry<CacheEntry<T> | undefined>>): Promise<void> => {
+  writeValues = async (entries: Array<RecordEntry<CacheEntry<T> | undefined>>): Promise<void> => {
     logger.trace(() => `Writing cache values: ${JSON.stringify(Entries.keys(entries))}`)
     const hydratedEntries = Entries.mapValues(entries, (it) => (Objects.isUndefined(it) ? it : CacheEntry.applyProps(it, this.props)))
     await this.store.writeValues(hydratedEntries)

@@ -216,3 +216,33 @@ export const badRequest = (builder?: ErrorEventAugment) =>
       builder
     )
   )
+
+export function assertPresent<T>(value: T, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is NonNullable<T> {
+  if (isNil(value)) {
+    throw new ErrorEventException(notFound(evaluate(builder)))
+  }
+}
+
+export function assertAuthorized<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
+  if (!value) {
+    throw new ErrorEventException(unauthorized(evaluate(builder)))
+  }
+}
+
+export function assertPermitted<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
+  if (!value) {
+    throw new ErrorEventException(forbidden(evaluate(builder)))
+  }
+}
+
+export function assertValid<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
+  if (!value) {
+    throw new ErrorEventException(badRequest(evaluate(builder)))
+  }
+}
+
+export function assert<T>(value: boolean, builder: LazyValue<ErrorEventBuilder>): asserts value is true {
+  if (!value) {
+    throw new ErrorEventException(of(evaluate(builder)))
+  }
+}

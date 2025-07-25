@@ -3,7 +3,7 @@ import { RedisApplicationContext } from '@bessemer/redis/application'
 import { Redis } from '@bessemer/redis'
 import { Arrays, Durations, Eithers, Entries, Objects, Strings } from '@bessemer/cornerstone'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { GlobalContextType } from '@bessemer/framework'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { GlobPattern } from '@bessemer/cornerstone/glob'
@@ -24,7 +24,7 @@ export class RedisKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> {
     return ResourceKey.namespace(namespace, key)
   }
 
-  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<Entry<T>>> => {
+  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<RecordEntry<T>>> => {
     const client = Redis.getClient(this.context.global.redis)
     const namespacedKeys = keys.map(this.namespaceKey)
 
@@ -43,11 +43,11 @@ export class RedisKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> {
     return results
   }
 
-  writeValues = async (entries: Array<Entry<T | undefined>>): Promise<void> => {
+  writeValues = async (entries: Array<RecordEntry<T | undefined>>): Promise<void> => {
     const client = Redis.getClient(this.context.global.redis)
     const namespacedEntries = Entries.mapKeys(entries, this.namespaceKey)
     const [deletes, writes] = Arrays.bisect(namespacedEntries, (entry) =>
-      Objects.isUndefined(entry[1]) ? Eithers.left(entry[0]) : Eithers.right(entry as Entry<T>)
+      Objects.isUndefined(entry[1]) ? Eithers.left(entry[0]) : Eithers.right(entry as RecordEntry<T>)
     )
 
     if (!Arrays.isEmpty(deletes)) {

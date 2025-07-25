@@ -3,7 +3,7 @@ import { Duration, OneDay, OneHour, toMilliseconds } from '@bessemer/cornerstone
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { GlobPattern } from '@bessemer/cornerstone/glob'
 import { Arrayable } from 'type-fest'
 import Zod, { ZodType } from 'zod'
@@ -82,12 +82,12 @@ export interface Cache<T> extends AbstractCache<T> {
   fetchValues(
     namespace: ResourceNamespace,
     keys: Array<ResourceKey>,
-    fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
-  ): Promise<Array<Entry<T>>>
+    fetch: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>
+  ): Promise<Array<RecordEntry<T>>>
 
   writeValue(namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): Promise<void>
 
-  writeValues(namespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): Promise<void>
+  writeValues(namespace: ResourceNamespace, entries: Array<RecordEntry<T | undefined>>): Promise<void>
 
   evictAll(sector: CacheSector): Promise<void>
 }
@@ -107,11 +107,11 @@ export abstract class AbstractCacheProvider<T> extends AbstractRemoteKeyValueSto
 export interface LocalCache<T> extends AbstractCache<T> {
   getValue(namespace: ResourceNamespace, key: ResourceKey, fetch: () => T): T
 
-  getValues(namespace: ResourceNamespace, keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>): Array<Entry<T>>
+  getValues(namespace: ResourceNamespace, keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>): Array<RecordEntry<T>>
 
   setValue(namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): void
 
-  setValues(namespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): void
+  setValues(namespace: ResourceNamespace, entries: Array<RecordEntry<T | undefined>>): void
 
   removeAll(sector: CacheSector): void
 }

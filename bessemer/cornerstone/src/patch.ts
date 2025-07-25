@@ -7,7 +7,7 @@ import {
   ReducingExpression,
 } from '@bessemer/cornerstone/expression'
 import { UnknownRecord } from 'type-fest'
-import { assertUnreachable } from '@bessemer/cornerstone/assertion'
+import { assert } from '@bessemer/cornerstone/assertion'
 import { deepMergeWith, isNil, isObject } from '@bessemer/cornerstone/object'
 
 export enum PatchType {
@@ -101,7 +101,7 @@ export const resolveWithDetails = <T>(value: T, patches: Array<Patch<T>>, evalua
         currentValue = applyPatch(currentValue, patch.patch, evaluate)
         break
       default:
-        assertUnreachable(() => `Unrecognized PatchType for value: ${JSON.stringify(it)}`)
+        assert(() => `Unrecognized PatchType for value: ${JSON.stringify(it)}`)
     }
 
     return { value: currentValue, patch }

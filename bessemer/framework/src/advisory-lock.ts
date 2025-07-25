@@ -7,7 +7,7 @@ import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { Unit } from '@bessemer/cornerstone/unit'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { Arrayable, PartialDeep } from 'type-fest'
 
 const logger = Loggers.child('AdvisoryLock')
@@ -66,12 +66,12 @@ export const usingLock = async <T>(
 export const usingIncrementalLocks = async <T>(
   resourceKeys: Array<ResourceKey>,
   context: GlobalContextType<BessemerApplicationContext>,
-  fetchIncrementalValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
-  computeValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
+  fetchIncrementalValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>,
+  computeValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>,
   options: AdvisoryLockOptions = {}
-): Promise<Array<Entry<T>>> => {
+): Promise<Array<RecordEntry<T>>> => {
   let remainingKeys = resourceKeys
-  const incrementalResults: Array<Entry<T>> = []
+  const incrementalResults: Array<RecordEntry<T>> = []
 
   const result = await Retry.usingRetry(async () => {
     logger.trace(() => `usingIncrementalLocks - Fetching incremental values: ${JSON.stringify(remainingKeys)}`)

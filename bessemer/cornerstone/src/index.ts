@@ -5,6 +5,7 @@ import * as Strings from '@bessemer/cornerstone/string'
 import * as Async from '@bessemer/cornerstone/async'
 import * as AsyncValues from '@bessemer/cornerstone/async-value'
 import * as Maths from '@bessemer/cornerstone/math'
+import * as Maps from '@bessemer/cornerstone/map'
 import * as Sets from '@bessemer/cornerstone/set'
 import * as Dates from '@bessemer/cornerstone/date'
 import * as Comparators from '@bessemer/cornerstone/comparator'
@@ -55,6 +56,7 @@ export {
   Async,
   AsyncValues,
   Maths,
+  Maps,
   Sets,
   Dates,
   Comparators,

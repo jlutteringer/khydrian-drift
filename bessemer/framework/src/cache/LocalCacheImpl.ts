@@ -1,7 +1,7 @@
 import { CacheEntry, CacheKey, CacheSector, LocalCache, LocalCacheProvider } from '@bessemer/cornerstone/cache'
 import { Arrays, Async, Entries } from '@bessemer/cornerstone'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 export class LocalCacheImpl<T> implements LocalCache<T> {
   constructor(readonly name: string, private readonly providers: Array<LocalCacheProvider<T>>) {}
@@ -17,8 +17,8 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
   getValues = (
     initialNamespace: ResourceNamespace,
     keys: Array<ResourceKey>,
-    fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>
-  ): Array<Entry<T>> => {
+    fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>
+  ): Array<RecordEntry<T>> => {
     if (CacheKey.isDisabled(initialNamespace)) {
       return fetch(keys)
     }
@@ -40,7 +40,7 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     this.setValues(namespace, [Entries.of(key, value)])
   }
 
-  setValues = (initialNamespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): void => {
+  setValues = (initialNamespace: ResourceNamespace, entries: Array<RecordEntry<T | undefined>>): void => {
     if (CacheKey.isDisabled(initialNamespace)) {
       return
     }
@@ -53,11 +53,11 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     this.providers.forEach((provider) => provider.setValues(namespacedEntries))
   }
 
-  private getCachedValues(namespacedKeys: Array<ResourceKey>, allowStale: boolean = true): Array<Entry<CacheEntry<T>>> {
+  private getCachedValues(namespacedKeys: Array<ResourceKey>, allowStale: boolean = true): Array<RecordEntry<CacheEntry<T>>> {
     let remainingKeys = namespacedKeys
-    const results: Array<Entry<CacheEntry<T>>> = []
+    const results: Array<RecordEntry<CacheEntry<T>>> = []
 
-    const providerMisses = new Map<LocalCacheProvider<T>, Array<Entry<CacheEntry<T>>>>()
+    const providerMisses = new Map<LocalCacheProvider<T>, Array<RecordEntry<CacheEntry<T>>>>()
 
     for (const provider of this.providers) {
       if (Arrays.isEmpty(remainingKeys)) {
@@ -87,7 +87,11 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     return results
   }
 
-  private revalidate(namespace: ResourceNamespace, entries: Array<Entry<CacheEntry<T>>>, fetch: (keys: Array<ResourceKey>) => Array<Entry<T>>): void {
+  private revalidate(
+    namespace: ResourceNamespace,
+    entries: Array<RecordEntry<CacheEntry<T>>>,
+    fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>
+  ): void {
     Async.execute(async () => {
       const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
       const fetchedValues = Entries.mapKeys(fetch(staleKeys), (it) => ResourceKey.stripNamespace(namespace, it))

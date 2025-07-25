@@ -146,18 +146,14 @@ export function sortBy<T, N>(array: Array<T>, mapper: (element: T) => N, compara
 
 export const sort = <T extends Signable>(array: Array<T>): Array<T> => sortBy(array, sign)
 
-export const concatenate = <T>(array: Array<T>, ...values: Array<T | T[]>): Array<T> => {
+export const concatenate = <T>(array: Array<T>, ...values: Array<T | Array<T>>): Array<T> => {
   const result = [...array]
-
-  if (values.length === 0) {
-    return result
-  }
 
   for (const value of values) {
     if (Array.isArray(value)) {
       result.push(...value)
     } else {
-      result.push(value as T)
+      result.push(value)
     }
   }
 
