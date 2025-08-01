@@ -4,49 +4,28 @@ import { UnknownRecord } from 'type-fest'
 import { isObject } from '@bessemer/cornerstone/object'
 import { produce } from 'immer'
 import { isNumber } from '@bessemer/cornerstone/math'
-import { isEmpty, isString } from '@bessemer/cornerstone/string'
+import { isString } from '@bessemer/cornerstone/string'
 import { assert } from '@bessemer/cornerstone/assertion'
+import { isEmpty } from '@bessemer/cornerstone/array'
 
-export type ObjectPath = TaggedType<string, 'ObjectPath'>
-export const Schema: ZodType<ObjectPath> = Zod.string().regex(
-  /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\d+])*$/,
-  'Invalid ObjectPath format'
-) as any
+export type ObjectPath = TaggedType<Array<string | number>, 'ObjectPath'>
+export const Schema: ZodType<ObjectPath> = Zod.array(Zod.union([Zod.string(), Zod.number()])) as any
 
-export const of = (value: string): ObjectPath => {
+export const of = (value: Array<string | number>): ObjectPath => {
   assert(!isEmpty(value))
   return value as ObjectPath
 }
 
-export const fromString = (value: string): ObjectPath => {
-  return Schema.parse(value)
-}
+const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\d+])*$/
+const ObjectPathPartRegex = /([^.\[\]]+)|\[(\d+)]/g
 
-export const getValue = (object: UnknownRecord, path: ObjectPath): unknown => {
-  const parsedPath = parse(path)
-  return getValueInternal(object, parsedPath)
-}
+export const fromString = (path: string): ObjectPath => {
+  assert(ObjectPathRegex.test(path), () => `Unable to parse ObjectPath from string: ${path}`)
 
-export const applyValue = (object: UnknownRecord, path: ObjectPath, valueToApply: unknown): unknown => {
-  return produce(object, (draft) => {
-    const parsedPath = parse(path)
-    const rest = parsedPath.slice(0, -1)
-    const last = parsedPath[parsedPath.length - 1]!
-
-    const parent: any = getValueInternal(draft, rest)
-
-    // Check to make sure the last index is ok
-    assertLegalIndex(parent, last, object, parsedPath)
-    parent[last] = valueToApply
-  })
-}
-
-const parse = (path: ObjectPath): Array<string | number> => {
   const result: Array<string | number> = []
-  const regex = /([^.\[\]]+)|\[(\d+)]/g
 
   let match: RegExpExecArray | null
-  while ((match = regex.exec(path)) !== null) {
+  while ((match = ObjectPathPartRegex.exec(path)) !== null) {
     if (match[1] !== undefined) {
       result.push(match[1])
     } else if (match[2] !== undefined) {
@@ -54,42 +33,54 @@ const parse = (path: ObjectPath): Array<string | number> => {
     }
   }
 
-  return result
+  return of(result)
 }
 
-const getValueInternal = (object: UnknownRecord, parsedPath: Array<string | number>): unknown => {
+export const getValue = (object: UnknownRecord, path: ObjectPath): unknown => {
   let value: any = object
-  for (const key of parsedPath) {
-    value = getIndexValueOrThrow(value, key, object, parsedPath)
+  for (const key of path) {
+    value = getIndexValueOrThrow(value, key, object, path)
   }
 
   return value
 }
 
-const getIndexValueOrThrow = (value: any, key: string | number, object: UnknownRecord, parsedPath: Array<string | number>): any => {
+export const applyValue = (object: UnknownRecord, path: ObjectPath, valueToApply: unknown): unknown => {
+  return produce(object, (draft) => {
+    const rest = path.slice(0, -1)
+    const last = path[path.length - 1]!
+    const parent: any = isEmpty(rest) ? draft : getValue(draft, of(rest))
+
+    // Check to make sure the last index is ok
+    assertLegalIndex(parent, last, object, path)
+    parent[last] = valueToApply
+  })
+}
+
+const getIndexValueOrThrow = (value: any, key: string | number, object: UnknownRecord, path: ObjectPath): any => {
   if (isNumber(key) && Array.isArray(value)) {
     if (key < 0 || key >= value.length) {
-      throw new Error(`Unable to resolve ObjectPath: ${parsedPath} against record: ${JSON.stringify(object)}`)
+      throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
     }
 
     return value[key]
   } else if (isString(key) && isObject(value)) {
     if (!(key in value)) {
-      throw new Error(`Unable to resolve ObjectPath: ${parsedPath} against record: ${JSON.stringify(object)}`)
+      throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
     }
 
     return value[key]
   } else {
-    throw new Error(`Unable to resolve ObjectPath: ${parsedPath} against record: ${JSON.stringify(object)}`)
+    throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
   }
 }
 
-const assertLegalIndex = (value: any, key: string | number, object: UnknownRecord, parsedPath: Array<string | number>): void => {
+const assertLegalIndex = (value: any, key: string | number, object: UnknownRecord, path: ObjectPath): void => {
   if (isNumber(key) && Array.isArray(value)) {
     return
   } else if (isString(key) && isObject(value)) {
     return
   } else {
-    throw new Error(`Unable to resolve ObjectPath: ${parsedPath} against record: ${JSON.stringify(object)}`)
+    throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
   }
 }
