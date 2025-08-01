@@ -17,7 +17,7 @@ export const getInstance = async <ApplicationContext extends BessemerApplication
 }
 
 export const getApplication = async <ApplicationContext extends BessemerApplicationContext>(tags?: Array<Tag>): Promise<ApplicationContext> => {
-  Assertions.assertTrue(RscRuntimes.isServer)
+  Assertions.assert(RscRuntimes.isServer)
 
   const { context } = await getInstance<ApplicationContext, BessemerOptions>(tags)
   return context

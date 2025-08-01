@@ -40,7 +40,7 @@ const GlobalConfigurationState = createGlobalVariable<{
 export const configure = <ApplicationContext extends BessemerApplicationContext, ApplicationOptions extends BessemerOptions>(
   configuration: BessemerConfiguration<ApplicationContext, ApplicationOptions>
 ): void => {
-  Assertions.assertTrue(RscRuntimes.isServer)
+  Assertions.assert(RscRuntimes.isServer)
 
   if (Objects.isPresent(GlobalConfigurationState.getValue())) {
     return
@@ -75,7 +75,7 @@ const getConfiguration = <ApplicationContext extends BessemerApplicationContext,
   ApplicationContext,
   ApplicationOptions
 > => {
-  Assertions.assertTrue(RscRuntimes.isServer)
+  Assertions.assert(RscRuntimes.isServer)
 
   const state = GlobalConfigurationState.getValue()
   Assertions.assertPresent(state, () => 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')
@@ -83,7 +83,7 @@ const getConfiguration = <ApplicationContext extends BessemerApplicationContext,
 }
 
 export const getGlobalContext = <ApplicationContext extends BessemerApplicationContext>(): GlobalContextType<ApplicationContext> => {
-  Assertions.assertTrue(RscRuntimes.isServer)
+  Assertions.assert(RscRuntimes.isServer)
 
   const state = GlobalConfigurationState.getValue()
   Assertions.assertPresent(state, () => 'Unable to resolve Bessemer configuration, did you call Bessemer.configure(...)?')

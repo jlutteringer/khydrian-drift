@@ -5,7 +5,7 @@ import { Comparator, compareBy, natural as naturalComparison } from '@bessemer/c
 import { Arrayable } from 'type-fest'
 import { isNil } from '@bessemer/cornerstone/object'
 import { FiniteNumericBounds } from '@bessemer/cornerstone/range'
-import { assertTrue } from '@bessemer/cornerstone/assertion'
+import { assert } from '@bessemer/cornerstone/assertion'
 
 export const equalWith = <T>(first: Array<T>, second: Array<T>, equalitor: Equalitor<T>): boolean => {
   if (first.length !== second.length) {
@@ -165,7 +165,7 @@ export const first = <T>(array: Array<T>): T | undefined => {
 }
 
 export const only = <T>(array: Array<T>): T => {
-  assertTrue(array.length === 1)
+  assert(array.length === 1)
   return first(array)!
 }
 

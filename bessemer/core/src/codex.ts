@@ -107,7 +107,7 @@ export const fetchTextById = async (
     return undefined
   }
 
-  Assertions.assertTrue(content[0]?.type === TextContentType)
+  Assertions.assert(content[0]?.type === TextContentType)
   return content[0] as TextContent
 }
 

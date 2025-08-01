@@ -158,7 +158,7 @@ export class RedlockClient extends EventEmitter {
 
     // Create a new array of client, to ensure no accidental mutation.
     this.clients = new Set(clients)
-    Assertions.assertTrue(this.clients.size !== 0, () => 'Redlock must be instantiated with at least one redis client.')
+    Assertions.assert(this.clients.size !== 0, () => 'Redlock must be instantiated with at least one redis client.')
 
     this.props = Objects.deepMerge(DefaultRedlockProps, options)
 
@@ -200,7 +200,7 @@ export class RedlockClient extends EventEmitter {
   // JOHN should this take a context object instead of relying on its internal dealio?
   acquire = async (resourceKeys: Array<ResourceKey>, props: AdvisoryLockProps): Promise<RedlockLock> => {
     const durationMs = Durations.toMilliseconds(props.duration)
-    Assertions.assertTrue(Number.isInteger(durationMs), () => 'Duration must be an integer value')
+    Assertions.assert(Number.isInteger(durationMs), () => 'Duration must be an integer value')
 
     const value = Crypto.getRandomHex(16)
 
@@ -253,8 +253,8 @@ export class RedlockClient extends EventEmitter {
    */
   public async extend(existing: RedlockLock, props: AdvisoryLockProps): Promise<RedlockLock> {
     const durationMs = Durations.toMilliseconds(props.duration)
-    Assertions.assertTrue(Number.isInteger(durationMs), () => 'Duration must be an integer value')
-    Assertions.assertFalse(existing.expiration < Date.now(), () => 'Cannot extend an already-expired lock.')
+    Assertions.assert(Number.isInteger(durationMs), () => 'Duration must be an integer value')
+    Assertions.assert(existing.expiration >= Date.now(), () => 'Cannot extend an already-expired lock.')
 
     const { attempts, start } = await this.executeScript(
       (

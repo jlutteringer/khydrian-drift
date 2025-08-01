@@ -223,25 +223,25 @@ export function assertPresent<T>(value: T, builder: LazyValue<ErrorEventAugment 
   }
 }
 
-export function assertAuthorized<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
+export function assertAuthorized(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
   if (!value) {
     throw new ErrorEventException(unauthorized(evaluate(builder)))
   }
 }
 
-export function assertPermitted<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
+export function assertPermitted(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
   if (!value) {
     throw new ErrorEventException(forbidden(evaluate(builder)))
   }
 }
 
-export function assertValid<T>(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
+export function assertValid(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
   if (!value) {
     throw new ErrorEventException(badRequest(evaluate(builder)))
   }
 }
 
-export function assert<T>(value: boolean, builder: LazyValue<ErrorEventBuilder>): asserts value is true {
+export function assert(value: boolean, builder: LazyValue<ErrorEventBuilder>): asserts value is true {
   if (!value) {
     throw new ErrorEventException(of(evaluate(builder)))
   }

@@ -24,6 +24,7 @@ import * as Hashes from '@bessemer/cornerstone/hash'
 import * as Crypto from '@bessemer/cornerstone/crypto'
 import * as Globs from '@bessemer/cornerstone/glob'
 import * as Ranges from '@bessemer/cornerstone/range'
+import * as ObjectPaths from '@bessemer/cornerstone/object-path'
 
 import * as ZodUtil from '@bessemer/cornerstone/zod-util'
 import * as Tags from '@bessemer/cornerstone/tag'
@@ -75,6 +76,7 @@ export {
   Crypto,
   Globs,
   Ranges,
+  ObjectPaths,
   ZodUtil,
   Tags,
   Promises,

@@ -115,7 +115,7 @@ export const validateSelection = (choices: ProgressionTable<CharacterChoice>, se
   Assertions.assertPresent(entry)
 
   const [level, choice] = entry
-  Assertions.assertTrue(isAllowedValue(choice, selection.selection))
+  Assertions.assert(isAllowedValue(choice, selection.selection))
 
   return level
 }

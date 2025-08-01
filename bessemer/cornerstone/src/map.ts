@@ -1,8 +1,7 @@
 import { Entry } from '@bessemer/cornerstone/entry'
 import { concatenate as arrayConcatenate } from '@bessemer/cornerstone/array'
-import { assert, assertFalse, assertPresent } from '@bessemer/cornerstone/assertion'
-import { sign, Signable, Signature } from '@bessemer/cornerstone/signature'
-import { isPresent } from '@bessemer/cornerstone/object'
+import { assert, assertPresent } from '@bessemer/cornerstone/assertion'
+import { Objects } from '@bessemer/cornerstone/index'
 
 export const groupBy = <CollectionType, KeyType>(
   iterable: Iterable<CollectionType>,
@@ -41,25 +40,22 @@ export const map = <KeyType, ValueType, NewKeyType, NewValueType>(
   target: Map<KeyType, ValueType>,
   mapper: (entry: Entry<KeyType, ValueType>) => Entry<NewKeyType, NewValueType>
 ): Map<NewKeyType, NewValueType> => {
-  return collect(target.entries(), mapper, (key) => assert(() => `Maps.transform - Encountered illegal duplicate collection value: ${key}`))
+  return collect(target.entries(), mapper, (key) => {
+    throw new Error(`Maps.transform - Encountered illegal duplicate collection value: ${key}`)
+  })
 }
 
-export function collectKeys<CollectionType extends Signable>(iterable: Iterable<CollectionType>): Map<Signature, CollectionType>
-export function collectKeys<CollectionType, KeyType>(
+export const collectKeys = <CollectionType, KeyType>(
   iterable: Iterable<CollectionType>,
   mapper: (it: CollectionType) => KeyType
-): Map<KeyType, CollectionType>
-export function collectKeys<CollectionType, KeyType>(
-  iterable: Iterable<CollectionType>,
-  mapper?: (it: CollectionType) => KeyType
-): Map<KeyType, CollectionType> {
-  const reducer = (key: KeyType) => assert(() => `Maps.mapKeys - Encountered illegal duplicate collection value: ${key}`)
-
-  if (isPresent(mapper)) {
-    return collect(iterable, (it) => [mapper(it), it], reducer)
-  } else {
-    return collect(iterable, (it) => [sign(it as Signable) as KeyType, it], reducer)
-  }
+): Map<KeyType, CollectionType> => {
+  return collect(
+    iterable,
+    (it) => [mapper(it), it],
+    (key) => {
+      throw new Error(`Maps.collectKeys - Encountered illegal duplicate collection value: ${key}`)
+    }
+  )
 }
 
 export const collectValues = <CollectionType, ValueType>(
@@ -69,21 +65,36 @@ export const collectValues = <CollectionType, ValueType>(
   return collect(
     iterable,
     (it) => [it, mapper(it)],
-    (key) => assert(() => `Maps.mapValues - Encountered illegal duplicate collection value: ${key}`)
+    (key) => {
+      throw new Error(`Maps.mapValues - Encountered illegal duplicate collection value: ${key}`)
+    }
   )
 }
 
-export const collect = <CollectionType, KeyType, ValueType>(
+export function collect<CollectionType, KeyType, ValueType>(
+  iterable: Iterable<CollectionType>,
+  mapEntry: (it: CollectionType) => Entry<KeyType, ValueType>
+): Map<KeyType, ValueType>
+export function collect<CollectionType, KeyType, ValueType>(
   iterable: Iterable<CollectionType>,
   mapEntry: (it: CollectionType) => Entry<KeyType, ValueType>,
   reducer: (key: KeyType, first: ValueType, second: ValueType) => ValueType
-): Map<KeyType, ValueType> => {
+): Map<KeyType, ValueType>
+export function collect<CollectionType, KeyType, ValueType>(
+  iterable: Iterable<CollectionType>,
+  mapEntry: (it: CollectionType) => Entry<KeyType, ValueType>,
+  reducer?: (key: KeyType, first: ValueType, second: ValueType) => ValueType
+): Map<KeyType, ValueType> {
   const result = new Map<KeyType, ValueType>()
 
   for (const item of iterable) {
     const [key, value] = mapEntry(item)
 
     if (result.has(key)) {
+      if (Objects.isNil(reducer)) {
+        throw new Error(`Maps.collect - Encountered illegal duplicate collection key: ${key}`)
+      }
+
       const existingValue = result.get(key)!
       const reducedValue = reducer(key, existingValue, value)
       result.set(key, reducedValue)
@@ -103,7 +114,7 @@ export const append = <KeyType, ValueType>(map: Map<KeyType, ValueType>, ...valu
 
 export const appendInto = <KeyType, ValueType>(map: Map<KeyType, ValueType>, ...values: Array<Entry<KeyType, ValueType>>): void => {
   for (const [key, value] of values) {
-    assertFalse(map.has(key), () => `Maps.append - Encountered illegal duplicate key: ${key}`)
+    assert(!map.has(key), () => `Maps.append - Encountered illegal duplicate key: ${key}`)
     map.set(key, value)
   }
 }
@@ -117,7 +128,7 @@ export const concatenate = <KeyType, ValueType>(map: Map<KeyType, ValueType>, ..
 export const concatenateInto = <KeyType, ValueType>(map: Map<KeyType, ValueType>, ...values: Array<Map<KeyType, ValueType>>): void => {
   for (const otherMap of values) {
     for (const [key, value] of otherMap) {
-      assertFalse(map.has(key), () => `Maps.concatenate - Encountered illegal duplicate key: ${key}`)
+      assert(!map.has(key), () => `Maps.concatenate - Encountered illegal duplicate key: ${key}`)
       map.set(key, value)
     }
   }

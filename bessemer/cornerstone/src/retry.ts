@@ -2,9 +2,9 @@ import { Duration, fromMilliseconds, toMilliseconds, Zero } from '@bessemer/corn
 import { AsyncResult, failure, Result } from '@bessemer/cornerstone/result'
 import { PartialDeep } from 'type-fest'
 import { deepMerge, isUndefined } from '@bessemer/cornerstone/object'
-import { assertTrue } from '@bessemer/cornerstone/assertion'
 import { sleep } from '@bessemer/cornerstone/async'
 import { random } from '@bessemer/cornerstone/math'
+import { assert } from '@bessemer/cornerstone/assertion'
 
 export type RetryProps = {
   attempts: number
@@ -30,7 +30,7 @@ export type RetryState = {
 
 export const initialize = (initialOptions?: RetryOptions): RetryState => {
   const props = deepMerge(DefaultRetryProps, initialOptions)
-  assertTrue(props.attempts >= 0, () => 'usingRetry attempts must be >= 0')
+  assert(props.attempts >= 0, () => 'usingRetry attempts must be >= 0')
 
   return {
     attempt: 0,
