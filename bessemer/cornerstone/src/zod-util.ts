@@ -1,4 +1,4 @@
-import Zod, { ZodType } from 'zod/v4'
+import Zod, { ZodType } from 'zod'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { parse as jsonParse } from '@bessemer/cornerstone/json'
 import { failure, getValueOrThrow, Result, success } from '@bessemer/cornerstone/result'

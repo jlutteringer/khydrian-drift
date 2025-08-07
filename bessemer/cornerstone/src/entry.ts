@@ -1,4 +1,4 @@
-import Zod, { ZodType } from 'zod/v4'
+import Zod, { ZodType } from 'zod'
 
 export type Entry<Key, Value> = [Key, Value]
 export type RecordEntry<Value> = Entry<string, Value>

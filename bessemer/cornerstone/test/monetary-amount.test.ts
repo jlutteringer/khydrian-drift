@@ -1,5 +1,5 @@
 import { Currencies, MonetaryAmounts } from '@bessemer/cornerstone'
-import { ZodError } from 'zod/v4'
+import { ZodError } from 'zod'
 
 test('MonetaryAmounts.Schema - valid inputs', () => {
   expect(MonetaryAmounts.Schema.parse({ amount: 100, currency: Currencies.USD })).toEqual({ amount: 100, currency: Currencies.USD })

@@ -1,4 +1,4 @@
-import Zod, { ZodType } from 'zod/v4'
+import Zod, { ZodType } from 'zod'
 import { greatestCommonFactor } from '@bessemer/cornerstone/math'
 import { TaggedType } from '@bessemer/cornerstone/types'
 

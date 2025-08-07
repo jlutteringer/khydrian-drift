@@ -1,6 +1,6 @@
 import express from 'express'
 import { AddressInfo } from 'net'
-import z from 'zod/v4'
+import z from 'zod'
 import { apiBuilder, makeApi, makeCrudApi, mergeApis, parametersBuilder, Zodios } from '../src'
 import { Assert } from '../src/utils.types'
 

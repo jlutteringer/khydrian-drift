@@ -1,6 +1,6 @@
 import { Ranges } from '@bessemer/cornerstone'
 import { Bounds } from '@bessemer/cornerstone/range'
-import Zod from 'zod/v4'
+import Zod from 'zod'
 
 test('Ranges.bounds', () => {
   expect(Ranges.of([1, 2])).toEqual([1, 2])

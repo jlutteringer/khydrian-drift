@@ -1,6 +1,6 @@
 import { addHours as _addHours, addMilliseconds as _addMilliseconds, isAfter as _isAfter, isBefore as _isBefore, parseISO } from 'date-fns'
 import { Duration, toMilliseconds } from '@bessemer/cornerstone/duration'
-import Zod from 'zod/v4'
+import Zod from 'zod'
 
 export const Schema = Zod.union([
   Zod.string()

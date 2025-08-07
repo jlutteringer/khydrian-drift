@@ -1,4 +1,4 @@
-import { $brand } from 'zod/v4'
+import { $brand } from 'zod'
 
 export interface NominalTyping<NominalTypingT> {
   _type?: NominalTypingT

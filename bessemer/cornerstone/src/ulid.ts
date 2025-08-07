@@ -1,6 +1,6 @@
 import { ulid } from 'ulid'
 import { TaggedType } from '@bessemer/cornerstone/types'
-import Zod, { ZodType } from 'zod/v4'
+import Zod, { ZodType } from 'zod'
 
 export type Ulid = TaggedType<string, 'Ulid'>
 export const Schema: ZodType<Ulid> = Zod.string().regex(/^[0-9A-HJKMNP-TV-Z]{26}$/, 'Invalid ULID format') as any

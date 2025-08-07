@@ -1,5 +1,5 @@
 import { CurrencyCode, Schema as CurrencyCodeSchema } from '@bessemer/cornerstone/currency'
-import Zod, { ZodType } from 'zod/v4'
+import Zod, { ZodType } from 'zod'
 import { isNil } from '@bessemer/cornerstone/object'
 import { roundHalfEven } from '@bessemer/cornerstone/math'
 import { Comparator as IComparator, natural } from '@bessemer/cornerstone/comparator'

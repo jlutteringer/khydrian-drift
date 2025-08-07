@@ -1,5 +1,5 @@
 import { TaggedType } from '@bessemer/cornerstone/types'
-import Zod, { ZodType } from 'zod/v4'
+import Zod, { ZodType } from 'zod'
 
 export type DataSize = TaggedType<number, 'DataSize'>
 export const Schema: ZodType<DataSize> = Zod.number() as any

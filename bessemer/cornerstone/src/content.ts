@@ -4,7 +4,7 @@ import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { Arrays, Objects, References, Tags, Ulids } from '@bessemer/cornerstone'
 import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 import { Tag } from '@bessemer/cornerstone/tag'
-import Zod, { ZodType } from 'zod/v4'
+import Zod, { ZodType } from 'zod'
 
 export type ContentSector = NominalType<string, 'ContentSector'>
 export const ContentSectorSchema: ZodType<ContentSector> = Zod.string()

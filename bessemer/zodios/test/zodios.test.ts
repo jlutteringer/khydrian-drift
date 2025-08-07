@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios'
 import express from 'express'
 import { AddressInfo } from 'net'
-import { z, ZodError } from 'zod/v4'
+import { z, ZodError } from 'zod'
 import { Zodios } from '../src/zodios'
 import { ZodiosError } from '../src/zodios-error'
 import multer from 'multer'
