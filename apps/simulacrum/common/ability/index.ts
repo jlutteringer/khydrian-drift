@@ -3,7 +3,7 @@ import { Effect, EffectSourceType } from '@simulacrum/common/effect'
 import { ResourceCost } from '@simulacrum/common/resource-pool'
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Expression } from '@bessemer/cornerstone/expression'
-import { Preconditions, References } from '@bessemer/cornerstone'
+import { Assertions, References } from '@bessemer/cornerstone'
 import { ApplicationContext } from '@simulacrum/common/application'
 
 export enum ActionType {
@@ -78,7 +78,7 @@ export const defineAbility = (reference: ReferenceType<AbilityReference>, props:
 
 export const getAbility = (reference: AbilityReference, context: ApplicationContext): Ability => {
   const ability = context.client.ruleset.abilities.find((it) => References.equals(it.reference, reference))
-  Preconditions.isPresent(ability)
+  Assertions.assertPresent(ability)
   return ability
 }
 

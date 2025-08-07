@@ -1,7 +1,10 @@
-import { Duration } from '@bessemer/cornerstone/duration'
-import { Async, Durations, Maths, Objects, Preconditions, Results } from '@bessemer/cornerstone'
-import { AsyncResult, Result } from '@bessemer/cornerstone/result'
+import { Duration, fromMilliseconds, toMilliseconds, Zero } from '@bessemer/cornerstone/duration'
+import { AsyncResult, failure, Result } from '@bessemer/cornerstone/result'
 import { PartialDeep } from 'type-fest'
+import { deepMerge, isUndefined } from '@bessemer/cornerstone/object'
+import { sleep } from '@bessemer/cornerstone/async'
+import { random } from '@bessemer/cornerstone/math'
+import { assert } from '@bessemer/cornerstone/assertion'
 
 export type RetryProps = {
   attempts: number
@@ -12,12 +15,12 @@ export type RetryOptions = PartialDeep<RetryProps>
 
 export const None: RetryProps = {
   attempts: 0,
-  delay: Durations.Zero,
+  delay: Zero,
 }
 
 export const DefaultRetryProps: RetryProps = {
   attempts: 3,
-  delay: Durations.ofMilliseconds(500),
+  delay: fromMilliseconds(500),
 }
 
 export type RetryState = {
@@ -26,8 +29,8 @@ export type RetryState = {
 }
 
 export const initialize = (initialOptions?: RetryOptions): RetryState => {
-  const props = Objects.deepMerge(DefaultRetryProps, initialOptions)
-  Preconditions.isTrue(props.attempts >= 0, () => 'usingRetry attempts must be >= 0')
+  const props = deepMerge(DefaultRetryProps, initialOptions)
+  assert(props.attempts >= 0, () => 'usingRetry attempts must be >= 0')
 
   return {
     attempt: 0,
@@ -40,9 +43,9 @@ export const retry = async (state: RetryState): Promise<RetryState | undefined> 
     return undefined
   }
 
-  const delayMs = Durations.inMilliseconds(state.props.delay)
+  const delayMs = toMilliseconds(state.props.delay)
   const maxJitterMs = delayMs * 0.3 // We calculate max jitter as 30% of the delay
-  await Async.sleep(Durations.ofMilliseconds(delayMs + Maths.random(0, maxJitterMs)))
+  await sleep(fromMilliseconds(delayMs + random(0, maxJitterMs)))
 
   return {
     props: state.props,
@@ -52,7 +55,7 @@ export const retry = async (state: RetryState): Promise<RetryState | undefined> 
 
 export const usingRetry = async <T>(runnable: () => Promise<Result<T>>, initialOptions?: RetryOptions): AsyncResult<T> => {
   let retryState: RetryState | undefined = initialize(initialOptions)
-  let previousResult: Result<T> = Results.failure()
+  let previousResult: Result<T> = failure()
 
   do {
     // JOHN Should this be a try/catch? it was causing debugging problems
@@ -64,7 +67,7 @@ export const usingRetry = async <T>(runnable: () => Promise<Result<T>>, initialO
     }
 
     retryState = await retry(retryState)
-  } while (!Objects.isUndefined(retryState))
+  } while (!isUndefined(retryState))
 
   return previousResult
 }

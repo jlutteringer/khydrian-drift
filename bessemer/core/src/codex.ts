@@ -1,5 +1,5 @@
 import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
-import { Arrays, Async, Entries, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Async, Entries, Objects, References } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import {
@@ -16,7 +16,7 @@ import {
 } from '@bessemer/cornerstone/content'
 import { Tag } from '@bessemer/cornerstone/tag'
 import { Caches, Contexts } from '@bessemer/framework'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 export type CodexOptions = {
   provider: ContentProvider<any>
@@ -101,13 +101,13 @@ export const fetchTextById = async (
   reference: ReferenceType<ContentReference>,
   context: CoreApplicationContext
 ): Promise<TextContent | undefined> => {
-  Preconditions.isPresent(context.codex)
+  Assertions.assertPresent(context.codex)
   const content = await context.codex.provider.fetchContentByIds([reference], context)
   if (Arrays.isEmpty(content)) {
     return undefined
   }
 
-  Preconditions.isTrue(content[0]?.type === TextContentType)
+  Assertions.assert(content[0]?.type === TextContentType)
   return content[0] as TextContent
 }
 
@@ -139,20 +139,20 @@ export const fetchContentByKeys = async <Type extends ContentType>(
   const namespace = Contexts.getNamespace(context)
 
   const results = await cache.fetchValues(namespace, keys, async (keys) => {
-    Preconditions.isPresent(context.codex)
+    Assertions.assertPresent(context.codex)
 
     const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
     const content = await context.codex.provider.fetchContentByKeys(keys, tags, context)
 
     if (Objects.isPresent(options?.type)) {
       const illegalContent = content.find((it) => it.type !== options?.type)
-      Preconditions.isNil(
+      Assertions.assertNil(
         illegalContent,
         () => `ContentData: [${illegalContent?.key}] with type: [${illegalContent?.type}] did not match requested ContentType: ${options?.type}`
       )
     }
 
-    const entries: Array<Entry<ContentData<Type>>> = content.map((it) => {
+    const entries: Array<RecordEntry<ContentData<Type>>> = content.map((it) => {
       return [it.key, it as ContentData<Type>]
     })
 
@@ -179,14 +179,14 @@ export const fetchContentBySectors = async <Type extends ContentType>(
   const namespace = Contexts.getNamespace(context)
 
   const results = await cache.fetchValues(namespace, sectors, async (sectors) => {
-    Preconditions.isPresent(context.codex)
+    Assertions.assertPresent(context.codex)
 
     const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
     const genericContent = await context.codex.provider.fetchContentBySectors(sectors, tags, context)
 
     if (Objects.isPresent(options?.type)) {
       const illegalContent = genericContent.find((it) => it.type !== options?.type)
-      Preconditions.isNil(
+      Assertions.assertNil(
         illegalContent,
         () => `ContentData: [${illegalContent?.key}] with type: [${illegalContent?.type}] did not match requested ContentType: ${options?.type}`
       )
@@ -195,14 +195,15 @@ export const fetchContentBySectors = async <Type extends ContentType>(
     const content = genericContent as Array<ContentData<Type>>
 
     Async.execute(async () => {
-      const entries: Array<Entry<ContentData<Type>>> = content.map((it) => {
+      const entries: Array<RecordEntry<ContentData<Type>>> = content.map((it) => {
         return [it.key, it]
       })
 
       await Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context).writeValues(namespace, entries)
     })
 
-    const entries: Array<Entry<Array<ContentData<Type>>>> = Object.entries(Arrays.groupBy(content, (it) => it.sector))
+    // JOHN this is wrong
+    const entries: Array<RecordEntry<Array<ContentData<Type>>>> = Object.entries(Arrays.groupBy(content, (it) => it.sector ?? ''))
     return entries
   })
 

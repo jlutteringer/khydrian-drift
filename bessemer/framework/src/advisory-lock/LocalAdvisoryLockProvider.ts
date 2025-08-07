@@ -23,7 +23,7 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
 
   constructor() {
     this.expiryMap = new Map()
-    setInterval(() => this.garbageCollect(), Durations.inMilliseconds(Durations.ofSeconds(60)))
+    setInterval(() => this.garbageCollect(), Durations.toMilliseconds(Durations.fromSeconds(60)))
   }
 
   acquireLock = async (

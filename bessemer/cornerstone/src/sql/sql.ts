@@ -9,11 +9,11 @@ export const fragment = (fragment: string): SqlFragment => {
 
 export const parseExpression = (
   expression: Expression<unknown>,
-  variableMap: Dictionary<string>,
+  variableMap?: Dictionary<string>,
   parser: SqlExpressionParser = DefaultSqlExpressionParser
 ): [SqlFragment, SqlParameterMap] => {
   const context: SqlExpressionParserContext = {
-    variables: variableMap,
+    variables: variableMap ?? {},
     parameters: {},
   }
   const fragment = Expressions.map(expression, parser, context)

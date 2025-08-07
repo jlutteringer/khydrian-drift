@@ -1,9 +1,9 @@
 import { AbstractCacheProvider, CacheEntry, CacheProps, CacheProviderRegistry, CacheProviderType, CacheSector } from '@bessemer/cornerstone/cache'
-import { Entries, Loggers, Objects, Preconditions } from '@bessemer/cornerstone'
+import { Assertions, Entries, Loggers, Objects } from '@bessemer/cornerstone'
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { RedisKeyValueStore } from '@bessemer/redis/store/RedisKeyValueStore'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { GlobalContextType } from '@bessemer/framework'
 
 const logger = Loggers.child('RedisCacheProvider')
@@ -27,15 +27,15 @@ export class RedisCacheProviderImpl<T> extends AbstractCacheProvider<T> {
   constructor(private readonly props: CacheProps, context: GlobalContextType<RedisApplicationContext>) {
     super()
 
-    Preconditions.isNil(props.maxSize, 'RedisCacheProvider does not support the maxSize property.')
-    Preconditions.isPresent(props.timeToLive, 'RedisCacheProvider requires the timeToLive property to be set.')
+    Assertions.assertNil(props.maxSize, () => 'RedisCacheProvider does not support the maxSize property.')
+    Assertions.assertPresent(props.timeToLive, () => 'RedisCacheProvider requires the timeToLive property to be set.')
 
     this.store = new RedisKeyValueStore({ namespace: RedisCacheProvider.Type as ResourceNamespace, timeToLive: props.timeToLive }, context)
   }
 
   type = RedisCacheProvider.Type
 
-  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<Entry<CacheEntry<T>>>> => {
+  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<RecordEntry<CacheEntry<T>>>> => {
     logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)}`)
     const initialResults = await this.store.fetchValues(keys)
     const results = initialResults.filter(([_, value]) => CacheEntry.isAlive(value))
@@ -44,7 +44,7 @@ export class RedisCacheProviderImpl<T> extends AbstractCacheProvider<T> {
     return results
   }
 
-  writeValues = async (entries: Array<Entry<CacheEntry<T> | undefined>>): Promise<void> => {
+  writeValues = async (entries: Array<RecordEntry<CacheEntry<T> | undefined>>): Promise<void> => {
     logger.trace(() => `Writing cache values: ${JSON.stringify(Entries.keys(entries))}`)
     const hydratedEntries = Entries.mapValues(entries, (it) => (Objects.isUndefined(it) ? it : CacheEntry.applyProps(it, this.props)))
     await this.store.writeValues(hydratedEntries)

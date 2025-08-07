@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { RedisClient } from '@bessemer/redis/redis'
-import { Async, Crypto, Durations, Hashes, Objects, Preconditions, Results, Retry } from '@bessemer/cornerstone'
+import { Assertions, Async, Crypto, Durations, Hashes, Objects, Results, Retry } from '@bessemer/cornerstone'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { AdvisoryLockProps } from '@bessemer/framework/advisory-lock'
 import { Hash } from '@bessemer/cornerstone/hash'
@@ -158,7 +158,7 @@ export class RedlockClient extends EventEmitter {
 
     // Create a new array of client, to ensure no accidental mutation.
     this.clients = new Set(clients)
-    Preconditions.isTrue(this.clients.size !== 0, 'Redlock must be instantiated with at least one redis client.')
+    Assertions.assert(this.clients.size !== 0, () => 'Redlock must be instantiated with at least one redis client.')
 
     this.props = Objects.deepMerge(DefaultRedlockProps, options)
 
@@ -199,8 +199,8 @@ export class RedlockClient extends EventEmitter {
   // JOHN maybe shouldnt be using the AdvisoryLockProps here even tho they contain the props we want?
   // JOHN should this take a context object instead of relying on its internal dealio?
   acquire = async (resourceKeys: Array<ResourceKey>, props: AdvisoryLockProps): Promise<RedlockLock> => {
-    const durationMs = Durations.inMilliseconds(props.duration)
-    Preconditions.isTrue(Number.isInteger(durationMs), () => 'Duration must be an integer value')
+    const durationMs = Durations.toMilliseconds(props.duration)
+    Assertions.assert(Number.isInteger(durationMs), () => 'Duration must be an integer value')
 
     const value = Crypto.getRandomHex(16)
 
@@ -252,9 +252,9 @@ export class RedlockClient extends EventEmitter {
    * This method extends a valid lock by the provided `duration`.
    */
   public async extend(existing: RedlockLock, props: AdvisoryLockProps): Promise<RedlockLock> {
-    const durationMs = Durations.inMilliseconds(props.duration)
-    Preconditions.isTrue(Number.isInteger(durationMs), () => 'Duration must be an integer value')
-    Preconditions.isFalse(existing.expiration < Date.now(), 'Cannot extend an already-expired lock.')
+    const durationMs = Durations.toMilliseconds(props.duration)
+    Assertions.assert(Number.isInteger(durationMs), () => 'Duration must be an integer value')
+    Assertions.assert(existing.expiration >= Date.now(), () => 'Cannot extend an already-expired lock.')
 
     const { attempts, start } = await this.executeScript(
       (

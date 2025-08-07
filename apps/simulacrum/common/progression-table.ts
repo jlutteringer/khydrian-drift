@@ -9,7 +9,7 @@ export const empty = <T>(maxLevel: number): ProgressionTable<T> => {
 }
 
 export const fromRecord = <T>(sparseRecord: Record<number, Array<T>>, maxLevel: number): ProgressionTable<T> => {
-  const entries = Arrays.range(1, maxLevel + 1).map((level) => {
+  const entries = Arrays.range([1, maxLevel + 1]).map((level) => {
     const existingValue = sparseRecord[level]
 
     if (Objects.isUndefined(existingValue)) {

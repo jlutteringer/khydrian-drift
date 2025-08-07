@@ -1,14 +1,14 @@
-import { isNumber as _isNumber } from 'lodash-es'
-
 export const isNumber = (value?: unknown): value is number => {
-  return _isNumber(value)
-}
+  if (value === null || value === undefined) {
+    return false
+  }
 
-export const isPositive = (value?: unknown): value is number => {
-  return isNumber(value) && value > 0
+  return typeof value === 'number' && !isNaN(value)
 }
 
 export const isEven = (d: number) => d % 2 === 0
+
+export const isOdd = (d: number) => d % 2 !== 0
 
 export enum RoundingMode {
   Nearest = 'Nearest',
@@ -17,7 +17,7 @@ export enum RoundingMode {
   HalfEven = 'HalfEven',
 }
 
-export const round = (value: number, scale: number, roundingMode: RoundingMode): number => {
+export const round = (value: number, scale: number, roundingMode: RoundingMode = RoundingMode.Nearest): number => {
   switch (roundingMode) {
     case RoundingMode.Nearest:
       return roundNearest(value, scale)
@@ -129,4 +129,8 @@ export const roundHalfEven = (value: number, scale: number): number => {
 
 export const random = (min: number, max: number): number => {
   return Math.random() * (max - min) + min
+}
+
+export const greatestCommonFactor = (first: number, second: number): number => {
+  return second === 0 ? first : greatestCommonFactor(second, first % second)
 }

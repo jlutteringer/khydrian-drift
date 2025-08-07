@@ -1,6 +1,7 @@
 import { ResourceKey } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
-import { Arrays, Entries, Objects } from '@bessemer/cornerstone'
+import { of, RecordEntry } from '@bessemer/cornerstone/entry'
+import { first } from '@bessemer/cornerstone/array'
+import { isNil, isPresent } from '@bessemer/cornerstone/object'
 
 export interface LocalStore<T> {
   setValue: (value: T | undefined) => void
@@ -8,11 +9,11 @@ export interface LocalStore<T> {
 }
 
 export interface LocalKeyValueStore<T> {
-  setValues: (entries: Array<Entry<T | undefined>>) => void
+  setValues: (entries: Array<RecordEntry<T | undefined>>) => void
   setValue: (key: ResourceKey, value: T | undefined) => void
 
-  getEntries: () => Array<Entry<T>>
-  getValues: (keys: Array<ResourceKey>) => Array<Entry<T>>
+  getEntries: () => Array<RecordEntry<T>>
+  getValues: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>
   getValue: (key: ResourceKey) => T | undefined
 }
 
@@ -22,46 +23,46 @@ export interface RemoteStore<T> {
 }
 
 export interface RemoteKeyValueStore<T> {
-  writeValues: (entries: Array<Entry<T | undefined>>) => Promise<void>
+  writeValues: (entries: Array<RecordEntry<T | undefined>>) => Promise<void>
   writeValue: (key: ResourceKey, value: T | undefined) => Promise<void>
 
-  fetchValues: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
+  fetchValues: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>
   fetchValue: (key: ResourceKey) => Promise<T | undefined>
 }
 
 export abstract class AbstractRemoteKeyValueStore<T> implements RemoteKeyValueStore<T> {
-  abstract writeValues: (entries: Array<Entry<T | undefined>>) => Promise<void>
+  abstract writeValues: (entries: Array<RecordEntry<T | undefined>>) => Promise<void>
 
   writeValue = async (key: ResourceKey, value: T | undefined): Promise<void> => {
-    await this.writeValues([Entries.of(key, value)])
+    await this.writeValues([of(key, value)])
   }
 
-  abstract fetchValues: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
+  abstract fetchValues: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>
 
   fetchValue = async (key: ResourceKey): Promise<T | undefined> => {
-    return Arrays.first(await this.fetchValues([key]))?.[1]
+    return first(await this.fetchValues([key]))?.[1]
   }
 }
 
 export abstract class AbstractLocalKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> implements LocalKeyValueStore<T> {
-  abstract setValues: (entries: Array<Entry<T | undefined>>) => void
+  abstract setValues: (entries: Array<RecordEntry<T | undefined>>) => void
 
   setValue = (key: ResourceKey, value: T | undefined): void => {
-    this.setValues([Entries.of(key, value)])
+    this.setValues([of(key, value)])
   }
 
-  abstract getEntries: () => Array<Entry<T>>
-  abstract getValues: (keys: Array<ResourceKey>) => Array<Entry<T>>
+  abstract getEntries: () => Array<RecordEntry<T>>
+  abstract getValues: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>
 
   getValue = (key: ResourceKey): T | undefined => {
-    return Arrays.first(this.getValues([key]))?.[1]
+    return first(this.getValues([key]))?.[1]
   }
 
-  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<Entry<T>>> => {
+  fetchValues = async (keys: Array<ResourceKey>): Promise<Array<RecordEntry<T>>> => {
     return this.getValues(keys)
   }
 
-  writeValues = async (entries: Array<Entry<T | undefined>>): Promise<void> => {
+  writeValues = async (entries: Array<RecordEntry<T | undefined>>): Promise<void> => {
     this.setValues(entries)
   }
 }
@@ -70,13 +71,13 @@ export const fromMap = <T>(): LocalKeyValueStore<T> => {
   const map = new Map<string, T>()
 
   return new (class extends AbstractLocalKeyValueStore<T> {
-    override getEntries = (): Array<Entry<T>> => {
+    override getEntries = (): Array<RecordEntry<T>> => {
       return Array.from(map.entries())
     }
 
-    override setValues = (entries: Entry<T | undefined>[]): void => {
+    override setValues = (entries: RecordEntry<T | undefined>[]): void => {
       entries.forEach(([key, value]) => {
-        if (Objects.isNil(value)) {
+        if (isNil(value)) {
           map.delete(key)
         } else {
           map.set(key, value)
@@ -84,8 +85,8 @@ export const fromMap = <T>(): LocalKeyValueStore<T> => {
       })
     }
 
-    override getValues = (keys: Array<ResourceKey>): Array<Entry<T>> => {
-      return keys.map((key) => Entries.of(key, map.get(key)!)).filter((it) => Objects.isPresent(it[1]))
+    override getValues = (keys: Array<ResourceKey>): Array<RecordEntry<T>> => {
+      return keys.map((key) => of(key, map.get(key)!)).filter((it) => isPresent(it[1]))
     }
   })()
 }

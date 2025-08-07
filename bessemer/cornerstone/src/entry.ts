@@ -1,21 +1,32 @@
-export type Entry<Value, Key = string> = [Key, Value]
+import Zod, { ZodType } from 'zod'
 
-export const of = <Value, Key = string>(key: Key, value: Value): Entry<Value, Key> => {
+export type Entry<Key, Value> = [Key, Value]
+export type RecordEntry<Value> = Entry<string, Value>
+
+export const schema = <Key, Value>(key: ZodType<Key>, value: ZodType<Value>): ZodType<Entry<Key, Value>> => {
+  return Zod.tuple([key ?? Zod.string(), value]) as ZodType<Entry<Key, Value>>
+}
+
+export const recordSchema = <Value>(value: ZodType<Value>): ZodType<RecordEntry<Value>> => {
+  return schema(Zod.string(), value)
+}
+
+export const of = <Key, Value>(key: Key, value: Value): Entry<Key, Value> => {
   return [key, value]
 }
 
-export const keys = <Key>(entries: Array<Entry<unknown, Key>>): Array<Key> => {
+export const keys = <Key>(entries: Array<Entry<Key, unknown>>): Array<Key> => {
   return entries.map((it) => it[0])
 }
 
-export const values = <T>(entries: Array<Entry<T>>): Array<T> => {
+export const values = <T>(entries: Array<Entry<unknown, T>>): Array<T> => {
   return entries.map((it) => it[1])
 }
 
-export const mapKeys = <Value, Key, NewKey>(entries: Array<Entry<Value, Key>>, mapper: (key: Key) => NewKey): Array<Entry<Value, NewKey>> => {
+export const mapKeys = <Key, Value, NewKey>(entries: Array<Entry<Key, Value>>, mapper: (key: Key) => NewKey): Array<Entry<NewKey, Value>> => {
   return entries.map(([key, value]) => of(mapper(key), value))
 }
 
-export const mapValues = <Value, Key, NewValue>(entries: Array<Entry<Value, Key>>, mapper: (key: Value) => NewValue): Array<Entry<NewValue, Key>> => {
+export const mapValues = <Key, Value, NewValue>(entries: Array<Entry<Key, Value>>, mapper: (key: Value) => NewValue): Array<Entry<Key, NewValue>> => {
   return entries.map(([key, value]) => of(key, mapper(value)))
 }

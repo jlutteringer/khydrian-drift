@@ -2,7 +2,7 @@ import { Trait, TraitFilter, TraitFilterProps, TraitReference } from '@simulacru
 import { ProgressionTables, Traits } from '@simulacrum/common'
 import { ProgressionTable } from '@simulacrum/common/progression-table'
 import { Referencable, Reference } from '@bessemer/cornerstone/reference'
-import { Arrays, Eithers, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Eithers, Objects, References } from '@bessemer/cornerstone'
 import { EvaluateExpression } from '@bessemer/cornerstone/expression'
 import { ApplicationContext } from '@simulacrum/common/application'
 
@@ -112,10 +112,10 @@ export const isAllowedValue = (choice: CharacterChoice, optionValue: CharacterOp
 
 export const validateSelection = (choices: ProgressionTable<CharacterChoice>, selection: CharacterSelection): number => {
   const entry = ProgressionTables.getEntries(choices).find(([_, choice]) => References.equals(choice.option, selection.option))
-  Preconditions.isPresent(entry)
+  Assertions.assertPresent(entry)
 
   const [level, choice] = entry
-  Preconditions.isTrue(isAllowedValue(choice, selection.selection))
+  Assertions.assert(isAllowedValue(choice, selection.selection))
 
   return level
 }

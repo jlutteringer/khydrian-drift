@@ -5,7 +5,7 @@ import { CharacterProgressionEntry } from '@simulacrum/common/character/characte
 import { use, useMemo, useState } from 'react'
 import { ProgressionTables } from '@simulacrum/common'
 import { CharacterChoice } from '@simulacrum/common/character/character-option'
-import { Objects, Preconditions } from '@bessemer/cornerstone'
+import { Assertions, Objects } from '@bessemer/cornerstone'
 import { Expressions } from '@bessemer/cornerstone/expression'
 import { ApplicationContext } from '@simulacrum/common/application'
 import { BessemerNext } from '@bessemer/framework-next'
@@ -46,7 +46,7 @@ export const useCharacterBuilder = ({ character }: CharacterBuilderProps): Chara
     if (!Objects.isPresent(selectedEntry)) {
       return null
     }
-    Preconditions.isPresent(selectedEntry.option)
+    Assertions.assertPresent(selectedEntry.option)
 
     const expressionContext = Characters.buildExpressionContext(characterSheet, application)
     const choice = CharacterOptions.evaluateChoice(

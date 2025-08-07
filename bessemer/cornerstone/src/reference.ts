@@ -1,6 +1,8 @@
-import { Comparators, Equalitors, Objects, Strings } from '@bessemer/cornerstone'
-import { Comparator } from '@bessemer/cornerstone/comparator'
+import { Comparator, compareBy, natural } from '@bessemer/cornerstone/comparator'
 import { NominalType } from '@bessemer/cornerstone/types'
+import { isString } from '@bessemer/cornerstone/string'
+import { isObject, isPresent, isUndefined } from '@bessemer/cornerstone/object'
+import { fromComparator } from '@bessemer/cornerstone/equalitor'
 
 export type ReferenceId<T extends string> = NominalType<string, ['ReferenceId', T]>
 
@@ -19,38 +21,38 @@ export interface Referencable<T extends Reference<string>> {
 export type ReferencableType<T extends Reference<string>> = T | Referencable<T>
 
 export const reference = <T extends string>(reference: Reference<T> | ReferenceId<T>, type: T, note?: string): Reference<typeof type> => {
-  if (!Strings.isString(reference)) {
+  if (!isString(reference)) {
     return reference
   }
 
   return {
     id: reference,
     type,
-    ...(Objects.isPresent(note) ? { note: note } : {}),
+    ...(isPresent(note) ? { note: note } : {}),
   }
 }
 
 export const isReferencable = (element: unknown): element is Referencable<Reference<string>> => {
-  if (!Objects.isObject(element)) {
+  if (!isObject(element)) {
     return false
   }
 
   const referencable = element as unknown as Referencable<Reference<string>>
-  return !Objects.isUndefined(referencable.reference)
+  return !isUndefined(referencable.reference)
 }
 
 export const isReference = (element: unknown): element is Reference<string> => {
-  if (!Objects.isObject(element)) {
+  if (!isObject(element)) {
     return false
   }
 
   const referencable = element as Reference<string>
-  return !Objects.isUndefined(referencable.id) && !Objects.isUndefined(referencable.type) && !Objects.isUndefined(referencable.note)
+  return !isUndefined(referencable.id) && !isUndefined(referencable.type) && !isUndefined(referencable.note)
 }
 
 export const getReference = <T extends Reference<string>>(reference: ReferencableType<T>): T => {
   const referencable = reference as Referencable<T>
-  if (Objects.isPresent(referencable.reference)) {
+  if (isPresent(referencable.reference)) {
     return referencable.reference
   } else {
     return reference as T
@@ -62,7 +64,7 @@ export const equals = <T extends string>(first: Reference<T>, second: Reference<
 }
 
 export const comparator = <T extends string>(): Comparator<Reference<T>> => {
-  return Comparators.compareBy((it) => it.id, Comparators.natural())
+  return compareBy((it) => it.id, natural())
 }
 
-export const equalitor = () => Equalitors.fromComparator(comparator())
+export const equalitor = () => fromComparator(comparator())

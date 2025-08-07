@@ -8,7 +8,7 @@ import { Characteristic, CharacteristicValue } from '@simulacrum/common/characte
 import { ResourcePoolState } from '@simulacrum/common/resource-pool'
 import { EvaluateExpression, ExpressionContext, Expressions, ExpressionVariable } from '@bessemer/cornerstone/expression'
 import { Abilities, Characteristics, Effects, ProgressionTables, ResourcePools } from '@simulacrum/common'
-import { Arrays, Eithers, Misc, Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Eithers, Misc, ObjectPaths, Objects, References } from '@bessemer/cornerstone'
 import { ApplicationContext } from '@simulacrum/common/application'
 import { UnknownRecord } from 'type-fest'
 
@@ -168,7 +168,7 @@ const buildInitialCharacteristics = (character: CharacterRecord, context: Applic
     // TODO we don't support non-numeric characteristics... not sure if we even should...
     const characteristic = initialCharacteristic as Characteristic<number>
     const attributeValue = Characteristics.simpleValue(0, characteristic, character.initialValues)
-    return Objects.applyPathValue({}, characteristic.path, attributeValue)
+    return ObjectPaths.applyValue({}, characteristic.path, attributeValue)
   })
 
   return Objects.deepMergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
@@ -186,7 +186,7 @@ const evaluateCharacteristics = (
     // TODO we don't support non-numeric characteristics... not sure if we even should...
     const characteristic = initialCharacteristic as Characteristic<number>
     const characteristicValue = Characteristics.evaluateCharacteristic(characteristic, character.initialValues, effects, evaluate)
-    return Objects.applyPathValue({}, characteristic.path, characteristicValue)
+    return ObjectPaths.applyValue({}, characteristic.path, characteristicValue)
   })
 
   return Objects.deepMergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
@@ -209,8 +209,8 @@ const evaluateResourcePools = (
 export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {
   const characterAttributes = context.client.ruleset.playerCharacteristics
   const attributeVariables = characterAttributes.map((it) => {
-    const characteristic = Objects.getPathValue(character.characteristics, it.path) as CharacteristicValue<unknown>
-    Preconditions.isPresent(characteristic)
+    const characteristic = ObjectPaths.getValue(character.characteristics, it.path) as CharacteristicValue<unknown>
+    Assertions.assertPresent(characteristic)
     return Expressions.buildVariable(it.variable, characteristic.value)
   })
 

@@ -11,13 +11,14 @@ import {
   NumericExpressions,
   ReducingExpression,
 } from '@bessemer/cornerstone/expression'
-import { Objects, Preconditions, References } from '@bessemer/cornerstone'
+import { Assertions, ObjectPaths, Objects, References } from '@bessemer/cornerstone'
+import { ObjectPath } from '@bessemer/cornerstone/object-path'
 
 export type CharacteristicReference<T> = Reference<'Characteristic'>
 
 export type CharacteristicTemplate<T> = Referencable<CharacteristicReference<T>> & {
   name: string
-  path: string
+  path: ObjectPath
   optimizer: ReducingExpression<T, T>
 }
 
@@ -35,7 +36,7 @@ export type CharacteristicValue<T> = AttributeValue<T> & {
   characteristic: CharacteristicReference<T>
 }
 
-export const defineTemplate = <T>(id: ReferenceType<CharacteristicReference<T>>, name: string, path: string): CharacteristicTemplate<T> => {
+export const defineTemplate = <T>(id: ReferenceType<CharacteristicReference<T>>, name: string, path: ObjectPath): CharacteristicTemplate<T> => {
   const reference = References.reference(id, 'Characteristic', name)
 
   return {
@@ -60,8 +61,8 @@ export const buildAttribute = <T>(characteristic: Characteristic<T>, initialValu
   if (Objects.isPresent(characteristic.baseValue)) {
     baseValue = characteristic.baseValue
   } else {
-    const initialValue = Objects.getPathValue(initialValues, characteristic.path)
-    Preconditions.isPresent(initialValue)
+    const initialValue = ObjectPaths.getValue(initialValues, characteristic.path)
+    Assertions.assertPresent(initialValue)
     baseValue = initialValue as T
   }
 

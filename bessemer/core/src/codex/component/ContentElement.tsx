@@ -8,7 +8,7 @@ import {
 } from '@bessemer/cornerstone/content'
 import { FetchContentOptions } from '@bessemer/core/codex'
 import { useFetchContent } from '@bessemer/core/codex/hooks/use-fetch-content'
-import { Arrays, Async, Objects } from '@bessemer/cornerstone'
+import { Arrays, AsyncValues, Objects } from '@bessemer/cornerstone'
 import { useBessemerCommonContext } from '@bessemer/framework-next/hooks/use-common-context'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import { ReactNode } from 'react'
@@ -31,7 +31,7 @@ export const ContentElement = <Content extends ContentData>({
 }: ContentElementProps<Content>) => {
   const response = useFetchContent(contentKey, sector, options)
 
-  return Async.handle(response, {
+  return AsyncValues.handle(response, {
     // TODO better loading indicator
     loading: () => <span>Loading...</span>,
     error: () => <span>{`Failed Loading Content: [${contentKey}]`}</span>,

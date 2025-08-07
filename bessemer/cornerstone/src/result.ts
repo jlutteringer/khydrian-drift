@@ -1,6 +1,6 @@
-import { Left, Right } from '@bessemer/cornerstone/either'
-import { Eithers, Promises } from '@bessemer/cornerstone'
+import { left, Left, right, Right } from '@bessemer/cornerstone/either'
 import { Throwable } from '@bessemer/cornerstone/types'
+import { isPromise } from '@bessemer/cornerstone/promise'
 
 export type Success<T> = Right<T> & {
   isSuccess: true
@@ -14,11 +14,11 @@ export type Result<T> = Success<T> | Failure
 export type AsyncResult<T> = Promise<Result<T>>
 
 export const success = <T>(value: T): Success<T> => {
-  return { ...Eithers.right(value), isSuccess: true }
+  return { ...right(value), isSuccess: true }
 }
 
 export const failure = (failure?: Throwable): Failure => {
-  return { ...Eithers.left(failure ?? null), isSuccess: false }
+  return { ...left(failure ?? null), isSuccess: false }
 }
 
 export const getValueOrThrow = <T>(result: Result<T>): T => {
@@ -34,7 +34,7 @@ export function tryValue<SOURCE_VALUE>(resolver: () => SOURCE_VALUE): Result<SOU
 export function tryValue<SOURCE_VALUE>(resolver: () => SOURCE_VALUE | Promise<SOURCE_VALUE>): Result<SOURCE_VALUE> | Promise<Result<SOURCE_VALUE>> {
   try {
     let result = resolver()
-    if (Promises.isPromise(result)) {
+    if (isPromise(result)) {
       return result.then((it) => success(it)).catch((it) => failure(it))
     } else {
       return success(result)
@@ -49,7 +49,7 @@ export function tryResult<SOURCE_VALUE>(resolver: () => AsyncResult<SOURCE_VALUE
 export function tryResult<SOURCE_VALUE>(resolver: () => Result<SOURCE_VALUE> | AsyncResult<SOURCE_VALUE>): ReturnType<typeof resolver> {
   try {
     let result = resolver()
-    if (Promises.isPromise(result)) {
+    if (isPromise(result)) {
       return result.catch((it) => failure(it))
     } else {
       return result

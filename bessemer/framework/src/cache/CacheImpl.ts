@@ -2,7 +2,7 @@ import { Cache, CacheEntry, CacheKey, CacheProvider, CacheSector } from '@bessem
 import { AdvisoryLocks, BessemerApplicationContext, GlobalContextType } from '@bessemer/framework'
 import { Arrays, Async, Entries, Loggers } from '@bessemer/cornerstone'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 const logger = Loggers.child('CacheImpl')
 
@@ -24,8 +24,8 @@ export class CacheImpl<T> implements Cache<T> {
   fetchValues = async (
     initialNamespace: ResourceNamespace,
     keys: Array<ResourceKey>,
-    fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
-  ): Promise<Array<Entry<T>>> => {
+    fetch: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>
+  ): Promise<Array<RecordEntry<T>>> => {
     if (CacheKey.isDisabled(initialNamespace)) {
       return await fetch(keys)
     }
@@ -61,11 +61,11 @@ export class CacheImpl<T> implements Cache<T> {
     return results
   }
 
-  private async getCachedValues(namespacedKeys: Array<ResourceKey>, allowStale: boolean = true): Promise<Array<Entry<CacheEntry<T>>>> {
+  private async getCachedValues(namespacedKeys: Array<ResourceKey>, allowStale: boolean = true): Promise<Array<RecordEntry<CacheEntry<T>>>> {
     let remainingKeys = namespacedKeys
-    const results: Array<Entry<CacheEntry<T>>> = []
+    const results: Array<RecordEntry<CacheEntry<T>>> = []
 
-    const providerMisses = new Map<CacheProvider<T>, Array<Entry<CacheEntry<T>>>>()
+    const providerMisses = new Map<CacheProvider<T>, Array<RecordEntry<CacheEntry<T>>>>()
 
     for (const provider of this.providers) {
       if (Arrays.isEmpty(remainingKeys)) {
@@ -97,8 +97,8 @@ export class CacheImpl<T> implements Cache<T> {
 
   private revalidate(
     namespace: ResourceNamespace,
-    entries: Array<Entry<CacheEntry<T>>>,
-    fetch: (keys: Array<ResourceKey>) => Promise<Array<Entry<T>>>
+    entries: Array<RecordEntry<CacheEntry<T>>>,
+    fetch: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>
   ): void {
     Async.execute(async () => {
       const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
@@ -118,7 +118,7 @@ export class CacheImpl<T> implements Cache<T> {
     await this.writeValues(namespace, [Entries.of(key, value)])
   }
 
-  writeValues = async (initialNamespace: ResourceNamespace, entries: Array<Entry<T | undefined>>): Promise<void> => {
+  writeValues = async (initialNamespace: ResourceNamespace, entries: Array<RecordEntry<T | undefined>>): Promise<void> => {
     if (CacheKey.isDisabled(initialNamespace)) {
       return
     }
@@ -131,7 +131,7 @@ export class CacheImpl<T> implements Cache<T> {
     return this.writeValueInternal(namespacedEntries)
   }
 
-  private writeValueInternal = async (entries: Array<Entry<CacheEntry<T> | undefined>>): Promise<void> => {
+  private writeValueInternal = async (entries: Array<RecordEntry<CacheEntry<T> | undefined>>): Promise<void> => {
     await Promise.all(this.providers.map((provider) => provider.writeValues(entries)))
   }
 

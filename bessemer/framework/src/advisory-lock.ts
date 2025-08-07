@@ -1,13 +1,13 @@
 import { Duration } from '@bessemer/cornerstone/duration'
 import { RetryProps } from '@bessemer/cornerstone/retry'
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Arrays, Durations, Loggers, Objects, Preconditions, Results, Retry } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Durations, Loggers, Objects, Results, Retry } from '@bessemer/cornerstone'
 import { BessemerApplicationContext, GlobalContextType } from '@bessemer/framework/index'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { Unit } from '@bessemer/cornerstone/unit'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
-import { Entry } from '@bessemer/cornerstone/entry'
+import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { Arrayable, PartialDeep } from 'type-fest'
 
 const logger = Loggers.child('AdvisoryLock')
@@ -20,10 +20,10 @@ export type AdvisoryLockProps = {
 export type AdvisoryLockOptions = PartialDeep<AdvisoryLockProps>
 
 export const DefaultAdvisoryLockProps: AdvisoryLockProps = {
-  duration: Durations.ofSeconds(5),
+  duration: Durations.fromSeconds(5),
   retry: {
     attempts: 10,
-    delay: Durations.ofMilliseconds(300),
+    delay: Durations.fromMilliseconds(300),
   },
 }
 
@@ -66,12 +66,12 @@ export const usingLock = async <T>(
 export const usingIncrementalLocks = async <T>(
   resourceKeys: Array<ResourceKey>,
   context: GlobalContextType<BessemerApplicationContext>,
-  fetchIncrementalValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
-  computeValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<Entry<T>>>,
+  fetchIncrementalValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>,
+  computeValues: (resourceKeys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>,
   options: AdvisoryLockOptions = {}
-): Promise<Array<Entry<T>>> => {
+): Promise<Array<RecordEntry<T>>> => {
   let remainingKeys = resourceKeys
-  const incrementalResults: Array<Entry<T>> = []
+  const incrementalResults: Array<RecordEntry<T>> = []
 
   const result = await Retry.usingRetry(async () => {
     logger.trace(() => `usingIncrementalLocks - Fetching incremental values: ${JSON.stringify(remainingKeys)}`)
@@ -167,7 +167,7 @@ export const acquireLock = async (
   context: GlobalContextType<BessemerApplicationContext>,
   options: AdvisoryLockOptions = {}
 ): AsyncResult<AdvisoryLock> => {
-  Preconditions.isFalse(Arrays.isEmpty(resourceKeys), () => `Illegal call to acquireLock with empty resourceKeys`)
+  Assertions.assert(!Arrays.isEmpty(Arrays.toArray(resourceKeys)), () => `Illegal call to acquireLock with empty resourceKeys`)
 
   const sortedKeys = Arrays.sort(Arrays.toArray(resourceKeys))
   const props = Objects.deepMerge(DefaultAdvisoryLockProps, options)

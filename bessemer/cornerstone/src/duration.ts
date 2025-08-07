@@ -1,57 +1,49 @@
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
+import Zod, { ZodType } from 'zod'
 
-export type Millisecond = NominalType<number, 'Millisecond'>
-export type Second = NominalType<number, 'Second'>
-export type Minute = NominalType<number, 'Minute'>
-export type Hour = NominalType<number, 'Hour'>
-export type Day = NominalType<number, 'Day'>
+export type Duration = TaggedType<number, 'Duration'>
+export const Schema: ZodType<Duration> = Zod.number() as any
 
-export type Duration = {
-  value: Millisecond
+export const fromMilliseconds = (value: number): Duration => {
+  return value as Duration
 }
 
-export const ofMilliseconds = (value: Millisecond) => {
-  return {
-    value,
-  }
+export const toMilliseconds = (duration: Duration): number => {
+  return duration
 }
 
-export const inMilliseconds = (duration: Duration) => {
-  return duration.value
+export const fromSeconds = (value: number): Duration => {
+  return fromMilliseconds(value * 1000)
 }
 
-export const ofSeconds = (value: Second) => {
-  return ofMilliseconds(value * 1000)
+export const toSeconds = (duration: Duration): number => {
+  return toMilliseconds(duration) / 1000
 }
 
-export const inSeconds = (duration: Duration) => {
-  return inMilliseconds(duration) / 1000
+export const fromMinutes = (value: number): Duration => {
+  return fromSeconds(value * 60)
 }
 
-export const ofMinutes = (value: Minute) => {
-  return ofSeconds(value * 60)
+export const toMinutes = (duration: Duration): number => {
+  return toSeconds(duration) / 60
 }
 
-export const inMinutes = (duration: Duration) => {
-  return inSeconds(duration) / 60
+export const fromHours = (value: number): Duration => {
+  return fromMinutes(value * 60)
 }
 
-export const ofHours = (value: Hour) => {
-  return ofMinutes(value * 60)
+export const toHours = (duration: Duration): number => {
+  return toMinutes(duration) / 60
 }
 
-export const inHours = (duration: Duration) => {
-  return inMinutes(duration) / 60
+export const fromDays = (value: number): Duration => {
+  return fromHours(value * 24)
 }
 
-export const ofDays = (value: Day) => {
-  return ofHours(value * 24)
+export const toDays = (duration: Duration): number => {
+  return toHours(duration) / 24
 }
 
-export const inDays = (duration: Duration) => {
-  return inHours(duration) / 24
-}
-
-export const Zero = ofMilliseconds(0)
-export const OneDay = ofDays(1)
-export const OneHour = ofHours(1)
+export const Zero = fromMilliseconds(0)
+export const OneDay = fromDays(1)
+export const OneHour = fromHours(1)
