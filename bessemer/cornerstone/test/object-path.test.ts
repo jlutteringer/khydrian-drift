@@ -31,8 +31,9 @@ describe('ObjectPaths.of', () => {
     expect(result).toEqual(['_private', '$special', 'user_data'])
   })
 
-  test('should throw error for empty array', () => {
-    expect(() => ObjectPaths.of([])).toThrow()
+  test('should work for empty array', () => {
+    const result = ObjectPaths.of([])
+    expect(result).toEqual([])
   })
 
   test('should handle complex mixed path', () => {

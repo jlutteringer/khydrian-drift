@@ -12,7 +12,6 @@ export type ObjectPath = TaggedType<Array<string | number>, 'ObjectPath'>
 export const Schema: ZodType<ObjectPath> = Zod.array(Zod.union([Zod.string(), Zod.number()])) as any
 
 export const of = (value: Array<string | number>): ObjectPath => {
-  assert(!isEmpty(value))
   return value as ObjectPath
 }
 
@@ -46,6 +45,10 @@ export const getValue = (object: UnknownRecord, path: ObjectPath): unknown => {
 }
 
 export const applyValue = (object: UnknownRecord, path: ObjectPath, valueToApply: unknown): unknown => {
+  if (isEmpty(path)) {
+    return valueToApply
+  }
+
   return produce(object, (draft) => {
     const rest = path.slice(0, -1)
     const last = path[path.length - 1]!
