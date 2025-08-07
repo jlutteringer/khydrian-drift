@@ -10,7 +10,7 @@ import {
   CacheWriteRequestSchema,
 } from '@bessemer/client/cache/types'
 import { isErrorFromPath, makeApi, Zodios } from '@zodios/core'
-import Zod from 'zod'
+import Zod from 'zod/v4'
 
 const CacheApi = makeApi([
   {

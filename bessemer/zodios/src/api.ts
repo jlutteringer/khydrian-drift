@@ -237,6 +237,7 @@ export function makeCrudApi<T extends string, S extends z.ZodObject<z.ZodRawShap
           name: 'body',
           type: 'Body',
           description: 'The object to create',
+          // @ts-expect-error
           schema: schema.partial() as z.Schema<Partial<Schema>>,
         },
       ],
@@ -274,6 +275,7 @@ export function makeCrudApi<T extends string, S extends z.ZodObject<z.ZodRawShap
           name: 'body',
           type: 'Body',
           description: 'The object to patch',
+          // @ts-expect-error
           schema: schema.partial() as z.Schema<Partial<Schema>>,
         },
       ],

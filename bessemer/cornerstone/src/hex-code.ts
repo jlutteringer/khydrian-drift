@@ -1,4 +1,4 @@
-import Zod, { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod/v4'
 import { TaggedType } from '@bessemer/cornerstone/types'
 
 export type HexCode = TaggedType<string, 'HexCode'>

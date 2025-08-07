@@ -1,5 +1,5 @@
 import { TaggedType } from '@bessemer/cornerstone/types'
-import Zod, { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod/v4'
 
 export type CurrencyCode = TaggedType<string, 'CurrencyCode'>
 export const Schema: ZodType<CurrencyCode> = Zod.string()

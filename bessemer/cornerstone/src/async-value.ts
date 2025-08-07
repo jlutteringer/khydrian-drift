@@ -1,4 +1,4 @@
-import Zod, { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod/v4'
 import { isNil } from '@bessemer/cornerstone/object'
 
 export type PendingValue = {

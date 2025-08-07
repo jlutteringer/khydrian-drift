@@ -1,4 +1,4 @@
-import { BRAND as ZODBRAND } from 'zod'
+import { $brand } from 'zod/v4'
 
 export interface NominalTyping<NominalTypingT> {
   _type?: NominalTypingT
@@ -9,7 +9,7 @@ export type NominalType<T, NominalTypingT> = T & NominalTyping<NominalTypingT>
 export type Alias<T> = NominalType<T, any>
 
 export type TaggedTyping<TaggedTypingT extends string | number | symbol> = {
-  [ZODBRAND]: {
+  [$brand]: {
     [k in TaggedTypingT]: true
   }
 }

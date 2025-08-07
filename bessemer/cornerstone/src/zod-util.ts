@@ -2,6 +2,7 @@ import Zod, { ZodType } from 'zod/v4'
 import { ResourceKey } from '@bessemer/cornerstone/resource'
 import { parse as jsonParse } from '@bessemer/cornerstone/json'
 import { failure, getValueOrThrow, Result, success } from '@bessemer/cornerstone/result'
+import { Assertions } from '@bessemer/cornerstone/index'
 
 export const parse = <T extends ZodType>(type: T, data: unknown): Result<Zod.infer<T>> => {
   const result = type.safeParse(data)
@@ -26,7 +27,9 @@ export const parseJson = <T extends ZodType>(type: T, data: string): Result<Zod.
 }
 
 export const parseJsonOrThrow = <T extends ZodType>(type: T, data: string): Zod.infer<T> => {
-  return parseJson(type, data)
+  const result = parseJson(type, data)
+  Assertions.assert(result.isSuccess)
+  return result.value
 }
 
 export const arrayable = <T>(type: ZodType<T>) => {

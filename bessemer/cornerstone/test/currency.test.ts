@@ -1,5 +1,5 @@
 import { Currencies } from '@bessemer/cornerstone'
-import { ZodError } from 'zod'
+import { ZodError } from 'zod/v4'
 
 test('Currencies.Schema - valid inputs', () => {
   expect(Currencies.Schema.parse('USD')).toBe('USD')

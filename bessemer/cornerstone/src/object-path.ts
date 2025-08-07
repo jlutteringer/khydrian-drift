@@ -1,5 +1,5 @@
 import { TaggedType } from '@bessemer/cornerstone/types'
-import Zod, { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod/v4'
 import { UnknownRecord } from 'type-fest'
 import { isObject } from '@bessemer/cornerstone/object'
 import { produce } from 'immer'

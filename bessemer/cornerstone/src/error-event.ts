@@ -1,6 +1,6 @@
 import { Dictionary, NominalType, Throwable } from '@bessemer/cornerstone/types'
 import { deepMerge, isNil, isObject, isPresent, RecordAttribute } from '@bessemer/cornerstone/object'
-import Zod, { ZodType } from 'zod'
+import Zod, { ZodType } from 'zod/v4'
 import { evaluate, LazyValue } from '@bessemer/cornerstone/lazy'
 import { findInCausalChain as errorsFindInCausalChain, isError } from '@bessemer/cornerstone/error'
 import { isPromise } from '@bessemer/cornerstone/promise'
