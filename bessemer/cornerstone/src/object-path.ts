@@ -7,6 +7,7 @@ import { isNumber } from '@bessemer/cornerstone/math'
 import { isString } from '@bessemer/cornerstone/string'
 import { assert } from '@bessemer/cornerstone/assertion'
 import { isEmpty } from '@bessemer/cornerstone/array'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
 
 export type ObjectPath = TaggedType<Array<string | number>, 'ObjectPath'>
 export const Schema: ZodType<ObjectPath> = Zod.array(Zod.union([Zod.string(), Zod.number()])) as any
@@ -41,12 +42,23 @@ export const fromString = (path: string): ObjectPath => {
 }
 
 export const getValue = (object: UnknownRecord, path: ObjectPath): unknown => {
-  let value: any = object
-  for (const key of path) {
-    value = getIndexValueOrThrow(value, key, object, path)
-  }
+  const result = getValueResult(object, path)
 
-  return value
+  if (result.isSuccess) {
+    return result.value
+  } else {
+    throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
+  }
+}
+
+export const findValue = (object: UnknownRecord, path: ObjectPath): unknown | undefined => {
+  const result = getValueResult(object, path)
+
+  if (result.isSuccess) {
+    return result.value
+  } else {
+    return undefined
+  }
 }
 
 export const applyValue = (object: UnknownRecord, path: ObjectPath, valueToApply: unknown): unknown => {
@@ -65,22 +77,28 @@ export const applyValue = (object: UnknownRecord, path: ObjectPath, valueToApply
   })
 }
 
-const getIndexValueOrThrow = (value: any, key: string | number, object: UnknownRecord, path: ObjectPath): any => {
-  if (isNumber(key) && Array.isArray(value)) {
-    if (key < 0 || key >= value.length) {
-      throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
-    }
+const getValueResult = (object: UnknownRecord, path: ObjectPath): Result<any> => {
+  let value: any = object
 
-    return value[key]
-  } else if (isString(key) && isObject(value)) {
-    if (!(key in value)) {
-      throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
-    }
+  for (const key of path) {
+    if (isNumber(key) && Array.isArray(value)) {
+      if (key < 0 || key >= value.length) {
+        return failure()
+      }
 
-    return value[key]
-  } else {
-    throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
+      value = value[key]
+    } else if (isString(key) && isObject(value)) {
+      if (!(key in value)) {
+        return failure()
+      }
+
+      value = value[key]
+    } else {
+      return failure()
+    }
   }
+
+  return success(value)
 }
 
 const assertLegalIndex = (value: any, key: string | number, object: UnknownRecord, path: ObjectPath): void => {
