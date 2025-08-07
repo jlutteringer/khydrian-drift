@@ -15,8 +15,8 @@ export const of = (value: Array<string | number>): ObjectPath => {
   return value as ObjectPath
 }
 
-const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\d+])*$/
-const ObjectPathPartRegex = /([^.\[\]]+)|\[(\d+)]/g
+const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\.\d+|\[\d+])*$/
+const ObjectPathPartRegex = /([a-zA-Z_$][a-zA-Z0-9_$]*)|\[(\d+)]|\.(\d+)/g
 
 export const fromString = (path: string): ObjectPath => {
   assert(ObjectPathRegex.test(path), () => `Unable to parse ObjectPath from string: ${path}`)
@@ -26,9 +26,14 @@ export const fromString = (path: string): ObjectPath => {
   let match: RegExpExecArray | null
   while ((match = ObjectPathPartRegex.exec(path)) !== null) {
     if (match[1] !== undefined) {
+      // Property name (e.g., 'users', 'profile')
       result.push(match[1])
     } else if (match[2] !== undefined) {
+      // Bracket notation array index (e.g., [0])
       result.push(Number(match[2]))
+    } else if (match[3] !== undefined) {
+      // Dot notation array index (e.g., .0)
+      result.push(Number(match[3]))
     }
   }
 

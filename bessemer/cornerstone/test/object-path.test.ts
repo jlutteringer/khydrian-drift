@@ -187,6 +187,56 @@ describe('ObjectPaths.fromString', () => {
     const result = ObjectPaths.fromString(`${longName}.${longName}`)
     expect(result).toEqual([longName, longName])
   })
+
+  test('should parse array index with dot notation', () => {
+    const result = ObjectPaths.fromString('items.0')
+    expect(result).toEqual(['items', 0])
+  })
+
+  test('should parse multiple array indices with dot notation', () => {
+    const result = ObjectPaths.fromString('matrix.0.1.2')
+    expect(result).toEqual(['matrix', 0, 1, 2])
+  })
+
+  test('should parse mixed property and array access with dot notation', () => {
+    const result = ObjectPaths.fromString('users.0.profile.tags.2')
+    expect(result).toEqual(['users', 0, 'profile', 'tags', 2])
+  })
+
+  test('should parse complex nested path with dot notation array indices', () => {
+    const result = ObjectPaths.fromString('company.departments.0.employees.1.skills.2')
+    expect(result).toEqual(['company', 'departments', 0, 'employees', 1, 'skills', 2])
+  })
+
+  test('should parse mixed bracket and dot notation array indices', () => {
+    const result = ObjectPaths.fromString('users[0].profile.tags.2')
+    expect(result).toEqual(['users', 0, 'profile', 'tags', 2])
+  })
+
+  test('should parse mixed dot and bracket notation array indices', () => {
+    const result = ObjectPaths.fromString('users.0.profile.tags[2]')
+    expect(result).toEqual(['users', 0, 'profile', 'tags', 2])
+  })
+
+  test('should parse large array indices with dot notation', () => {
+    const result = ObjectPaths.fromString('items.999.data.1234')
+    expect(result).toEqual(['items', 999, 'data', 1234])
+  })
+
+  test('should parse zero array index with dot notation', () => {
+    const result = ObjectPaths.fromString('items.0')
+    expect(result).toEqual(['items', 0])
+  })
+
+  test('should parse single digit array indices with dot notation', () => {
+    const result = ObjectPaths.fromString('data.0.info.5.value.9')
+    expect(result).toEqual(['data', 0, 'info', 5, 'value', 9])
+  })
+
+  test('should parse alternating property names and dot notation indices', () => {
+    const result = ObjectPaths.fromString('level1.0.level2.1.level3.2')
+    expect(result).toEqual(['level1', 0, 'level2', 1, 'level3', 2])
+  })
 })
 
 describe('ObjectPaths.getValue', () => {

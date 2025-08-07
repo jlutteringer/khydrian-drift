@@ -1,7 +1,7 @@
 {
   "name": "@bessemer/zodios",
   "type": "module",
-  "version": "0.5.44",
+  "version": "0.5.68",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
