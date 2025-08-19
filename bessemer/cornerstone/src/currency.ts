@@ -2,7 +2,7 @@ import { TaggedType } from '@bessemer/cornerstone/types'
 import Zod, { ZodType } from 'zod'
 
 export type CurrencyCode = TaggedType<string, 'CurrencyCode'>
-export const Schema: ZodType<CurrencyCode> = Zod.string()
+export const Schema: ZodType<CurrencyCode, CurrencyCode> = Zod.string()
   .trim()
   .regex(/^[a-zA-Z]{3}$/, 'Currency Code must be exactly 3 letters')
   .transform((val) => val.toUpperCase()) as any

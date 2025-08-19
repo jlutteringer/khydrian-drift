@@ -51,7 +51,7 @@ export type SettledValue<T> = {
 
 export type AsyncValue<T> = PendingValue | LoadingValue | ErrorValue | FetchingValueSuccess<T> | FetchingValueError | SettledValue<T>
 
-export const schema = <T>(_: ZodType<T>): ZodType<AsyncValue<T>> => {
+export const schema = <T extends ZodType>(_: T): ZodType<AsyncValue<Zod.infer<T>>> => {
   return Zod.object({
     isSuccess: Zod.boolean(),
     isError: Zod.boolean(),

@@ -11,7 +11,7 @@ export type MonetaryAmount = {
   currency: CurrencyCode
 }
 
-export const Schema: ZodType<MonetaryAmount> = Zod.object({
+export const Schema: ZodType<MonetaryAmount, MonetaryAmount> = Zod.object({
   amount: Zod.number().int(),
   currency: CurrencyCodeSchema,
 })
