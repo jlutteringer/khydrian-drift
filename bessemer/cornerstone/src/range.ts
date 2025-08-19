@@ -6,7 +6,7 @@ import { isUndefined } from '@bessemer/cornerstone/object'
 export type Bounds<T> = TaggedType<[T | null, T | null], 'Bounds'>
 export type BoundsInput<T> = [lower: T | null, upper?: T | null] | Bounds<T>
 
-export const schema = <T extends ZodType>(type: T): ZodType<Bounds<Zod.infer<T>>> => {
+export const schema = <T extends ZodType>(type: T): ZodType<Bounds<Zod.infer<T>>, Bounds<Zod.infer<T>>> => {
   return Zod.tuple([type.nullable(), type.nullable()]) as any
 }
 
