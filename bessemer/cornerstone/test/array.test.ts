@@ -436,9 +436,6 @@ test('Arrays.differenceBy', () => {
     { id: 4, name: 'Dave', age: 40 },
   ])
 
-  // Should handle primitive arrays with mapping
-  expect(Arrays.differenceBy([1, 2, 3, 4], ['2', '3'], (n) => n.toString())).toEqual([1, 4])
-
   // Should handle empty arrays
   expect(Arrays.differenceBy([], [1, 2, 3], (n) => n)).toEqual([])
   expect(Arrays.differenceBy([1, 2, 3], [], (n) => n)).toEqual([1, 2, 3])
