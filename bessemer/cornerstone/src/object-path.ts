@@ -1,5 +1,5 @@
 import { TaggedType } from '@bessemer/cornerstone/types'
-import Zod, { ZodType } from 'zod'
+import Zod from 'zod'
 import { UnknownRecord } from 'type-fest'
 import { isObject } from '@bessemer/cornerstone/object'
 import { produce } from 'immer'
@@ -10,11 +10,12 @@ import { isEmpty } from '@bessemer/cornerstone/array'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 
 export type ObjectPath = TaggedType<Array<string | number>, 'ObjectPath'>
-export const Schema: ZodType<ObjectPath> = Zod.array(Zod.union([Zod.string(), Zod.number()])) as any
 
 export const of = (value: Array<string | number>): ObjectPath => {
   return value as ObjectPath
 }
+
+export const Schema = Zod.array(Zod.union([Zod.string(), Zod.number()])).transform(of)
 
 const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\.\d+|\[\d+])*$/
 const ObjectPathPartRegex = /([a-zA-Z_$][a-zA-Z0-9_$]*)|\[(\d+)]|\.(\d+)/g

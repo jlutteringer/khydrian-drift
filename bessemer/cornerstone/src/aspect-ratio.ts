@@ -1,16 +1,17 @@
-import Zod, { ZodType } from 'zod'
+import Zod from 'zod'
 import { greatestCommonFactor } from '@bessemer/cornerstone/math'
 import { TaggedType } from '@bessemer/cornerstone/types'
 
 export type AspectRatio = TaggedType<string, 'AspectRatio'>
 
-export const Schema: ZodType<AspectRatio> = Zod.string()
-  .trim()
-  .regex(/^[1-9]\d*:[1-9]\d*$/, `Aspect Ratio must be in the format 'width:height' (e.g., '16:9', '4:3')`) as any
-
 export const of = (aspectRatio: string): AspectRatio => {
   return aspectRatio as AspectRatio
 }
+
+export const Schema = Zod.string()
+  .trim()
+  .regex(/^[1-9]\d*:[1-9]\d*$/, `Aspect Ratio must be in the format 'width:height' (e.g., '16:9', '4:3')`)
+  .transform(of)
 
 export const fromString = (aspectRatio: string): AspectRatio => {
   return Schema.parse(aspectRatio)

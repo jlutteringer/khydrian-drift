@@ -1,12 +1,15 @@
 import { TaggedType } from '@bessemer/cornerstone/types'
-import Zod, { ZodType } from 'zod'
+import Zod from 'zod'
 
 export type MimeLiteral = TaggedType<string, 'MimeType'>
-export const Schema: ZodType<MimeLiteral> = Zod.string().regex(/^[\w-]+\/[\w.+-]+$/, 'Invalid MIME type format') as any
 
 export const of = (value: string): MimeLiteral => {
   return value as MimeLiteral
 }
+
+export const Schema = Zod.string()
+  .regex(/^[\w-]+\/[\w.+-]+$/, 'Invalid MIME type format')
+  .transform(of)
 
 export const fromString = (value: string): MimeLiteral => {
   return Schema.parse(value)

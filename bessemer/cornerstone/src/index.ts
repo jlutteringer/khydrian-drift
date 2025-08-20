@@ -46,8 +46,12 @@ import * as Json from '@bessemer/cornerstone/json'
 import * as AspectRatios from '@bessemer/cornerstone/aspect-ratio'
 import * as DataSizes from '@bessemer/cornerstone/data-size'
 import * as MimeTypes from '@bessemer/cornerstone/mime-type'
-import * as Currencies from '@bessemer/cornerstone/currency'
 import * as MonetaryAmounts from '@bessemer/cornerstone/monetary-amount'
+import * as CurrencyCodes from '@bessemer/cornerstone/intl/currency-code'
+import * as CountryCodes from '@bessemer/cornerstone/intl/country-code'
+import * as CountrySubdivisionCodes from '@bessemer/cornerstone/intl/country-subdivision-code'
+import * as LanguageCodes from '@bessemer/cornerstone/intl/language-code'
+import * as Locales from '@bessemer/cornerstone/intl/locale'
 
 export {
   Objects,
@@ -97,6 +101,10 @@ export {
   AspectRatios,
   DataSizes,
   MimeTypes,
-  Currencies,
+  CurrencyCodes,
   MonetaryAmounts,
+  CountryCodes,
+  CountrySubdivisionCodes,
+  LanguageCodes,
+  Locales,
 }

@@ -1,5 +1,5 @@
-import { CurrencyCode, Schema as CurrencyCodeSchema } from '@bessemer/cornerstone/currency'
-import Zod, { ZodType } from 'zod'
+import { CurrencyCode, Schema as CurrencyCodeSchema } from '@bessemer/cornerstone/intl/currency-code'
+import Zod from 'zod'
 import { isNil } from '@bessemer/cornerstone/object'
 import { roundHalfEven } from '@bessemer/cornerstone/math'
 import { Comparator as IComparator, natural } from '@bessemer/cornerstone/comparator'
@@ -11,7 +11,7 @@ export type MonetaryAmount = {
   currency: CurrencyCode
 }
 
-export const Schema: ZodType<MonetaryAmount, MonetaryAmount> = Zod.object({
+export const Schema = Zod.object({
   amount: Zod.number().int(),
   currency: CurrencyCodeSchema,
 })

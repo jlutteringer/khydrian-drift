@@ -1,14 +1,15 @@
 import { TaggedType } from '@bessemer/cornerstone/types'
-import Zod, { ZodType } from 'zod'
+import Zod from 'zod'
 import { isNil } from '@bessemer/cornerstone/object'
 import { padStart } from '@bessemer/cornerstone/string'
 
 export type Uuid = TaggedType<string, 'Uuid'>
-export const Schema: ZodType<Uuid> = Zod.string().uuid() as any
 
 export const of = (value: string): Uuid => {
   return value as Uuid
 }
+
+export const Schema = Zod.uuid().transform(of)
 
 export const fromString = (value: string): Uuid => {
   return Schema.parse(value)
