@@ -1,33 +1,35 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 import { UnknownRecord } from 'type-fest'
 import { isObject } from '@bessemer/cornerstone/object'
 import { produce } from 'immer'
-import { isNumber } from '@bessemer/cornerstone/math'
-import { isString } from '@bessemer/cornerstone/string'
 import { assert } from '@bessemer/cornerstone/assertion'
 import { isEmpty } from '@bessemer/cornerstone/array'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { GetWithPath, ToPath } from 'type-fest/source/get'
 
-export type ObjectPath = TaggedType<Array<string | number>, 'ObjectPath'>
+export type ObjectPath<T extends Array<string> = Array<string>> = T
 
-export const of = (value: Array<string | number>): ObjectPath => {
-  return value as ObjectPath
+type ToStringArray<T extends Array<string | number>> = {
+  [K in keyof T]: T[K] extends string | number ? `${T[K]}` : never
+}
+
+export const of = <T extends Array<string | number>>(value: T): ObjectPath<ToStringArray<T>> => {
+  return value.map((it) => `${it}`) as ObjectPath<ToStringArray<T>>
 }
 
 const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\.\d+)*$/
 
-export const fromString = (path: string): ObjectPath => {
+export const fromString = <T extends string>(path: T): ObjectPath<ToPath<T>> => {
   assert(ObjectPathRegex.test(path), () => `Unable to parse ObjectPath from string: ${path}`)
 
-  const result: Array<string | number> = []
+  const result: Array<string> = []
 
   const parts = path.split('.')
 
   for (const part of parts) {
     if (/^\d+$/.test(part)) {
       // Handle numeric index like "2" in "users.accounts.2.name"
-      result.push(Number(part))
+      result.push(part)
     } else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(part)) {
       // Handle regular property name
       result.push(part)
@@ -36,7 +38,7 @@ export const fromString = (path: string): ObjectPath => {
     }
   }
 
-  return of(result) as ObjectPath
+  return of(result) as ObjectPath<ToPath<T>>
 }
 
 export const Schema = Zod.union([Zod.array(Zod.union([Zod.string(), Zod.number()])), Zod.string()]).transform((it) => {
@@ -47,7 +49,7 @@ export const Schema = Zod.union([Zod.array(Zod.union([Zod.string(), Zod.number()
   }
 })
 
-export const getValue = (object: UnknownRecord, path: ObjectPath): unknown => {
+export const getValue = <N extends UnknownRecord, T extends Array<string>>(object: N, path: ObjectPath<T>): GetWithPath<N, T> => {
   const result = getValueResult(object, path)
 
   if (result.isSuccess) {
@@ -57,7 +59,7 @@ export const getValue = (object: UnknownRecord, path: ObjectPath): unknown => {
   }
 }
 
-export const findValue = (object: UnknownRecord, path: ObjectPath): unknown | undefined => {
+export const findValue = <N extends UnknownRecord, T extends Array<string>>(object: N, path: ObjectPath<T>): GetWithPath<N, T> | undefined => {
   const result = getValueResult(object, path)
 
   if (result.isSuccess) {
@@ -87,13 +89,14 @@ const getValueResult = (object: UnknownRecord, path: ObjectPath): Result<any> =>
   let value: any = object
 
   for (const key of path) {
-    if (isNumber(key) && Array.isArray(value)) {
-      if (key < 0 || key >= value.length) {
+    if (Array.isArray(value)) {
+      const numberKey = Number(key)
+      if (numberKey < 0 || numberKey >= value.length) {
         return failure()
       }
 
-      value = value[key]
-    } else if (isString(key) && isObject(value)) {
+      value = value[numberKey]
+    } else if (isObject(value)) {
       if (!(key in value)) {
         return failure()
       }
@@ -107,10 +110,8 @@ const getValueResult = (object: UnknownRecord, path: ObjectPath): Result<any> =>
   return success(value)
 }
 
-const assertLegalIndex = (value: any, key: string | number, object: UnknownRecord, path: ObjectPath): void => {
-  if (isNumber(key) && Array.isArray(value)) {
-    return
-  } else if (isString(key) && isObject(value)) {
+const assertLegalIndex = (value: any, key: string, object: UnknownRecord, path: ObjectPath): void => {
+  if (Array.isArray(value) || isObject(value)) {
     return
   } else {
     throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)

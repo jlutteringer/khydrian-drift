@@ -15,17 +15,17 @@ describe('ObjectPaths.of', () => {
 
   test('should create ObjectPath from single number element', () => {
     const result = ObjectPaths.of([0])
-    expect(result).toEqual([0])
+    expect(result).toEqual(['0'])
   })
 
   test('should create ObjectPath from mixed string and number elements', () => {
     const result = ObjectPaths.of(['users', 0, 'name'])
-    expect(result).toEqual(['users', 0, 'name'])
+    expect(result).toEqual(['users', '0', 'name'])
   })
 
   test('should create ObjectPath from multiple number elements', () => {
     const result = ObjectPaths.of([0, 1, 2])
-    expect(result).toEqual([0, 1, 2])
+    expect(result).toEqual(['0', '1', '2'])
   })
 
   test('should create ObjectPath with special characters in property names', () => {
@@ -40,13 +40,7 @@ describe('ObjectPaths.of', () => {
 
   test('should handle complex mixed path', () => {
     const result = ObjectPaths.of(['company', 'departments', 0, 'employees', 1, 'skills', 2])
-    expect(result).toEqual(['company', 'departments', 0, 'employees', 1, 'skills', 2])
-  })
-
-  test('should preserve exact array reference type', () => {
-    const input = ['user', 'name'] as Array<string | number>
-    const result = ObjectPaths.of(input)
-    expect(result).toBe(input) // should be the same reference after casting
+    expect(result).toEqual(['company', 'departments', '0', 'employees', '1', 'skills', '2'])
   })
 })
 
@@ -63,22 +57,22 @@ describe('ObjectPaths.fromString', () => {
 
   test('should parse single array index', () => {
     const result = ObjectPaths.fromString('items.0')
-    expect(result).toEqual(['items', 0])
+    expect(result).toEqual(['items', '0'])
   })
 
   test('should parse multiple array indices', () => {
     const result = ObjectPaths.fromString('matrix.0.1.2')
-    expect(result).toEqual(['matrix', 0, 1, 2])
+    expect(result).toEqual(['matrix', '0', '1', '2'])
   })
 
   test('should parse mixed property and array access', () => {
     const result = ObjectPaths.fromString('users.0.profile.tags.2')
-    expect(result).toEqual(['users', 0, 'profile', 'tags', 2])
+    expect(result).toEqual(['users', '0', 'profile', 'tags', '2'])
   })
 
   test('should parse complex nested path', () => {
     const result = ObjectPaths.fromString('company.departments.0.employees.1.skills.2')
-    expect(result).toEqual(['company', 'departments', 0, 'employees', 1, 'skills', 2])
+    expect(result).toEqual(['company', 'departments', '0', 'employees', '1', 'skills', '2'])
   })
 
   test('should parse property names with underscores', () => {
@@ -103,12 +97,12 @@ describe('ObjectPaths.fromString', () => {
 
   test('should parse large array indices', () => {
     const result = ObjectPaths.fromString('items.999.data.1234')
-    expect(result).toEqual(['items', 999, 'data', 1234])
+    expect(result).toEqual(['items', '999', 'data', '1234'])
   })
 
   test('should parse zero array index', () => {
     const result = ObjectPaths.fromString('items.0')
-    expect(result).toEqual(['items', 0])
+    expect(result).toEqual(['items', '0'])
   })
 
   test('should throw for empty string', () => {
@@ -144,42 +138,42 @@ describe('ObjectPaths.fromString', () => {
 
   test('should parse array index with dot notation', () => {
     const result = ObjectPaths.fromString('items.0')
-    expect(result).toEqual(['items', 0])
+    expect(result).toEqual(['items', '0'])
   })
 
   test('should parse multiple array indices with dot notation', () => {
     const result = ObjectPaths.fromString('matrix.0.1.2')
-    expect(result).toEqual(['matrix', 0, 1, 2])
+    expect(result).toEqual(['matrix', '0', '1', '2'])
   })
 
   test('should parse mixed property and array access with dot notation', () => {
     const result = ObjectPaths.fromString('users.0.profile.tags.2')
-    expect(result).toEqual(['users', 0, 'profile', 'tags', 2])
+    expect(result).toEqual(['users', '0', 'profile', 'tags', '2'])
   })
 
   test('should parse complex nested path with dot notation array indices', () => {
     const result = ObjectPaths.fromString('company.departments.0.employees.1.skills.2')
-    expect(result).toEqual(['company', 'departments', 0, 'employees', 1, 'skills', 2])
+    expect(result).toEqual(['company', 'departments', '0', 'employees', '1', 'skills', '2'])
   })
 
   test('should parse large array indices with dot notation', () => {
     const result = ObjectPaths.fromString('items.999.data.1234')
-    expect(result).toEqual(['items', 999, 'data', 1234])
+    expect(result).toEqual(['items', '999', 'data', '1234'])
   })
 
   test('should parse zero array index with dot notation', () => {
     const result = ObjectPaths.fromString('items.0')
-    expect(result).toEqual(['items', 0])
+    expect(result).toEqual(['items', '0'])
   })
 
   test('should parse single digit array indices with dot notation', () => {
     const result = ObjectPaths.fromString('data.0.info.5.value.9')
-    expect(result).toEqual(['data', 0, 'info', 5, 'value', 9])
+    expect(result).toEqual(['data', '0', 'info', '5', 'value', '9'])
   })
 
   test('should parse alternating property names and dot notation indices', () => {
     const result = ObjectPaths.fromString('level1.0.level2.1.level3.2')
-    expect(result).toEqual(['level1', 0, 'level2', 1, 'level3', 2])
+    expect(result).toEqual(['level1', '0', 'level2', '1', 'level3', '2'])
   })
 })
 
@@ -203,7 +197,6 @@ describe('ObjectPaths.getValue', () => {
 
     type Blah = GetWithPath<typeof obj, ['users', ToString<1>]>
     const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users.1'))
-
     expect(result).toBe('Bob')
   })
 
