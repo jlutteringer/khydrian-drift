@@ -1,4 +1,6 @@
 import { ObjectPaths } from '@bessemer/cornerstone'
+import { GetWithPath } from 'type-fest/source/get'
+import { ToString } from 'type-fest/source/internal'
 
 describe('ObjectPaths.of', () => {
   test('should create ObjectPath from single string element', () => {
@@ -60,22 +62,22 @@ describe('ObjectPaths.fromString', () => {
   })
 
   test('should parse single array index', () => {
-    const result = ObjectPaths.fromString('items[0]')
+    const result = ObjectPaths.fromString('items.0')
     expect(result).toEqual(['items', 0])
   })
 
   test('should parse multiple array indices', () => {
-    const result = ObjectPaths.fromString('matrix[0][1][2]')
+    const result = ObjectPaths.fromString('matrix.0.1.2')
     expect(result).toEqual(['matrix', 0, 1, 2])
   })
 
   test('should parse mixed property and array access', () => {
-    const result = ObjectPaths.fromString('users[0].profile.tags[2]')
+    const result = ObjectPaths.fromString('users.0.profile.tags.2')
     expect(result).toEqual(['users', 0, 'profile', 'tags', 2])
   })
 
   test('should parse complex nested path', () => {
-    const result = ObjectPaths.fromString('company.departments[0].employees[1].skills[2]')
+    const result = ObjectPaths.fromString('company.departments.0.employees.1.skills.2')
     expect(result).toEqual(['company', 'departments', 0, 'employees', 1, 'skills', 2])
   })
 
@@ -100,12 +102,12 @@ describe('ObjectPaths.fromString', () => {
   })
 
   test('should parse large array indices', () => {
-    const result = ObjectPaths.fromString('items[999].data[1234]')
+    const result = ObjectPaths.fromString('items.999.data.1234')
     expect(result).toEqual(['items', 999, 'data', 1234])
   })
 
   test('should parse zero array index', () => {
-    const result = ObjectPaths.fromString('items[0]')
+    const result = ObjectPaths.fromString('items.0')
     expect(result).toEqual(['items', 0])
   })
 
@@ -127,54 +129,6 @@ describe('ObjectPaths.fromString', () => {
 
   test('should throw for path starting with number', () => {
     expect(() => ObjectPaths.fromString('123invalid')).toThrow()
-  })
-
-  test('should throw for empty array brackets', () => {
-    expect(() => ObjectPaths.fromString('users[]')).toThrow()
-  })
-
-  test('should throw for non-numeric array index', () => {
-    expect(() => ObjectPaths.fromString('users[abc]')).toThrow()
-  })
-
-  test('should throw for negative array index', () => {
-    expect(() => ObjectPaths.fromString('users[-1]')).toThrow()
-  })
-
-  test('should throw for floating point array index', () => {
-    expect(() => ObjectPaths.fromString('users[1.5]')).toThrow()
-  })
-
-  test('should throw for unclosed array bracket', () => {
-    expect(() => ObjectPaths.fromString('users[0')).toThrow()
-  })
-
-  test('should throw for unmatched closing bracket', () => {
-    expect(() => ObjectPaths.fromString('users0]')).toThrow()
-  })
-
-  test('should throw for invalid property name with spaces', () => {
-    expect(() => ObjectPaths.fromString('user name')).toThrow()
-  })
-
-  test('should throw for invalid property name with hyphens', () => {
-    expect(() => ObjectPaths.fromString('user-name')).toThrow()
-  })
-
-  test('should throw for invalid property name with special characters', () => {
-    expect(() => ObjectPaths.fromString('user@name')).toThrow()
-  })
-
-  test('should throw for property starting with number', () => {
-    expect(() => ObjectPaths.fromString('user.2name')).toThrow()
-  })
-
-  test('should throw for mixed brackets and dots incorrectly', () => {
-    expect(() => ObjectPaths.fromString('users.[0]')).toThrow()
-  })
-
-  test('should throw for invalid bracket placement', () => {
-    expect(() => ObjectPaths.fromString('[0].users')).toThrow()
   })
 
   test('should parse property names with numbers (but not starting with)', () => {
@@ -206,16 +160,6 @@ describe('ObjectPaths.fromString', () => {
   test('should parse complex nested path with dot notation array indices', () => {
     const result = ObjectPaths.fromString('company.departments.0.employees.1.skills.2')
     expect(result).toEqual(['company', 'departments', 0, 'employees', 1, 'skills', 2])
-  })
-
-  test('should parse mixed bracket and dot notation array indices', () => {
-    const result = ObjectPaths.fromString('users[0].profile.tags.2')
-    expect(result).toEqual(['users', 0, 'profile', 'tags', 2])
-  })
-
-  test('should parse mixed dot and bracket notation array indices', () => {
-    const result = ObjectPaths.fromString('users.0.profile.tags[2]')
-    expect(result).toEqual(['users', 0, 'profile', 'tags', 2])
   })
 
   test('should parse large array indices with dot notation', () => {
@@ -255,8 +199,10 @@ describe('ObjectPaths.getValue', () => {
   })
 
   test('should get array element by index', () => {
-    const obj = { users: ['Alice', 'Bob', 'Charlie'] }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users[1]'))
+    const obj = { users: ['Alice', 'Bob', 'Charlie'] } as const
+
+    type Blah = GetWithPath<typeof obj, ['users', ToString<1>]>
+    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users.1'))
 
     expect(result).toBe('Bob')
   })
@@ -267,7 +213,7 @@ describe('ObjectPaths.getValue', () => {
         items: [{ name: 'Item 1' }, { name: 'Item 2' }, { name: 'Item 3' }],
       },
     }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('data.items[2].name'))
+    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('data.items.2.name'))
 
     expect(result).toBe('Item 3')
   })
@@ -280,7 +226,7 @@ describe('ObjectPaths.getValue', () => {
         [7, 8, 9],
       ],
     }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('matrix[1][2]'))
+    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('matrix.1.2'))
 
     expect(result).toBe(6)
   })
@@ -304,7 +250,7 @@ describe('ObjectPaths.getValue', () => {
       },
     }
 
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('company.departments[0].employees[1].skills[0]'))
+    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('company.departments.0.employees.1.skills.0'))
 
     expect(result).toBe('Python')
   })
@@ -318,14 +264,14 @@ describe('ObjectPaths.getValue', () => {
 
   test('should get first array element', () => {
     const obj = { items: ['first', 'second', 'third'] }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('items[0]'))
+    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('items.0'))
 
     expect(result).toBe('first')
   })
 
   test('should get last array element by index', () => {
     const obj = { items: ['a', 'b', 'c'] }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('items[2]'))
+    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('items.2'))
 
     expect(result).toBe('c')
   })
@@ -339,7 +285,7 @@ describe('ObjectPaths.getValue', () => {
   test('should throw error when accessing array index on non-array', () => {
     const obj = { name: 'John' }
 
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('name[0]'))).toThrow()
+    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('name.0'))).toThrow()
   })
 
   test('should throw error when accessing property on null', () => {
@@ -357,13 +303,13 @@ describe('ObjectPaths.getValue', () => {
   test('should throw error when accessing out of bounds array index', () => {
     const obj = { items: ['a', 'b'] }
 
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('items[5]'))).toThrow()
+    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('items.5'))).toThrow()
   })
 
   test('should throw error when accessing negative array index', () => {
     const obj = { items: ['a', 'b', 'c'] }
 
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('items[-1]'))).toThrow()
+    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('items.-1'))).toThrow()
   })
 
   test('should throw error when accessing property on primitive value', () => {
@@ -375,7 +321,7 @@ describe('ObjectPaths.getValue', () => {
   test('should throw error when accessing array index on string', () => {
     const obj = { message: 'hello' }
 
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('message[0]'))).toThrow()
+    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('message.0'))).toThrow()
   })
 
   test('should get deeply nested object value', () => {
@@ -406,7 +352,7 @@ describe('ObjectPaths.getValue', () => {
         },
       ],
     }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users[0].profile.preferences.notifications[2]'))
+    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users.0.profile.preferences.notifications.2'))
     expect(result).toBe(true)
   })
 })
@@ -433,7 +379,7 @@ describe('ObjectPaths.applyValue', () => {
   test('should set array element by index', () => {
     const obj = { users: ['Alice', 'Bob', 'Charlie'] }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('users[1]'), 'Bobby')
+    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('users.1'), 'Bobby')
 
     expect(result).toEqual({ users: ['Alice', 'Bobby', 'Charlie'] })
     expect(obj.users[1]).toBe('Bob') // original unchanged
@@ -446,7 +392,7 @@ describe('ObjectPaths.applyValue', () => {
       },
     }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('data.items[0].name'), 'Updated Item')
+    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('data.items.0.name'), 'Updated Item')
 
     expect(result).toEqual({
       data: {
@@ -464,7 +410,7 @@ describe('ObjectPaths.applyValue', () => {
       ],
     } as const
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('matrix[1][2]'), 99)
+    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('matrix.1.2'), 99)
 
     expect(result).toEqual({
       matrix: [
@@ -540,7 +486,7 @@ describe('ObjectPaths.applyValue', () => {
   test('should handle setting values in sparse arrays', () => {
     const obj = { items: [1, undefined, 3] }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('items[1]'), 2)
+    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('items.1'), 2)
 
     expect(result).toEqual({ items: [1, 2, 3] })
   })

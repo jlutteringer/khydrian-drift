@@ -15,32 +15,37 @@ export const of = (value: Array<string | number>): ObjectPath => {
   return value as ObjectPath
 }
 
-export const Schema = Zod.array(Zod.union([Zod.string(), Zod.number()])).transform(of)
-
-const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\.\d+|\[\d+])*$/
-const ObjectPathPartRegex = /([a-zA-Z_$][a-zA-Z0-9_$]*)|\[(\d+)]|\.(\d+)/g
+const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\.\d+)*$/
 
 export const fromString = (path: string): ObjectPath => {
   assert(ObjectPathRegex.test(path), () => `Unable to parse ObjectPath from string: ${path}`)
 
   const result: Array<string | number> = []
 
-  let match: RegExpExecArray | null
-  while ((match = ObjectPathPartRegex.exec(path)) !== null) {
-    if (match[1] !== undefined) {
-      // Property name (e.g., 'users', 'profile')
-      result.push(match[1])
-    } else if (match[2] !== undefined) {
-      // Bracket notation array index (e.g., [0])
-      result.push(Number(match[2]))
-    } else if (match[3] !== undefined) {
-      // Dot notation array index (e.g., .0)
-      result.push(Number(match[3]))
+  const parts = path.split('.')
+
+  for (const part of parts) {
+    if (/^\d+$/.test(part)) {
+      // Handle numeric index like "2" in "users.accounts.2.name"
+      result.push(Number(part))
+    } else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(part)) {
+      // Handle regular property name
+      result.push(part)
+    } else {
+      throw new Error(`Invalid ObjectPath part: ${part} in path: ${path}`)
     }
   }
 
-  return of(result)
+  return of(result) as ObjectPath
 }
+
+export const Schema = Zod.union([Zod.array(Zod.union([Zod.string(), Zod.number()])), Zod.string()]).transform((it) => {
+  if (Array.isArray(it)) {
+    return of(it)
+  } else {
+    return fromString(it)
+  }
+})
 
 export const getValue = (object: UnknownRecord, path: ObjectPath): unknown => {
   const result = getValueResult(object, path)
