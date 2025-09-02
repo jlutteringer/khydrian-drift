@@ -1,4 +1,5 @@
 import { ObjectPaths } from '@bessemer/cornerstone'
+import { ConstrainObjectPathsByType } from '@bessemer/cornerstone/object/object-path'
 
 describe('ObjectPaths.of', () => {
   test('should create ObjectPath from single string element', () => {
@@ -192,6 +193,9 @@ describe('ObjectPaths.getValue', () => {
 
   test('should get array element by index', () => {
     const obj = { users: ['Alice', 'Bob', 'Charlie'] } as const
+
+    const a: ConstrainObjectPathsByType<typeof obj> = ObjectPaths.fromString('users.0')
+
     const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users.1'))
     expect(result).toBe('Bob')
   })
@@ -203,7 +207,6 @@ describe('ObjectPaths.getValue', () => {
       },
     }
     const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('data.items.2.name'))
-
     expect(result).toBe('Item 3')
   })
 

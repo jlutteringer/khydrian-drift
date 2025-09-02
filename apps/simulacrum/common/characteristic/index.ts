@@ -12,7 +12,7 @@ import {
   ReducingExpression,
 } from '@bessemer/cornerstone/expression'
 import { Assertions, ObjectPaths, Objects, References } from '@bessemer/cornerstone'
-import { ObjectPath } from '@bessemer/cornerstone/object-path'
+import { ObjectPath } from '@bessemer/cornerstone/object/object-path'
 
 export type CharacteristicReference<T> = Reference<'Characteristic'>
 

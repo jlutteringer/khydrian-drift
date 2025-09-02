@@ -1,48 +1,25 @@
 import Zod from 'zod'
-import { Paths, UnknownRecord } from 'type-fest'
+import { Get, Paths, UnknownRecord } from 'type-fest'
 import { isObject } from '@bessemer/cornerstone/object'
 import { produce } from 'immer'
 import { assert } from '@bessemer/cornerstone/assertion'
 import { isEmpty } from '@bessemer/cornerstone/array'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
-import { GetWithPath, ToPath } from 'type-fest/source/get'
-import { ToString } from 'type-fest/source/internal'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { JoinPath, NominalType, ToString, ToStringArray } from '@bessemer/cornerstone/types'
 
-export type ObjectPathType = Array<string>
-export type ObjectPath<T extends ObjectPathType = ObjectPathType> = NominalType<ObjectPathType, ['ObjectPath', T]>
-export type ObjectPathsForType<N> = ObjectPath<ToPath<ToString<Paths<N>>>>
+export type ObjectPathType = string
+export type ObjectPath<T extends ObjectPathType = ObjectPathType> = NominalType<Array<string>, ['ObjectPath', T]>
+export type ConstrainObjectPaths<N> = ObjectPath<ToString<Paths<N>>>
 
-type ToStringArray<T extends Array<string | number>> = {
-  [K in keyof T]: T[K] extends string | number ? `${T[K]}` : never
-}
-
-export const of = <T extends Array<string | number>>(value: T): ObjectPath<ToStringArray<T>> => {
-  return value.map((it) => `${it}`) as ObjectPath<ToStringArray<T>>
+export const of = <T extends Array<string | number>>(value: T): ObjectPath<JoinPath<ToStringArray<T>>> => {
+  return value.map((it) => `${it}`) as ObjectPath<JoinPath<ToStringArray<T>>>
 }
 
 const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\.\d+)*$/
 
-export const fromString = <T extends string>(path: T): ObjectPath<ToPath<T>> => {
+export const fromString = <T extends ObjectPathType>(path: T): ObjectPath<T> => {
   assert(ObjectPathRegex.test(path), () => `Unable to parse ObjectPath from string: ${path}`)
-
-  const result: Array<string> = []
-
-  const parts = path.split('.')
-
-  for (const part of parts) {
-    if (/^\d+$/.test(part)) {
-      // Handle numeric index like "2" in "users.accounts.2.name"
-      result.push(part)
-    } else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(part)) {
-      // Handle regular property name
-      result.push(part)
-    } else {
-      throw new Error(`Invalid ObjectPath part: ${part} in path: ${path}`)
-    }
-  }
-
-  return of(result) as ObjectPath<ToPath<T>>
+  return of(path.split('.')) as ObjectPath<T>
 }
 
 export const Schema = Zod.union([Zod.array(Zod.union([Zod.string(), Zod.number()])), Zod.string()]).transform((it) => {
@@ -53,7 +30,7 @@ export const Schema = Zod.union([Zod.array(Zod.union([Zod.string(), Zod.number()
   }
 })
 
-export const getValue = <N extends UnknownRecord, T extends ObjectPathType>(object: N, path: ObjectPath<T>): GetWithPath<N, T> => {
+export const getValue = <N extends UnknownRecord, T extends ObjectPathType>(object: N, path: ObjectPath<T>): Get<N, T> => {
   const result = getValueResult(object, path)
 
   if (result.isSuccess) {
@@ -63,7 +40,7 @@ export const getValue = <N extends UnknownRecord, T extends ObjectPathType>(obje
   }
 }
 
-export const findValue = <N extends UnknownRecord, T extends ObjectPathType>(object: N, path: ObjectPath<T>): GetWithPath<N, T> | undefined => {
+export const findValue = <N extends UnknownRecord, T extends ObjectPathType>(object: N, path: ObjectPath<T>): Get<N, T> | undefined => {
   const result = getValueResult(object, path)
 
   if (result.isSuccess) {
