@@ -1,13 +1,17 @@
 import Zod from 'zod'
-import { UnknownRecord } from 'type-fest'
+import { Paths, UnknownRecord } from 'type-fest'
 import { isObject } from '@bessemer/cornerstone/object'
 import { produce } from 'immer'
 import { assert } from '@bessemer/cornerstone/assertion'
 import { isEmpty } from '@bessemer/cornerstone/array'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { GetWithPath, ToPath } from 'type-fest/source/get'
+import { ToString } from 'type-fest/source/internal'
+import { NominalType } from '@bessemer/cornerstone/types'
 
-export type ObjectPath<T extends Array<string> = Array<string>> = T
+export type ObjectPathType = Array<string>
+export type ObjectPath<T extends ObjectPathType = ObjectPathType> = NominalType<ObjectPathType, ['ObjectPath', T]>
+export type ObjectPathsForType<N> = ObjectPath<ToPath<ToString<Paths<N>>>>
 
 type ToStringArray<T extends Array<string | number>> = {
   [K in keyof T]: T[K] extends string | number ? `${T[K]}` : never
@@ -49,7 +53,7 @@ export const Schema = Zod.union([Zod.array(Zod.union([Zod.string(), Zod.number()
   }
 })
 
-export const getValue = <N extends UnknownRecord, T extends Array<string>>(object: N, path: ObjectPath<T>): GetWithPath<N, T> => {
+export const getValue = <N extends UnknownRecord, T extends ObjectPathType>(object: N, path: ObjectPath<T>): GetWithPath<N, T> => {
   const result = getValueResult(object, path)
 
   if (result.isSuccess) {
@@ -59,7 +63,7 @@ export const getValue = <N extends UnknownRecord, T extends Array<string>>(objec
   }
 }
 
-export const findValue = <N extends UnknownRecord, T extends Array<string>>(object: N, path: ObjectPath<T>): GetWithPath<N, T> | undefined => {
+export const findValue = <N extends UnknownRecord, T extends ObjectPathType>(object: N, path: ObjectPath<T>): GetWithPath<N, T> | undefined => {
   const result = getValueResult(object, path)
 
   if (result.isSuccess) {
@@ -110,7 +114,7 @@ const getValueResult = (object: UnknownRecord, path: ObjectPath): Result<any> =>
   return success(value)
 }
 
-const assertLegalIndex = (value: any, key: string, object: UnknownRecord, path: ObjectPath): void => {
+const assertLegalIndex = (value: any, _key: string, object: UnknownRecord, path: ObjectPath): void => {
   if (Array.isArray(value) || isObject(value)) {
     return
   } else {

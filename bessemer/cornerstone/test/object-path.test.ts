@@ -1,6 +1,4 @@
 import { ObjectPaths } from '@bessemer/cornerstone'
-import { GetWithPath } from 'type-fest/source/get'
-import { ToString } from 'type-fest/source/internal'
 
 describe('ObjectPaths.of', () => {
   test('should create ObjectPath from single string element', () => {
@@ -194,8 +192,6 @@ describe('ObjectPaths.getValue', () => {
 
   test('should get array element by index', () => {
     const obj = { users: ['Alice', 'Bob', 'Charlie'] } as const
-
-    type Blah = GetWithPath<typeof obj, ['users', ToString<1>]>
     const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users.1'))
     expect(result).toBe('Bob')
   })
