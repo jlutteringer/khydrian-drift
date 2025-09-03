@@ -25,6 +25,7 @@ import * as Crypto from '@bessemer/cornerstone/crypto'
 import * as Globs from '@bessemer/cornerstone/glob'
 import * as Ranges from '@bessemer/cornerstone/range'
 import * as ObjectPaths from '@bessemer/cornerstone/object/object-path'
+import * as TypePaths from '@bessemer/cornerstone/object/type-path'
 import * as ObjectDiffs from '@bessemer/cornerstone/object/object-diff'
 
 import * as ZodUtil from '@bessemer/cornerstone/zod-util'
@@ -82,6 +83,7 @@ export {
   Globs,
   Ranges,
   ObjectPaths,
+  TypePaths,
   ObjectDiffs,
   ZodUtil,
   Tags,

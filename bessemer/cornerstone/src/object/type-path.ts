@@ -1,6 +1,7 @@
 import { JoinPath, NominalType, ToStringArray } from '@bessemer/cornerstone/types'
 import { assert } from '@bessemer/cornerstone/assertion'
 import Zod from 'zod'
+import { ObjectPath } from '@bessemer/cornerstone/object/object-path'
 
 // see https://github.com/sinclairnick/jsonpath-ts for type inference examples!
 
@@ -26,7 +27,7 @@ export const Schema = Zod.union([Zod.array(Zod.string()), Zod.string()]).transfo
   }
 })
 
-export const matches = (evaluatingPath: TypePath, targetPath: TypePath): boolean => {
+export const matches = (evaluatingPath: TypePath, targetPath: TypePath | ObjectPath): boolean => {
   if (targetPath.length !== evaluatingPath.length) {
     return false
   }

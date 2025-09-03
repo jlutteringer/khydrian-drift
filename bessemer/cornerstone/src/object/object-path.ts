@@ -8,8 +8,9 @@ import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { JoinPath, NominalType, ToString, ToStringArray } from '@bessemer/cornerstone/types'
 
 export type ObjectPathType = string
+export type ConstrainObjectPathTypes<N> = ToString<Paths<N>>
+
 export type ObjectPath<T extends ObjectPathType = ObjectPathType> = NominalType<Array<string>, ['ObjectPath', T]>
-export type ConstrainObjectPaths<N> = ObjectPath<ToString<Paths<N>>>
 
 export const of = <T extends Array<string | number>>(value: T): ObjectPath<JoinPath<ToStringArray<T>>> => {
   return value.map((it) => `${it}`) as ObjectPath<JoinPath<ToStringArray<T>>>

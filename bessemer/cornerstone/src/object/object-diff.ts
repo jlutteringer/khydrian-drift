@@ -1,5 +1,5 @@
 import { Get } from 'type-fest'
-import { ConstrainObjectPaths } from '@bessemer/cornerstone/object/object-path'
+import { ConstrainObjectPathTypes, ObjectPath } from '@bessemer/cornerstone/object/object-path'
 
 export enum ObjectDiffType {
   Add = 'Add',
@@ -8,53 +8,57 @@ export enum ObjectDiffType {
   Move = 'Move',
 }
 
-export type AddObjectDiff<N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>> = {
+export type AddObjectDiff<N, T extends ConstrainObjectPathTypes<N> = ConstrainObjectPathTypes<N>> = {
   type: ObjectDiffType.Add
-  path: T
+  path: ObjectPath<T>
   value: Get<N, T>
 }
 
-export type RemoveObjectDiff<N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>> = {
+export type RemoveObjectDiff<N, T extends ConstrainObjectPathTypes<N> = ConstrainObjectPathTypes<N>> = {
   type: ObjectDiffType.Remove
-  path: T
+  path: ObjectPath<T>
   originalValue: Get<N, T>
 }
 
-export type UpdateObjectDiff<N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>> = {
+export type UpdateObjectDiff<N, T extends ConstrainObjectPathTypes<N> = ConstrainObjectPathTypes<N>> = {
   type: ObjectDiffType.Update
-  path: T
+  path: ObjectPath<T>
   value: Get<N, T>
   originalValue: Get<N, T>
 }
 
-export type MoveObjectDiff<N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>> = {
+export type MoveObjectDiff<N, T extends ConstrainObjectPathTypes<N> = ConstrainObjectPathTypes<N>> = {
   type: ObjectDiffType.Move
-  path: T
+  path: ObjectPath<T>
   value: Get<N, T>
   position: number
   originalPosition: number
 }
 
-export type ObjectDiffEntry<N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>> =
+export type ObjectDiffEntry<N, T extends ConstrainObjectPathTypes<N> = ConstrainObjectPathTypes<N>> =
   | AddObjectDiff<N, T>
   | RemoveObjectDiff<N, T>
   | UpdateObjectDiff<N, T>
   | MoveObjectDiff<N, T>
 
-export type ConstrainObjectDiffEntries<N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>> = Extract<ObjectDiffEntry<N, T>, { type: T }>
+export type ObjectDiff<N> = Array<ObjectDiffEntry<N>>
 
-export type ObjectDiff<N> = { entries: Array<ObjectDiffEntry<N>> }
-
-export const add = <N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>>(path: T, value: Get<N, T>): AddObjectDiff<N, T> => {
+export const add = <N, T extends ConstrainObjectPathTypes<N> = ConstrainObjectPathTypes<N>>(
+  path: ObjectPath<T>,
+  value: Get<N, T>
+): AddObjectDiff<N, T> => {
   return { type: ObjectDiffType.Add, path, value }
 }
 
-export const remove = <N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>>(path: T, originalValue: Get<N, T>): RemoveObjectDiff<N, T> => {
+export const remove = <N, T extends ConstrainObjectPathTypes<N> = ConstrainObjectPathTypes<N>>(
+  path: ObjectPath<T>,
+  originalValue: Get<N, T>
+): RemoveObjectDiff<N, T> => {
   return { type: ObjectDiffType.Remove, path, originalValue }
 }
 
-export const update = <N, T extends ConstrainObjectPaths<N> = ConstrainObjectPaths<N>>(
-  path: T,
+export const update = <N, T extends ConstrainObjectPathTypes<N> = ConstrainObjectPathTypes<N>>(
+  path: ObjectPath<T>,
   value: Get<N, T>,
   originalValue: Get<N, T>
 ): UpdateObjectDiff<N, T> => {
