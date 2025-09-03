@@ -8,7 +8,10 @@ describe('TypePaths Type Resolution', () => {
         author: string
         title: string
         price: number
-        isbn?: string
+        isbn?: {
+          name: string
+          number: number
+        }
       }>
       bicycle: {
         color: string
@@ -36,14 +39,20 @@ describe('TypePaths Type Resolution', () => {
           category: 'fiction'
           author: 'Herman Melville'
           title: 'Moby Dick'
-          isbn: '0-553-21311-3'
+          isbn: {
+            name: 'John Library'
+            number: '0-553-21311-3'
+          }
           price: 8.99
         },
         {
           category: 'fiction'
           author: 'J. R. R. Tolkien'
           title: 'The Lord of the Rings'
-          isbn: '0-395-19395-8'
+          isbn: {
+            name: 'The Other Library'
+            number: '0-395-19395-8'
+          }
           price: 22.99
         }
       ]
@@ -59,7 +68,10 @@ describe('TypePaths Type Resolution', () => {
     author: string
     title: string
     price: number
-    isbn?: string
+    isbn?: {
+      name: string
+      number: number
+    }
   }>
 
   type ConstArrayType = [
@@ -79,20 +91,26 @@ describe('TypePaths Type Resolution', () => {
       category: 'fiction'
       author: 'Herman Melville'
       title: 'Moby Dick'
-      isbn: '0-553-21311-3'
+      isbn: {
+        name: 'John Library'
+        number: '0-553-21311-3'
+      }
       price: 8.99
     },
     {
       category: 'fiction'
       author: 'J. R. R. Tolkien'
       title: 'The Lord of the Rings'
-      isbn: '0-395-19395-8'
+      isbn: {
+        name: 'The Other Library'
+        number: '0-395-19395-8'
+      }
       price: 22.99
     }
   ]
 
   {
-    const path = '$'
+    const path = ''
     test(path, () => {
       type Expected = TestType
       type Test = TypePathParse<typeof path, TestType>
@@ -168,7 +186,7 @@ describe('TypePaths Type Resolution', () => {
   }
 
   {
-    const path = '$.store.books[*].category'
+    const path = 'store.books[*].category'
     test(path, () => {
       type Expected = Array<string>
       type Test = TypePathParse<typeof path, TestType>
@@ -180,6 +198,63 @@ describe('TypePaths Type Resolution', () => {
     test(path, () => {
       type Expected = ['reference', 'fiction', 'fiction', 'fiction']
       type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = ''
+    test(path, () => {
+      type Expected = ArrayType
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstArrayType
+      type Test = TypePathParse<typeof path, ConstArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = '[*]'
+    test(path, () => {
+      type Expected = ArrayType
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstArrayType
+      type Test = TypePathParse<typeof path, ConstArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = '[*].title'
+    test(path, () => {
+      type Expected = Array<string>
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ['Sayings of the Century', 'Sword of Honour', 'Moby Dick', 'The Lord of the Rings']
+      type Test = TypePathParse<typeof path, ConstArrayType>
 
       const _typeTest: Test = {} as Expected
       const _reverseTest: Expected = {} as Test

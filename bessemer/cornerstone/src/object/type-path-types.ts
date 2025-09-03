@@ -1,4 +1,4 @@
-export type TypePathParse<TPath extends `$${string}`, TValue extends any> = ExtractValue<ParsePath<TPath>, TValue>
+export type TypePathParse<TPath extends string, TValue extends any> = ExtractValue<ParsePath<TPath>, TValue>
 
 interface NameSelector<TKey extends string> {
   type: 'NameSelector'
@@ -51,7 +51,7 @@ type ParseBracketIndexInner<T> = T extends `${infer TFirst},${infer TRest}`
   ? [ParseBracketSelector<TIndex>]
   : []
 
-type ParsePathInner<TPathInner extends string> = TPathInner extends `[${infer TInner}]${infer TRest}`
+type ParsePathInnerOriginal<TPathInner extends string> = TPathInner extends `[${infer TInner}]${infer TRest}`
   ? [ParseBracketIndexInner<TInner>, ...ParsePathInner<TRest>]
   : TPathInner extends `.${infer TKey}[${infer TRest}`
   ? [...ParsePathInner<TKey>, ...ParsePathInner<`[${TRest}`>]
@@ -65,7 +65,17 @@ type ParsePathInner<TPathInner extends string> = TPathInner extends `[${infer TI
   ? []
   : [NameSelector<TPathInner>]
 
-export type ParsePath<TPath extends `$${string}`> = TPath extends `$${infer TPathInner}` ? ParsePathInner<TPathInner> : never
+type ParsePathInner<TPathInner extends string> = TPathInner extends `[${infer TInner}]${infer TRest}`
+  ? [ParseBracketIndexInner<TInner>, ...ParsePathInner<TRest>]
+  : TPathInner extends `${infer TKey}[${infer TRest}`
+  ? [...ParsePathInner<TKey>, ...ParsePathInner<`[${TRest}`>]
+  : TPathInner extends `${infer TKey}.${infer TRest}`
+  ? [...ParsePathInner<TKey>, ...ParsePathInner<TRest>]
+  : TPathInner extends ''
+  ? []
+  : [NameSelector<TPathInner>]
+
+export type ParsePath<TPath extends string> = ParsePathInner<TPath>
 
 type AnyParsedPath = (AnySelector | AnySelector[])[]
 
