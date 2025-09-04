@@ -10,7 +10,7 @@ describe('TypePaths Type Resolution', () => {
         price: number
         isbn?: {
           name: string
-          number: number
+          number: string
         }
       }>
       bicycle: {
@@ -70,7 +70,7 @@ describe('TypePaths Type Resolution', () => {
     price: number
     isbn?: {
       name: string
-      number: number
+      number: string
     }
   }>
 
@@ -254,6 +254,112 @@ describe('TypePaths Type Resolution', () => {
 
     test(path, () => {
       type Expected = ['Sayings of the Century', 'Sword of Honour', 'Moby Dick', 'The Lord of the Rings']
+      type Test = TypePathParse<typeof path, ConstArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = '[1]'
+    test(path, () => {
+      type Expected = ArrayType[1] | undefined
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstArrayType[1]
+      type Test = TypePathParse<typeof path, ConstArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = '[1].author'
+    test(path, () => {
+      type Expected = string | undefined
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstArrayType[1]['author']
+      type Test = TypePathParse<typeof path, ConstArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = '[3].isbn.number'
+    test(path, () => {
+      type Expected = string | undefined
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstArrayType[3]['isbn']['number']
+      type Test = TypePathParse<typeof path, ConstArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = '[*].isbn'
+    test(path, () => {
+      type Expected = Array<{ name: string; number: string } | undefined>
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = [
+        never,
+        never,
+        {
+          name: 'John Library'
+          number: '0-553-21311-3'
+        },
+        {
+          name: 'The Other Library'
+          number: '0-395-19395-8'
+        }
+      ]
+      type Test = TypePathParse<typeof path, ConstArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = '[*].isbn.number'
+    test(path, () => {
+      type Expected = Array<string | undefined>
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = [never, never, '0-553-21311-3', '0-395-19395-8']
       type Test = TypePathParse<typeof path, ConstArrayType>
 
       const _typeTest: Test = {} as Expected

@@ -67,10 +67,12 @@ type ParsePathInnerOriginal<TPathInner extends string> = TPathInner extends `[${
 
 type ParsePathInner<TPathInner extends string> = TPathInner extends `[${infer TInner}]${infer TRest}`
   ? [ParseBracketIndexInner<TInner>, ...ParsePathInner<TRest>]
-  : TPathInner extends `${infer TKey}[${infer TRest}`
+  : TPathInner extends `.${infer TKey}[${infer TRest}`
   ? [...ParsePathInner<TKey>, ...ParsePathInner<`[${TRest}`>]
+  : TPathInner extends `.${infer TKey}`
+  ? ParsePathInner<TKey>
   : TPathInner extends `${infer TKey}.${infer TRest}`
-  ? [...ParsePathInner<TKey>, ...ParsePathInner<TRest>]
+  ? [...ParsePathInner<TKey>, ...ParsePathInner<`.${TRest}`>]
   : TPathInner extends ''
   ? []
   : [NameSelector<TPathInner>]
@@ -109,7 +111,9 @@ type ExtractMultipleArraySelections<TSelectors extends AnySelector[], TValue ext
     : []
   : []
 
-type ExtractSelection<TSelector extends AnySelector | AnySelector[], TValue extends any> = TValue extends AnyArray
+type ExtractSelection<TSelector extends AnySelector | AnySelector[], TValue> = TValue extends undefined
+  ? undefined
+  : TValue extends AnyArray
   ? TSelector extends AnySelector[]
     ? TSelector['length'] extends 1
       ? ExtractArraySelection<TSelector[0], TValue>
@@ -123,7 +127,7 @@ type ExtractSelection<TSelector extends AnySelector | AnySelector[], TValue exte
     : never
   : never
 
-type ExtractValue<TSelectors extends AnyParsedPath, TValue extends any> = TSelectors['length'] extends 0
+type ExtractValue<TSelectors extends AnyParsedPath, TValue> = TSelectors['length'] extends 0
   ? TValue
   : TSelectors extends [infer TFirst, ...infer TRest]
   ? TFirst extends AnySelector | AnySelector[]
@@ -149,6 +153,8 @@ type PickArray<TIndex extends number, TArray extends any[]> = TArray['length'] e
   ? TIndex extends TRest['length']
     ? TLast
     : PickArray<TIndex, TRest>
+  : TArray extends Array<infer T>
+  ? T | undefined
   : never
 
 type ToPositive<N extends number, Arr extends unknown[]> = `${N}` extends `-${infer P extends number}` ? Slice<Arr, P>['length'] : N
@@ -169,7 +175,7 @@ type PickArrayField<TArr extends any[], TKey extends string> = TArr extends [inf
   : TArr extends []
   ? []
   : TArr extends Array<infer T>
-  ? Array<T[TKey & keyof T]>
+  ? Array<TKey extends keyof T ? T[TKey] : TKey extends keyof Exclude<T, undefined> ? Exclude<T, undefined>[TKey] | undefined : never>
   : []
 
 type OrDefault<T, D> = [T] extends [never] ? D : T
