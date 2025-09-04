@@ -1,6 +1,6 @@
 // see https://github.com/sinclairnick/jsonpath-ts for the original source
 
-export type TypePathParse<TPath extends string, TValue extends any> = ExtractValue<ParseTypePath<TPath>, TValue>
+export type TypePathParse<TPath extends string, TValue extends any> = TypePathGet<ParseTypePath<TPath>, TValue>
 
 // JOHN we don't have all of the concrete types represented here
 type NameSelector = string
@@ -131,12 +131,12 @@ type ExtractSelection<TSelector extends AnySelectorType | AnySelectorType[], TVa
     : never
   : never
 
-type ExtractValue<TSelectors extends TypePathType, TValue> = TSelectors['length'] extends 0
+export type TypePathGet<TSelectors extends TypePathType, TValue> = TSelectors['length'] extends 0
   ? TValue
   : TSelectors extends [infer TFirst, ...infer TRest]
   ? TFirst extends AnySelectorType | AnySelectorType[]
     ? TRest extends TypePathType
-      ? ExtractValue<TRest, ExtractSelection<TFirst, TValue>>
+      ? TypePathGet<TRest, ExtractSelection<TFirst, TValue>>
       : ExtractSelection<TFirst, TValue>
     : []
   : []

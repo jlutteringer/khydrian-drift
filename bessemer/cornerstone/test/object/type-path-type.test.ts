@@ -12,6 +12,10 @@ describe('TypePaths Type Resolution', () => {
           name: string
           number: string
         }
+        publisher: {
+          name: string
+          credits: Array<string>
+        } | null
       }>
       bicycle: {
         color: string
@@ -29,12 +33,17 @@ describe('TypePaths Type Resolution', () => {
           author: 'Nigel Rees'
           title: 'Sayings of the Century'
           price: 8.95
+          publisher: null
         },
         {
           category: 'fiction'
           author: 'Evelyn Waugh'
           title: 'Sword of Honour'
           price: 12.99
+          publisher: {
+            name: 'John Publisher'
+            credits: ['First Credit', 'Second Credit']
+          }
         },
         {
           category: 'fiction'
@@ -45,6 +54,7 @@ describe('TypePaths Type Resolution', () => {
             number: '0-553-21311-3'
           }
           price: 8.99
+          publisher: null
         },
         {
           category: 'fiction'
@@ -55,6 +65,7 @@ describe('TypePaths Type Resolution', () => {
             number: '0-395-19395-8'
           }
           price: 22.99
+          publisher: null
         }
       ]
       bicycle: {
@@ -305,6 +316,26 @@ describe('TypePaths Type Resolution', () => {
   }
 
   {
+    const path = 'store.books[1].category'
+    test(path, () => {
+      type Expected = string | undefined
+      type Test = TypePathParse<typeof path, TestType>
+      type Parse = ParseTypePath<typeof path>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = 'fiction'
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
     const path = 'store.books[*].category'
     test(path, () => {
       type Expected = Array<string>
@@ -325,6 +356,44 @@ describe('TypePaths Type Resolution', () => {
 
   {
     const path = 'store.books.*.category'
+    test(path, () => {
+      type Expected = Array<string>
+      type Test = TypePathParse<typeof path, TestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ['reference', 'fiction', 'fiction', 'fiction']
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = 'store.books[*].publisher.name'
+    test(path, () => {
+      type Expected = Array<string | undefined>
+      type Test = TypePathParse<typeof path, TestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ['reference', 'fiction', 'fiction', 'fiction']
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = 'store.books[1].publisher.name'
     test(path, () => {
       type Expected = Array<string>
       type Test = TypePathParse<typeof path, TestType>
