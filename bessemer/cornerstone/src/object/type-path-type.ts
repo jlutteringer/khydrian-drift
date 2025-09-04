@@ -73,6 +73,8 @@ type ParsePathInner<TPathInner extends string> = TPathInner extends `*`
   ? ParsePathInner<TKey>
   : TPathInner extends `${infer TKey}.${infer TRest}`
   ? [...ParsePathInner<TKey>, ...ParsePathInner<`.${TRest}`>]
+  : TPathInner extends `${infer TKey}[${infer TInner}]${infer TRest}`
+  ? [NameSelectorType<TKey>, ParseBracketIndexInner<TInner>, ...ParsePathInner<TRest>]
   : TPathInner extends ''
   ? []
   : [NameSelectorType<TPathInner>]

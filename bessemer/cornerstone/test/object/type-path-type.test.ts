@@ -211,6 +211,7 @@ describe('TypePaths Type Resolution', () => {
     test(path, () => {
       type Expected = TestType['store']['books']
       type Test = TypePathParse<typeof path, TestType>
+      type Parse = ParseTypePath<typeof path>
 
       const _typeTest: Test = {} as Expected
       const _reverseTest: Expected = {} as Test
@@ -267,16 +268,15 @@ describe('TypePaths Type Resolution', () => {
   {
     const path = 'employees[1]'
     test(path, () => {
-      type Expected = TestType['employees']
+      type Expected = string | undefined
       type Test = TypePathParse<typeof path, TestType>
-      type Parse = ParseTypePath<typeof path>
 
       const _typeTest: Test = {} as Expected
       const _reverseTest: Expected = {} as Test
     })
 
     test(path, () => {
-      type Expected = ConstTestType['employees']
+      type Expected = ConstTestType['employees'][1]
       type Test = TypePathParse<typeof path, ConstTestType>
 
       const _typeTest: Test = {} as Expected
