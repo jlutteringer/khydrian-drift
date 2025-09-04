@@ -179,7 +179,7 @@ type PickArrayField<TArr extends any[], TKey extends string> = TArr extends [inf
   : TArr extends []
   ? []
   : TArr extends Array<infer T>
-  ? Array<TKey extends keyof T ? T[TKey] : TKey extends keyof Exclude<T, undefined> ? Exclude<T, undefined>[TKey] | undefined : never>
+  ? Array<T extends any ? (TKey extends keyof T ? T[TKey] : undefined) : never>
   : []
 
 type OrDefault<T, D> = [T] extends [never] ? D : T
