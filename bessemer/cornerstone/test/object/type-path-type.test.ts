@@ -1,4 +1,4 @@
-import { TypePathParse } from '@bessemer/cornerstone/object/type-path-types'
+import { ParseTypePath, TypePathParse } from '@bessemer/cornerstone/object/type-path-type'
 
 describe('TypePaths Type Resolution', () => {
   type TestType = {
@@ -18,6 +18,7 @@ describe('TypePaths Type Resolution', () => {
         price: number
       }
     }
+    employees: Array<string>
   }
 
   type ConstTestType = {
@@ -61,6 +62,7 @@ describe('TypePaths Type Resolution', () => {
         price: 399
       }
     }
+    employees: ['John', 'Joanne']
   }
 
   type ArrayType = Array<{
@@ -129,6 +131,44 @@ describe('TypePaths Type Resolution', () => {
   }
 
   {
+    const path = '*'
+    test(path, () => {
+      type Expected = Array<TestType['store'] | TestType['employees']>
+      type Test = TypePathParse<typeof path, TestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = Array<ConstTestType['store'] | ConstTestType['employees']>
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = 'store.*'
+    test(path, () => {
+      type Expected = Array<TestType['store']['books'] | TestType['store']['bicycle']>
+      type Test = TypePathParse<typeof path, TestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = Array<ConstTestType['store']['books'] | ConstTestType['store']['bicycle']>
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
     const path = 'store'
     test(path, () => {
       type Expected = TestType['store']
@@ -186,6 +226,85 @@ describe('TypePaths Type Resolution', () => {
   }
 
   {
+    const path = 'store.books.*'
+    test(path, () => {
+      type Expected = TestType['store']['books']
+      type Test = TypePathParse<typeof path, TestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstTestType['store']['books']
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = 'employees[*]'
+    test(path, () => {
+      type Expected = TestType['employees']
+      type Test = TypePathParse<typeof path, TestType>
+      type Parse = ParseTypePath<typeof path>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstTestType['employees']
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = 'employees[1]'
+    test(path, () => {
+      type Expected = TestType['employees']
+      type Test = TypePathParse<typeof path, TestType>
+      type Parse = ParseTypePath<typeof path>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstTestType['employees']
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = 'store.books[1]'
+    test(path, () => {
+      type Expected = TestType['store']['books'][number] | undefined
+      type Test = TypePathParse<typeof path, TestType>
+      type Parse = ParseTypePath<typeof path>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstTestType['store']['books'][1]
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
     const path = 'store.books[*].category'
     test(path, () => {
       type Expected = Array<string>
@@ -205,7 +324,45 @@ describe('TypePaths Type Resolution', () => {
   }
 
   {
+    const path = 'store.books.*.category'
+    test(path, () => {
+      type Expected = Array<string>
+      type Test = TypePathParse<typeof path, TestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ['reference', 'fiction', 'fiction', 'fiction']
+      type Test = TypePathParse<typeof path, ConstTestType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
     const path = ''
+    test(path, () => {
+      type Expected = ArrayType
+      type Test = TypePathParse<typeof path, ArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+
+    test(path, () => {
+      type Expected = ConstArrayType
+      type Test = TypePathParse<typeof path, ConstArrayType>
+
+      const _typeTest: Test = {} as Expected
+      const _reverseTest: Expected = {} as Test
+    })
+  }
+
+  {
+    const path = '*'
     test(path, () => {
       type Expected = ArrayType
       type Test = TypePathParse<typeof path, ArrayType>

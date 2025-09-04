@@ -1,48 +1,60 @@
-export type TypePathParse<TPath extends string, TValue extends any> = ExtractValue<ParsePath<TPath>, TValue>
+// see https://github.com/sinclairnick/jsonpath-ts for the original source
 
-interface NameSelector<TKey extends string> {
+export type TypePathParse<TPath extends string, TValue extends any> = ExtractValue<ParseTypePath<TPath>, TValue>
+
+// JOHN we don't have all of the concrete types represented here
+type NameSelector = string
+type IndexSelector = Array<number>
+type WildcardSelector = '*'
+type WildcardIndexSelector = ['*']
+
+export type ObjectPathSelector = NameSelector | IndexSelector
+export type TypePathSelector = ObjectPathSelector | WildcardSelector | WildcardIndexSelector
+export type TypePathConcreteType = Array<TypePathSelector | Array<TypePathSelector>>
+
+interface NameSelectorType<TKey extends string> {
   type: 'NameSelector'
   key: TKey
 }
-interface AnyNameSelector extends NameSelector<string> {}
-interface IndexSelector<TIndex extends number> {
+interface AnyNameSelectorType extends NameSelectorType<string> {}
+interface IndexSelectorType<TIndex extends number> {
   type: 'IndexSelector'
   index: TIndex
 }
-interface AnyIndexSelector extends IndexSelector<number> {}
-interface WildcardSelector {
+interface AnyIndexSelectorType extends IndexSelectorType<number> {}
+interface WildcardSelectorType {
   type: 'WildcardSelector'
 }
-interface AnyWildcardSelector extends WildcardSelector {}
-interface ArraySliceSelector<TStart extends number | never = never, TEnd extends number | never = never, TStep extends number | never = never> {
+interface AnyWildcardSelectorType extends WildcardSelectorType {}
+interface ArraySliceSelectorType<TStart extends number | never = never, TEnd extends number | never = never, TStep extends number | never = never> {
   type: 'ArraySliceSelector'
   start: TStart
   end: TEnd
   step: TStep
 }
-interface AnySliceSelector extends ArraySliceSelector<any, any, any> {}
+interface AnySliceSelectorType extends ArraySliceSelectorType<any, any, any> {}
 
-type AnySelector = AnySliceSelector | AnyIndexSelector | AnyWildcardSelector | AnyNameSelector
+type AnySelectorType = AnySliceSelectorType | AnyIndexSelectorType | AnyWildcardSelectorType | AnyNameSelectorType
 
 type ParseBracketSelector<TInner extends string> =
   TInner extends `${infer TStart extends number}:${infer TEnd extends number}:${infer TStep extends number}`
-    ? ArraySliceSelector<TStart, TEnd, TStep>
+    ? ArraySliceSelectorType<TStart, TEnd, TStep>
     : TInner extends `:${infer TEnd extends number}:${infer TStep extends number}`
-    ? ArraySliceSelector<never, TEnd, TStep>
+    ? ArraySliceSelectorType<never, TEnd, TStep>
     : TInner extends `::${infer TStep extends number}`
-    ? ArraySliceSelector<never, never, TStep>
+    ? ArraySliceSelectorType<never, never, TStep>
     : TInner extends `${infer TStart extends number}:${infer TEnd extends number}`
-    ? ArraySliceSelector<TStart, TEnd, never>
+    ? ArraySliceSelectorType<TStart, TEnd, never>
     : TInner extends `:${infer TEnd extends number}`
-    ? ArraySliceSelector<never, TEnd, never>
+    ? ArraySliceSelectorType<never, TEnd, never>
     : TInner extends `${string}"${infer TKey}"${string}`
-    ? NameSelector<FormatString<TKey>>
+    ? NameSelectorType<FormatString<TKey>>
     : TInner extends `${string}'${infer TKey}'${string}`
-    ? NameSelector<FormatString<TKey>>
+    ? NameSelectorType<FormatString<TKey>>
     : TInner extends `${string}*${string}`
-    ? WildcardSelector
+    ? WildcardSelectorType
     : TInner extends `${infer TStart extends number}`
-    ? IndexSelector<TStart>
+    ? IndexSelectorType<TStart>
     : never
 
 type ParseBracketIndexInner<T> = T extends `${infer TFirst},${infer TRest}`
@@ -51,21 +63,9 @@ type ParseBracketIndexInner<T> = T extends `${infer TFirst},${infer TRest}`
   ? [ParseBracketSelector<TIndex>]
   : []
 
-type ParsePathInnerOriginal<TPathInner extends string> = TPathInner extends `[${infer TInner}]${infer TRest}`
-  ? [ParseBracketIndexInner<TInner>, ...ParsePathInner<TRest>]
-  : TPathInner extends `.${infer TKey}[${infer TRest}`
-  ? [...ParsePathInner<TKey>, ...ParsePathInner<`[${TRest}`>]
-  : TPathInner extends `.${infer TKey}`
-  ? ParsePathInner<TKey>
-  : TPathInner extends `*.${infer TRest}`
-  ? [WildcardSelector, ...ParsePathInner<TRest>]
-  : TPathInner extends `${infer TKey}.${infer TRest}`
-  ? [...ParsePathInner<TKey>, ...ParsePathInner<TRest>]
-  : TPathInner extends ''
-  ? []
-  : [NameSelector<TPathInner>]
-
-type ParsePathInner<TPathInner extends string> = TPathInner extends `[${infer TInner}]${infer TRest}`
+type ParsePathInner<TPathInner extends string> = TPathInner extends `*`
+  ? [WildcardSelectorType]
+  : TPathInner extends `[${infer TInner}]${infer TRest}`
   ? [ParseBracketIndexInner<TInner>, ...ParsePathInner<TRest>]
   : TPathInner extends `.${infer TKey}[${infer TRest}`
   ? [...ParsePathInner<TKey>, ...ParsePathInner<`[${TRest}`>]
@@ -75,63 +75,65 @@ type ParsePathInner<TPathInner extends string> = TPathInner extends `[${infer TI
   ? [...ParsePathInner<TKey>, ...ParsePathInner<`.${TRest}`>]
   : TPathInner extends ''
   ? []
-  : [NameSelector<TPathInner>]
+  : [NameSelectorType<TPathInner>]
 
-export type ParsePath<TPath extends string> = ParsePathInner<TPath>
+export type ParseTypePath<TPath extends string> = ParsePathInner<TPath>
 
-type AnyParsedPath = (AnySelector | AnySelector[])[]
+export type InferTypePath<TPath extends TypePathConcreteType> = TypePathType
 
-type ExtractRecordSelection<TSelector extends AnySelector, TValue extends AnyRecord> = TSelector extends AnyWildcardSelector
+export type TypePathType = (AnySelectorType | AnySelectorType[])[]
+
+type ExtractRecordSelection<TSelector extends AnySelectorType, TValue extends AnyRecord> = TSelector extends AnyWildcardSelectorType
   ? Array<TValue[keyof TValue]>
-  : TSelector extends NameSelector<infer TKey>
+  : TSelector extends NameSelectorType<infer TKey>
   ? TKey extends keyof TValue
     ? TValue[TKey]
     : never
   : never
 
-type ExtractArraySelection<TSelector extends AnySelector, TValue extends AnyArray> = TSelector extends AnyWildcardSelector
+type ExtractArraySelection<TSelector extends AnySelectorType, TValue extends AnyArray> = TSelector extends AnyWildcardSelectorType
   ? TValue
-  : TSelector extends IndexSelector<infer TIndex>
+  : TSelector extends IndexSelectorType<infer TIndex>
   ? PickArray<TIndex, TValue>
-  : TSelector extends ArraySliceSelector<infer TStart, infer TEnd> // TODO: Handle step somehow
+  : TSelector extends ArraySliceSelectorType<infer TStart, infer TEnd> // TODO: Handle step somehow
   ? Slice<TValue, OrDefault<TStart, 0>, OrDefault<TEnd, TValue['length']>>
-  : TSelector extends NameSelector<infer TKey>
+  : TSelector extends NameSelectorType<infer TKey>
   ? PickArrayField<TValue, TKey>
-  : TSelector extends WildcardSelector
+  : TSelector extends WildcardSelectorType
   ? TValue
   : []
 
-type ExtractMultipleArraySelections<TSelectors extends AnySelector[], TValue extends AnyArray> = TSelectors['length'] extends 0
+type ExtractMultipleArraySelections<TSelectors extends AnySelectorType[], TValue extends AnyArray> = TSelectors['length'] extends 0
   ? []
   : TSelectors extends [infer TFirst, ...infer TRest]
-  ? TFirst extends AnySelector
-    ? TRest extends AnySelector[]
+  ? TFirst extends AnySelectorType
+    ? TRest extends AnySelectorType[]
       ? [ExtractArraySelection<TFirst, TValue>, ...ExtractMultipleArraySelections<TRest, TValue>]
       : ExtractArraySelection<TFirst, TValue>
     : []
   : []
 
-type ExtractSelection<TSelector extends AnySelector | AnySelector[], TValue> = TValue extends undefined
+type ExtractSelection<TSelector extends AnySelectorType | AnySelectorType[], TValue> = TValue extends undefined
   ? undefined
   : TValue extends AnyArray
-  ? TSelector extends AnySelector[]
+  ? TSelector extends AnySelectorType[]
     ? TSelector['length'] extends 1
       ? ExtractArraySelection<TSelector[0], TValue>
       : ExtractMultipleArraySelections<TSelector, TValue>
-    : TSelector extends AnySelector
+    : TSelector extends AnySelectorType
     ? ExtractArraySelection<TSelector, TValue>
     : never
   : TValue extends AnyRecord
-  ? TSelector extends AnySelector
+  ? TSelector extends AnySelectorType
     ? ExtractRecordSelection<TSelector, TValue>
     : never
   : never
 
-type ExtractValue<TSelectors extends AnyParsedPath, TValue> = TSelectors['length'] extends 0
+type ExtractValue<TSelectors extends TypePathType, TValue> = TSelectors['length'] extends 0
   ? TValue
   : TSelectors extends [infer TFirst, ...infer TRest]
-  ? TFirst extends AnySelector | AnySelector[]
-    ? TRest extends AnyParsedPath
+  ? TFirst extends AnySelectorType | AnySelectorType[]
+    ? TRest extends TypePathType
       ? ExtractValue<TRest, ExtractSelection<TFirst, TValue>>
       : ExtractSelection<TFirst, TValue>
     : []
