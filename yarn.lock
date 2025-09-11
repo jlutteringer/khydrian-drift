@@ -552,6 +552,7 @@ __metadata:
   dependencies:
     "@types/lodash-es": "npm:4.17.12"
     date-fns: "npm:4.1.0"
+    expect-type: "npm:1.2.2"
     immer: "npm:10.1.1"
     lodash-es: "npm:4.17.21"
     minimatch: "npm:10.0.1"
@@ -3916,6 +3917,13 @@ __metadata:
   version: 0.1.2
   resolution: "exit@npm:0.1.2"
   checksum: 10c0/71d2ad9b36bc25bb8b104b17e830b40a08989be7f7d100b13269aaae7c3784c3e6e1e88a797e9e87523993a25ba27c8958959a554535370672cfb4d824af8989
+  languageName: node
+  linkType: hard
+
+"expect-type@npm:1.2.2":
+  version: 1.2.2
+  resolution: "expect-type@npm:1.2.2"
+  checksum: 10c0/6019019566063bbc7a690d9281d920b1a91284a4a093c2d55d71ffade5ac890cf37a51e1da4602546c4b56569d2ad2fc175a2ccee77d1ae06cb3af91ef84f44b
   languageName: node
   linkType: hard
 

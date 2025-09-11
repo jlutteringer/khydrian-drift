@@ -1,29 +1,34 @@
 import Zod from 'zod'
-import { Get, Paths, UnknownRecord } from 'type-fest'
-import { isObject } from '@bessemer/cornerstone/object'
-import { produce } from 'immer'
+import { NominalType } from '@bessemer/cornerstone/types'
+import { InferObjectPath, ObjectPathConcreteType, ObjectPathType, ParseObjectPath, TypePathGet } from '@bessemer/cornerstone/object/type-path-type'
+import { fromString as typePathFromString, getValue as typePathGetValue, isWildcardSelector, TypePath } from '@bessemer/cornerstone/object/type-path'
+import { contains, isEmpty, only } from '@bessemer/cornerstone/array'
 import { assert } from '@bessemer/cornerstone/assertion'
-import { isEmpty } from '@bessemer/cornerstone/array'
-import { failure, Result, success } from '@bessemer/cornerstone/result'
-import { JoinPath, NominalType, ToString, ToStringArray } from '@bessemer/cornerstone/types'
+import { produce } from 'immer'
+import { isNil, isObject } from '@bessemer/cornerstone/object'
 
-export type ObjectPathType = string
-export type ConstrainObjectPathTypes<N> = ToString<Paths<N>>
+export type ObjectPath<T extends ObjectPathType = ObjectPathType> = NominalType<ObjectPathConcreteType, ['TypePath', T]>
 
-export type ObjectPath<T extends ObjectPathType = ObjectPathType> = NominalType<Array<string>, ['ObjectPath', T]>
-
-export const of = <T extends Array<string | number>>(value: T): ObjectPath<JoinPath<ToStringArray<T>>> => {
-  return value.map((it) => `${it}`) as ObjectPath<JoinPath<ToStringArray<T>>>
+export const of = <T extends ObjectPathConcreteType>(value: T): ObjectPath<InferObjectPath<T>> => {
+  return value as ObjectPath<InferObjectPath<T>>
 }
 
-const ObjectPathRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*|\.\d+)*$/
+export const fromString = <T extends string>(path: T): ObjectPath<ParseObjectPath<T>> => {
+  const typePath = typePathFromString(path)
 
-export const fromString = <T extends ObjectPathType>(path: T): ObjectPath<T> => {
-  assert(ObjectPathRegex.test(path), () => `Unable to parse ObjectPath from string: ${path}`)
-  return of(path.split('.')) as ObjectPath<T>
+  typePath.forEach((it) => {
+    assert(it !== '*', () => 'ObjectPaths do not allow for wildcard selectors')
+    if (Array.isArray(it)) {
+      assert(it.length === 1, () => 'ObjectPaths do not allow for multiple index selectors or array slices')
+      const value = only<string | number>(it)
+      assert(value !== '*', () => 'ObjectPaths do not allow for wildcard selectors')
+    }
+  })
+
+  return typePath as ObjectPath<ParseObjectPath<T>>
 }
 
-export const Schema = Zod.union([Zod.array(Zod.union([Zod.string(), Zod.number()])), Zod.string()]).transform((it) => {
+export const Schema = Zod.union([Zod.array(Zod.string()), Zod.string()]).transform((it) => {
   if (Array.isArray(it)) {
     return of(it)
   } else {
@@ -31,27 +36,15 @@ export const Schema = Zod.union([Zod.array(Zod.union([Zod.string(), Zod.number()
   }
 })
 
-export const getValue = <N extends UnknownRecord, T extends ObjectPathType>(object: N, path: ObjectPath<T>): Get<N, T> => {
-  const result = getValueResult(object, path)
-
-  if (result.isSuccess) {
-    return result.value
-  } else {
-    throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
-  }
+export const getValue = <T extends ObjectPathType, N>(path: ObjectPath<T>, object: N): TypePathGet<T, N> => {
+  return typePathGetValue(path, object)
 }
 
-export const findValue = <N extends UnknownRecord, T extends ObjectPathType>(object: N, path: ObjectPath<T>): Get<N, T> | undefined => {
-  const result = getValueResult(object, path)
-
-  if (result.isSuccess) {
-    return result.value
-  } else {
-    return undefined
-  }
+export const applyValue = <T extends ObjectPathType, N>(path: ObjectPath<T>, object: N, valueToApply: TypePathGet<T, N>): N => {
+  return applyAnyValue(path, object, valueToApply) as N
 }
 
-export const applyValue = (object: UnknownRecord, path: ObjectPath, valueToApply: unknown): unknown => {
+export const applyAnyValue = (path: ObjectPath, object: unknown, valueToApply: unknown): unknown => {
   if (isEmpty(path)) {
     return valueToApply
   }
@@ -59,43 +52,65 @@ export const applyValue = (object: UnknownRecord, path: ObjectPath, valueToApply
   return produce(object, (draft) => {
     const rest = path.slice(0, -1)
     const last = path[path.length - 1]!
-    const parent: any = isEmpty(rest) ? draft : getValue(draft, of(rest))
+    const parent = getValue(of(rest), draft) as any
 
-    // Check to make sure the last index is ok
-    assertLegalIndex(parent, last, object, path)
-    parent[last] = valueToApply
+    assert(isObject(parent) || Array.isArray(parent), () => `Unable to apply value: ${valueToApply} at ObjectPath: ${path} against object: ${object}`)
+    if (Array.isArray(last)) {
+      const index = only(last)
+      parent[index] = valueToApply
+    } else {
+      parent[last] = valueToApply
+    }
   })
 }
 
-const getValueResult = (object: UnknownRecord, path: ObjectPath): Result<any> => {
-  let value: any = object
+export const intersect = (objectPath: ObjectPath, typePath: TypePath): ObjectPath => {
+  assert(objectPath.length >= typePath.length, () => `TypePath: ${typePath} can't intersect ObjectPath: ${objectPath}`)
 
-  for (const key of path) {
-    if (Array.isArray(value)) {
-      const numberKey = Number(key)
-      if (numberKey < 0 || numberKey >= value.length) {
-        return failure()
+  let index = 0
+  let result: ObjectPathConcreteType = []
+  for (const objectPathSelector of objectPath) {
+    const typePathSelector = typePath[index]
+
+    // If the TypePath is shorter than the ObjectPath, thats fine - we're intersecting so we can return early
+    if (isNil(typePathSelector)) {
+      return of(result)
+    } else if (isWildcardSelector(typePathSelector)) {
+      result.push(objectPathSelector)
+    } else if (Array.isArray(typePathSelector)) {
+      if (Array.isArray(objectPathSelector)) {
+        const objectPathValue = only(objectPathSelector)
+        if (!contains(typePathSelector, objectPathValue)) {
+          throw new Error(`Path mismatch when intersecting. ObjectPath: ${objectPathSelector} does not match TypePath: ${typePathSelector}`)
+        }
+
+        result.push(objectPathSelector)
+      } else {
+        if (!contains(typePathSelector, Number(objectPathSelector))) {
+          throw new Error(`Path mismatch when intersecting. ObjectPath: ${objectPathSelector} does not match TypePath: ${typePathSelector}`)
+        }
+
+        result.push(objectPathSelector)
       }
-
-      value = value[numberKey]
-    } else if (isObject(value)) {
-      if (!(key in value)) {
-        return failure()
-      }
-
-      value = value[key]
     } else {
-      return failure()
+      if (Array.isArray(objectPathSelector)) {
+        const value = only(objectPathSelector)
+        if (typePathSelector !== `${value}`) {
+          throw new Error(`Path mismatch when intersecting. ObjectPath: ${objectPathSelector} does not match TypePath: ${typePathSelector}`)
+        }
+
+        result.push(objectPathSelector)
+      } else {
+        if (typePathSelector !== objectPathSelector) {
+          throw new Error(`Path mismatch when intersecting. ObjectPath: ${objectPathSelector} does not match TypePath: ${typePathSelector}`)
+        }
+
+        result.push(objectPathSelector)
+      }
     }
+
+    index++
   }
 
-  return success(value)
-}
-
-const assertLegalIndex = (value: any, _key: string, object: UnknownRecord, path: ObjectPath): void => {
-  if (Array.isArray(value) || isObject(value)) {
-    return
-  } else {
-    throw new Error(`Unable to resolve ObjectPath: ${path} against record: ${JSON.stringify(object)}`)
-  }
+  return of(result)
 }

@@ -1,348 +1,99 @@
-import { ObjectPaths } from '@bessemer/cornerstone'
+import { ObjectPaths, TypePaths } from '@bessemer/cornerstone'
+import { expectTypeOf } from 'expect-type'
+import { IndexSelectorType, NameSelectorType, ParseObjectPath } from '@bessemer/cornerstone/object/type-path-type'
+import { ObjectPath } from '@bessemer/cornerstone/object/object-path'
 
-describe('ObjectPaths.of', () => {
-  test('should create ObjectPath from single string element', () => {
-    const result = ObjectPaths.of(['name'])
-    expect(result).toEqual(['name'])
-  })
-
-  test('should create ObjectPath from multiple string elements', () => {
-    const result = ObjectPaths.of(['user', 'profile', 'name'])
-    expect(result).toEqual(['user', 'profile', 'name'])
-  })
-
-  test('should create ObjectPath from single number element', () => {
-    const result = ObjectPaths.of([0])
-    expect(result).toEqual(['0'])
-  })
-
-  test('should create ObjectPath from mixed string and number elements', () => {
-    const result = ObjectPaths.of(['users', 0, 'name'])
-    expect(result).toEqual(['users', '0', 'name'])
-  })
-
-  test('should create ObjectPath from multiple number elements', () => {
-    const result = ObjectPaths.of([0, 1, 2])
-    expect(result).toEqual(['0', '1', '2'])
-  })
-
-  test('should create ObjectPath with special characters in property names', () => {
-    const result = ObjectPaths.of(['_private', '$special', 'user_data'])
-    expect(result).toEqual(['_private', '$special', 'user_data'])
-  })
-
-  test('should work for empty array', () => {
-    const result = ObjectPaths.of([])
+describe('ObjectPaths.fromString', () => {
+  test('should parse empty string', () => {
+    const result = ObjectPaths.fromString('')
+    expectTypeOf(result).toEqualTypeOf<ObjectPath<[]>>()
     expect(result).toEqual([])
   })
 
-  test('should handle complex mixed path', () => {
-    const result = ObjectPaths.of(['company', 'departments', 0, 'employees', 1, 'skills', 2])
-    expect(result).toEqual(['company', 'departments', '0', 'employees', '1', 'skills', '2'])
-  })
-})
-
-describe('ObjectPaths.fromString', () => {
   test('should parse single property name', () => {
-    const result = ObjectPaths.fromString('name')
-    expect(result).toEqual(['name'])
+    const result = ObjectPaths.fromString('store')
+    expectTypeOf(result).toEqualTypeOf<ObjectPath<[NameSelectorType<'store'>]>>()
+    expect(result).toEqual(['store'])
+  })
+
+  test('should parse single property name index-style', () => {
+    const result = ObjectPaths.fromString('1')
+    expectTypeOf(result).toEqualTypeOf<ObjectPath<[NameSelectorType<'1'>]>>()
+    expect(result).toEqual(['1'])
+  })
+
+  test('should throw with wildcard', () => {
+    expect(() => ObjectPaths.fromString('store.*')).toThrow()
+    expectTypeOf<ObjectPath<ParseObjectPath<'store.*'>>>().toEqualTypeOf<ObjectPath<[NameSelectorType<'store'>, never]>>()
   })
 
   test('should parse nested property path', () => {
-    const result = ObjectPaths.fromString('user.profile.name')
-    expect(result).toEqual(['user', 'profile', 'name'])
+    const result = ObjectPaths.fromString('store.books.category')
+    expectTypeOf(result).toEqualTypeOf<ObjectPath<[NameSelectorType<'store'>, NameSelectorType<'books'>, NameSelectorType<'category'>]>>()
+    expect(result).toEqual(['store', 'books', 'category'])
+  })
+
+  test('should throw with array wildcard access', () => {
+    expect(() => ObjectPaths.fromString('store.books[*]')).toThrow()
+    expectTypeOf<ObjectPath<ParseObjectPath<'store.books[*]'>>>().toEqualTypeOf<
+      ObjectPath<[NameSelectorType<'store'>, NameSelectorType<'books'>, never]>
+    >()
+  })
+
+  test('should throw with array wildcard with property', () => {
+    expect(() => ObjectPaths.fromString('store.books[*].category')).toThrow()
+    type Type = ObjectPath<ParseObjectPath<'store.books[*].category'>>
+    expectTypeOf<Type>().toEqualTypeOf<ObjectPath<[NameSelectorType<'store'>, NameSelectorType<'books'>, never, NameSelectorType<'category'>]>>()
   })
 
   test('should parse single array index', () => {
-    const result = ObjectPaths.fromString('items.0')
-    expect(result).toEqual(['items', '0'])
+    const result = ObjectPaths.fromString('store.books[1]')
+    expectTypeOf(result).toEqualTypeOf<ObjectPath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [IndexSelectorType<1>]]>>()
+    expect(result).toEqual(['store', 'books', [1]])
   })
 
-  test('should parse multiple array indices', () => {
-    const result = ObjectPaths.fromString('matrix.0.1.2')
-    expect(result).toEqual(['matrix', '0', '1', '2'])
+  test('should parse name-style index', () => {
+    const result = ObjectPaths.fromString('store.books.1')
+    expectTypeOf(result).toEqualTypeOf<ObjectPath<[NameSelectorType<'store'>, NameSelectorType<'books'>, NameSelectorType<'1'>]>>()
+    expect(result).toEqual(['store', 'books', '1'])
   })
 
-  test('should parse mixed property and array access', () => {
-    const result = ObjectPaths.fromString('users.0.profile.tags.2')
-    expect(result).toEqual(['users', '0', 'profile', 'tags', '2'])
+  test('should parse array index with property', () => {
+    const result = ObjectPaths.fromString('store.books[1].title')
+    expectTypeOf(result).toEqualTypeOf<
+      ObjectPath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [IndexSelectorType<1>], NameSelectorType<'title'>]>
+    >()
+    expect(result).toEqual(['store', 'books', [1], 'title'])
   })
 
-  test('should parse complex nested path', () => {
-    const result = ObjectPaths.fromString('company.departments.0.employees.1.skills.2')
-    expect(result).toEqual(['company', 'departments', '0', 'employees', '1', 'skills', '2'])
+  test('should throw with multiple array indices', () => {
+    expectTypeOf<ObjectPath<ParseObjectPath<'store.books[2,3,4]'>>>().toEqualTypeOf<
+      ObjectPath<[NameSelectorType<'store'>, NameSelectorType<'books'>, never]>
+    >()
+    expect(() => ObjectPaths.fromString('store.books[2,3,4]')).toThrow()
   })
 
-  test('should parse property names with underscores', () => {
-    const result = ObjectPaths.fromString('user_data.profile_info.full_name')
-    expect(result).toEqual(['user_data', 'profile_info', 'full_name'])
+  test('should parse array index at root', () => {
+    const result = ObjectPaths.fromString('[1]')
+    expectTypeOf(result).toEqualTypeOf<ObjectPath<[[IndexSelectorType<1>]]>>()
+    expect(result).toEqual([[1]])
   })
 
-  test('should parse property names with dollar signs', () => {
-    const result = ObjectPaths.fromString('$root.$config.$settings')
-    expect(result).toEqual(['$root', '$config', '$settings'])
+  test('should throw with wildcard path *', () => {
+    expectTypeOf<ObjectPath<ParseObjectPath<'*'>>>().toEqualTypeOf<ObjectPath<[never]>>()
+    expect(() => ObjectPaths.fromString('*')).toThrow()
   })
 
-  test('should parse property names starting with underscore', () => {
-    const result = ObjectPaths.fromString('_private._internal._data')
-    expect(result).toEqual(['_private', '_internal', '_data'])
+  test('should throw with wildcard path [*]', () => {
+    expectTypeOf<ObjectPath<ParseObjectPath<'[*]'>>>().toEqualTypeOf<ObjectPath<[never]>>()
+    expect(() => ObjectPaths.fromString('[*]')).toThrow()
   })
 
-  test('should parse mixed special characters', () => {
-    const result = ObjectPaths.fromString('_private.$special.user_data')
-    expect(result).toEqual(['_private', '$special', 'user_data'])
-  })
-
-  test('should parse large array indices', () => {
-    const result = ObjectPaths.fromString('items.999.data.1234')
-    expect(result).toEqual(['items', '999', 'data', '1234'])
-  })
-
-  test('should parse zero array index', () => {
-    const result = ObjectPaths.fromString('items.0')
-    expect(result).toEqual(['items', '0'])
-  })
-
-  test('should throw for empty string', () => {
-    expect(() => ObjectPaths.fromString('')).toThrow()
-  })
-
-  test('should throw for path starting with dot', () => {
-    expect(() => ObjectPaths.fromString('.user.name')).toThrow()
-  })
-
-  test('should throw for path ending with dot', () => {
-    expect(() => ObjectPaths.fromString('user.name.')).toThrow()
-  })
-
-  test('should throw for consecutive dots', () => {
-    expect(() => ObjectPaths.fromString('user..name')).toThrow()
-  })
-
-  test('should throw for path starting with number', () => {
-    expect(() => ObjectPaths.fromString('123invalid')).toThrow()
-  })
-
-  test('should parse property names with numbers (but not starting with)', () => {
-    const result = ObjectPaths.fromString('user1.data2.field3')
-    expect(result).toEqual(['user1', 'data2', 'field3'])
-  })
-
-  test('should handle very long property names', () => {
-    const longName = 'a'.repeat(100)
-    const result = ObjectPaths.fromString(`${longName}.${longName}`)
-    expect(result).toEqual([longName, longName])
-  })
-
-  test('should parse array index with dot notation', () => {
-    const result = ObjectPaths.fromString('items.0')
-    expect(result).toEqual(['items', '0'])
-  })
-
-  test('should parse multiple array indices with dot notation', () => {
-    const result = ObjectPaths.fromString('matrix.0.1.2')
-    expect(result).toEqual(['matrix', '0', '1', '2'])
-  })
-
-  test('should parse mixed property and array access with dot notation', () => {
-    const result = ObjectPaths.fromString('users.0.profile.tags.2')
-    expect(result).toEqual(['users', '0', 'profile', 'tags', '2'])
-  })
-
-  test('should parse complex nested path with dot notation array indices', () => {
-    const result = ObjectPaths.fromString('company.departments.0.employees.1.skills.2')
-    expect(result).toEqual(['company', 'departments', '0', 'employees', '1', 'skills', '2'])
-  })
-
-  test('should parse large array indices with dot notation', () => {
-    const result = ObjectPaths.fromString('items.999.data.1234')
-    expect(result).toEqual(['items', '999', 'data', '1234'])
-  })
-
-  test('should parse zero array index with dot notation', () => {
-    const result = ObjectPaths.fromString('items.0')
-    expect(result).toEqual(['items', '0'])
-  })
-
-  test('should parse single digit array indices with dot notation', () => {
-    const result = ObjectPaths.fromString('data.0.info.5.value.9')
-    expect(result).toEqual(['data', '0', 'info', '5', 'value', '9'])
-  })
-
-  test('should parse alternating property names and dot notation indices', () => {
-    const result = ObjectPaths.fromString('level1.0.level2.1.level3.2')
-    expect(result).toEqual(['level1', '0', 'level2', '1', 'level3', '2'])
-  })
-})
-
-describe('ObjectPaths.getValue', () => {
-  test('should get simple property value', () => {
-    const obj = { name: 'John', age: 30 }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('name'))
-
-    expect(result).toBe('John')
-  })
-
-  test('should get nested property value', () => {
-    const obj = { user: { profile: { name: 'Alice' } } }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('user.profile.name'))
-
-    expect(result).toBe('Alice')
-  })
-
-  test('should get array element by index', () => {
-    const obj = { users: ['Alice', 'Bob', 'Charlie'] } as const
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users.1'))
-    expect(result).toBe('Bob')
-  })
-
-  test('should get nested array element', () => {
-    const obj = {
-      data: {
-        items: [{ name: 'Item 1' }, { name: 'Item 2' }, { name: 'Item 3' }],
-      },
-    }
-
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('data.items.2.name'))
-    expect(result).toBe('Item 3')
-  })
-
-  test('should get value from multidimensional array', () => {
-    const obj = {
-      matrix: [
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 9],
-      ],
-    }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('matrix.1.2'))
-
-    expect(result).toBe(6)
-  })
-
-  test('should get complex nested path with mixed access', () => {
-    const obj = {
-      company: {
-        departments: [
-          {
-            name: 'Engineering',
-            employees: [
-              { name: 'John', skills: ['JavaScript', 'TypeScript'] },
-              { name: 'Jane', skills: ['Python', 'Go'] },
-            ],
-          },
-          {
-            name: 'Marketing',
-            employees: [{ name: 'Mike', skills: ['SEO', 'Content'] }],
-          },
-        ],
-      },
-    }
-
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('company.departments.0.employees.1.skills.0'))
-
-    expect(result).toBe('Python')
-  })
-
-  test('should get value with underscore and dollar sign properties', () => {
-    const obj = { _private: { $special: { user_data: 'secret' } } }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('_private.$special.user_data'))
-
-    expect(result).toBe('secret')
-  })
-
-  test('should get first array element', () => {
-    const obj = { items: ['first', 'second', 'third'] }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('items.0'))
-
-    expect(result).toBe('first')
-  })
-
-  test('should get last array element by index', () => {
-    const obj = { items: ['a', 'b', 'c'] }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('items.2'))
-
-    expect(result).toBe('c')
-  })
-
-  test('should throw error when accessing non-existent property', () => {
-    const obj = { name: 'John' }
-
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('age'))).toThrow()
-  })
-
-  test('should throw error when accessing array index on non-array', () => {
-    const obj = { name: 'John' }
-
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('name.0'))).toThrow()
-  })
-
-  test('should throw error when accessing property on null', () => {
-    const obj = { user: null }
-
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('user.name'))).toThrow()
-  })
-
-  test('should throw error when accessing property on undefined', () => {
-    const obj = { user: undefined }
-
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('user.name'))).toThrow()
-  })
-
-  test('should throw error when accessing out of bounds array index', () => {
-    const obj = { items: ['a', 'b'] }
-
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('items.5'))).toThrow()
-  })
-
-  test('should throw error when accessing negative array index', () => {
-    const obj = { items: ['a', 'b', 'c'] }
-
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('items.-1'))).toThrow()
-  })
-
-  test('should throw error when accessing property on primitive value', () => {
-    const obj = { count: 42 }
-
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('count.value'))).toThrow()
-  })
-
-  test('should throw error when accessing array index on string', () => {
-    const obj = { message: 'hello' }
-
-    expect(() => ObjectPaths.getValue(obj, ObjectPaths.fromString('message.0'))).toThrow()
-  })
-
-  test('should get deeply nested object value', () => {
-    const obj = {
-      level1: {
-        level2: {
-          level3: {
-            level4: {
-              level5: 'deep value',
-            },
-          },
-        },
-      },
-    }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('level1.level2.level3.level4.level5'))
-    expect(result).toBe('deep value')
-  })
-
-  test('should handle mixed types in path', () => {
-    const obj = {
-      users: [
-        {
-          profile: {
-            preferences: {
-              notifications: [true, false, true],
-            },
-          },
-        },
-      ],
-    }
-    const result = ObjectPaths.getValue(obj, ObjectPaths.fromString('users.0.profile.preferences.notifications.2'))
-    expect(result).toBe(true)
+  test('should throw with complex wildcard path', () => {
+    expectTypeOf<ObjectPath<ParseObjectPath<'store.books[*].isbn.number'>>>().toEqualTypeOf<
+      ObjectPath<[NameSelectorType<'store'>, NameSelectorType<'books'>, never, NameSelectorType<'isbn'>, NameSelectorType<'number'>]>
+    >()
+    expect(() => ObjectPaths.fromString('store.books[*].isbn.number')).toThrow()
   })
 })
 
@@ -350,7 +101,7 @@ describe('ObjectPaths.applyValue', () => {
   test('should set simple property value', () => {
     const obj = { name: 'John', age: 30 }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('name'), 'Jane')
+    const result = ObjectPaths.applyValue(ObjectPaths.fromString('name'), obj, 'Jane')
 
     expect(result).toEqual({ name: 'Jane', age: 30 })
     expect(obj.name).toBe('John') // original unchanged
@@ -359,7 +110,7 @@ describe('ObjectPaths.applyValue', () => {
   test('should set nested property value', () => {
     const obj = { user: { profile: { name: 'Alice' } } }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('user.profile.name'), 'Bob')
+    const result = ObjectPaths.applyValue(ObjectPaths.fromString('user.profile.name'), obj, 'Bob')
 
     expect(result).toEqual({ user: { profile: { name: 'Bob' } } })
     expect(obj.user.profile.name).toBe('Alice') // original unchanged
@@ -368,7 +119,7 @@ describe('ObjectPaths.applyValue', () => {
   test('should set array element by index', () => {
     const obj = { users: ['Alice', 'Bob', 'Charlie'] }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('users.1'), 'Bobby')
+    const result = ObjectPaths.applyValue(ObjectPaths.fromString('users[1]'), obj, 'Bobby')
 
     expect(result).toEqual({ users: ['Alice', 'Bobby', 'Charlie'] })
     expect(obj.users[1]).toBe('Bob') // original unchanged
@@ -381,7 +132,7 @@ describe('ObjectPaths.applyValue', () => {
       },
     }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('data.items.0.name'), 'Updated Item')
+    const result = ObjectPaths.applyAnyValue(ObjectPaths.fromString('data.items.0.name'), obj, 'Updated Item')
 
     expect(result).toEqual({
       data: {
@@ -399,7 +150,7 @@ describe('ObjectPaths.applyValue', () => {
       ],
     } as const
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('matrix.1.2'), 99)
+    const result = ObjectPaths.applyAnyValue(ObjectPaths.fromString('matrix.1.2'), obj, 99)
 
     expect(result).toEqual({
       matrix: [
@@ -413,7 +164,7 @@ describe('ObjectPaths.applyValue', () => {
   test('should create new property', () => {
     const obj = { name: 'John' }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('age'), 30)
+    const result = ObjectPaths.applyAnyValue(ObjectPaths.fromString('age'), obj, 30)
 
     expect(result).toEqual({ name: 'John', age: 30 })
     expect(obj).not.toHaveProperty('age') // original unchanged
@@ -421,13 +172,13 @@ describe('ObjectPaths.applyValue', () => {
 
   test('should NOT handle complex nested path creation and throw instead', () => {
     const obj = { user: { profile: { name: 'Alice' } } }
-    expect(() => ObjectPaths.applyValue(obj, ObjectPaths.fromString('user.settings.theme'), 'dark')).toThrow()
+    expect(() => ObjectPaths.applyAnyValue(ObjectPaths.fromString('user.settings.theme'), obj, 'dark')).toThrow()
   })
 
   test('should set null value', () => {
     const obj = { name: 'John', age: 30 }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('age'), null)
+    const result = ObjectPaths.applyAnyValue(ObjectPaths.fromString('age'), obj, null)
 
     expect(result).toEqual({ name: 'John', age: null })
   })
@@ -435,7 +186,7 @@ describe('ObjectPaths.applyValue', () => {
   test('should set undefined value', () => {
     const obj = { name: 'John', age: 30 }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('age'), undefined)
+    const result = ObjectPaths.applyValue(ObjectPaths.fromString('age'), obj, undefined)
 
     expect(result).toEqual({ name: 'John', age: undefined })
   })
@@ -444,7 +195,7 @@ describe('ObjectPaths.applyValue', () => {
     const obj = { user: { name: 'John', age: 30 } }
     const newUser = { name: 'Jane', role: 'admin' }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('user'), newUser)
+    const result = ObjectPaths.applyAnyValue(ObjectPaths.fromString('user'), obj, newUser)
 
     expect(result).toEqual({ user: { name: 'Jane', role: 'admin' } })
   })
@@ -453,7 +204,7 @@ describe('ObjectPaths.applyValue', () => {
     const obj = { items: [1, 2, 3] }
     const newItems = ['a', 'b', 'c']
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('items'), newItems)
+    const result = ObjectPaths.applyAnyValue(ObjectPaths.fromString('items'), obj, newItems)
 
     expect(result).toEqual({ items: ['a', 'b', 'c'] })
   })
@@ -464,7 +215,7 @@ describe('ObjectPaths.applyValue', () => {
       settings: { theme: 'light' },
     }
 
-    const result: any = ObjectPaths.applyValue(obj, ObjectPaths.fromString('user.profile.name'), 'Bob')
+    const result: any = ObjectPaths.applyValue(ObjectPaths.fromString('user.profile.name'), obj, 'Bob')
 
     expect(result).not.toBe(obj)
     expect(result.user).not.toBe(obj.user)
@@ -475,8 +226,137 @@ describe('ObjectPaths.applyValue', () => {
   test('should handle setting values in sparse arrays', () => {
     const obj = { items: [1, undefined, 3] }
 
-    const result = ObjectPaths.applyValue(obj, ObjectPaths.fromString('items.1'), 2)
+    const result = ObjectPaths.applyValue(ObjectPaths.fromString('items[1]'), obj, 2)
 
     expect(result).toEqual({ items: [1, 2, 3] })
+  })
+})
+
+describe('ObjectPaths.intersect', () => {
+  test('should intersect matching simple property path', () => {
+    const objectPath = ObjectPaths.fromString('store.books')
+    const typePath = TypePaths.fromString('store.books')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should intersect when ObjectPath is longer than TypePath', () => {
+    const objectPath = ObjectPaths.fromString('store.books.category')
+    const typePath = TypePaths.fromString('store.books')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should throw when TypePath is longer than ObjectPath', () => {
+    const objectPath = ObjectPaths.fromString('store.books')
+    const typePath = TypePaths.fromString('store.books.category')
+    expect(() => ObjectPaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle empty paths', () => {
+    const objectPath = ObjectPaths.fromString('')
+    const typePath = TypePaths.fromString('')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual([])
+  })
+
+  test('should handle wildcard selector in TypePath', () => {
+    const objectPath = ObjectPaths.fromString('store.books')
+    const typePath = TypePaths.fromString('store.*')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should handle array index matching TypePath array selector', () => {
+    const objectPath = ObjectPaths.fromString('store.books[1]')
+    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', [1]])
+  })
+
+  test('should throw when array index does not match TypePath array selector', () => {
+    const objectPath = ObjectPaths.fromString('store.books[5]')
+    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    expect(() => ObjectPaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle name-style index matching TypePath array selector', () => {
+    const objectPath = ObjectPaths.fromString('store.books.1')
+    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', '1'])
+  })
+
+  test('should throw when name-style index does not match TypePath array selector', () => {
+    const objectPath = ObjectPaths.fromString('store.books.5')
+    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    expect(() => ObjectPaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle array selector in ObjectPath matching string selector in TypePath', () => {
+    const objectPath = ObjectPaths.fromString('store[1]')
+    const typePath = TypePaths.fromString('store.1')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', [1]])
+  })
+
+  test('should throw when array selector in ObjectPath does not match string selector in TypePath', () => {
+    const objectPath = ObjectPaths.fromString('store[2]')
+    const typePath = TypePaths.fromString('store.1')
+    expect(() => ObjectPaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle string selector matching in both paths', () => {
+    const objectPath = ObjectPaths.fromString('store.books.category')
+    const typePath = TypePaths.fromString('store.books.category')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', 'category'])
+  })
+
+  test('should throw when string selectors do not match', () => {
+    const objectPath = ObjectPaths.fromString('store.books.title')
+    const typePath = TypePaths.fromString('store.books.category')
+    expect(() => ObjectPaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle complex path with mixed selectors and wildcards', () => {
+    const objectPath = ObjectPaths.fromString('store.books[2].title')
+    const typePath = TypePaths.fromString('store.books.*')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', [2]])
+  })
+
+  test('should handle wildcard array selector in TypePath', () => {
+    const objectPath = ObjectPaths.fromString('store.books[2]')
+    const typePath = TypePaths.fromString('store.books[*]')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', [2]])
+  })
+
+  test('should return early when TypePath is shorter than ObjectPath', () => {
+    const objectPath = ObjectPaths.fromString('a.b.c.d.e')
+    const typePath = TypePaths.fromString('a.b')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['a', 'b'])
+  })
+
+  test('should handle root array access', () => {
+    const objectPath = ObjectPaths.fromString('[0]')
+    const typePath = TypePaths.fromString('[*]')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual([[0]])
+  })
+
+  test('should handle root array access with specific index', () => {
+    const objectPath = ObjectPaths.fromString('[1]')
+    const typePath = TypePaths.fromString('[0,1,2]')
+    const result = ObjectPaths.intersect(objectPath, typePath)
+    expect(result).toEqual([[1]])
+  })
+
+  test('should throw when root array access does not match', () => {
+    const objectPath = ObjectPaths.fromString('[5]')
+    const typePath = TypePaths.fromString('[0,1,2]')
+    expect(() => ObjectPaths.intersect(objectPath, typePath)).toThrow()
   })
 })
