@@ -89,7 +89,6 @@ type ParsePathInner<TPathInner extends string> = TPathInner extends `*`
 
 export type ParseTypePath<TPath extends string> = ParsePathInner<TPath>
 
-// JOHN
 type FilterObjectPathSelectors<T> = T extends readonly any[]
   ? {
       [K in keyof T]: T[K] extends AnyObjectPathSelectorType

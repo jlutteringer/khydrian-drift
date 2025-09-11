@@ -152,9 +152,7 @@ const evaluateSelector = (selector: TypePathSelector, current: unknown): [unknow
 const evaluateNameSelector = (selector: NameSelector, current: unknown): [unknown, boolean] => {
   if (Array.isArray(current)) {
     const numberSelector = Number(selector)
-    // JOHN
-    assert(isNumber(Number(selector)), () => `here?`)
-
+    assert(isNumber(numberSelector), () => `Can't apply non-numeric selector: ${selector} to array: ${current}`)
     return evaluateIndexSelector([numberSelector], current)
   }
 
