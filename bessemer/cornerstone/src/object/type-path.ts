@@ -15,7 +15,7 @@ import {
 } from '@bessemer/cornerstone/object/type-path-type'
 import { isNil, isObject } from '@bessemer/cornerstone/object'
 import { isNumber } from '@bessemer/cornerstone/math'
-import { only } from '@bessemer/cornerstone/array'
+import { contains, containsAll, isEmpty, only } from '@bessemer/cornerstone/array'
 
 export type TypePath<T extends TypePathType = TypePathType> = NominalType<TypePathConcreteType, ['TypePath', T]>
 
@@ -195,4 +195,123 @@ export const isWildcardSelector = (selector: TypePathSelector): selector is Wild
   } else {
     return selector === '*'
   }
+}
+
+export const matches = <IntersectingPath extends TypePathType>(
+  targetPath: TypePath,
+  matchingPath: TypePath<IntersectingPath>
+): targetPath is TypePath<IntersectingPath> => {
+  assert(targetPath.length >= matchingPath.length, () => `TypePath: ${matchingPath} can't match target TypePath: ${targetPath}`)
+
+  let index = 0
+  for (const targetPathSelector of targetPath) {
+    const matchingPathSelector = matchingPath[index]
+
+    if (isNil(matchingPathSelector)) {
+      return true
+    } else if (isWildcardSelector(matchingPathSelector)) {
+      // Matching path wildcards always match - they're wild
+    } else if (isWildcardSelector(targetPathSelector)) {
+      return false
+    } else if (Array.isArray(matchingPathSelector)) {
+      if (Array.isArray(targetPathSelector)) {
+        if (!containsAll(matchingPathSelector, targetPathSelector)) {
+          return false
+        }
+      } else {
+        if (!contains(matchingPathSelector, Number(targetPathSelector))) {
+          return false
+        }
+      }
+    } else {
+      if (Array.isArray(targetPathSelector)) {
+        if (targetPathSelector.length !== 1) {
+          return false
+        }
+
+        const targetPathSelectorIndex = only(targetPathSelector)
+        if (targetPathSelectorIndex !== Number(matchingPathSelector)) {
+          return false
+        }
+      } else {
+        if (targetPathSelector !== matchingPathSelector) {
+          return false
+        }
+      }
+    }
+
+    index++
+  }
+
+  return true
+}
+
+// JOHN this needs to do a type resolution step...
+export const intersect = <TargetPath extends TypePathType, IntersectingPath extends TypePathType>(
+  targetPath: TypePath<TargetPath>,
+  intersectingPath: TypePath<IntersectingPath>
+): TypePath => {
+  assert(targetPath.length >= intersectingPath.length, () => `TypePath: ${intersectingPath} can't intersect target TypePath: ${targetPath}`)
+
+  let index = 0
+  let result: TypePathConcreteType = []
+  for (const targetPathSelector of targetPath) {
+    const intersectingPathSelector = intersectingPath[index]
+
+    if (isNil(intersectingPathSelector)) {
+      return of(result)
+    } else if (isWildcardSelector(intersectingPathSelector)) {
+      result.push(targetPathSelector)
+    } else if (isWildcardSelector(targetPathSelector)) {
+      result.push(intersectingPathSelector)
+    } else if (Array.isArray(intersectingPathSelector)) {
+      if (Array.isArray(targetPathSelector)) {
+        const filteredTargetPaths = targetPathSelector.filter((it) => contains(intersectingPathSelector, it))
+        if (isEmpty(filteredTargetPaths)) {
+          throw new Error(
+            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
+          )
+        }
+
+        result.push(filteredTargetPaths)
+      } else {
+        if (!contains(intersectingPathSelector, Number(targetPathSelector))) {
+          throw new Error(
+            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
+          )
+        }
+
+        result.push(targetPathSelector)
+      }
+    } else {
+      if (Array.isArray(targetPathSelector)) {
+        if (targetPathSelector.length !== 1) {
+          throw new Error(
+            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
+          )
+        }
+
+        const targetPathSelectorIndex = only(targetPathSelector)
+        if (targetPathSelectorIndex !== Number(intersectingPathSelector)) {
+          throw new Error(
+            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
+          )
+        }
+
+        result.push(targetPathSelector)
+      } else {
+        if (targetPathSelector !== intersectingPathSelector) {
+          throw new Error(
+            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
+          )
+        }
+
+        result.push(targetPathSelector)
+      }
+    }
+
+    index++
+  }
+
+  return of(result)
 }

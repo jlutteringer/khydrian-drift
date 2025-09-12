@@ -1,13 +1,26 @@
 import Zod from 'zod'
 import { NominalType } from '@bessemer/cornerstone/types'
-import { InferObjectPath, ObjectPathConcreteType, ObjectPathType, ParseObjectPath, TypePathGet } from '@bessemer/cornerstone/object/type-path-type'
-import { fromString as typePathFromString, getValue as typePathGetValue, isWildcardSelector, TypePath } from '@bessemer/cornerstone/object/type-path'
-import { contains, isEmpty, only } from '@bessemer/cornerstone/array'
+import {
+  InferObjectPath,
+  ObjectPathConcreteType,
+  ObjectPathType,
+  ParseObjectPath,
+  TypePathGet,
+  TypePathType,
+} from '@bessemer/cornerstone/object/type-path-type'
+import {
+  fromString as typePathFromString,
+  getValue as typePathGetValue,
+  intersect as typePathIntersect,
+  matches as typePathMatches,
+  TypePath,
+} from '@bessemer/cornerstone/object/type-path'
+import { isEmpty, only } from '@bessemer/cornerstone/array'
 import { assert } from '@bessemer/cornerstone/assertion'
 import { produce } from 'immer'
-import { isNil, isObject } from '@bessemer/cornerstone/object'
+import { isObject } from '@bessemer/cornerstone/object'
 
-export type ObjectPath<T extends ObjectPathType = ObjectPathType> = NominalType<ObjectPathConcreteType, ['TypePath', T]>
+export type ObjectPath<T extends TypePathType = TypePathType> = NominalType<ObjectPathConcreteType, ['TypePath', T]>
 
 export const of = <T extends ObjectPathConcreteType>(value: T): ObjectPath<InferObjectPath<T>> => {
   return value as ObjectPath<InferObjectPath<T>>
@@ -64,53 +77,16 @@ export const applyAnyValue = (path: ObjectPath, object: unknown, valueToApply: u
   })
 }
 
-export const intersect = (objectPath: ObjectPath, typePath: TypePath): ObjectPath => {
-  assert(objectPath.length >= typePath.length, () => `TypePath: ${typePath} can't intersect ObjectPath: ${objectPath}`)
+export const matches = <IntersectingPath extends TypePathType>(
+  targetPath: ObjectPath,
+  matchingPath: TypePath<IntersectingPath>
+): targetPath is ObjectPath<IntersectingPath> => {
+  return typePathMatches(targetPath, matchingPath)
+}
 
-  let index = 0
-  let result: ObjectPathConcreteType = []
-  for (const objectPathSelector of objectPath) {
-    const typePathSelector = typePath[index]
-
-    // If the TypePath is shorter than the ObjectPath, thats fine - we're intersecting so we can return early
-    if (isNil(typePathSelector)) {
-      return of(result)
-    } else if (isWildcardSelector(typePathSelector)) {
-      result.push(objectPathSelector)
-    } else if (Array.isArray(typePathSelector)) {
-      if (Array.isArray(objectPathSelector)) {
-        const objectPathValue = only(objectPathSelector)
-        if (!contains(typePathSelector, objectPathValue)) {
-          throw new Error(`Path mismatch when intersecting. ObjectPath: ${objectPathSelector} does not match TypePath: ${typePathSelector}`)
-        }
-
-        result.push(objectPathSelector)
-      } else {
-        if (!contains(typePathSelector, Number(objectPathSelector))) {
-          throw new Error(`Path mismatch when intersecting. ObjectPath: ${objectPathSelector} does not match TypePath: ${typePathSelector}`)
-        }
-
-        result.push(objectPathSelector)
-      }
-    } else {
-      if (Array.isArray(objectPathSelector)) {
-        const value = only(objectPathSelector)
-        if (typePathSelector !== `${value}`) {
-          throw new Error(`Path mismatch when intersecting. ObjectPath: ${objectPathSelector} does not match TypePath: ${typePathSelector}`)
-        }
-
-        result.push(objectPathSelector)
-      } else {
-        if (typePathSelector !== objectPathSelector) {
-          throw new Error(`Path mismatch when intersecting. ObjectPath: ${objectPathSelector} does not match TypePath: ${typePathSelector}`)
-        }
-
-        result.push(objectPathSelector)
-      }
-    }
-
-    index++
-  }
-
-  return of(result)
+export const intersect = <TargetPath extends TypePathType, IntersectingPath extends TypePathType>(
+  targetPath: ObjectPath<TargetPath>,
+  intersectingPath: TypePath<IntersectingPath>
+): ObjectPath => {
+  return typePathIntersect(targetPath, intersectingPath) as ObjectPath
 }

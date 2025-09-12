@@ -1102,3 +1102,132 @@ describe('TypePaths.getValue', () => {
   //   })
   // }
 })
+
+describe('TypePaths.intersect', () => {
+  test('should intersect matching simple property path', () => {
+    const objectPath = TypePaths.fromString('store.books')
+    const typePath = TypePaths.fromString('store.books')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should intersect when ObjectPath is longer than TypePath', () => {
+    const objectPath = TypePaths.fromString('store.books.category')
+    const typePath = TypePaths.fromString('store.books')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should throw when TypePath is longer than ObjectPath', () => {
+    const objectPath = TypePaths.fromString('store.books')
+    const typePath = TypePaths.fromString('store.books.category')
+    expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle empty paths', () => {
+    const objectPath = TypePaths.fromString('')
+    const typePath = TypePaths.fromString('')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual([])
+  })
+
+  test('should handle wildcard selector in TypePath', () => {
+    const objectPath = TypePaths.fromString('store.books')
+    const typePath = TypePaths.fromString('store.*')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should handle array index matching TypePath array selector', () => {
+    const objectPath = TypePaths.fromString('store.books[1]')
+    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', [1]])
+  })
+
+  test('should throw when array index does not match TypePath array selector', () => {
+    const objectPath = TypePaths.fromString('store.books[5]')
+    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle name-style index matching TypePath array selector', () => {
+    const objectPath = TypePaths.fromString('store.books.1')
+    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', '1'])
+  })
+
+  test('should throw when name-style index does not match TypePath array selector', () => {
+    const objectPath = TypePaths.fromString('store.books.5')
+    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle array selector in ObjectPath matching string selector in TypePath', () => {
+    const objectPath = TypePaths.fromString('store[1]')
+    const typePath = TypePaths.fromString('store.1')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', [1]])
+  })
+
+  test('should throw when array selector in ObjectPath does not match string selector in TypePath', () => {
+    const objectPath = TypePaths.fromString('store[2]')
+    const typePath = TypePaths.fromString('store.1')
+    expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle string selector matching in both paths', () => {
+    const objectPath = TypePaths.fromString('store.books.category')
+    const typePath = TypePaths.fromString('store.books.category')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', 'category'])
+  })
+
+  test('should throw when string selectors do not match', () => {
+    const objectPath = TypePaths.fromString('store.books.title')
+    const typePath = TypePaths.fromString('store.books.category')
+    expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
+  })
+
+  test('should handle complex path with mixed selectors and wildcards', () => {
+    const objectPath = TypePaths.fromString('store.books[2].title')
+    const typePath = TypePaths.fromString('store.books.*')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', [2]])
+  })
+
+  test('should handle wildcard array selector in TypePath', () => {
+    const objectPath = TypePaths.fromString('store.books[2]')
+    const typePath = TypePaths.fromString('store.books[*]')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['store', 'books', [2]])
+  })
+
+  test('should return early when TypePath is shorter than ObjectPath', () => {
+    const objectPath = TypePaths.fromString('a.b.c.d.e')
+    const typePath = TypePaths.fromString('a.b')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual(['a', 'b'])
+  })
+
+  test('should handle root array access', () => {
+    const objectPath = TypePaths.fromString('[0]')
+    const typePath = TypePaths.fromString('[*]')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual([[0]])
+  })
+
+  test('should handle root array access with specific index', () => {
+    const objectPath = TypePaths.fromString('[1]')
+    const typePath = TypePaths.fromString('[0,1,2]')
+    const result = TypePaths.intersect(objectPath, typePath)
+    expect(result).toEqual([[1]])
+  })
+
+  test('should throw when root array access does not match', () => {
+    const objectPath = TypePaths.fromString('[5]')
+    const typePath = TypePaths.fromString('[0,1,2]')
+    expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
+  })
+})
