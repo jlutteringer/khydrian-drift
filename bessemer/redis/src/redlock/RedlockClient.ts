@@ -290,7 +290,7 @@ export class RedlockClient extends EventEmitter {
   private executeScript = async (
     script: { value: string; hash: string },
     resourceKeys: Array<ResourceKey>,
-    args: (string | number)[],
+    args: Array<string | number>,
     props: AdvisoryLockProps
   ): Promise<ExecutionResult> => {
     const attempts: Promise<ExecutionStats>[] = []

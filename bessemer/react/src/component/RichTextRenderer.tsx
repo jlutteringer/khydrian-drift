@@ -15,7 +15,7 @@ export type RichTextElement = (props: RichTextElementProps) => ReactNode
 export const RichTextRenderer = (props: RichTextRendererProps): ReactNode => {
   const { content, handlers = {} } = props
 
-  const children: ReactNode[] = []
+  const children: Array<ReactNode> = []
   if (Objects.isPresent(content.content)) {
     content.content.forEach((child, index) => {
       children.push(

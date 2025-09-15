@@ -1,5 +1,5 @@
 import { ObjectPath } from '@bessemer/cornerstone/object/object-path'
-import { ObjectPathType, TypePathGet, TypePathType } from '@bessemer/cornerstone/object/type-path-type'
+import { ConstrainTypePath, ObjectPathType, TypePathGet, TypePathType } from '@bessemer/cornerstone/object/type-path-type'
 import { matches as typePathMatches, TypePath } from '@bessemer/cornerstone/object/type-path'
 
 export enum ObjectDiffType {
@@ -44,21 +44,27 @@ export type ObjectDiffEntry<N, T extends TypePathType = TypePathType> =
 
 export type ObjectDiff<N> = Array<ObjectDiffEntry<N>>
 
-export const add = <N, T extends ObjectPathType>(path: ObjectPath<T>, value: TypePathGet<T, N>): AddObjectDiff<N, T> => {
-  return { type: ObjectDiffType.Add, path, value }
-}
+export const add =
+  <N>() =>
+  <T extends ObjectPathType>(path: ObjectPath<ConstrainTypePath<T, N>>, value: TypePathGet<T, N>): AddObjectDiff<N, T> => {
+    return { type: ObjectDiffType.Add, path, value }
+  }
 
-export const remove = <N, T extends ObjectPathType>(path: ObjectPath<T>, originalValue: TypePathGet<T, N>): RemoveObjectDiff<N, T> => {
-  return { type: ObjectDiffType.Remove, path, originalValue }
-}
+export const remove =
+  <N>() =>
+  <T extends ObjectPathType>(path: ObjectPath<ConstrainTypePath<T, N>>, originalValue: TypePathGet<T, N>): RemoveObjectDiff<N, T> => {
+    return { type: ObjectDiffType.Remove, path, originalValue }
+  }
 
-export const update = <N, T extends ObjectPathType>(
-  path: ObjectPath<T>,
-  value: TypePathGet<T, N>,
-  originalValue: TypePathGet<T, N>
-): UpdateObjectDiff<N, T> => {
-  return { type: ObjectDiffType.Update, path, value, originalValue }
-}
+export const update =
+  <N>() =>
+  <T extends ObjectPathType>(
+    path: ObjectPath<ConstrainTypePath<T, N>>,
+    value: TypePathGet<T, N>,
+    originalValue: TypePathGet<T, N>
+  ): UpdateObjectDiff<N, T> => {
+    return { type: ObjectDiffType.Update, path, value, originalValue }
+  }
 
 export const matchesPath = <N, T extends TypePathType>(diff: ObjectDiffEntry<N>, path: TypePath<T>): diff is ObjectDiffEntry<N, T> => {
   return typePathMatches(diff.path, path)

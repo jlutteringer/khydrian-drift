@@ -3,6 +3,16 @@
 import { Arrayable } from 'type-fest'
 
 export type TypePathParse<TPath extends string, TValue extends any> = TypePathGet<ParseTypePath<TPath>, TValue>
+export type ConstrainTypePath<TPath extends TypePathType, TValue> = [TypePathGet<TPath, TValue>] extends [never] ? never : TPath
+export type TypePathGet<TSelectors extends TypePathType, TValue> = TSelectors['length'] extends 0
+  ? TValue
+  : TSelectors extends [infer TFirst, ...infer TRest]
+  ? TFirst extends AnyTypePathSelectorType | AnyTypePathSelectorType[]
+    ? TRest extends TypePathType
+      ? TypePathGet<TRest, ExtractSelection<TFirst, TValue>>
+      : ExtractSelection<TFirst, TValue>
+    : []
+  : []
 
 // JOHN we don't have all of the concrete types represented here
 export type NameSelector = string
@@ -160,16 +170,6 @@ type ExtractSelection<TSelector extends AnyTypePathSelectorType | AnyTypePathSel
       : never
     : never
   : never
-
-export type TypePathGet<TSelectors extends TypePathType, TValue> = TSelectors['length'] extends 0
-  ? TValue
-  : TSelectors extends [infer TFirst, ...infer TRest]
-  ? TFirst extends AnyTypePathSelectorType | AnyTypePathSelectorType[]
-    ? TRest extends TypePathType
-      ? TypePathGet<TRest, ExtractSelection<TFirst, TValue>>
-      : ExtractSelection<TFirst, TValue>
-    : []
-  : []
 
 type AnyRecord = Record<PropertyKey, any>
 type AnyArray = any[]
