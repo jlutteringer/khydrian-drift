@@ -10,7 +10,6 @@ import {
   TypePathGet,
   TypePathSelector,
   TypePathType,
-  WildcardIndexSelector,
   WildcardSelector,
 } from '@bessemer/cornerstone/object/type-path-type'
 import { isNil, isObject } from '@bessemer/cornerstone/object'
@@ -72,7 +71,7 @@ export const fromString = <T extends string>(path: T): TypePath<ParseTypePath<T>
       }
 
       if (bracketContent === '*') {
-        segments.push(['*'])
+        segments.push('*')
       } else {
         const indices = bracketContent
           .split(',')
@@ -189,19 +188,17 @@ const evaluateIndexSelector = (selector: IndexSelector, current: unknown): [unkn
   return [result, true]
 }
 
-export const isWildcardSelector = (selector: TypePathSelector): selector is WildcardSelector | WildcardIndexSelector => {
-  if (Array.isArray(selector) && selector.length === 1) {
-    return only<string | number>(selector) === '*'
-  } else {
-    return selector === '*'
-  }
+export const isWildcardSelector = (selector: TypePathSelector): selector is WildcardSelector => {
+  return selector === '*'
 }
 
-export const matches = <IntersectingPath extends TypePathType>(
+export const matches = <MatchingPath extends TypePathType>(
   targetPath: TypePath,
-  matchingPath: TypePath<IntersectingPath>
-): targetPath is TypePath<IntersectingPath> => {
-  assert(targetPath.length >= matchingPath.length, () => `TypePath: ${matchingPath} can't match target TypePath: ${targetPath}`)
+  matchingPath: TypePath<MatchingPath>
+): targetPath is TypePath<MatchingPath> => {
+  if (targetPath.length < matchingPath.length) {
+    return false
+  }
 
   let index = 0
   for (const targetPathSelector of targetPath) {

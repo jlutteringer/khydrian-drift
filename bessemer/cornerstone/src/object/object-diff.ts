@@ -66,6 +66,9 @@ export const update =
     return { type: ObjectDiffType.Update, path, value, originalValue }
   }
 
-export const matchesPath = <N, T extends TypePathType>(diff: ObjectDiffEntry<N>, path: TypePath<T>): diff is ObjectDiffEntry<N, T> => {
+export const matchesPath = <N, MatchingPath extends TypePathType>(
+  diff: ObjectDiffEntry<N>,
+  path: TypePath<MatchingPath>
+): diff is ObjectDiffEntry<N, MatchingPath> => {
   return typePathMatches(diff.path, path)
 }

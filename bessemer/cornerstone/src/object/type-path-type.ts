@@ -18,10 +18,9 @@ export type TypePathGet<TSelectors extends TypePathType, TValue> = TSelectors['l
 export type NameSelector = string
 export type IndexSelector = Array<number>
 export type WildcardSelector = '*'
-export type WildcardIndexSelector = ['*']
 
 export type ObjectPathSelector = NameSelector | IndexSelector
-export type TypePathSelector = ObjectPathSelector | WildcardSelector | WildcardIndexSelector
+export type TypePathSelector = ObjectPathSelector | WildcardSelector
 export type ObjectPathConcreteType = Array<ObjectPathSelector>
 export type TypePathConcreteType = Array<TypePathSelector>
 
@@ -38,7 +37,6 @@ export interface AnyIndexSelectorType extends IndexSelectorType<number> {}
 export interface WildcardSelectorType {
   type: 'WildcardSelector'
 }
-export interface AnyWildcardSelectorType extends WildcardSelectorType {}
 export interface ArraySliceSelectorType<
   TStart extends number | never = never,
   TEnd extends number | never = never,
@@ -52,7 +50,7 @@ export interface ArraySliceSelectorType<
 export interface AnySliceSelectorType extends ArraySliceSelectorType<any, any, any> {}
 
 type AnyObjectPathSelectorType = AnyIndexSelectorType | AnyNameSelectorType
-type AnyTypePathSelectorType = AnyObjectPathSelectorType | AnySliceSelectorType | AnyWildcardSelectorType
+type AnyTypePathSelectorType = AnyObjectPathSelectorType | WildcardSelectorType | AnySliceSelectorType
 
 type ParseBracketSelector<TInner extends string> =
   TInner extends `${infer TStart extends number}:${infer TEnd extends number}:${infer TStep extends number}`
@@ -69,8 +67,6 @@ type ParseBracketSelector<TInner extends string> =
     ? NameSelectorType<FormatString<TKey>>
     : TInner extends `${string}'${infer TKey}'${string}`
     ? NameSelectorType<FormatString<TKey>>
-    : TInner extends `${string}*${string}`
-    ? WildcardSelectorType
     : TInner extends `${infer TStart extends number}`
     ? IndexSelectorType<TStart>
     : never
@@ -83,6 +79,10 @@ type ParseBracketIndexInner<T> = T extends `${infer TFirst},${infer TRest}`
 
 type ParsePathInner<TPathInner extends string> = TPathInner extends `*`
   ? [WildcardSelectorType]
+  : TPathInner extends `[*]${infer TRest}`
+  ? [WildcardSelectorType, ...ParsePathInner<TRest>]
+  : TPathInner extends `${infer TRest}[*]`
+  ? [...ParsePathInner<TRest>, WildcardSelectorType]
   : TPathInner extends `[${infer TInner}]${infer TRest}`
   ? [ParseBracketIndexInner<TInner>, ...ParsePathInner<TRest>]
   : TPathInner extends `.${infer TKey}[${infer TRest}`
@@ -99,19 +99,56 @@ type ParsePathInner<TPathInner extends string> = TPathInner extends `*`
 
 export type ParseTypePath<TPath extends string> = ParsePathInner<TPath>
 
-type FilterObjectPathSelectors<T> = T extends readonly any[]
+type FilterObjectPathSelectors<T extends TypePathType> = T extends any[]
   ? {
       [K in keyof T]: T[K] extends AnyObjectPathSelectorType
         ? T[K]
-        : T[K] extends readonly any[]
-        ? T[K] extends readonly AnyObjectPathSelectorType[]
-          ? T[K]['length'] extends 1
-            ? T[K]
-            : never
+        : T[K] extends AnyObjectPathSelectorType[]
+        ? T[K]['length'] extends 1
+          ? T[K]
           : never
         : never
     }
   : never
+
+// JOHN
+export type ObjectPathInferMatchesInternal<TargetPath extends ObjectPathType, MatchingPath extends TypePathType> = {
+  [K in keyof TargetPath]: K extends keyof MatchingPath
+    ? MatchingPath[K] extends AnyNameSelectorType
+      ? MatchingPath[K]
+      : MatchingPath[K] extends AnyIndexSelectorType
+      ? MatchingPath[K]
+      : MatchingPath[K] extends WildcardSelectorType
+      ? TargetPath[K]
+      : MatchingPath[K] extends Array<any>
+      ? MatchingPath[K]['length'] extends 1
+        ? MatchingPath[K]
+        : IndexSelectorType<number>
+      : never
+    : never
+}
+
+// JOHN
+export type ObjectPathInferMatches<TargetPath extends ObjectPathType, MatchingPath extends TypePathType> = NeverIfContainsNever<
+  ObjectPathInferMatchesInternal<TargetPath, MatchingPath>
+>
+
+// JOHN
+export type ObjectPathInferIntersect<TargetPath extends ObjectPathType, MatchingPath extends TypePathType> = {
+  [K in keyof TargetPath]: K extends keyof MatchingPath
+    ? MatchingPath[K] extends AnyNameSelectorType
+      ? MatchingPath[K]
+      : MatchingPath[K] extends AnyIndexSelectorType
+      ? MatchingPath[K]
+      : MatchingPath[K] extends WildcardSelectorType
+      ? TargetPath[K]
+      : MatchingPath[K] extends Array<any>
+      ? MatchingPath[K]['length'] extends 1
+        ? MatchingPath[K]
+        : IndexSelectorType<number>
+      : never
+    : never
+}
 
 export type ParseObjectPath<TPath extends string> = FilterObjectPathSelectors<ParsePathInner<TPath>>
 
@@ -121,7 +158,7 @@ export type TypePathType = Array<Arrayable<AnyTypePathSelectorType>>
 export type InferObjectPath<TPath extends TypePathConcreteType> = ObjectPathType
 export type InferTypePath<TPath extends TypePathConcreteType> = TypePathType
 
-type ExtractRecordSelection<TSelector extends AnyTypePathSelectorType, TValue extends AnyRecord> = TSelector extends AnyWildcardSelectorType
+type ExtractRecordSelection<TSelector extends AnyTypePathSelectorType, TValue extends AnyRecord> = TSelector extends WildcardSelectorType
   ? Array<TValue[keyof TValue]>
   : TSelector extends NameSelectorType<infer TKey>
   ? TKey extends keyof TValue
@@ -129,7 +166,7 @@ type ExtractRecordSelection<TSelector extends AnyTypePathSelectorType, TValue ex
     : never
   : never
 
-type ExtractArraySelection<TSelector extends AnyTypePathSelectorType, TValue extends AnyArray> = TSelector extends AnyWildcardSelectorType
+type ExtractArraySelection<TSelector extends AnyTypePathSelectorType, TValue extends AnyArray> = TSelector extends WildcardSelectorType
   ? TValue
   : TSelector extends IndexSelectorType<infer TIndex>
   ? PickArray<TIndex, TValue>
@@ -213,3 +250,15 @@ type PickArrayField<TArr extends any[], TKey extends string> = TArr extends [inf
   : []
 
 type OrDefault<T, D> = [T] extends [never] ? D : T
+
+// JOHN
+type HasNever<T extends Array<any>> = T extends readonly [infer Head, ...infer Tail]
+  ? Head extends never
+    ? true
+    : Tail extends Array<any>
+    ? HasNever<Tail>
+    : false
+  : false
+
+// JOHN
+export type NeverIfContainsNever<T> = T extends never ? [] : T extends Array<any> ? (HasNever<T> extends true ? [] : T) : T

@@ -31,10 +31,9 @@ export const fromString = <T extends string>(path: T): ObjectPath<ParseObjectPat
 
   typePath.forEach((it) => {
     assert(it !== '*', () => 'ObjectPaths do not allow for wildcard selectors')
+
     if (Array.isArray(it)) {
       assert(it.length === 1, () => 'ObjectPaths do not allow for multiple index selectors or array slices')
-      const value = only<string | number>(it)
-      assert(value !== '*', () => 'ObjectPaths do not allow for wildcard selectors')
     }
   })
 
@@ -77,10 +76,10 @@ export const applyAnyValue = (path: ObjectPath, object: unknown, valueToApply: u
   })
 }
 
-export const matches = <IntersectingPath extends TypePathType>(
+export const matches = <MatchingPath extends TypePathType>(
   targetPath: ObjectPath,
-  matchingPath: TypePath<IntersectingPath>
-): targetPath is ObjectPath<IntersectingPath> => {
+  matchingPath: TypePath<MatchingPath>
+): targetPath is ObjectPath<MatchingPath> => {
   return typePathMatches(targetPath, matchingPath)
 }
 

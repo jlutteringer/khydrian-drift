@@ -158,7 +158,7 @@ const TestData: TestDataType = [
 ]
 
 const TestObject = TestData[0]!
-type TestObjectType = typeof TestObject
+export type TestObjectType = typeof TestObject
 
 const TestDataConst = [
   {
@@ -312,16 +312,16 @@ describe('TypePaths.fromString', () => {
 
   test('should parse array wildcard access', () => {
     const result = TypePaths.fromString('store.books[*]')
-    expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [WildcardSelectorType]]>>()
-    expect(result).toEqual(['store', 'books', ['*']])
+    expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, WildcardSelectorType]>>()
+    expect(result).toEqual(['store', 'books', '*'])
   })
 
   test('should parse array wildcard with property', () => {
     const result = TypePaths.fromString('store.books[*].category')
     expectTypeOf(result).toEqualTypeOf<
-      TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [WildcardSelectorType], NameSelectorType<'category'>]>
+      TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, WildcardSelectorType, NameSelectorType<'category'>]>
     >()
-    expect(result).toEqual(['store', 'books', ['*'], 'category'])
+    expect(result).toEqual(['store', 'books', '*', 'category'])
   })
 
   test('should parse single array index', () => {
@@ -374,8 +374,8 @@ describe('TypePaths.fromString', () => {
 
   test('should parse array access at root', () => {
     const result = TypePaths.fromString('[*]')
-    expectTypeOf(result).toEqualTypeOf<TypePath<[[WildcardSelectorType]]>>()
-    expect(result).toEqual([['*']])
+    expectTypeOf(result).toEqualTypeOf<TypePath<[WildcardSelectorType]>>()
+    expect(result).toEqual(['*'])
   })
 
   test('should parse array index at root', () => {
@@ -386,16 +386,16 @@ describe('TypePaths.fromString', () => {
 
   test('should parse array at root with property', () => {
     const result = TypePaths.fromString('[*].title')
-    expectTypeOf(result).toEqualTypeOf<TypePath<[[WildcardSelectorType], NameSelectorType<'title'>]>>()
-    expect(result).toEqual([['*'], 'title'])
+    expectTypeOf(result).toEqualTypeOf<TypePath<[WildcardSelectorType, NameSelectorType<'title'>]>>()
+    expect(result).toEqual(['*', 'title'])
   })
 
   test('should parse complex nested path', () => {
     const result = TypePaths.fromString('store.books[*].isbn.number')
     expectTypeOf(result).toEqualTypeOf<
-      TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [WildcardSelectorType], NameSelectorType<'isbn'>, NameSelectorType<'number'>]>
+      TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, WildcardSelectorType, NameSelectorType<'isbn'>, NameSelectorType<'number'>]>
     >()
-    expect(result).toEqual(['store', 'books', ['*'], 'isbn', 'number'])
+    expect(result).toEqual(['store', 'books', '*', 'isbn', 'number'])
   })
 
   test('should parse property names with underscores', () => {
@@ -457,12 +457,12 @@ describe('TypePaths.fromString', () => {
           NameSelectorType<'items'>,
           [IndexSelectorType<0>],
           NameSelectorType<'tags'>,
-          [WildcardSelectorType],
+          WildcardSelectorType,
           NameSelectorType<'name'>
         ]
       >
     >()
-    expect(result).toEqual(['data', 'items', [0], 'tags', ['*'], 'name'])
+    expect(result).toEqual(['data', 'items', [0], 'tags', '*', 'name'])
   })
 
   test('should handle very long property names', () => {
@@ -481,7 +481,7 @@ describe('TypePaths.fromString', () => {
           [IndexSelectorType<0>],
           NameSelectorType<'data'>,
           NameSelectorType<'users'>,
-          [WildcardSelectorType],
+          WildcardSelectorType,
           NameSelectorType<'profile'>,
           NameSelectorType<'settings'>,
           NameSelectorType<'preferences'>,
@@ -489,7 +489,7 @@ describe('TypePaths.fromString', () => {
         ]
       >
     >()
-    expect(result).toEqual(['api', 'responses', [0], 'data', 'users', ['*'], 'profile', 'settings', 'preferences', [1, 3, 5]])
+    expect(result).toEqual(['api', 'responses', [0], 'data', 'users', '*', 'profile', 'settings', 'preferences', [1, 3, 5]])
   })
 
   test('should throw for invalid syntax - consecutive dots', () => {
@@ -1229,5 +1229,173 @@ describe('TypePaths.intersect', () => {
     const objectPath = TypePaths.fromString('[5]')
     const typePath = TypePaths.fromString('[0,1,2]')
     expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
+  })
+})
+
+describe('TypePaths.matches', () => {
+  test('should match identical paths', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const matchingPath = TypePaths.fromString('store.books')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match with wildcard selector', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const matchingPath = TypePaths.fromString('store.*')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match array index with wildcard', () => {
+    const targetPath = TypePaths.fromString('store.books[1]')
+    const matchingPath = TypePaths.fromString('store.books[*]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match multiple array indices with wildcard', () => {
+    const targetPath = TypePaths.fromString('store.books[1,2,3]')
+    const matchingPath = TypePaths.fromString('store.books[*]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match when target has single index and matching has multiple indices containing that index', () => {
+    const targetPath = TypePaths.fromString('store.books[1]')
+    const matchingPath = TypePaths.fromString('store.books[0,1,2]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match when both have multiple indices and target is subset of matching', () => {
+    const targetPath = TypePaths.fromString('store.books[1,2]')
+    const matchingPath = TypePaths.fromString('store.books[0,1,2,3]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match name selector with array index when they represent same value', () => {
+    const targetPath = TypePaths.fromString('store.books.1')
+    const matchingPath = TypePaths.fromString('store.books[1]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match array index with name selector when they represent same value', () => {
+    const targetPath = TypePaths.fromString('store.books[1]')
+    const matchingPath = TypePaths.fromString('store.books.1')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match shorter matching path (prefix match)', () => {
+    const targetPath = TypePaths.fromString('store.books.category')
+    const matchingPath = TypePaths.fromString('store.books')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match complex nested path with wildcards', () => {
+    const targetPath = TypePaths.fromString('store.books[1].isbn.number')
+    const matchingPath = TypePaths.fromString('store.books[*].isbn.*')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should NOT match when target has wildcard but matching has specific selector', () => {
+    const targetPath = TypePaths.fromString('store.*')
+    const matchingPath = TypePaths.fromString('store.books')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
+  })
+
+  test('should NOT match when target single index not in matching multiple indices', () => {
+    const targetPath = TypePaths.fromString('store.books[5]')
+    const matchingPath = TypePaths.fromString('store.books[0,1,2]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
+  })
+
+  test('should NOT match when target multiple indices not subset of matching', () => {
+    const targetPath = TypePaths.fromString('store.books[1,2,5]')
+    const matchingPath = TypePaths.fromString('store.books[0,1,2,3]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
+  })
+
+  test('should NOT match when name selector and array index represent different values', () => {
+    const targetPath = TypePaths.fromString('store.books.2')
+    const matchingPath = TypePaths.fromString('store.books[1]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
+  })
+
+  test('should NOT match when target array has multiple indices but matching expects single', () => {
+    const targetPath = TypePaths.fromString('store.books[1,2]')
+    const matchingPath = TypePaths.fromString('store.books.1')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
+  })
+
+  test('should NOT match when matching path is longer than target', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const matchingPath = TypePaths.fromString('store.books.category')
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
+  })
+
+  test('should NOT match different property names', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const matchingPath = TypePaths.fromString('store.magazines')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
+  })
+
+  test('should match empty paths', () => {
+    const targetPath = TypePaths.fromString('')
+    const matchingPath = TypePaths.fromString('')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match target with empty matching path', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const matchingPath = TypePaths.fromString('')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match root wildcard with any single selector', () => {
+    const targetPath = TypePaths.fromString('store')
+    const matchingPath = TypePaths.fromString('*')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match root array access with wildcard', () => {
+    const targetPath = TypePaths.fromString('[1]')
+    const matchingPath = TypePaths.fromString('[*]')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should match complex matrix access', () => {
+    const targetPath = TypePaths.fromString('matrix[0][1].category')
+    const matchingPath = TypePaths.fromString('matrix[*][*].category')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should handle mixed array and property access', () => {
+    const targetPath = TypePaths.fromString('store.books[1].publisher.credits[0].name')
+    const matchingPath = TypePaths.fromString('store.books[*].publisher.*')
+
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
+  })
+
+  test('should type narrow correctly on successful match', () => {
+    const targetPath = TypePaths.fromString('store.books[1].category')
+    const matchingPath = TypePaths.fromString('store.books[*].category')
+    expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 })
