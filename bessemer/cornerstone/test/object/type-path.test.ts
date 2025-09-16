@@ -1399,3 +1399,225 @@ describe('TypePaths.matches', () => {
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 })
+
+describe('TypePaths.intersect', () => {
+  test('should intersect identical paths', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const intersectingPath = TypePaths.fromString('store.books')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should intersect with wildcard in intersecting path', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const intersectingPath = TypePaths.fromString('store.*')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should intersect with wildcard in target path', () => {
+    const targetPath = TypePaths.fromString('store.*')
+    const intersectingPath = TypePaths.fromString('store.*')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', '*'])
+  })
+
+  test('should intersect array indices where target is subset of intersecting', () => {
+    const targetPath = TypePaths.fromString('store.books[1]')
+    const intersectingPath = TypePaths.fromString('store.books[0,1,2]')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books', [1]])
+  })
+
+  test('should intersect multiple array indices keeping only matching ones', () => {
+    const targetPath = TypePaths.fromString('store.books[1,2,3]')
+    const intersectingPath = TypePaths.fromString('store.books[2,3,4]')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books', [2, 3]])
+  })
+
+  test('should intersect with wildcard array selector', () => {
+    const targetPath = TypePaths.fromString('store.books[1,2]')
+    const intersectingPath = TypePaths.fromString('store.books[*]')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books', [1, 2]])
+  })
+
+  test('should intersect name selector with array index when they match', () => {
+    const targetPath = TypePaths.fromString('store.books.1')
+    const intersectingPath = TypePaths.fromString('store.books[1]')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books', '1'])
+  })
+
+  test('should intersect array index with name selector when they match', () => {
+    const targetPath = TypePaths.fromString('store.books[1]')
+    const intersectingPath = TypePaths.fromString('store.books.1')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books', [1]])
+  })
+
+  test('should intersect shorter intersecting path (prefix)', () => {
+    const targetPath = TypePaths.fromString('store.books.category')
+    const intersectingPath = TypePaths.fromString('store.books')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books'])
+  })
+
+  test('should intersect complex nested path with wildcards', () => {
+    const targetPath = TypePaths.fromString('store.books[1].isbn.number')
+    const intersectingPath = TypePaths.fromString('store.books[*].isbn.*')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books', [1], 'isbn', 'number'])
+  })
+
+  test('should intersect with both paths having wildcards', () => {
+    const targetPath = TypePaths.fromString('store.*.isbn.*')
+    const intersectingPath = TypePaths.fromString('store.*.*')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', '*', 'isbn'])
+  })
+
+  test('should intersect empty paths', () => {
+    const targetPath = TypePaths.fromString('')
+    const intersectingPath = TypePaths.fromString('')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual([])
+  })
+
+  test('should intersect with empty intersecting path', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const intersectingPath = TypePaths.fromString('')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual([])
+  })
+
+  test('should intersect root wildcard paths', () => {
+    const targetPath = TypePaths.fromString('store')
+    const intersectingPath = TypePaths.fromString('*')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store'])
+  })
+
+  test('should intersect root array access', () => {
+    const targetPath = TypePaths.fromString('[1,2,3]')
+    const intersectingPath = TypePaths.fromString('[2,3,4]')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual([[2, 3]])
+  })
+
+  test('should intersect matrix access patterns', () => {
+    const targetPath = TypePaths.fromString('matrix[0,1][1,2]')
+    const intersectingPath = TypePaths.fromString('matrix[1,2][*]')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['matrix', [1], [1, 2]])
+  })
+
+  test('should throw when target single index not in intersecting indices', () => {
+    const targetPath = TypePaths.fromString('store.books[5]')
+    const intersectingPath = TypePaths.fromString('store.books[1,2,3]')
+
+    expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
+  })
+
+  test('should throw when no array indices overlap', () => {
+    const targetPath = TypePaths.fromString('store.books[1,2]')
+    const intersectingPath = TypePaths.fromString('store.books[3,4]')
+
+    expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
+  })
+
+  test('should throw when name selector and array index represent different values', () => {
+    const targetPath = TypePaths.fromString('store.books.2')
+    const intersectingPath = TypePaths.fromString('store.books[1]')
+
+    expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
+  })
+
+  test('should throw when array index and name selector represent different values', () => {
+    const targetPath = TypePaths.fromString('store.books[2]')
+    const intersectingPath = TypePaths.fromString('store.books.1')
+
+    expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
+  })
+
+  test('should throw when target has multiple indices but intersecting expects single', () => {
+    const targetPath = TypePaths.fromString('store.books[1,2]')
+    const intersectingPath = TypePaths.fromString('store.books.1')
+
+    expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
+  })
+
+  test('should throw when intersecting path is longer than target', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const intersectingPath = TypePaths.fromString('store.books.category')
+
+    expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
+  })
+
+  test('should throw when property names differ', () => {
+    const targetPath = TypePaths.fromString('store.books')
+    const intersectingPath = TypePaths.fromString('store.magazines')
+
+    expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
+  })
+
+  test('should intersect complex real-world scenario', () => {
+    const targetPath = TypePaths.fromString('store.books[0,1,2].publisher.credits[*].name')
+    const intersectingPath = TypePaths.fromString('store.books[1,2,3].publisher.*')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['store', 'books', [1, 2], 'publisher', 'credits'])
+  })
+
+  test('should intersect with mixed wildcard and specific selectors', () => {
+    const targetPath = TypePaths.fromString('data.users.items[1,2,3].properties.name')
+    const intersectingPath = TypePaths.fromString('data.*.items[2,3,4].properties.*')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['data', 'users', 'items', [2, 3], 'properties', 'name'])
+  })
+
+  test('should handle deeply nested intersections', () => {
+    const targetPath = TypePaths.fromString('a.b.c.d.e[1].f')
+    const intersectingPath = TypePaths.fromString('a.b.*.d.e[*].f')
+
+    const result = TypePaths.intersect(targetPath, intersectingPath)
+
+    expect(result).toEqual(['a', 'b', 'c', 'd', 'e', [1], 'f'])
+  })
+})

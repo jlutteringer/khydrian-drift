@@ -260,7 +260,9 @@ export const intersect = <TargetPath extends TypePathType, IntersectingPath exte
     } else if (isWildcardSelector(intersectingPathSelector)) {
       result.push(targetPathSelector)
     } else if (isWildcardSelector(targetPathSelector)) {
-      result.push(intersectingPathSelector)
+      throw new Error(
+        `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
+      )
     } else if (Array.isArray(intersectingPathSelector)) {
       if (Array.isArray(targetPathSelector)) {
         const filteredTargetPaths = targetPathSelector.filter((it) => contains(intersectingPathSelector, it))
