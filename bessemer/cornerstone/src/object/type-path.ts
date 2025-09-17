@@ -15,6 +15,7 @@ import {
 import { isNil, isObject } from '@bessemer/cornerstone/object'
 import { isNumber } from '@bessemer/cornerstone/math'
 import { contains, containsAll, isEmpty, only } from '@bessemer/cornerstone/array'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
 
 export type TypePath<T extends TypePathType = TypePathType> = NominalType<TypePathConcreteType, ['TypePath', T]>
 
@@ -243,41 +244,35 @@ export const matches = <MatchingPath extends TypePathType>(
   return true
 }
 
-// JOHN this needs to do a type resolution step...
-export const intersect = <TargetPath extends TypePathType, IntersectingPath extends TypePathType>(
-  targetPath: TypePath<TargetPath>,
-  intersectingPath: TypePath<IntersectingPath>
-): TypePath => {
-  assert(targetPath.length >= intersectingPath.length, () => `TypePath: ${intersectingPath} can't intersect target TypePath: ${targetPath}`)
+export const intersectAny = (targetPath: TypePath, intersectingPath: TypePath): Result<TypePath> => {
+  if (targetPath.length < intersectingPath.length) {
+    return failure(new Error(`TypePath: ${intersectingPath} can't intersect target TypePath: ${targetPath}`))
+  }
 
   let index = 0
   let result: TypePathConcreteType = []
   for (const targetPathSelector of targetPath) {
     const intersectingPathSelector = intersectingPath[index]
+    const makeError = () =>
+      new Error(`Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`)
 
     if (isNil(intersectingPathSelector)) {
-      return of(result)
+      return success(of(result))
     } else if (isWildcardSelector(intersectingPathSelector)) {
       result.push(targetPathSelector)
     } else if (isWildcardSelector(targetPathSelector)) {
-      throw new Error(
-        `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
-      )
+      return failure(makeError())
     } else if (Array.isArray(intersectingPathSelector)) {
       if (Array.isArray(targetPathSelector)) {
         const filteredTargetPaths = targetPathSelector.filter((it) => contains(intersectingPathSelector, it))
         if (isEmpty(filteredTargetPaths)) {
-          throw new Error(
-            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
-          )
+          return failure(makeError())
         }
 
         result.push(filteredTargetPaths)
       } else {
         if (!contains(intersectingPathSelector, Number(targetPathSelector))) {
-          throw new Error(
-            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
-          )
+          return failure(makeError())
         }
 
         result.push(targetPathSelector)
@@ -285,24 +280,18 @@ export const intersect = <TargetPath extends TypePathType, IntersectingPath exte
     } else {
       if (Array.isArray(targetPathSelector)) {
         if (targetPathSelector.length !== 1) {
-          throw new Error(
-            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
-          )
+          return failure(makeError())
         }
 
         const targetPathSelectorIndex = only(targetPathSelector)
         if (targetPathSelectorIndex !== Number(intersectingPathSelector)) {
-          throw new Error(
-            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
-          )
+          return failure(makeError())
         }
 
         result.push(targetPathSelector)
       } else {
         if (targetPathSelector !== intersectingPathSelector) {
-          throw new Error(
-            `Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`
-          )
+          return failure(makeError())
         }
 
         result.push(targetPathSelector)
@@ -312,5 +301,18 @@ export const intersect = <TargetPath extends TypePathType, IntersectingPath exte
     index++
   }
 
-  return of(result)
+  return success(of(result))
+}
+
+// JOHN this needs to do a type resolution step...
+export const intersect = <TargetPath extends TypePathType, IntersectingPath extends TypePathType>(
+  targetPath: TypePath<TargetPath>,
+  intersectingPath: TypePath<IntersectingPath>
+): TypePath => {
+  const result = intersectAny(targetPath, intersectingPath)
+  if (!result.isSuccess) {
+    throw result.value
+  }
+
+  return result.value
 }

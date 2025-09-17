@@ -2,6 +2,17 @@ import { Entry } from '@bessemer/cornerstone/entry'
 import { concatenate as arrayConcatenate } from '@bessemer/cornerstone/array'
 import { assert, assertPresent } from '@bessemer/cornerstone/assertion'
 import { Objects } from '@bessemer/cornerstone/index'
+import { Dictionary } from '@bessemer/cornerstone/types'
+
+export const from = <ValueType>(record: Dictionary<ValueType>): Map<string, ValueType> => {
+  return fromEntries(Object.entries(record))
+}
+
+export const fromEntries = <KeyType extends string | number | symbol, ValueType>(
+  entries: Array<Entry<KeyType, ValueType>>
+): Map<KeyType, ValueType> => {
+  return collect(entries, (it) => it)
+}
 
 export const groupBy = <CollectionType, KeyType>(
   iterable: Iterable<CollectionType>,
