@@ -1,5 +1,5 @@
 import { AbstractCache, CacheName, CacheSector } from '@bessemer/cornerstone/cache'
-import { Arrays, Entries, Globs, Objects } from '@bessemer/cornerstone'
+import { Arrays, Entries, Globs, Objects, ResourceKeys } from '@bessemer/cornerstone'
 import { Caches, GlobalContextType } from '@bessemer/framework'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { CacheDetail, CacheEvictRequest, CacheSummary, CacheTarget, CacheWriteRequest } from '@bessemer/client/cache/types'
@@ -26,7 +26,8 @@ export class LocalCacheManager implements CacheManager {
 
     await Promise.all(
       applicableCaches.map((cache) => {
-        return cache.writeValues(request.namespace, Arrays.toArray(request.values))
+        const values = Arrays.toArray(request.values).map(([key, value]) => Entries.of(ResourceKeys.applyNamespace(request.namespace, key), value))
+        return cache.writeValues(values)
       })
     )
   }
@@ -43,8 +44,7 @@ export class LocalCacheManager implements CacheManager {
         if (Objects.isPresent(request.keys) && Objects.isPresent(request.namespace)) {
           const keys = Arrays.toArray(request.keys)
           await cache.writeValues(
-            request.namespace,
-            keys.map((it) => Entries.of(it, undefined))
+            keys.map((it) => Entries.of(Objects.isPresent(request.namespace) ? ResourceKeys.applyNamespace(request.namespace, it) : it, undefined))
           )
         }
       })

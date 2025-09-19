@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import { RedisClient } from '@bessemer/redis/redis'
 import { Assertions, Async, Crypto, Durations, Hashes, Objects, Results, Retry } from '@bessemer/cornerstone'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { AdvisoryLockProps } from '@bessemer/framework/advisory-lock'
 import { Hash } from '@bessemer/cornerstone/hash'
 import { PartialDeep } from 'type-fest'

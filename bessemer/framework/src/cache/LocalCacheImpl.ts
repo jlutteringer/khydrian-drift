@@ -1,53 +1,56 @@
-import { CacheEntry, CacheKey, CacheSector, LocalCache, LocalCacheProvider } from '@bessemer/cornerstone/cache'
-import { Arrays, Async, Entries } from '@bessemer/cornerstone'
-import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
+import { CacheEntry, CacheSector, LocalCache, LocalCacheProvider } from '@bessemer/cornerstone/cache'
+import { Arrays, Async, Entries, ResourceKeys } from '@bessemer/cornerstone'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 export class LocalCacheImpl<T> implements LocalCache<T> {
   constructor(readonly name: string, private readonly providers: Array<LocalCacheProvider<T>>) {}
 
-  getValue = (namespace: ResourceNamespace, key: ResourceKey, fetch: () => T): T => {
-    const results = this.getValues(namespace, [key], () => {
+  private getNamespace = (): ResourceNamespace => {
+    return ResourceKeys.namespace(this.name)
+  }
+
+  getValue = (key: ResourceKey, fetch: () => T): T => {
+    const results = this.getValues([key], () => {
       return [Entries.of(key, fetch())]
     })
 
     return Arrays.first(results)![1]
   }
 
-  getValues = (
-    initialNamespace: ResourceNamespace,
-    keys: Array<ResourceKey>,
-    fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>
-  ): Array<RecordEntry<T>> => {
-    if (CacheKey.isDisabled(initialNamespace)) {
-      return fetch(keys)
-    }
+  getValues = (keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>): Array<RecordEntry<T>> => {
+    // JOHN
+    // if (CacheKey.isDisabled(initialNamespace)) {
+    //   return fetch(keys)
+    // }
 
-    const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
-    const namespacedKeys = ResourceKey.namespaceAll(namespace, keys)
+    const namespacedKeys = ResourceKeys.applyNamespaceAll(this.getNamespace(), keys)
     const entries = this.getCachedValues(namespacedKeys)
-    this.revalidate(namespace, entries, fetch)
+    this.revalidate(entries, fetch)
 
     const remainingKeys = namespacedKeys.filter((it) => !entries.find(([key, _]) => key === it))
-    const fetchedValues = Entries.mapKeys(fetch(remainingKeys), (it) => ResourceKey.stripNamespace(namespace, it))
-    this.setValues(initialNamespace, fetchedValues)
+    const fetchedValues = Entries.mapKeys(fetch(remainingKeys), (it) => ResourceKeys.stripNamespace(this.getNamespace(), it))
+    this.setValues(fetchedValues)
 
-    const results = [...entries.map(([key, value]) => Entries.of(ResourceKey.stripNamespace(namespace, key), value.value)), ...fetchedValues]
+    const results = [
+      ...entries.map(([key, value]) => Entries.of(ResourceKeys.stripNamespace(this.getNamespace(), key), value.value)),
+      ...fetchedValues,
+    ]
     return results
   }
 
-  setValue = (namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): void => {
-    this.setValues(namespace, [Entries.of(key, value)])
+  setValue = (key: ResourceKey, value: T | undefined): void => {
+    this.setValues([Entries.of(key, value)])
   }
 
-  setValues = (initialNamespace: ResourceNamespace, entries: Array<RecordEntry<T | undefined>>): void => {
-    if (CacheKey.isDisabled(initialNamespace)) {
-      return
-    }
+  setValues = (entries: Array<RecordEntry<T | undefined>>): void => {
+    // JOHN
+    // if (CacheKey.isDisabled(initialNamespace)) {
+    //   return
+    // }
 
-    const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
     const namespacedEntries = entries.map(([key, value]) => {
-      return Entries.of(ResourceKey.namespace(namespace, key), value !== undefined ? CacheEntry.of(value) : undefined)
+      return Entries.of(ResourceKeys.applyNamespace(this.getNamespace(), key), value !== undefined ? CacheEntry.of(value) : undefined)
     })
 
     this.providers.forEach((provider) => provider.setValues(namespacedEntries))
@@ -87,15 +90,11 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     return results
   }
 
-  private revalidate(
-    namespace: ResourceNamespace,
-    entries: Array<RecordEntry<CacheEntry<T>>>,
-    fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>
-  ): void {
+  private revalidate(entries: Array<RecordEntry<CacheEntry<T>>>, fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>): void {
     Async.execute(async () => {
       const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
-      const fetchedValues = Entries.mapKeys(fetch(staleKeys), (it) => ResourceKey.stripNamespace(namespace, it))
-      this.setValues(namespace, fetchedValues)
+      const fetchedValues = Entries.mapKeys(fetch(staleKeys), (it) => ResourceKeys.stripNamespace(this.getNamespace(), it))
+      this.setValues(fetchedValues)
     })
   }
 

@@ -1,39 +1,31 @@
-import { Cache, CacheEntry, CacheKey, CacheProvider, CacheSector } from '@bessemer/cornerstone/cache'
+import { AbstractCache, CacheEntry, CacheProvider, CacheSector } from '@bessemer/cornerstone/cache'
 import { AdvisoryLocks, BessemerApplicationContext, GlobalContextType } from '@bessemer/framework'
-import { Arrays, Async, Entries, Loggers } from '@bessemer/cornerstone'
-import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
+import { Arrays, Async, Entries, Loggers, ResourceKeys } from '@bessemer/cornerstone'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 const logger = Loggers.child('CacheImpl')
 
-export class CacheImpl<T> implements Cache<T> {
+export class CacheImpl<T> extends AbstractCache<T> {
   constructor(
     readonly name: string,
     private readonly providers: Array<CacheProvider<T>>,
     private readonly context: GlobalContextType<BessemerApplicationContext>
-  ) {}
+  ) {
+    super()
+  }
 
-  fetchValue = async (namespace: ResourceNamespace, key: ResourceKey, fetch: () => Promise<T>): Promise<T> => {
-    const results = await this.fetchValues(namespace, [key], async () => {
-      return [Entries.of(key, await fetch())]
-    })
-
-    return Arrays.first(results)![1]
+  private getNamespace = (): ResourceNamespace => {
+    return ResourceKeys.namespace(this.name)
   }
 
   fetchValues = async (
-    initialNamespace: ResourceNamespace,
     keys: Array<ResourceKey>,
     fetch: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>
   ): Promise<Array<RecordEntry<T>>> => {
-    if (CacheKey.isDisabled(initialNamespace)) {
-      return await fetch(keys)
-    }
+    logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)} under namespace: [${this.name}]`)
 
-    const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
-    logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)} under namespace: [${namespace}]`)
-
-    const namespacedKeys = ResourceKey.namespaceAll(namespace, keys)
+    const namespacedKeys = ResourceKeys.applyNamespaceAll(this.getNamespace(), keys)
 
     const entries = await AdvisoryLocks.usingIncrementalLocks(
       namespacedKeys,
@@ -43,19 +35,21 @@ export class CacheImpl<T> implements Cache<T> {
         return entries
       },
       async (namespacedKeys) => {
-        const keys = ResourceKey.stripNamespaceAll(namespace, namespacedKeys)
-        logger.trace(() => `Cache Miss! Retrieving from source: ${JSON.stringify(keys)} under namespace: [${namespace}]`)
+        const keys = ResourceKeys.stripNamespaceAll(this.getNamespace(), namespacedKeys)
+        logger.trace(() => `Cache Miss! Retrieving from source: ${JSON.stringify(keys)} under namespace: [${this.name}]`)
 
-        const fetchedValues = (await fetch(keys)).map(([key, value]) => Entries.of(ResourceKey.namespace(namespace, key), CacheEntry.of(value)))
+        const fetchedValues = (await fetch(keys)).map(([key, value]) =>
+          Entries.of(ResourceKeys.applyNamespace(this.getNamespace(), key), CacheEntry.of(value))
+        )
         await this.writeValueInternal(fetchedValues)
         return fetchedValues
       }
     )
 
-    this.revalidate(namespace, entries, fetch)
+    this.revalidate(entries, fetch)
 
     const results = entries.map(([key, value]) => {
-      return Entries.of(ResourceKey.stripNamespace(namespace, key), value.value)
+      return Entries.of(ResourceKeys.stripNamespace(this.getNamespace(), key), value.value)
     })
 
     return results
@@ -95,11 +89,7 @@ export class CacheImpl<T> implements Cache<T> {
     return results
   }
 
-  private revalidate(
-    namespace: ResourceNamespace,
-    entries: Array<RecordEntry<CacheEntry<T>>>,
-    fetch: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>
-  ): void {
+  private revalidate(entries: Array<RecordEntry<CacheEntry<T>>>, fetch: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>): void {
     Async.execute(async () => {
       const staleKeys = Entries.keys(entries.filter(([_, value]) => CacheEntry.isStale(value)))
       if (Arrays.isEmpty(staleKeys)) {
@@ -107,25 +97,18 @@ export class CacheImpl<T> implements Cache<T> {
       }
 
       await AdvisoryLocks.usingLock(staleKeys, this.context, async () => {
-        const keys = ResourceKey.stripNamespaceAll(namespace, staleKeys)
-        const fetchedValues = (await fetch(keys)).map(([key, value]) => Entries.of(ResourceKey.namespace(namespace, key), CacheEntry.of(value)))
+        const keys = ResourceKeys.stripNamespaceAll(this.getNamespace(), staleKeys)
+        const fetchedValues = (await fetch(keys)).map(([key, value]) =>
+          Entries.of(ResourceKeys.applyNamespace(this.getNamespace(), key), CacheEntry.of(value))
+        )
         await this.writeValueInternal(fetchedValues)
       })
     })
   }
 
-  writeValue = async (namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): Promise<void> => {
-    await this.writeValues(namespace, [Entries.of(key, value)])
-  }
-
-  writeValues = async (initialNamespace: ResourceNamespace, entries: Array<RecordEntry<T | undefined>>): Promise<void> => {
-    if (CacheKey.isDisabled(initialNamespace)) {
-      return
-    }
-
-    const namespace = ResourceKey.extendNamespace(this.name, initialNamespace)
+  writeValues = async (entries: Array<RecordEntry<T | undefined>>): Promise<void> => {
     const namespacedEntries = entries.map(([key, value]) => {
-      return Entries.of(ResourceKey.namespace(namespace, key), value !== undefined ? CacheEntry.of(value) : undefined)
+      return Entries.of(ResourceKeys.applyNamespace(this.getNamespace(), key), value !== undefined ? CacheEntry.of(value) : undefined)
     })
 
     return this.writeValueInternal(namespacedEntries)
@@ -136,7 +119,7 @@ export class CacheImpl<T> implements Cache<T> {
   }
 
   evictAll = async (initialSector: CacheSector): Promise<void> => {
-    const sector = CacheSector.namespace(this.name, initialSector)
+    const sector = CacheSector.namespace(this.getNamespace(), initialSector)
     await Promise.all(this.providers.map((provider) => provider.evictAll(sector)))
   }
 }

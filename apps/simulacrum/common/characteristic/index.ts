@@ -61,7 +61,8 @@ export const buildAttribute = <T>(characteristic: Characteristic<T>, initialValu
   if (Objects.isPresent(characteristic.baseValue)) {
     baseValue = characteristic.baseValue
   } else {
-    const initialValue = ObjectPaths.getValue(initialValues, characteristic.path)
+    // JOHN cast...
+    const initialValue = ObjectPaths.getValue(characteristic.path as any, initialValues)
     Assertions.assertPresent(initialValue)
     baseValue = initialValue as T
   }

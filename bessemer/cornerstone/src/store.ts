@@ -1,4 +1,4 @@
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { of, RecordEntry } from '@bessemer/cornerstone/entry'
 import { first } from '@bessemer/cornerstone/array'
 import { isNil, isPresent } from '@bessemer/cornerstone/object'

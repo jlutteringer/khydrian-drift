@@ -1,5 +1,5 @@
 import Zod, { ZodType } from 'zod'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { parse as jsonParse } from '@bessemer/cornerstone/json'
 import { failure, getValueOrThrow, Result, success } from '@bessemer/cornerstone/result'
 import { Assertions } from '@bessemer/cornerstone/index'

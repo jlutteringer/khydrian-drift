@@ -9,7 +9,7 @@ import {
 import { LRUCache } from 'lru-cache'
 import { Durations, Entries, Globs, Loggers, Objects } from '@bessemer/cornerstone'
 import { BessemerApplicationContext } from '@bessemer/framework'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 const logger = Loggers.child('MemoryCacheProvider')

@@ -6,7 +6,7 @@ import { BessemerApplicationContext, GlobalContextType } from '@bessemer/framewo
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { Unit } from '@bessemer/cornerstone/unit'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { Arrayable, PartialDeep } from 'type-fest'
 

@@ -1,7 +1,7 @@
 import { CacheNameSchema } from '@bessemer/cornerstone/cache'
-import { ResourceNamespaceSchema } from '@bessemer/cornerstone/resource'
 import Zod from 'zod'
 import { Entries, Globs, ZodUtil } from '@bessemer/cornerstone'
+import { ResourceNamespaceSchema } from '@bessemer/cornerstone/resource-key'
 
 export type CacheClientContext = {}
 

@@ -1,34 +1,30 @@
 import { AbstractRemoteKeyValueStore } from '@bessemer/cornerstone/store'
-import { RedisApplicationContext } from '@bessemer/redis/application'
-import { Redis } from '@bessemer/redis'
-import { Arrays, Durations, Eithers, Entries, Objects, Strings } from '@bessemer/cornerstone'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { Arrays, Durations, Eithers, Entries, Objects, ResourceKeys, Strings } from '@bessemer/cornerstone'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
-import { GlobalContextType } from '@bessemer/framework'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { GlobPattern } from '@bessemer/cornerstone/glob'
 import { Arrayable } from 'type-fest'
+import { RedisClient } from '@bessemer/redis/redis'
 
 export type RedisKeyValueStoreProps = {
-  namespace: ResourceKey
+  namespace: ResourceNamespace
   timeToLive: Duration
 }
 
 export class RedisKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> {
-  constructor(private readonly props: RedisKeyValueStoreProps, private readonly context: GlobalContextType<RedisApplicationContext>) {
+  constructor(private readonly client: RedisClient, private readonly props: RedisKeyValueStoreProps) {
     super()
   }
 
   private namespaceKey = (key: ResourceKey): ResourceKey => {
-    const namespace = ResourceKey.extendNamespace(this.context.global.buildId, this.props.namespace)
-    return ResourceKey.namespace(namespace, key)
+    return ResourceKeys.applyNamespace(this.props.namespace, key)
   }
 
   fetchValues = async (keys: Array<ResourceKey>): Promise<Array<RecordEntry<T>>> => {
-    const client = Redis.getClient(this.context.global.redis)
     const namespacedKeys = keys.map(this.namespaceKey)
 
-    const redisResults = await client.mget(namespacedKeys)
+    const redisResults = await this.client.mget(namespacedKeys)
     const results = redisResults
       .map((result, index) => {
         if (Objects.isNil(result)) {
@@ -44,14 +40,13 @@ export class RedisKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> {
   }
 
   writeValues = async (entries: Array<RecordEntry<T | undefined>>): Promise<void> => {
-    const client = Redis.getClient(this.context.global.redis)
     const namespacedEntries = Entries.mapKeys(entries, this.namespaceKey)
     const [deletes, writes] = Arrays.bisect(namespacedEntries, (entry) =>
       Objects.isUndefined(entry[1]) ? Eithers.left(entry[0]) : Eithers.right(entry as RecordEntry<T>)
     )
 
     if (!Arrays.isEmpty(deletes)) {
-      await client.del(deletes)
+      await this.client.del(deletes)
     }
 
     if (!Arrays.isEmpty(writes)) {
@@ -71,16 +66,14 @@ export class RedisKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> {
         }
       })
 
-      await client.multi(commands).exec()
+      await this.client.multi(commands).exec()
     }
   }
 
   evictAll = async (patterns: Arrayable<GlobPattern>): Promise<void> => {
-    const client = Redis.getClient(this.context.global.redis)
-
     const results = Arrays.toArray(patterns).map((pattern) => {
       const keyPattern = Strings.replace(this.namespaceKey(pattern), "'", "\\'")
-      return client.eval(`for _,k in ipairs(redis.call('keys','${keyPattern}')) do redis.call('del',k) end`, 0)
+      return this.client.eval(`for _,k in ipairs(redis.call('keys','${keyPattern}')) do redis.call('del',k) end`, 0)
     })
 
     await Promise.all(results)

@@ -6,7 +6,7 @@ import { Unit } from '@bessemer/cornerstone/unit'
 import { Either } from '@bessemer/cornerstone/either'
 import { Duration } from '@bessemer/cornerstone/duration'
 import { AdvisoryLockUtil } from '@bessemer/framework/advisory-lock/util'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { Ulid } from '@bessemer/cornerstone/ulid'
 import { GlobalContextType } from '@bessemer/framework'
 

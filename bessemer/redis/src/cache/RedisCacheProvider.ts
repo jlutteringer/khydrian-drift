@@ -1,10 +1,11 @@
 import { AbstractCacheProvider, CacheEntry, CacheProps, CacheProviderRegistry, CacheProviderType, CacheSector } from '@bessemer/cornerstone/cache'
-import { Assertions, Entries, Loggers, Objects } from '@bessemer/cornerstone'
+import { Assertions, Entries, Loggers, Objects, ResourceKeys } from '@bessemer/cornerstone'
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { RedisKeyValueStore } from '@bessemer/redis/store/RedisKeyValueStore'
-import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
+import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { GlobalContextType } from '@bessemer/framework'
+import { Redis } from '@bessemer/redis'
 
 const logger = Loggers.child('RedisCacheProvider')
 
@@ -30,7 +31,10 @@ export class RedisCacheProviderImpl<T> extends AbstractCacheProvider<T> {
     Assertions.assertNil(props.maxSize, () => 'RedisCacheProvider does not support the maxSize property.')
     Assertions.assertPresent(props.timeToLive, () => 'RedisCacheProvider requires the timeToLive property to be set.')
 
-    this.store = new RedisKeyValueStore({ namespace: RedisCacheProvider.Type as ResourceNamespace, timeToLive: props.timeToLive }, context)
+    this.store = new RedisKeyValueStore(Redis.getClient(context.global.redis), {
+      namespace: ResourceKeys.extendNamespace(ResourceKeys.namespace(context.global.buildId), ResourceKeys.namespace(RedisCacheProvider.Type)),
+      timeToLive: props.timeToLive,
+    })
   }
 
   type = RedisCacheProvider.Type

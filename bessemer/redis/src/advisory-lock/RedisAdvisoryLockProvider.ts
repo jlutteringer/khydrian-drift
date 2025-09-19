@@ -5,7 +5,7 @@ import { Unit } from '@bessemer/cornerstone/unit'
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { RedlockClient, RedlockLock } from '@bessemer/redis/redlock/RedlockClient'
 import { Redis } from '@bessemer/redis'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { GlobalContextType } from '@bessemer/framework'
 
 export class RedisAdvisoryLockProvider implements AdvisoryLockProvider<RedisApplicationContext> {

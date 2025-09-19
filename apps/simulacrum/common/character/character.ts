@@ -168,7 +168,7 @@ const buildInitialCharacteristics = (character: CharacterRecord, context: Applic
     // TODO we don't support non-numeric characteristics... not sure if we even should...
     const characteristic = initialCharacteristic as Characteristic<number>
     const attributeValue = Characteristics.simpleValue(0, characteristic, character.initialValues)
-    return ObjectPaths.applyValue({}, characteristic.path, attributeValue)
+    return ObjectPaths.applyAnyValue(characteristic.path, {}, attributeValue)
   })
 
   return Objects.deepMergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
@@ -186,7 +186,7 @@ const evaluateCharacteristics = (
     // TODO we don't support non-numeric characteristics... not sure if we even should...
     const characteristic = initialCharacteristic as Characteristic<number>
     const characteristicValue = Characteristics.evaluateCharacteristic(characteristic, character.initialValues, effects, evaluate)
-    return ObjectPaths.applyValue({}, characteristic.path, characteristicValue)
+    return ObjectPaths.applyAnyValue(characteristic.path, {}, characteristicValue)
   })
 
   return Objects.deepMergeAll(characteristicValues) as Record<string, CharacteristicValue<unknown>>
@@ -209,7 +209,8 @@ const evaluateResourcePools = (
 export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {
   const characterAttributes = context.client.ruleset.playerCharacteristics
   const attributeVariables = characterAttributes.map((it) => {
-    const characteristic = ObjectPaths.getValue(character.characteristics, it.path) as CharacteristicValue<unknown>
+    // JOHN excessive casting - work on api
+    const characteristic = ObjectPaths.getValue(it.path as any, character.characteristics) as any as CharacteristicValue<unknown>
     Assertions.assertPresent(characteristic)
     return Expressions.buildVariable(it.variable, characteristic.value)
   })

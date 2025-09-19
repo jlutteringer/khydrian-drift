@@ -1,5 +1,5 @@
 import { Referencable, ReferenceType } from '@bessemer/cornerstone/reference'
-import { Arrays, Assertions, Async, Entries, Objects, References } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Async, Entries, Objects, References, ResourceKeys } from '@bessemer/cornerstone'
 import { ReactNode } from 'react'
 import { CoreApplicationContext } from '@bessemer/core/application'
 import {
@@ -137,8 +137,10 @@ export const fetchContentByKeys = async <Type extends ContentType>(
 ): Promise<Array<ContentData<Type>>> => {
   const cache = Caches.getCache<ContentData<Type>>('Codex.fetchContentByKeys', context)
   const namespace = Contexts.getNamespace(context)
+  const namespacedKeys = ResourceKeys.applyNamespaceAll(namespace, keys)
 
-  const results = await cache.fetchValues(namespace, keys, async (keys) => {
+  const results = await cache.fetchValues(namespacedKeys, async (keys) => {
+    keys = ResourceKeys.stripNamespaceAll(namespace, keys)
     Assertions.assertPresent(context.codex)
 
     const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
@@ -177,8 +179,10 @@ export const fetchContentBySectors = async <Type extends ContentType>(
 ): Promise<Array<ContentData<Type>>> => {
   const cache = Caches.getCache<Array<ContentData<Type>>>('Codex.fetchContentBySectors', context)
   const namespace = Contexts.getNamespace(context)
+  const keys = ResourceKeys.applyNamespaceAll(namespace, sectors)
 
-  const results = await cache.fetchValues(namespace, sectors, async (sectors) => {
+  const results = await cache.fetchValues(keys, async (sectors) => {
+    sectors = ResourceKeys.stripNamespaceAll(namespace, sectors)
     Assertions.assertPresent(context.codex)
 
     const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
@@ -196,10 +200,10 @@ export const fetchContentBySectors = async <Type extends ContentType>(
 
     Async.execute(async () => {
       const entries: Array<RecordEntry<ContentData<Type>>> = content.map((it) => {
-        return [it.key, it]
+        return [ResourceKeys.applyNamespace(namespace, it.key), it]
       })
 
-      await Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context).writeValues(namespace, entries)
+      await Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context).writeValues(entries)
     })
 
     // JOHN this is wrong

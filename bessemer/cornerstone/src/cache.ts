@@ -1,6 +1,6 @@
 import { AbstractLocalKeyValueStore, AbstractRemoteKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } from '@bessemer/cornerstone/store'
 import { Duration, OneDay, OneHour, toMilliseconds } from '@bessemer/cornerstone/duration'
-import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource'
+import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
@@ -8,11 +8,9 @@ import { GlobPattern } from '@bessemer/cornerstone/glob'
 import { Arrayable } from 'type-fest'
 import Zod, { ZodType } from 'zod'
 import { deepMerge, isNil } from '@bessemer/cornerstone/object'
-import { contains } from '@bessemer/cornerstone/string'
 import { toArray } from '@bessemer/cornerstone/array'
 import { addMilliseconds, isBefore, now } from '@bessemer/cornerstone/date'
-
-// JOHN should this even be in cornerstone? especially consider the config types down at the bottom
+import { Arrays, Entries, ResourceKeys } from '@bessemer/cornerstone/index'
 
 export type CacheProps = {
   maxSize: number | null
@@ -42,19 +40,6 @@ export namespace CacheProps {
   }
 }
 
-export namespace CacheKey {
-  // We use a hardcoded UUID to represent a unique token value that serves as a flag to disable caching
-  const DisableCacheToken = 'f6822c1a-d527-4c65-b9dd-ddc24620b684'
-
-  export const disableCaching = (): ResourceNamespace => {
-    return DisableCacheToken
-  }
-
-  export const isDisabled = (key: ResourceNamespace): boolean => {
-    return contains(key, DisableCacheToken)
-  }
-}
-
 export type CacheSector = {
   globs: Array<GlobPattern>
 }
@@ -65,31 +50,47 @@ export namespace CacheSector {
   }
 
   export const namespace = (namespace: ResourceNamespace, sector: CacheSector): CacheSector => {
-    return { globs: ResourceKey.namespaceAll(namespace, sector.globs) }
+    return { globs: ResourceKeys.applyNamespaceAll(namespace, sector.globs) }
   }
 }
 
 export type CacheName = NominalType<string, 'CacheName'>
 export const CacheNameSchema: ZodType<CacheName> = Zod.string()
 
-export interface AbstractCache<T> {
-  name: CacheName
-}
-
 export interface Cache<T> extends AbstractCache<T> {
-  fetchValue(namespace: ResourceNamespace, key: ResourceKey, fetch: () => Promise<T>): Promise<T>
+  name: CacheName
 
-  fetchValues(
-    namespace: ResourceNamespace,
-    keys: Array<ResourceKey>,
-    fetch: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>
-  ): Promise<Array<RecordEntry<T>>>
+  fetchValue(key: ResourceKey, fetch: () => Promise<T>): Promise<T>
 
-  writeValue(namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): Promise<void>
+  fetchValues(keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Promise<Array<RecordEntry<T>>>): Promise<Array<RecordEntry<T>>>
 
-  writeValues(namespace: ResourceNamespace, entries: Array<RecordEntry<T | undefined>>): Promise<void>
+  writeValue(key: ResourceKey, value: T | undefined): Promise<void>
+
+  writeValues(entries: Array<RecordEntry<T | undefined>>): Promise<void>
 
   evictAll(sector: CacheSector): Promise<void>
+}
+
+export abstract class AbstractCache<T> implements Cache<T> {
+  abstract name: CacheName
+
+  fetchValue = async (key: ResourceKey, fetch: () => Promise<T>): Promise<T> => {
+    const results = await this.fetchValues([key], async () => {
+      return [Entries.of(key, await fetch())]
+    })
+
+    return Arrays.first(results)![1]
+  }
+
+  abstract fetchValues(keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Promise<RecordEntry<T>[]>): Promise<RecordEntry<T>[]>
+
+  writeValue = async (key: ResourceKey, value: T | undefined): Promise<void> => {
+    await this.writeValues([Entries.of(key, value)])
+  }
+
+  abstract writeValues(entries: RecordEntry<T | undefined>[]): Promise<void>
+
+  abstract evictAll(sector: CacheSector): Promise<void>
 }
 
 export interface CacheProvider<T> extends RemoteKeyValueStore<CacheEntry<T>> {
@@ -104,14 +105,16 @@ export abstract class AbstractCacheProvider<T> extends AbstractRemoteKeyValueSto
   abstract evictAll(sector: CacheSector): Promise<void>
 }
 
-export interface LocalCache<T> extends AbstractCache<T> {
-  getValue(namespace: ResourceNamespace, key: ResourceKey, fetch: () => T): T
+export interface LocalCache<T> {
+  name: CacheName
 
-  getValues(namespace: ResourceNamespace, keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>): Array<RecordEntry<T>>
+  getValue(key: ResourceKey, fetch: () => T): T
 
-  setValue(namespace: ResourceNamespace, key: ResourceKey, value: T | undefined): void
+  getValues(keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>): Array<RecordEntry<T>>
 
-  setValues(namespace: ResourceNamespace, entries: Array<RecordEntry<T | undefined>>): void
+  setValue(key: ResourceKey, value: T | undefined): void
+
+  setValues(entries: Array<RecordEntry<T | undefined>>): void
 
   removeAll(sector: CacheSector): void
 }

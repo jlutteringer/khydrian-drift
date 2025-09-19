@@ -3,8 +3,7 @@ import { CacheManager, LocalCacheManager } from '@bessemer/framework/cache/cache
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { GlobalContextType } from '@bessemer/framework'
 import { Redis } from '@bessemer/redis'
-import { Loggers } from '@bessemer/cornerstone'
-import { ResourceKey } from '@bessemer/cornerstone/resource'
+import { Loggers, ResourceKeys } from '@bessemer/cornerstone'
 import { CacheDetail, CacheEvictRequest, CacheSummary, CacheWriteRequest } from '@bessemer/client/cache/types'
 
 export enum RedisCacheMutationType {
@@ -75,7 +74,7 @@ export class RedisCacheManager implements CacheManager<RedisApplicationContext> 
   }
 
   private getChannel = (context: GlobalContextType<RedisApplicationContext>): string => {
-    return ResourceKey.namespace(context.global.buildId, 'RedisCacheManager')
+    return ResourceKeys.applyNamespace(ResourceKeys.namespace(context.global.buildId), 'RedisCacheManager')
   }
 
   getCaches = async (context: GlobalContextType<RedisApplicationContext>): Promise<Array<CacheSummary>> => {

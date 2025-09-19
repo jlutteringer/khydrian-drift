@@ -54,6 +54,7 @@ import * as CountryCodes from '@bessemer/cornerstone/intl/country-code'
 import * as CountrySubdivisionCodes from '@bessemer/cornerstone/intl/country-subdivision-code'
 import * as LanguageCodes from '@bessemer/cornerstone/intl/language-code'
 import * as Locales from '@bessemer/cornerstone/intl/locale'
+import * as ResourceKeys from '@bessemer/cornerstone/resource-key'
 
 export {
   Objects,
@@ -111,4 +112,5 @@ export {
   CountrySubdivisionCodes,
   LanguageCodes,
   Locales,
+  ResourceKeys,
 }
