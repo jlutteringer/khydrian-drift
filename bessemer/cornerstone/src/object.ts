@@ -1,10 +1,10 @@
 import { clone as _clone, cloneDeep as _cloneDeep, mapValues as _mapValues, merge as unsafeMerge, mergeWith as unsafeMergeWith } from 'lodash-es'
 
-import { BasicType, Dictionary, NominalType } from '@bessemer/cornerstone/types'
+import { BasicType, Dictionary, TaggedType } from '@bessemer/cornerstone/types'
 import { Primitive, UnknownRecord } from 'type-fest'
 import { isNumber } from '@bessemer/cornerstone/math'
 import { isString } from '@bessemer/cornerstone/string'
-import { isDate } from '@bessemer/cornerstone/date'
+import { isDate } from '@bessemer/cornerstone/time/date'
 
 export const isUndefined = (value: unknown): value is undefined => {
   return value === undefined
@@ -206,7 +206,7 @@ const walk = (value: any, transform: TransformFunction, path: (string | number)[
   return result
 }
 
-export type RecordAttribute<Type = unknown, Class extends string = 'RecordAttribute'> = NominalType<string, [Type, Class]>
+export type RecordAttribute<Type = unknown, Class extends string = 'RecordAttribute'> = TaggedType<string, [Type, Class]>
 type RecordAttributeType<Attribute> = Attribute extends RecordAttribute<infer Type, string> ? Type : never
 
 export const getAttribute = <T extends RecordAttribute<unknown, string>>(record: UnknownRecord, attribute: T): RecordAttributeType<T> | undefined => {

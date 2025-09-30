@@ -63,7 +63,7 @@ test('DataSizes.fromMebibytes / DataSizes.toMebibytes', () => {
 
 test('DataSizes.fromGibibytes / DataSizes.toGibibytes', () => {
   const gib = DataSizes.fromGibibytes(1)
-  expect(DataSizes.toBytes(gib)).toBe(1 * 1024 * 1024 * 1024)
+  expect(DataSizes.toBytes(gib)).toBe(1024 * 1024 * 1024)
   expect(DataSizes.toGibibytes(gib)).toBe(1)
 
   const fractional = DataSizes.fromGibibytes(0.25)

@@ -1,44 +1,51 @@
 import { minimatch } from 'minimatch'
+import Zod from 'zod'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { NominalType } from '@bessemer/cornerstone/types'
-import Zod, { ZodType } from 'zod'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type GlobPattern = NominalType<string, 'GlobPattern'>
+export const Namespace = namespace('glob-pattern')
+export type GlobPattern = NominalType<string, typeof Namespace>
 
-export const Schema: ZodType<GlobPattern> = Zod.string().refine((val) => {
+export const parseString = (value: string): Result<GlobPattern, ErrorEvent> => {
   // Check for valid glob characters and patterns
   const validGlobPattern = /^[a-zA-Z0-9\-_.\/\\*?\[\]{}!,|]+$/
 
   // Basic validation - contains valid characters
-  if (!validGlobPattern.test(val)) {
-    return false
+  if (!validGlobPattern.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `GlobPattern contains invalid characters.` }))
   }
 
   // Check for balanced brackets
-  const brackets = val.match(/[\[\]]/g)
+  const brackets = value.match(/[\[\]]/g)
   if (brackets) {
-    const openBrackets = (val.match(/\[/g) || []).length
-    const closeBrackets = (val.match(/]/g) || []).length
+    const openBrackets = (value.match(/\[/g) || []).length
+    const closeBrackets = (value.match(/]/g) || []).length
     if (openBrackets !== closeBrackets) {
-      return false
+      return failure(invalidValue(value, { namespace: Namespace, message: `GlobPattern has unbalanced brackets.` }))
     }
   }
 
   // Check for balanced braces
-  const braces = val.match(/[{}]/g)
+  const braces = value.match(/[{}]/g)
   if (braces) {
-    const openBraces = (val.match(/\{/g) || []).length
-    const closeBraces = (val.match(/}/g) || []).length
+    const openBraces = (value.match(/\{/g) || []).length
+    const closeBraces = (value.match(/}/g) || []).length
     if (openBraces !== closeBraces) {
-      return false
+      return failure(invalidValue(value, { namespace: Namespace, message: `GlobPattern has unbalanced braces.` }))
     }
   }
 
-  return true
-}, 'Invalid glob pattern')
+  return success(value as GlobPattern)
+}
 
 export const fromString = (value: string): GlobPattern => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
+
+export const Schema = structuredTransform(Zod.string(), parseString)
 
 export const match = (str: string, pattern: GlobPattern): boolean => {
   return minimatch(str, pattern)

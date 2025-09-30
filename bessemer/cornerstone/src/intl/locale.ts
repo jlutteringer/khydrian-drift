@@ -1,39 +1,42 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 import { fromString as languageCodeFromString, LanguageCode } from '@bessemer/cornerstone/intl/language-code'
 import { CountryCode, fromString as countryCodeFromString } from '@bessemer/cornerstone/intl/country-code'
 import { isPresent } from '@bessemer/cornerstone/object'
 import { Assertions } from '@bessemer/cornerstone'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type Locale = TaggedType<string, 'Locale'>
-export const Schema = Zod.string()
-  .trim()
-  .toLowerCase()
-  .regex(/^[a-z]{2}(-[a-z]{2})?$/, 'Locale must be in format "en" or "en-US"')
-  .transform((value) => {
-    const parts = value.split('-')
-    Assertions.assertPresent(parts[0])
-    const languageCode = languageCodeFromString(parts[0])
-    const countryCode = isPresent(parts[1]) ? countryCodeFromString(parts[1]) : null
-
-    return fromCode(languageCode, countryCode)
-  })
-
-export const of = (value: string): Locale => {
-  return value as Locale
-}
-
-export const fromString = (value: string): Locale => {
-  return Schema.parse(value)
-}
+export const Namespace = namespace('locale')
+export type Locale = NominalType<string, typeof Namespace>
 
 export const fromCode = (language: LanguageCode, country?: CountryCode | null): Locale => {
   if (isPresent(country)) {
-    return of(`${language}-${country}`)
+    return `${language}-${country}` as Locale
   } else {
-    return of(language)
+    return `${language}` as Locale
   }
 }
+
+export const parseString = (value: string): Result<Locale, ErrorEvent> => {
+  if (!/^[a-z]{2}(-[a-z]{2})?$/i.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `Locale must be in format "en" or "en-US".` }))
+  }
+
+  const parts = value.split('-')
+  Assertions.assertPresent(parts[0])
+  const languageCode = languageCodeFromString(parts[0])
+  const countryCode = isPresent(parts[1]) ? countryCodeFromString(parts[1]) : null
+  return success(fromCode(languageCode, countryCode))
+}
+
+export const fromString = (value: string): Locale => {
+  return unpackResult(parseString(value))
+}
+
+export const Schema = structuredTransform(Zod.string(), parseString)
 
 export const parse = (locale: Locale): [LanguageCode, CountryCode | null] => {
   const parts = locale.split('-')
@@ -42,19 +45,19 @@ export const parse = (locale: Locale): [LanguageCode, CountryCode | null] => {
   return [languageCode, countryCode]
 }
 
-export const English = of('en')
-export const Spanish = of('es')
-export const French = of('fr')
-export const German = of('de')
-export const Italian = of('it')
-export const Portuguese = of('pt')
-export const Dutch = of('nl')
-export const Russian = of('ru')
-export const Chinese = of('zh')
-export const Japanese = of('ja')
-export const Korean = of('ko')
+export const English = 'en' as Locale
+export const Spanish = 'es' as Locale
+export const French = 'fr' as Locale
+export const German = 'de' as Locale
+export const Italian = 'it' as Locale
+export const Portuguese = 'pt' as Locale
+export const Dutch = 'nl' as Locale
+export const Russian = 'ru' as Locale
+export const Chinese = 'zh' as Locale
+export const Japanese = 'ja' as Locale
+export const Korean = 'ko' as Locale
 
-export const AmericanEnglish = of('en-US')
-export const BritishEnglish = of('en-GB')
-export const CanadianEnglish = of('en-CA')
-export const AustralianEnglish = of('en-AU')
+export const AmericanEnglish = 'en-US' as Locale
+export const BritishEnglish = 'en-GB' as Locale
+export const CanadianEnglish = 'en-CA' as Locale
+export const AustralianEnglish = 'en-AU' as Locale

@@ -1,4 +1,4 @@
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 import { assert } from '@bessemer/cornerstone/assertion'
 import Zod from 'zod'
 import {
@@ -17,7 +17,8 @@ import { isNumber } from '@bessemer/cornerstone/math'
 import { contains, containsAll, isEmpty, only } from '@bessemer/cornerstone/array'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 
-export type TypePath<T extends TypePathType = TypePathType> = NominalType<TypePathConcreteType, ['TypePath', T]>
+// JOHN this probably should be brought into the structured transform regime
+export type TypePath<T extends TypePathType = TypePathType> = TaggedType<TypePathConcreteType, ['TypePath', T]>
 
 export const of = <T extends TypePathConcreteType>(value: T): TypePath<InferTypePath<T>> => {
   return value as TypePath<InferTypePath<T>>

@@ -1,20 +1,27 @@
 import { ulid } from 'ulid'
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type Ulid = TaggedType<string, 'Ulid'>
+export const Namespace = namespace('ulid')
+export type Ulid = NominalType<string, typeof Namespace>
 
-export const of = (value: string): Ulid => {
-  return value as Ulid
+export const parseString = (value: string): Result<Ulid, ErrorEvent> => {
+  if (!/^[0-9A-HJKMNP-TV-Z]{26}$/.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `Invalid ULID format.` }))
+  }
+
+  return success(value as Ulid)
 }
-
-export const Schema = Zod.string()
-  .regex(/^[0-9A-HJKMNP-TV-Z]{26}$/, 'Invalid ULID format')
-  .transform(of)
 
 export const fromString = (value: string): Ulid => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
+
+export const Schema = structuredTransform(Zod.string(), parseString)
 
 export const generate = (): Ulid => {
   return ulid() as Ulid

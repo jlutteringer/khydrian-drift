@@ -1,23 +1,30 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 import { CountryCode } from '@bessemer/cornerstone/intl/country-code'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
 // ISO 3166-2 country subdivision codes
-export type CountrySubdivisionCode = TaggedType<string, 'CountrySubdivisionCode'>
+export const Namespace = namespace('country-subdivision-code')
+export type CountrySubdivisionCode = NominalType<string, typeof Namespace>
 
-export const of = (value: string): CountrySubdivisionCode => {
-  return value as CountrySubdivisionCode
+export const parseString = (value: string): Result<CountrySubdivisionCode, ErrorEvent> => {
+  if (!/^[A-Z]{2}-[A-Z0-9]{1,3}$/i.test(value)) {
+    return failure(
+      invalidValue(value, { namespace: Namespace, message: `CountrySubdivisionCode must follow ISO 3166-2 format (e.g., US-CA, GB-ENG).` })
+    )
+  }
+
+  return success(value.toUpperCase() as CountrySubdivisionCode)
 }
-
-export const Schema = Zod.string()
-  .trim()
-  .toUpperCase()
-  .regex(/^[A-Z]{2}-[A-Z0-9]{1,3}$/, 'CountrySubdivisionCode must follow ISO 3166-2 format (e.g., US-CA, GB-ENG)')
-  .transform(of)
 
 export const fromString = (value: string): CountrySubdivisionCode => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
+
+export const Schema = structuredTransform(Zod.string(), parseString)
 
 export const getCountry = (code: CountrySubdivisionCode): CountryCode => {
   const countryPart = code.split('-')[0]

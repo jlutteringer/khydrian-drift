@@ -1,9 +1,9 @@
 import Zod, { ZodType } from 'zod'
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import { isUndefined } from '@bessemer/cornerstone/object'
 
 // JOHN bounds are still a mess! what about finite bounds ???
-export type Bounds<T> = TaggedType<[T | null, T | null], 'Bounds'>
+export type Bounds<T> = NominalType<[T | null, T | null], 'Bounds'>
 export type BoundsInput<T> = [lower: T | null, upper?: T | null] | Bounds<T>
 
 export const schema = <T extends ZodType>(type: T): ZodType<Bounds<Zod.infer<T>>, Bounds<Zod.infer<T>>> => {

@@ -1,45 +1,50 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
 // ISO 639 language codes
-export type LanguageCode = TaggedType<string, 'LanguageCode'>
+export const Namespace = namespace('language-code')
+export type LanguageCode = NominalType<string, typeof Namespace>
 
-export const of = (value: string): LanguageCode => {
-  return value as LanguageCode
+export const parseString = (value: string): Result<LanguageCode, ErrorEvent> => {
+  if (!/^[a-z]{2}$/i.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `CountryCode must be exactly 2 letters.` }))
+  }
+
+  return success(value.toLowerCase() as LanguageCode)
 }
-
-export const Schema = Zod.string()
-  .trim()
-  .toLowerCase()
-  .regex(/^[a-z]{2}$/, 'LanguageCode must be exactly 2 lowercase letters')
-  .transform(of)
 
 export const fromString = (value: string): LanguageCode => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
 
-export const English = of('en')
-export const Spanish = of('es')
-export const French = of('fr')
-export const German = of('de')
-export const Italian = of('it')
-export const Portuguese = of('pt')
-export const Dutch = of('nl')
-export const Russian = of('ru')
-export const Chinese = of('zh')
-export const Japanese = of('ja')
-export const Korean = of('ko')
-export const Arabic = of('ar')
-export const Hindi = of('hi')
-export const Turkish = of('tr')
-export const Polish = of('pl')
-export const Swedish = of('sv')
-export const Norwegian = of('no')
-export const Danish = of('da')
-export const Finnish = of('fi')
-export const Greek = of('el')
-export const Hebrew = of('he')
-export const Thai = of('th')
-export const Vietnamese = of('vi')
-export const Indonesian = of('id')
-export const Malay = of('ms')
+export const Schema = structuredTransform(Zod.string(), parseString)
+
+export const English = 'en' as LanguageCode
+export const Spanish = 'es' as LanguageCode
+export const French = 'fr' as LanguageCode
+export const German = 'de' as LanguageCode
+export const Italian = 'it' as LanguageCode
+export const Portuguese = 'pt' as LanguageCode
+export const Dutch = 'nl' as LanguageCode
+export const Russian = 'ru' as LanguageCode
+export const Chinese = 'zh' as LanguageCode
+export const Japanese = 'ja' as LanguageCode
+export const Korean = 'ko' as LanguageCode
+export const Arabic = 'ar' as LanguageCode
+export const Hindi = 'hi' as LanguageCode
+export const Turkish = 'tr' as LanguageCode
+export const Polish = 'pl' as LanguageCode
+export const Swedish = 'sv' as LanguageCode
+export const Norwegian = 'no' as LanguageCode
+export const Danish = 'da' as LanguageCode
+export const Finnish = 'fi' as LanguageCode
+export const Greek = 'el' as LanguageCode
+export const Hebrew = 'he' as LanguageCode
+export const Thai = 'th' as LanguageCode
+export const Vietnamese = 'vi' as LanguageCode
+export const Indonesian = 'id' as LanguageCode
+export const Malay = 'ms' as LanguageCode

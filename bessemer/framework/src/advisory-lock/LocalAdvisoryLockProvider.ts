@@ -4,7 +4,7 @@ import { AdvisoryLock, AdvisoryLockProps, AdvisoryLockProvider, ProviderAdvisory
 import { Arrays, Dates, Durations, Eithers, Objects, Results, Retry, Ulids } from '@bessemer/cornerstone'
 import { Unit } from '@bessemer/cornerstone/unit'
 import { Either } from '@bessemer/cornerstone/either'
-import { Duration } from '@bessemer/cornerstone/duration'
+import { Duration } from '@bessemer/cornerstone/time/duration'
 import { AdvisoryLockUtil } from '@bessemer/framework/advisory-lock/util'
 import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { Ulid } from '@bessemer/cornerstone/ulid'

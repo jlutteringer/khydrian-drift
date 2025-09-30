@@ -1,4 +1,4 @@
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 
-export type Unit = NominalType<null, 'Unit'>
+export type Unit = TaggedType<null, 'Unit'>
 export const Unit: Unit = null as never

@@ -1,7 +1,7 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 
-export type Duration = TaggedType<number, 'Duration'>
+export type Duration = NominalType<number, 'Duration'>
 
 export const fromMilliseconds = (value: number): Duration => {
   return value as Duration
@@ -48,3 +48,5 @@ export const toDays = (duration: Duration): number => {
 export const Zero = fromMilliseconds(0)
 export const OneDay = fromDays(1)
 export const OneHour = fromHours(1)
+export const OneMinute = fromMinutes(1)
+export const OneSecond = fromSeconds(1)

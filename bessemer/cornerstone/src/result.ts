@@ -6,19 +6,20 @@ export type Success<T> = Right<T> & {
   isSuccess: true
 }
 
-export type Failure = Left<Throwable | null> & {
+export type Failure<N = Throwable> = Left<N> & {
   isSuccess: false
 }
 
-export type Result<T> = Success<T> | Failure
-export type AsyncResult<T> = Promise<Result<T>>
+export type Result<T, N = Throwable> = Success<T> | Failure<N>
+
+export type AsyncResult<T, N = Throwable> = Promise<Result<T, N>>
 
 export const success = <T>(value: T): Success<T> => {
   return { ...right(value), isSuccess: true }
 }
 
-export const failure = (failure?: Throwable): Failure => {
-  return { ...left(failure ?? null), isSuccess: false }
+export const failure = <N>(failure: N): Failure<N> => {
+  return { ...left(failure), isSuccess: false }
 }
 
 export const getValueOrThrow = <T>(result: Result<T>): T => {

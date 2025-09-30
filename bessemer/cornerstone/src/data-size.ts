@@ -1,7 +1,7 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 
-export type DataSize = TaggedType<number, 'DataSize'>
+export type DataSize = NominalType<number, 'DataSize'>
 
 export const fromBytes = (value: number): DataSize => {
   return value as DataSize

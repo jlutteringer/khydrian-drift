@@ -1,8 +1,8 @@
 import { addHours as _addHours, addMilliseconds as _addMilliseconds, isAfter as _isAfter, isBefore as _isBefore, parseISO } from 'date-fns'
-import { Duration, toMilliseconds } from '@bessemer/cornerstone/duration'
+import { Duration, toMilliseconds } from '@bessemer/cornerstone/time/duration'
 import Zod from 'zod'
 
-export const Schema = Zod.union([
+export const SchemaX = Zod.union([
   Zod.string()
     .trim()
     .regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/, `Invalid Date. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.sssZ`),

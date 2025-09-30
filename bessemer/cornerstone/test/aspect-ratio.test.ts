@@ -1,4 +1,5 @@
 import { AspectRatios } from '@bessemer/cornerstone'
+import { AspectRatio } from '@bessemer/cornerstone/aspect-ratio'
 
 test('AspectRatios.buildSchema', () => {
   expect(AspectRatios.Schema.parse('16:9')).toBe('16:9')
@@ -12,12 +13,6 @@ test('AspectRatios.buildSchema', () => {
   expect(() => AspectRatios.Schema.parse('-1:9')).toThrow()
   expect(() => AspectRatios.Schema.parse('16:0')).toThrow()
   expect(() => AspectRatios.Schema.parse(undefined as unknown as string)).toThrow()
-})
-
-test('AspectRatios.of', () => {
-  expect(AspectRatios.of('16:9')).toBe('16:9')
-  expect(AspectRatios.of('4:3')).toBe('4:3')
-  expect(AspectRatios.of('1:1')).toBe('1:1')
 })
 
 test('AspectRatios.fromString', () => {
@@ -37,19 +32,19 @@ test('AspectRatios.fromDimensions', () => {
 })
 
 test('AspectRatios.numericValue', () => {
-  expect(AspectRatios.numericValue(AspectRatios.of('16:9'))).toBeCloseTo(16 / 9)
-  expect(AspectRatios.numericValue(AspectRatios.of('4:3'))).toBeCloseTo(4 / 3)
-  expect(AspectRatios.numericValue(AspectRatios.of('1:1'))).toBeCloseTo(1)
+  expect(AspectRatios.numericValue('16:9' as AspectRatio)).toBeCloseTo(16 / 9)
+  expect(AspectRatios.numericValue('4:3' as AspectRatio)).toBeCloseTo(4 / 3)
+  expect(AspectRatios.numericValue('1:1' as AspectRatio)).toBeCloseTo(1)
 })
 
 test('AspectRatios.calculateHeight', () => {
-  expect(AspectRatios.calculateHeight(1920, AspectRatios.of('16:9'))).toBeCloseTo(1080)
-  expect(AspectRatios.calculateHeight(800, AspectRatios.of('4:3'))).toBeCloseTo(600)
-  expect(AspectRatios.calculateHeight(500, AspectRatios.of('1:1'))).toBeCloseTo(500)
+  expect(AspectRatios.calculateHeight(1920, '16:9' as AspectRatio)).toBeCloseTo(1080)
+  expect(AspectRatios.calculateHeight(800, '4:3' as AspectRatio)).toBeCloseTo(600)
+  expect(AspectRatios.calculateHeight(500, '1:1' as AspectRatio)).toBeCloseTo(500)
 })
 
 test('AspectRatios.calculateWidth', () => {
-  expect(AspectRatios.calculateWidth(1080, AspectRatios.of('16:9'))).toBeCloseTo(1920)
-  expect(AspectRatios.calculateWidth(600, AspectRatios.of('4:3'))).toBeCloseTo(800)
-  expect(AspectRatios.calculateWidth(500, AspectRatios.of('1:1'))).toBeCloseTo(500)
+  expect(AspectRatios.calculateWidth(1080, '16:9' as AspectRatio)).toBeCloseTo(1920)
+  expect(AspectRatios.calculateWidth(600, '4:3' as AspectRatio)).toBeCloseTo(800)
+  expect(AspectRatios.calculateWidth(500, '1:1' as AspectRatio)).toBeCloseTo(500)
 })

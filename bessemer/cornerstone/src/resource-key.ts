@@ -1,35 +1,79 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
-import { removeStart } from '@bessemer/cornerstone/string'
+import { splitLast } from '@bessemer/cornerstone/string'
+import { isPresent, isUndefined } from '@bessemer/cornerstone/object'
 
 export type ResourceKey = string
-
 const ResourceNamespaceSeparator = '/'
 
-export type ResourceNamespace = TaggedType<string, 'ResourceNamespace'>
+export type NamespaceKey = string | undefined
+export type ResourceNamespace<NamespaceType extends NamespaceKey = NamespaceKey> = NominalType<NamespaceType, 'ResourceNamespace'> | undefined
 
-export const namespace = (value: string): ResourceNamespace => {
-  return value as ResourceNamespace
+export type NamespacedKey<KeyType extends ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey> = NominalType<
+  string,
+  ['NamespacedKey', KeyType, NamespaceType]
+>
+
+export const emptyNamespace = (): ResourceNamespace<undefined> => {
+  return undefined
+}
+
+export const namespace = <T extends NamespaceKey>(value: T): ResourceNamespace<T> => {
+  if (isUndefined(value)) {
+    return value as any as ResourceNamespace<T>
+  }
+
+  if (!/^[^\s\/]\S*(?:\/[^\s\/]\S*)*$/.test(value)) {
+    throw new Error(`Unsupported Namespace format: ${value}`)
+  }
+
+  return value as ResourceNamespace<T>
 }
 
 export const ResourceNamespaceSchema = Zod.string().transform(namespace)
 
-export const applyNamespace = (name: ResourceNamespace, key: ResourceKey): ResourceKey => {
-  return `${name}${ResourceNamespaceSeparator}${key}`
+export const applyNamespace = <KeyType extends ResourceKey = ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey>(
+  key: KeyType,
+  namespace: ResourceNamespace<NamespaceType>
+): NamespacedKey<KeyType, NamespaceType> => {
+  return `${namespace}${ResourceNamespaceSeparator}${encodeKey(key)}` as NamespacedKey<KeyType, NamespaceType>
 }
 
-export const applyNamespaceAll = (name: ResourceNamespace, keys: Array<ResourceKey>): Array<ResourceKey> => {
-  return keys.map((it) => applyNamespace(name, it))
+export const applyNamespaceAll = <KeyType extends ResourceKey = ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey>(
+  keys: Array<KeyType>,
+  namespace: ResourceNamespace<NamespaceType>
+): Array<NamespacedKey<KeyType, NamespaceType>> => {
+  return keys.map((it) => applyNamespace(it, namespace))
 }
 
-export const stripNamespace = (name: ResourceNamespace, key: ResourceKey): ResourceKey => {
-  return removeStart(key, `${name}${ResourceNamespaceSeparator}`)
+export const splitNamespace = <KeyType extends ResourceKey, NamespaceType extends NamespaceKey>(
+  key: NamespacedKey<KeyType, NamespaceType>
+): [KeyType, ResourceNamespace<NamespaceType>] => {
+  const { selection, rest } = splitLast(key, ResourceNamespaceSeparator)
+  if (isPresent(selection)) {
+    return [decodeKey(selection) as KeyType, rest as ResourceNamespace<NamespaceType>]
+  } else {
+    return [decodeKey(rest) as KeyType, undefined as ResourceNamespace<NamespaceType>]
+  }
 }
 
-export const stripNamespaceAll = (name: ResourceNamespace, keys: Array<ResourceKey>): Array<ResourceKey> => {
-  return keys.map((it) => stripNamespace(name, it))
-}
+// JOHN
+// export const stripNamespace = (name: ResourceNamespace, key: ResourceKey): ResourceKey => {
+//   return removeStart(key, `${name}${ResourceNamespaceSeparator}`)
+// }
+//
+// export const stripNamespaceAll = (name: ResourceNamespace, keys: Array<ResourceKey>): Array<ResourceKey> => {
+//   return keys.map((it) => stripNamespace(name, it))
+// }
 
 export const extendNamespace = (...names: Array<ResourceNamespace>): ResourceNamespace => {
-  return namespace(names.join(ResourceNamespaceSeparator))
+  return names.join(ResourceNamespaceSeparator) as ResourceNamespace
+}
+
+export const encodeKey = (key: ResourceKey): ResourceKey => {
+  return key.replace(/%/g, '%25').replace(/\//g, '%2F')
+}
+
+export const decodeKey = (encodedKey: ResourceKey): ResourceKey => {
+  return encodedKey.replace(/%2F/g, '/').replace(/%25/g, '%')
 }

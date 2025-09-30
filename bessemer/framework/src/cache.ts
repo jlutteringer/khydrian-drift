@@ -1,5 +1,5 @@
 import {
-  Cache,
+  AsyncCache,
   CacheConfiguration,
   CacheConfigurationSection,
   CacheName,
@@ -52,8 +52,8 @@ export const configure = (cache?: CacheConfiguration): CacheContext => {
   }
 }
 
-export const getCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): Cache<T> => {
-  const cache = getStore().caches.getValue(name) as Cache<T> | undefined
+export const getCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): AsyncCache<T> => {
+  const cache = getStore().caches.getValue(name) as AsyncCache<T> | undefined
   if (!Objects.isNil(cache)) {
     return cache
   }
@@ -70,7 +70,7 @@ export const getLocalCache = <T>(name: string, context: GlobalContextType<Bessem
   return createLocalCache<T>(name, context)
 }
 
-export const createCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): Cache<T> => {
+export const createCache = <T>(name: string, context: GlobalContextType<BessemerApplicationContext>): AsyncCache<T> => {
   const existingCache = getStore().caches.getValue(name)
   Assertions.assertNil(existingCache, () => `Cache: ${name} already exists`)
 

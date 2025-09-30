@@ -1,66 +1,73 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type MimeLiteral = TaggedType<string, 'MimeType'>
+export const Namespace = namespace('mime-literal')
+export type MimeLiteral = NominalType<string, typeof Namespace>
 
-export const of = (value: string): MimeLiteral => {
-  return value as MimeLiteral
+export const parseString = (value: string): Result<MimeLiteral, ErrorEvent> => {
+  if (!/^[\w-]+\/[\w.+-]+$/.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `Invalid MIME type format.` }))
+  }
+
+  return success(value as MimeLiteral)
 }
-
-export const Schema = Zod.string()
-  .regex(/^[\w-]+\/[\w.+-]+$/, 'Invalid MIME type format')
-  .transform(of)
 
 export const fromString = (value: string): MimeLiteral => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
 
+export const Schema = structuredTransform(Zod.string(), parseString)
+
 // Images
-export const Jpeg = of('image/jpeg')
-export const Png = of('image/png')
-export const Gif = of('image/gif')
-export const Webp = of('image/webp')
-export const Svg = of('image/svg+xml')
-export const Ico = of('image/x-icon')
-export const Avif = of('image/avif')
+export const Jpeg = 'image/jpeg' as MimeLiteral
+export const Png = 'image/png' as MimeLiteral
+export const Gif = 'image/gif' as MimeLiteral
+export const Webp = 'image/webp' as MimeLiteral
+export const Svg = 'image/svg+xml' as MimeLiteral
+export const Ico = 'image/x-icon' as MimeLiteral
+export const Avif = 'image/avif' as MimeLiteral
 export const ImageTypes = [Jpeg, Png, Gif, Webp, Svg, Ico, Avif]
 
 // Video
-export const Mp4 = of('video/mp4')
-export const Webm = of('video/webm')
-export const OggVideo = of('video/ogg')
+export const Mp4 = 'video/mp4' as MimeLiteral
+export const Webm = 'video/webm' as MimeLiteral
+export const OggVideo = 'video/ogg' as MimeLiteral
 export const VideoTypes = [Mp4, Webm, OggVideo]
 
 // Audio
-export const Mp3 = of('audio/mpeg')
-export const OggAudio = of('audio/ogg')
-export const Wav = of('audio/wav')
+export const Mp3 = 'audio/mpeg' as MimeLiteral
+export const OggAudio = 'audio/ogg' as MimeLiteral
+export const Wav = 'audio/wav' as MimeLiteral
 export const AudioTypes = [Mp3, OggAudio, Wav]
 
 // Documents
-export const Pdf = of('application/pdf')
-export const Json = of('application/json')
-export const Csv = of('text/csv')
-export const PlainText = of('text/plain')
-export const Html = of('text/html')
-export const Xml = of('application/xml')
+export const Pdf = 'application/pdf' as MimeLiteral
+export const Json = 'application/json' as MimeLiteral
+export const Csv = 'text/csv' as MimeLiteral
+export const PlainText = 'text/plain' as MimeLiteral
+export const Html = 'text/html' as MimeLiteral
+export const Xml = 'application/xml' as MimeLiteral
 export const DocumentTypes = [Pdf, Json, Csv, PlainText, Html, Xml]
 
 // Fonts
-export const Woff = of('font/woff')
-export const Woff2 = of('font/woff2')
-export const Ttf = of('font/ttf')
-export const Otf = of('font/otf')
+export const Woff = 'font/woff' as MimeLiteral
+export const Woff2 = 'font/woff2' as MimeLiteral
+export const Ttf = 'font/ttf' as MimeLiteral
+export const Otf = 'font/otf' as MimeLiteral
 export const FontTypes = [Woff, Woff2, Ttf, Otf]
 
 // Compression
-export const Zip = of('application/zip')
-export const Gzip = of('application/gzip')
-export const Tar = of('application/x-tar')
-export const Brotli = of('application/x-brotli')
+export const Zip = 'application/zip' as MimeLiteral
+export const Gzip = 'application/gzip' as MimeLiteral
+export const Tar = 'application/x-tar' as MimeLiteral
+export const Brotli = 'application/x-brotli' as MimeLiteral
 export const CompressionTypes = [Zip, Gzip, Tar, Brotli]
 
 // Misc
-export const FormData = of('multipart/form-data')
-export const Javascript = of('application/javascript')
-export const OctetStream = of('application/octet-stream')
+export const FormData = 'multipart/form-data' as MimeLiteral
+export const Javascript = 'application/javascript' as MimeLiteral
+export const OctetStream = 'application/octet-stream' as MimeLiteral

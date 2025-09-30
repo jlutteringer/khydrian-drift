@@ -25,7 +25,7 @@ export const getValue = <T>(expression: Expression<T>): Result<T> => {
   } else if (isRawValue(expression)) {
     return success(expression)
   } else {
-    return failure()
+    return failure(undefined)
   }
 }
 

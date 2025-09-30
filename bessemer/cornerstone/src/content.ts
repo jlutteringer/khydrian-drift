@@ -1,18 +1,18 @@
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { Arrays, Objects, References, Tags, Ulids } from '@bessemer/cornerstone'
 import { RichTextJson } from '@bessemer/cornerstone/rich-text'
 import { Tag } from '@bessemer/cornerstone/tag'
 import Zod, { ZodType } from 'zod'
 
-export type ContentSector = NominalType<string, 'ContentSector'>
+export type ContentSector = TaggedType<string, 'ContentSector'>
 export const ContentSectorSchema: ZodType<ContentSector> = Zod.string()
 
-export type ContentKey = NominalType<string, 'ContentKey'>
+export type ContentKey = TaggedType<string, 'ContentKey'>
 export const ContentKeySchema: ZodType<ContentKey> = Zod.string()
 
-export type ContentType<Data = unknown> = NominalType<string, ['ContentType', Data]>
+export type ContentType<Data = unknown> = TaggedType<string, ['ContentType', Data]>
 export const ContentTypeSchema: ZodType<ContentType> = Zod.string()
 
 export type ContentReference = Reference<'Content'>
@@ -35,7 +35,7 @@ export type ContentData<Type extends ContentType = ContentType, Data = ContentDa
 
 export type ContentTypeConstructor<Content extends ContentData> = Content['type']
 
-export type ContentDisplayType = NominalType<string, 'ContentDisplayType'>
+export type ContentDisplayType = TaggedType<string, 'ContentDisplayType'>
 
 export namespace ContentDisplayTypes {
   export const Default: ContentDisplayType = 'Default'
@@ -96,7 +96,7 @@ export const staticData = <Type extends ContentType = ContentType, Data = Conten
   options?: { tags?: Array<Tag>; sector?: ContentSector }
 ): StaticContentData<Type, Data> => {
   return {
-    reference: References.reference(Ulids.generate(), 'Content'),
+    reference: References.reference(Ulids.generate() as string, 'Content'),
     key,
     type,
     data,

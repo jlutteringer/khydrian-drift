@@ -1,4 +1,4 @@
-import { AbstractCache, CacheEntry, CacheProvider, CacheSector } from '@bessemer/cornerstone/cache'
+import { AbstractAsyncCache, CacheEntry, CacheProvider, CacheSector } from '@bessemer/cornerstone/cache'
 import { AdvisoryLocks, BessemerApplicationContext, GlobalContextType } from '@bessemer/framework'
 import { Arrays, Async, Entries, Loggers, ResourceKeys } from '@bessemer/cornerstone'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
@@ -6,7 +6,7 @@ import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 const logger = Loggers.child('CacheImpl')
 
-export class CacheImpl<T> extends AbstractCache<T> {
+export class CacheImpl<T> extends AbstractAsyncCache<T> {
   constructor(
     readonly name: string,
     private readonly providers: Array<CacheProvider<T>>,

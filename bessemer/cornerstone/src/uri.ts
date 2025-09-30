@@ -1,4 +1,4 @@
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 import { isEmpty, isString, removeStart, splitFirst, startsWith, StringSplitResult } from '@bessemer/cornerstone/string'
 import { isNil, isPresent } from '@bessemer/cornerstone/object'
 import { contains } from '@bessemer/cornerstone/array'
@@ -11,7 +11,7 @@ export const decode = (uriComponent: UriComponent) => {
   return decodeURIComponent(uriComponent)
 }
 
-export type UriString = NominalType<string, 'UriString'>
+export type UriString = TaggedType<string, 'UriString'>
 export type UriComponent = string
 
 export type UriScheme = string

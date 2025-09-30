@@ -1,16 +1,16 @@
 import { AbstractLocalKeyValueStore, AbstractRemoteKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } from '@bessemer/cornerstone/store'
-import { Duration, OneDay, OneHour, toMilliseconds } from '@bessemer/cornerstone/duration'
+import { Duration, OneDay, OneHour, toMilliseconds } from '@bessemer/cornerstone/time/duration'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { GlobPattern } from '@bessemer/cornerstone/glob'
 import { Arrayable } from 'type-fest'
 import Zod, { ZodType } from 'zod'
 import { deepMerge, isNil } from '@bessemer/cornerstone/object'
 import { toArray } from '@bessemer/cornerstone/array'
-import { addMilliseconds, isBefore, now } from '@bessemer/cornerstone/date'
-import { Arrays, Entries, ResourceKeys } from '@bessemer/cornerstone/index'
+import { addMilliseconds, isBefore, now } from '@bessemer/cornerstone/time/date'
+import { Arrays, Entries, ResourceKeys } from '@bessemer/cornerstone'
 
 export type CacheProps = {
   maxSize: number | null
@@ -50,14 +50,14 @@ export namespace CacheSector {
   }
 
   export const namespace = (namespace: ResourceNamespace, sector: CacheSector): CacheSector => {
-    return { globs: ResourceKeys.applyNamespaceAll(namespace, sector.globs) }
+    return { globs: ResourceKeys.applyNamespaceAll(sector.globs, namespace).map((it) => it as string as GlobPattern) }
   }
 }
 
-export type CacheName = NominalType<string, 'CacheName'>
+export type CacheName = TaggedType<string, 'CacheName'>
 export const CacheNameSchema: ZodType<CacheName> = Zod.string()
 
-export interface Cache<T> extends AbstractCache<T> {
+export interface AsyncCache<T> {
   name: CacheName
 
   fetchValue(key: ResourceKey, fetch: () => Promise<T>): Promise<T>
@@ -71,7 +71,7 @@ export interface Cache<T> extends AbstractCache<T> {
   evictAll(sector: CacheSector): Promise<void>
 }
 
-export abstract class AbstractCache<T> implements Cache<T> {
+export abstract class AbstractAsyncCache<T> implements AsyncCache<T> {
   abstract name: CacheName
 
   fetchValue = async (key: ResourceKey, fetch: () => Promise<T>): Promise<T> => {
@@ -227,7 +227,7 @@ export type CacheDefinition = {
   providers: Array<CacheProviderConfiguration>
 }
 
-export type CacheProviderType = NominalType<string, 'CacheProviderType'>
+export type CacheProviderType = TaggedType<string, 'CacheProviderType'>
 export type CacheProviderConfiguration = CacheOptions & {
   type: CacheProviderType
 }

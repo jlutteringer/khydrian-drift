@@ -1,5 +1,5 @@
 import Zod from 'zod'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 import {
   InferObjectPath,
   ObjectPathConcreteType,
@@ -20,7 +20,8 @@ import { assert } from '@bessemer/cornerstone/assertion'
 import { produce } from 'immer'
 import { isObject } from '@bessemer/cornerstone/object'
 
-export type ObjectPath<T extends TypePathType = TypePathType> = NominalType<ObjectPathConcreteType, ['TypePath', T]>
+// JOHN this probably should be brought into the structured transform regime
+export type ObjectPath<T extends TypePathType = TypePathType> = TaggedType<ObjectPathConcreteType, ['TypePath', T]>
 
 export const of = <T extends ObjectPathConcreteType>(value: T): ObjectPath<InferObjectPath<T>> => {
   return value as ObjectPath<InferObjectPath<T>>

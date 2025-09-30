@@ -3,6 +3,8 @@ import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { parse as jsonParse } from '@bessemer/cornerstone/json'
 import { failure, getValueOrThrow, Result, success } from '@bessemer/cornerstone/result'
 import { Assertions } from '@bessemer/cornerstone/index'
+import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { $RefinementCtx } from 'zod/v4/core'
 
 export const parse = <T extends ZodType>(type: T, data: unknown): Result<Zod.infer<T>> => {
   const result = type.safeParse(data)
@@ -38,4 +40,38 @@ export const arrayable = <T>(type: ZodType<T>) => {
 
 export const key = (): ZodType<ResourceKey> => {
   return Zod.string()
+}
+
+export type StructuredTransformer<InputType, OutputType> = (value: InputType) => Result<OutputType, ErrorEvent>
+
+export const structuredTransform = <InputType, OutputType, SchemaType extends ZodType<InputType, InputType>>(
+  schema: SchemaType,
+  transformer: StructuredTransformer<InputType, OutputType>
+) => {
+  return schema.superRefine(refineResult(transformer)).transform((it) => {
+    const result = transformer(it)
+    return unpackResult(result)
+  })
+}
+
+export const refineResult = <InputType>(
+  transformer: StructuredTransformer<InputType, unknown>
+): ((value: InputType, context: $RefinementCtx<InputType>) => void) => {
+  return (value, context) => {
+    const result = transformer(value)
+
+    if (!result.isSuccess) {
+      const error = result.value
+
+      error.causes.forEach((cause) => {
+        context.addIssue({
+          code: 'custom',
+          message: cause.message,
+          input: value,
+          error,
+          cause,
+        })
+      })
+    }
+  }
 }

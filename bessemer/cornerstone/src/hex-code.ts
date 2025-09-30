@@ -1,14 +1,23 @@
 import Zod from 'zod'
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type HexCode = TaggedType<string, 'HexCode'>
+export const Namespace = namespace('hex-code')
+export type HexCode = NominalType<string, typeof Namespace>
 
-export const of = (value: string): HexCode => {
-  return value as HexCode
+export const parseString = (value: string): Result<HexCode, ErrorEvent> => {
+  if (!/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `HexCode must be a valid hex code (# followed by 3 or 6 characters).` }))
+  }
+
+  return success(value.toUpperCase() as HexCode)
 }
-
-export const Schema = Zod.string().length(7).startsWith('#').describe('A 6-digit hex code starting a # sign').transform(of)
 
 export const fromString = (value: string): HexCode => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
+
+export const Schema = structuredTransform(Zod.string(), parseString)

@@ -1,19 +1,28 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 import { isNil } from '@bessemer/cornerstone/object'
 import { padStart } from '@bessemer/cornerstone/string'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type Uuid = TaggedType<string, 'Uuid'>
+export const Namespace = namespace('uuid')
+export type Uuid = NominalType<string, typeof Namespace>
 
-export const of = (value: string): Uuid => {
-  return value as Uuid
+export const parseString = (value: string): Result<Uuid, ErrorEvent> => {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `Invalid Uuid format.` }))
+  }
+
+  return success(value.toLowerCase() as Uuid)
 }
-
-export const Schema = Zod.uuid().transform(of)
 
 export const fromString = (value: string): Uuid => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
+
+export const Schema = structuredTransform(Zod.string(), parseString)
 
 export const generate = (): Uuid => {
   if (isNil(crypto.randomUUID)) {

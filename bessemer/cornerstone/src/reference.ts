@@ -1,10 +1,11 @@
 import { Comparator, compareBy, natural } from '@bessemer/cornerstone/comparator'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 import { isString } from '@bessemer/cornerstone/string'
 import { isObject, isPresent, isUndefined } from '@bessemer/cornerstone/object'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
 
-export type ReferenceId<T extends string> = NominalType<string, ['ReferenceId', T]>
+// JOHN i, unfortunately, think the reference system is kinda dumb
+export type ReferenceId<T extends string> = TaggedType<string, ['ReferenceId', T]>
 
 export type Reference<T extends string> = {
   id: ReferenceId<T>

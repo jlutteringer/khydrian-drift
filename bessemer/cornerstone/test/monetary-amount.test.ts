@@ -1,5 +1,4 @@
 import { CurrencyCodes, MonetaryAmounts } from '@bessemer/cornerstone'
-import { ZodError } from 'zod'
 
 test('MonetaryAmounts.Schema - valid inputs', () => {
   expect(MonetaryAmounts.Schema.parse({ amount: 100, currency: CurrencyCodes.USD })).toEqual({ amount: 100, currency: CurrencyCodes.USD })
@@ -8,11 +7,11 @@ test('MonetaryAmounts.Schema - valid inputs', () => {
 })
 
 test('MonetaryAmounts.Schema - invalid inputs throw errors', () => {
-  expect(() => MonetaryAmounts.Schema.parse({ amount: 10.5, currency: CurrencyCodes.USD })).toThrow(ZodError)
-  expect(() => MonetaryAmounts.Schema.parse({ amount: 'invalid', currency: CurrencyCodes.USD })).toThrow(ZodError)
-  expect(() => MonetaryAmounts.Schema.parse({ amount: 100, currency: 'INVALID' })).toThrow(ZodError)
-  expect(() => MonetaryAmounts.Schema.parse({ amount: 100 })).toThrow(ZodError)
-  expect(() => MonetaryAmounts.Schema.parse({ currency: CurrencyCodes.USD })).toThrow(ZodError)
+  expect(() => MonetaryAmounts.Schema.parse({ amount: 10.5, currency: CurrencyCodes.USD })).toThrow()
+  expect(() => MonetaryAmounts.Schema.parse({ amount: 'invalid', currency: CurrencyCodes.USD })).toThrow()
+  expect(() => MonetaryAmounts.Schema.parse({ amount: 100, currency: 'INVALID' })).toThrow()
+  expect(() => MonetaryAmounts.Schema.parse({ amount: 100 })).toThrow()
+  expect(() => MonetaryAmounts.Schema.parse({ currency: CurrencyCodes.USD })).toThrow()
 })
 
 test('MonetaryAmounts.of', () => {

@@ -1,4 +1,4 @@
-import { Duration, toMilliseconds } from '@bessemer/cornerstone/duration'
+import { Duration, toMilliseconds } from '@bessemer/cornerstone/time/duration'
 
 export const execute = <T>(runnable: () => Promise<T>): Promise<T> => {
   return new Promise(async (resolve, reject) => {

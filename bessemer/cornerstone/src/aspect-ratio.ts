@@ -1,27 +1,33 @@
 import Zod from 'zod'
 import { greatestCommonFactor } from '@bessemer/cornerstone/math'
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type AspectRatio = TaggedType<string, 'AspectRatio'>
+export const Namespace = namespace('aspect-ratio')
+export type AspectRatio = NominalType<string, typeof Namespace>
 
-export const of = (aspectRatio: string): AspectRatio => {
-  return aspectRatio as AspectRatio
+export const parseString = (value: string): Result<AspectRatio, ErrorEvent> => {
+  if (!/^[1-9]\d*:[1-9]\d*$/.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `Aspect Ratio must be in the format 'width:height' (e.g., '16:9', '4:3').` }))
+  }
+
+  return success(value as AspectRatio)
 }
 
-export const Schema = Zod.string()
-  .trim()
-  .regex(/^[1-9]\d*:[1-9]\d*$/, `Aspect Ratio must be in the format 'width:height' (e.g., '16:9', '4:3')`)
-  .transform(of)
-
-export const fromString = (aspectRatio: string): AspectRatio => {
-  return Schema.parse(aspectRatio)
+export const fromString = (value: string): AspectRatio => {
+  return unpackResult(parseString(value))
 }
+
+export const Schema = structuredTransform(Zod.string(), parseString)
 
 export const fromDimensions = (width: number, height: number): AspectRatio => {
   const factor = greatestCommonFactor(width, height)
   const ratioWidth = width / factor
   const ratioHeight = height / factor
-  return of(`${ratioWidth}:${ratioHeight}`)
+  return `${ratioWidth}:${ratioHeight}` as AspectRatio
 }
 
 export const numericValue = (aspectRatio: AspectRatio): number => {

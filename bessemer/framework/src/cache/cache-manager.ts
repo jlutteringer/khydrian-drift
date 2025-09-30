@@ -1,4 +1,4 @@
-import { AbstractCache, CacheName, CacheSector } from '@bessemer/cornerstone/cache'
+import { AbstractAsyncCache, CacheName, CacheSector } from '@bessemer/cornerstone/cache'
 import { Arrays, Entries, Globs, Objects, ResourceKeys } from '@bessemer/cornerstone'
 import { Caches, GlobalContextType } from '@bessemer/framework'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
@@ -67,7 +67,7 @@ export class LocalCacheManager implements CacheManager {
     return null
   }
 
-  private filterForTarget = <T extends AbstractCache<unknown>>(caches: Array<T>, cacheTarget: CacheTarget): Array<T> => {
+  private filterForTarget = <T extends AbstractAsyncCache<unknown>>(caches: Array<T>, cacheTarget: CacheTarget): Array<T> => {
     return caches.filter((cache) => {
       const targets = Arrays.toArray(cacheTarget)
 

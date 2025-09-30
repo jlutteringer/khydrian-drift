@@ -1,20 +1,10 @@
-import { $brand } from 'zod'
+declare const __type: unique symbol
 
-export interface NominalTyping<NominalTypingT> {
-  _type?: NominalTypingT
-}
+export type NominalType<ConcreteType, NominalType> = ConcreteType & { [__type]: NominalType }
 
-export type NominalType<T, NominalTypingT> = T & NominalTyping<NominalTypingT>
+export type TaggedType<ConcreteType, NominalType> = ConcreteType & { [__type]?: NominalType }
 
-export type Alias<T> = NominalType<T, any>
-
-export type TaggedTyping<TaggedTypingT extends string | number | symbol> = {
-  [$brand]: {
-    [k in TaggedTypingT]: true
-  }
-}
-
-export type TaggedType<T, TaggedTypingT extends string | number | symbol> = T & TaggedTyping<TaggedTypingT>
+export type Alias<T> = TaggedType<T, any>
 
 export type Throwable = unknown
 

@@ -1,10 +1,10 @@
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 import { aggregate, Comparator, compareBy, natural } from '@bessemer/cornerstone/comparator'
 import { Equalitor, fromComparator } from '@bessemer/cornerstone/equalitor'
 import { equalWith, isEmpty, sortWith } from '@bessemer/cornerstone/array'
 import { properPowerSet } from '@bessemer/cornerstone/set'
 
-export type TagType<DataType> = NominalType<string, ['TagType', DataType]>
+export type TagType<DataType> = TaggedType<string, ['TagType', DataType]>
 
 export type Tag<DataType = unknown> = {
   type: TagType<DataType>
@@ -38,7 +38,7 @@ export const tagEqualitor = <T>(): Equalitor<Tag<T>> => {
   return fromComparator(tagComparator())
 }
 
-export type SerializedTags = NominalType<string, 'SerializedTags'>
+export type SerializedTags = TaggedType<string, 'SerializedTags'>
 
 export const serializeTags = <T>(tags: Array<Tag<T>>): SerializedTags => {
   const serializedTags: SerializedTags = sortWith(tags, tagComparator())

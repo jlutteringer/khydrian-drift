@@ -2,13 +2,13 @@ import * as NumericExpressions from '@bessemer/cornerstone/expression/numeric-ex
 import * as StringExpressions from '@bessemer/cornerstone/expression/string-expression'
 import * as ArrayExpressions from '@bessemer/cornerstone/expression/array-expression'
 import * as Expressions from '@bessemer/cornerstone/expression/expression'
-import { NominalType } from '@bessemer/cornerstone/types'
+import { TaggedType } from '@bessemer/cornerstone/types'
 import { Signable } from '@bessemer/cornerstone/signature'
 import { UnknownRecord } from 'type-fest'
 
 export { Expressions, NumericExpressions, StringExpressions, ArrayExpressions }
 
-export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = NominalType<string, ['ExpressionKey', ReturnType, ArgumentType]>
+export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = TaggedType<string, ['ExpressionKey', ReturnType, ArgumentType]>
 
 export type Expression<ReturnType> = ReturnType | IExpression<ReturnType>
 

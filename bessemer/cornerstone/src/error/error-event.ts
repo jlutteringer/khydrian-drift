@@ -1,43 +1,79 @@
-import { Dictionary, NominalType, Throwable } from '@bessemer/cornerstone/types'
+import { Dictionary, Throwable } from '@bessemer/cornerstone/types'
 import { deepMerge, isNil, isObject, isPresent, RecordAttribute } from '@bessemer/cornerstone/object'
 import Zod, { ZodType } from 'zod'
 import { evaluate, LazyValue } from '@bessemer/cornerstone/lazy'
-import { findInCausalChain as errorsFindInCausalChain, isError } from '@bessemer/cornerstone/error'
+import { findInCausalChain as errorsFindInCausalChain, isError } from '@bessemer/cornerstone/error/error'
 import { isPromise } from '@bessemer/cornerstone/promise'
-import { first } from '@bessemer/cornerstone/array'
+import { applyNamespace, emptyNamespace, NamespacedKey, ResourceNamespace, splitNamespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorType, Forbidden, InvalidValue, Required, Unauthorized, Unhandled } from '@bessemer/cornerstone/error/error-type'
+import { Result } from '@bessemer/cornerstone/result'
 
 /*
   Represents a structured error event. The code can be mapped to a unique type of error while the
   message and attributes can provide contextual information about the error. Finally,
   an ErrorEvent could have multiple causes which get aggregated into a single parent error.
  */
-export type ErrorCode = NominalType<string, 'ErrorCode'>
-export const ErrorCodeSchema: ZodType<ErrorCode> = Zod.string()
+export type ErrorCode = NamespacedKey<ErrorType>
+export const ErrorCodeSchema = Zod.string().transform((it) => it as NamespacedKey<ErrorType>)
+
+export const splitErrorCode = (code: ErrorCode): [ErrorType, ResourceNamespace] => {
+  return splitNamespace(code)
+}
+
+export const getErrorCodeType = (code: ErrorCode): ErrorType => {
+  const [errorType] = splitErrorCode(code)
+  return errorType
+}
+
+export type ErrorCodeBuilder =
+  | {
+      code: ErrorCode
+    }
+  | { type: ErrorType; namespace?: ResourceNamespace }
+
+export const buildErrorCode = (builder: ErrorCodeBuilder): ErrorCode => {
+  if ('code' in builder) {
+    return builder.code
+  } else {
+    return applyNamespace(builder.type, builder.namespace ?? emptyNamespace())
+  }
+}
 
 export type ErrorAttribute<Type = unknown> = RecordAttribute<Type, 'ErrorAttribute'>
 export const ErrorAttributeSchema: ZodType<ErrorAttribute, string> = Zod.string()
 
-const baseErrorEventSchema = Zod.object({
+export const ErrorEventCauseSchema = Zod.object({
   code: ErrorCodeSchema,
   message: Zod.string(),
+  attributes: Zod.record(Zod.string(), Zod.unknown()),
+})
+
+export type ErrorEventCause = Zod.infer<typeof ErrorEventCauseSchema>
+
+export const Schema = Zod.object({
+  message: Zod.string(),
+  causes: Zod.array(ErrorEventCauseSchema),
   attributes: Zod.record(ErrorAttributeSchema, Zod.unknown()),
 })
 
-export type ErrorEvent = Zod.infer<typeof baseErrorEventSchema> & {
-  causes: Array<ErrorEvent>
+export type ErrorEvent = Zod.infer<typeof Schema>
+
+export type ErrorEventCauseBuilder = ErrorCodeBuilder & {
+  message: string
+  attributes?: Dictionary<unknown>
 }
 
-const ErrorEventSchema: ZodType<ErrorEvent> = baseErrorEventSchema.extend({
-  causes: Zod.lazy(() => Zod.array(ErrorEventSchema)),
-})
-
-// Builder object that allows for 'partial' representation of ErrorEvents
 export type ErrorEventBuilder = {
-  code: ErrorCode
-  message?: string | null
   attributes?: Record<ErrorAttribute, unknown>
-  causes?: Array<ErrorEvent>
-}
+} & (
+  | {
+      causes: Array<ErrorEventCauseBuilder>
+      message: string
+    }
+  | (ErrorCodeBuilder & {
+      message: string
+    })
+)
 
 export type ErrorEventAugment = Partial<ErrorEventBuilder>
 
@@ -57,7 +93,8 @@ export const isErrorEvent = (throwable: Throwable): throwable is ErrorEvent => {
     return false
   }
 
-  return 'code' in throwable && 'message' in throwable && 'attributes' in throwable && 'causes' in throwable
+  const errorEvent = throwable as ErrorEvent
+  return isPresent(errorEvent.message) && isPresent(errorEvent.attributes) && isPresent(errorEvent.causes)
 }
 
 export const isErrorEventException = (throwable: Throwable): throwable is ErrorEventException => {
@@ -65,13 +102,30 @@ export const isErrorEventException = (throwable: Throwable): throwable is ErrorE
 }
 
 export const of = (builder: ErrorEventBuilder): ErrorEvent => {
-  const code = builder.code
-
-  return {
-    code,
-    message: builder.message ?? code,
-    attributes: builder.attributes ?? {},
-    causes: builder.causes ?? [],
+  if ('causes' in builder) {
+    return {
+      causes: builder.causes.map((it) => {
+        return {
+          code: buildErrorCode(it),
+          message: it.message,
+          attributes: it.attributes ?? {},
+        }
+      }),
+      message: builder.message,
+      attributes: builder.attributes ?? {},
+    }
+  } else {
+    return {
+      causes: [
+        {
+          code: buildErrorCode(builder),
+          message: builder.message,
+          attributes: {},
+        },
+      ],
+      message: builder.message,
+      attributes: builder.attributes ?? {},
+    }
   }
 }
 
@@ -123,45 +177,15 @@ export const propagate = (throwable: Throwable, attributes: Dictionary<unknown>)
   }
 }
 
-export const findByCodeInCausalChain = (error: ErrorEvent, code: string): ErrorEvent | undefined => {
-  return findInCausalChain(error, (it) => it.code === code)
-}
-
-/*
-   Traverses the causal chain of the ErrorEvent, searching for a predicate that matches (including matching on the parent error event)
-   This is useful if you want to find whether or not a given error was caused by a specific failure. The search executes depth-first and
-   will return te first matching instance that satisfies the predicate, or undefined otherwise
- */
-export const findInCausalChain = (error: ErrorEvent, predicate: (error: ErrorEvent) => boolean): ErrorEvent | undefined => {
-  if (predicate(error)) {
-    return error
-  }
-
-  return first(error.causes.map((it) => findInCausalChain(it, predicate)).filter(isPresent))
-}
-
-export const aggregate = (builder: ErrorEventBuilder, causes: Array<ErrorEvent>): ErrorEvent | undefined => {
-  if (causes.length === 0) {
-    return undefined
-  }
-
-  return of({ ...builder, causes })
-}
-
-export const UnhandledErrorCode: ErrorCode = 'error-event.unhandled'
-export const NotFoundErrorCode: ErrorCode = 'error-event.not-found'
-export const ForbiddenErrorCode: ErrorCode = 'error-event.forbidden'
-export const UnauthorizedErrorCode: ErrorCode = 'error-event.unauthorized'
-export const BadRequestErrorCode: ErrorCode = 'error-event.bad-request'
-
+export const ValueAttribute: ErrorAttribute = 'value'
 export const RequestCorrelationIdAttribute: ErrorAttribute<string> = 'requestCorrelationId'
 export const HttpStatusCodeAttribute: ErrorAttribute<number> = 'httpStatusCode'
 
-export const unhandled = (builder?: ErrorEventAugment) =>
+export const unhandled = (builder?: ErrorEventAugment): ErrorEvent =>
   of(
     deepMerge(
       {
-        code: UnhandledErrorCode,
+        type: Unhandled,
         message: 'An Unhandled Error has occurred.',
         attributes: { [HttpStatusCodeAttribute]: 500 },
       },
@@ -169,23 +193,23 @@ export const unhandled = (builder?: ErrorEventAugment) =>
     )
   )
 
-export const notFound = (builder?: ErrorEventAugment) =>
+export const required = (builder?: ErrorEventAugment): ErrorEvent =>
   of(
     deepMerge(
       {
-        code: NotFoundErrorCode,
-        message: 'The requested Resource could not be found.',
+        type: Required,
+        message: 'The resource is required.',
         attributes: { [HttpStatusCodeAttribute]: 404 },
       },
       builder
     )
   )
 
-export const unauthorized = (builder?: ErrorEventAugment) =>
+export const unauthorized = (builder?: ErrorEventAugment): ErrorEvent =>
   of(
     deepMerge(
       {
-        code: UnauthorizedErrorCode,
+        type: Unauthorized,
         message: 'The requested Resource requires authentication.',
         attributes: { [HttpStatusCodeAttribute]: 401 },
       },
@@ -193,11 +217,11 @@ export const unauthorized = (builder?: ErrorEventAugment) =>
     )
   )
 
-export const forbidden = (builder?: ErrorEventAugment) =>
+export const forbidden = (builder?: ErrorEventAugment): ErrorEvent =>
   of(
     deepMerge(
       {
-        code: ForbiddenErrorCode,
+        type: Forbidden,
         message: 'The requested Resource requires additional permissions to access.',
         attributes: { [HttpStatusCodeAttribute]: 403 },
       },
@@ -205,13 +229,13 @@ export const forbidden = (builder?: ErrorEventAugment) =>
     )
   )
 
-export const badRequest = (builder?: ErrorEventAugment) =>
+export const invalidValue = (value: unknown, builder?: ErrorEventAugment): ErrorEvent =>
   of(
     deepMerge(
       {
-        code: BadRequestErrorCode,
-        message: 'The request is invalid and cannot be processed.',
-        attributes: { [HttpStatusCodeAttribute]: 400 },
+        type: InvalidValue,
+        message: 'The format is invalid and cannot be processed.',
+        attributes: { [HttpStatusCodeAttribute]: 400, [ValueAttribute]: value },
       },
       builder
     )
@@ -219,7 +243,7 @@ export const badRequest = (builder?: ErrorEventAugment) =>
 
 export function assertPresent<T>(value: T, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is NonNullable<T> {
   if (isNil(value)) {
-    throw new ErrorEventException(notFound(evaluate(builder)))
+    throw new ErrorEventException(required(evaluate(builder)))
   }
 }
 
@@ -235,9 +259,13 @@ export function assertPermitted(value: boolean, builder: LazyValue<ErrorEventAug
   }
 }
 
-export function assertValid(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
-  if (!value) {
-    throw new ErrorEventException(badRequest(evaluate(builder)))
+export function assertValid(
+  valid: boolean,
+  value: unknown,
+  builder: LazyValue<ErrorEventAugment | undefined> = () => undefined
+): asserts value is true {
+  if (!valid) {
+    throw new ErrorEventException(invalidValue(value, evaluate(builder)))
   }
 }
 
@@ -245,4 +273,12 @@ export function assert(value: boolean, builder: LazyValue<ErrorEventBuilder>): a
   if (!value) {
     throw new ErrorEventException(of(evaluate(builder)))
   }
+}
+
+export const unpackResult = <T>(result: Result<T, ErrorEvent>): T => {
+  if (!result.isSuccess) {
+    throw new ErrorEventException(result.value)
+  }
+
+  return result.value
 }

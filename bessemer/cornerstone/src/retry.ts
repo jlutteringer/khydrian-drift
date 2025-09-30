@@ -1,4 +1,4 @@
-import { Duration, fromMilliseconds, toMilliseconds, Zero } from '@bessemer/cornerstone/duration'
+import { Duration, fromMilliseconds, toMilliseconds, Zero } from '@bessemer/cornerstone/time/duration'
 import { AsyncResult, failure, Result } from '@bessemer/cornerstone/result'
 import { PartialDeep } from 'type-fest'
 import { deepMerge, isUndefined } from '@bessemer/cornerstone/object'
@@ -55,7 +55,7 @@ export const retry = async (state: RetryState): Promise<RetryState | undefined> 
 
 export const usingRetry = async <T>(runnable: () => Promise<Result<T>>, initialOptions?: RetryOptions): AsyncResult<T> => {
   let retryState: RetryState | undefined = initialize(initialOptions)
-  let previousResult: Result<T> = failure()
+  let previousResult: Result<T> = failure(undefined)
 
   do {
     // JOHN Should this be a try/catch? it was causing debugging problems

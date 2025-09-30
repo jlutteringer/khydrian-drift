@@ -1,57 +1,62 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type CountryCode = TaggedType<string, 'CountryCode'>
+export const Namespace = namespace('country-code')
+export type CountryCode = NominalType<string, typeof Namespace>
 
-export const of = (value: string): CountryCode => {
-  return value as CountryCode
+export const parseString = (value: string): Result<CountryCode, ErrorEvent> => {
+  if (!/^[A-Z]{2}$/i.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `CountryCode must be exactly 2 letters.` }))
+  }
+
+  return success(value.toUpperCase() as CountryCode)
 }
-
-export const Schema = Zod.string()
-  .trim()
-  .toUpperCase()
-  .regex(/^[A-Z]{2}$/, 'CountryCode must be exactly 2 uppercase letters')
-  .transform(of)
 
 export const fromString = (value: string): CountryCode => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
 
-export const UnitedStates = of('US')
-export const Canada = of('CA')
-export const UnitedKingdom = of('GB')
-export const Germany = of('DE')
-export const France = of('FR')
-export const Italy = of('IT')
-export const Spain = of('ES')
-export const Portugal = of('PT')
-export const Netherlands = of('NL')
-export const Belgium = of('BE')
-export const Switzerland = of('CH')
-export const Austria = of('AT')
-export const Sweden = of('SE')
-export const Norway = of('NO')
-export const Denmark = of('DK')
-export const Finland = of('FI')
-export const Poland = of('PL')
-export const Russia = of('RU')
-export const China = of('CN')
-export const Japan = of('JP')
-export const SouthKorea = of('KR')
-export const India = of('IN')
-export const Australia = of('AU')
-export const NewZealand = of('NZ')
-export const Brazil = of('BR')
-export const Mexico = of('MX')
-export const Argentina = of('AR')
-export const SouthAfrica = of('ZA')
-export const Turkey = of('TR')
-export const Israel = of('IL')
-export const SaudiArabia = of('SA')
-export const UnitedArabEmirates = of('AE')
-export const Singapore = of('SG')
-export const Thailand = of('TH')
-export const Vietnam = of('VN')
-export const Indonesia = of('ID')
-export const Malaysia = of('MY')
-export const Philippines = of('PH')
+export const Schema = structuredTransform(Zod.string(), parseString)
+
+export const UnitedStates = 'US' as CountryCode
+export const Canada = 'CA' as CountryCode
+export const UnitedKingdom = 'GB' as CountryCode
+export const Germany = 'DE' as CountryCode
+export const France = 'FR' as CountryCode
+export const Italy = 'IT' as CountryCode
+export const Spain = 'ES' as CountryCode
+export const Portugal = 'PT' as CountryCode
+export const Netherlands = 'NL' as CountryCode
+export const Belgium = 'BE' as CountryCode
+export const Switzerland = 'CH' as CountryCode
+export const Austria = 'AT' as CountryCode
+export const Sweden = 'SE' as CountryCode
+export const Norway = 'NO' as CountryCode
+export const Denmark = 'DK' as CountryCode
+export const Finland = 'FI' as CountryCode
+export const Poland = 'PL' as CountryCode
+export const Russia = 'RU' as CountryCode
+export const China = 'CN' as CountryCode
+export const Japan = 'JP' as CountryCode
+export const SouthKorea = 'KR' as CountryCode
+export const India = 'IN' as CountryCode
+export const Australia = 'AU' as CountryCode
+export const NewZealand = 'NZ' as CountryCode
+export const Brazil = 'BR' as CountryCode
+export const Mexico = 'MX' as CountryCode
+export const Argentina = 'AR' as CountryCode
+export const SouthAfrica = 'ZA' as CountryCode
+export const Turkey = 'TR' as CountryCode
+export const Israel = 'IL' as CountryCode
+export const SaudiArabia = 'SA' as CountryCode
+export const UnitedArabEmirates = 'AE' as CountryCode
+export const Singapore = 'SG' as CountryCode
+export const Thailand = 'TH' as CountryCode
+export const Vietnam = 'VN' as CountryCode
+export const Indonesia = 'ID' as CountryCode
+export const Malaysia = 'MY' as CountryCode
+export const Philippines = 'PH' as CountryCode
