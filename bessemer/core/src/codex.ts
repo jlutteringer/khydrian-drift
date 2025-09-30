@@ -17,6 +17,7 @@ import {
 import { Tag } from '@bessemer/cornerstone/tag'
 import { Caches, Contexts } from '@bessemer/framework'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
+import { NamespacedKey } from '@bessemer/cornerstone/resource-key'
 
 export type CodexOptions = {
   provider: ContentProvider<any>
@@ -137,10 +138,10 @@ export const fetchContentByKeys = async <Type extends ContentType>(
 ): Promise<Array<ContentData<Type>>> => {
   const cache = Caches.getCache<ContentData<Type>>('Codex.fetchContentByKeys', context)
   const namespace = Contexts.getNamespace(context)
-  const namespacedKeys = ResourceKeys.applyNamespaceAll(namespace, keys)
+  const namespacedKeys = ResourceKeys.applyNamespaceAll(keys, namespace)
 
   const results = await cache.fetchValues(namespacedKeys, async (keys) => {
-    keys = ResourceKeys.stripNamespaceAll(namespace, keys)
+    keys = keys.map((it) => ResourceKeys.getKey(it as NamespacedKey))
     Assertions.assertPresent(context.codex)
 
     const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
@@ -179,10 +180,10 @@ export const fetchContentBySectors = async <Type extends ContentType>(
 ): Promise<Array<ContentData<Type>>> => {
   const cache = Caches.getCache<Array<ContentData<Type>>>('Codex.fetchContentBySectors', context)
   const namespace = Contexts.getNamespace(context)
-  const keys = ResourceKeys.applyNamespaceAll(namespace, sectors)
+  const keys = ResourceKeys.applyNamespaceAll(sectors, namespace)
 
   const results = await cache.fetchValues(keys, async (sectors) => {
-    sectors = ResourceKeys.stripNamespaceAll(namespace, sectors)
+    sectors = sectors.map((it) => ResourceKeys.getKey(it as NamespacedKey))
     Assertions.assertPresent(context.codex)
 
     const tags = Arrays.concatenate(Contexts.getTags(context), options?.tags ?? [])
@@ -200,7 +201,7 @@ export const fetchContentBySectors = async <Type extends ContentType>(
 
     Async.execute(async () => {
       const entries: Array<RecordEntry<ContentData<Type>>> = content.map((it) => {
-        return [ResourceKeys.applyNamespace(namespace, it.key), it]
+        return [ResourceKeys.applyNamespace(it.key, namespace), it]
       })
 
       await Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context).writeValues(entries)

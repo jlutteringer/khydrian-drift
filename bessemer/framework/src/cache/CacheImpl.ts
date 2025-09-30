@@ -1,7 +1,7 @@
 import { AbstractAsyncCache, CacheEntry, CacheProvider, CacheSector } from '@bessemer/cornerstone/cache'
 import { AdvisoryLocks, BessemerApplicationContext, GlobalContextType } from '@bessemer/framework'
 import { Arrays, Async, Entries, Loggers, ResourceKeys } from '@bessemer/cornerstone'
-import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
+import { NamespacedKey, ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
 
 const logger = Loggers.child('CacheImpl')
@@ -25,7 +25,7 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
   ): Promise<Array<RecordEntry<T>>> => {
     logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)} under namespace: [${this.name}]`)
 
-    const namespacedKeys = ResourceKeys.applyNamespaceAll(this.getNamespace(), keys)
+    const namespacedKeys = ResourceKeys.applyNamespaceAll(keys, this.getNamespace())
 
     const entries = await AdvisoryLocks.usingIncrementalLocks(
       namespacedKeys,
@@ -35,11 +35,11 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
         return entries
       },
       async (namespacedKeys) => {
-        const keys = ResourceKeys.stripNamespaceAll(this.getNamespace(), namespacedKeys)
+        const keys = namespacedKeys.map((it) => ResourceKeys.getKey(it as NamespacedKey))
         logger.trace(() => `Cache Miss! Retrieving from source: ${JSON.stringify(keys)} under namespace: [${this.name}]`)
 
         const fetchedValues = (await fetch(keys)).map(([key, value]) =>
-          Entries.of(ResourceKeys.applyNamespace(this.getNamespace(), key), CacheEntry.of(value))
+          Entries.of(ResourceKeys.applyNamespace(key, this.getNamespace()), CacheEntry.of(value))
         )
         await this.writeValueInternal(fetchedValues)
         return fetchedValues
@@ -49,7 +49,7 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
     this.revalidate(entries, fetch)
 
     const results = entries.map(([key, value]) => {
-      return Entries.of(ResourceKeys.stripNamespace(this.getNamespace(), key), value.value)
+      return Entries.of(ResourceKeys.getKey(key as NamespacedKey), value.value)
     })
 
     return results
@@ -97,9 +97,9 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
       }
 
       await AdvisoryLocks.usingLock(staleKeys, this.context, async () => {
-        const keys = ResourceKeys.stripNamespaceAll(this.getNamespace(), staleKeys)
+        const keys = staleKeys.map((it) => ResourceKeys.getKey(it as NamespacedKey))
         const fetchedValues = (await fetch(keys)).map(([key, value]) =>
-          Entries.of(ResourceKeys.applyNamespace(this.getNamespace(), key), CacheEntry.of(value))
+          Entries.of(ResourceKeys.applyNamespace(key, this.getNamespace()), CacheEntry.of(value))
         )
         await this.writeValueInternal(fetchedValues)
       })
@@ -108,7 +108,7 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
 
   writeValues = async (entries: Array<RecordEntry<T | undefined>>): Promise<void> => {
     const namespacedEntries = entries.map(([key, value]) => {
-      return Entries.of(ResourceKeys.applyNamespace(this.getNamespace(), key), value !== undefined ? CacheEntry.of(value) : undefined)
+      return Entries.of(ResourceKeys.applyNamespace(key, this.getNamespace()), value !== undefined ? CacheEntry.of(value) : undefined)
     })
 
     return this.writeValueInternal(namespacedEntries)

@@ -55,7 +55,7 @@ export const retry = async (state: RetryState): Promise<RetryState | undefined> 
 
 export const usingRetry = async <T>(runnable: () => Promise<Result<T>>, initialOptions?: RetryOptions): AsyncResult<T> => {
   let retryState: RetryState | undefined = initialize(initialOptions)
-  let previousResult: Result<T> = failure(undefined)
+  let previousResult: Result<T> = failure(null)
 
   do {
     // JOHN Should this be a try/catch? it was causing debugging problems

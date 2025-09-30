@@ -1,12 +1,16 @@
-import { ErrorAttribute, ErrorCode } from '@bessemer/cornerstone/error-event'
+import { ErrorAttribute, ErrorCode } from '@bessemer/cornerstone/error/error-event'
 import { ErrorEvents } from '@bessemer/cornerstone'
 import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 
 export namespace AdvisoryLockUtil {
-  const AdvisoryLockLockedErrorCode: ErrorCode = 'advisory-lock.locked'
+  const AdvisoryLockLockedErrorCode = 'advisory-lock/locked' as ErrorCode
   const ResourceKeyAttribute: ErrorAttribute<string> = 'resourceKey'
 
   export const buildLockLockedError = (resourceKey: ResourceKey) => {
-    return ErrorEvents.of({ code: AdvisoryLockLockedErrorCode, attributes: { [ResourceKeyAttribute]: resourceKey } })
+    return ErrorEvents.of({
+      code: AdvisoryLockLockedErrorCode,
+      message: `${resourceKey} is locked.`,
+      attributes: { [ResourceKeyAttribute]: resourceKey },
+    })
   }
 }

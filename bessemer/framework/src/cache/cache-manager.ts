@@ -26,7 +26,7 @@ export class LocalCacheManager implements CacheManager {
 
     await Promise.all(
       applicableCaches.map((cache) => {
-        const values = Arrays.toArray(request.values).map(([key, value]) => Entries.of(ResourceKeys.applyNamespace(request.namespace, key), value))
+        const values = Arrays.toArray(request.values).map(([key, value]) => Entries.of(ResourceKeys.applyNamespace(key, request.namespace), value))
         return cache.writeValues(values)
       })
     )
@@ -44,7 +44,7 @@ export class LocalCacheManager implements CacheManager {
         if (Objects.isPresent(request.keys) && Objects.isPresent(request.namespace)) {
           const keys = Arrays.toArray(request.keys)
           await cache.writeValues(
-            keys.map((it) => Entries.of(Objects.isPresent(request.namespace) ? ResourceKeys.applyNamespace(request.namespace, it) : it, undefined))
+            keys.map((it) => Entries.of(Objects.isPresent(request.namespace) ? ResourceKeys.applyNamespace(it, request.namespace) : it, undefined))
           )
         }
       })

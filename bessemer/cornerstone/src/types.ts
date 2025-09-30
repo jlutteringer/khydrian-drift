@@ -1,8 +1,12 @@
 declare const __type: unique symbol
 
-export type NominalType<ConcreteType, NominalType> = ConcreteType & { [__type]: NominalType }
+export type NominalTyping<NominalType> = { [__type]: NominalType }
 
-export type TaggedType<ConcreteType, NominalType> = ConcreteType & { [__type]?: NominalType }
+export type NominalType<ConcreteType, NominalType> = ConcreteType & NominalTyping<NominalType>
+
+export type TaggedTyping<NominalType> = { [__type]?: NominalType }
+
+export type TaggedType<ConcreteType, NominalType> = ConcreteType & TaggedTyping<NominalType>
 
 export type Alias<T> = TaggedType<T, any>
 

@@ -18,8 +18,10 @@ export const success = <T>(value: T): Success<T> => {
   return { ...right(value), isSuccess: true }
 }
 
-export const failure = <N>(failure: N): Failure<N> => {
-  return { ...left(failure), isSuccess: false }
+export function failure(): Failure<void>
+export function failure<N>(failure: N): Failure<N>
+export function failure(failure?: unknown): Failure {
+  return { ...left(failure ?? null), isSuccess: false }
 }
 
 export const getValueOrThrow = <T>(result: Result<T>): T => {

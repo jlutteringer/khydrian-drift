@@ -9,7 +9,7 @@ const ResourceNamespaceSeparator = '/'
 export type NamespaceKey = string | undefined
 export type ResourceNamespace<NamespaceType extends NamespaceKey = NamespaceKey> = NominalType<NamespaceType, 'ResourceNamespace'> | undefined
 
-export type NamespacedKey<KeyType extends ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey> = NominalType<
+export type NamespacedKey<KeyType extends ResourceKey = ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey> = NominalType<
   string,
   ['NamespacedKey', KeyType, NamespaceType]
 >
@@ -30,7 +30,7 @@ export const namespace = <T extends NamespaceKey>(value: T): ResourceNamespace<T
   return value as ResourceNamespace<T>
 }
 
-export const ResourceNamespaceSchema = Zod.string().transform(namespace)
+export const ResourceNamespaceSchema = Zod.string().optional().transform(namespace)
 
 export const applyNamespace = <KeyType extends ResourceKey = ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey>(
   key: KeyType,
@@ -60,14 +60,12 @@ export const splitNamespace = <KeyType extends ResourceKey, NamespaceType extend
   }
 }
 
-// JOHN
-// export const stripNamespace = (name: ResourceNamespace, key: ResourceKey): ResourceKey => {
-//   return removeStart(key, `${name}${ResourceNamespaceSeparator}`)
-// }
-//
-// export const stripNamespaceAll = (name: ResourceNamespace, keys: Array<ResourceKey>): Array<ResourceKey> => {
-//   return keys.map((it) => stripNamespace(name, it))
-// }
+export const getKey = <KeyType extends ResourceKey, NamespaceType extends NamespaceKey>(
+  namespacedKey: NamespacedKey<KeyType, NamespaceType>
+): KeyType => {
+  const [key, _] = splitNamespace(namespacedKey)
+  return key
+}
 
 export const extendNamespace = (...names: Array<ResourceNamespace>): ResourceNamespace => {
   return names.join(ResourceNamespaceSeparator) as ResourceNamespace
