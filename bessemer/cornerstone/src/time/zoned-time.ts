@@ -1,21 +1,23 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
-import { Result, tryValue } from '@bessemer/cornerstone/result'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export type ZonedTime = NominalType<string, 'ZonedTime'>
+export const Namespace = namespace('zoned-time')
+export type ZonedTime = NominalType<string, typeof Namespace>
 
-export const of = (value: string): ZonedTime => {
-  return value as ZonedTime
+export const parseString = (value: string): Result<ZonedTime, ErrorEvent> => {
+  if (!/^\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `ZonedTime is invalid.` }))
+  }
+
+  return success(value as ZonedTime)
 }
-
-export const Schema = Zod.string()
-  .regex(/^\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/)
-  .transform(of)
 
 export const fromString = (value: string): ZonedTime => {
-  return Schema.parse(value)
+  return unpackResult(parseString(value))
 }
 
-export const parseString = (value: string): Result<ZonedTime> => {
-  return tryValue(() => fromString(value))
-}
+export const Schema = structuredTransform(Zod.string(), parseString)
