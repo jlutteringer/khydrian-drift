@@ -13,7 +13,14 @@ export const parseString = (value: string): Result<HexCode, ErrorEvent> => {
     return failure(invalidValue(value, { namespace: Namespace, message: `HexCode must be a valid hex code (# followed by 3 or 6 characters).` }))
   }
 
-  return success(value.toUpperCase() as HexCode)
+  let normalizedValue = value.toUpperCase()
+
+  if (normalizedValue.length === 4) {
+    const shortHex = normalizedValue.slice(1) // Remove the #
+    normalizedValue = `#${shortHex[0]}${shortHex[0]}${shortHex[1]}${shortHex[1]}${shortHex[2]}${shortHex[2]}`
+  }
+
+  return success(normalizedValue as HexCode)
 }
 
 export const fromString = (value: string): HexCode => {

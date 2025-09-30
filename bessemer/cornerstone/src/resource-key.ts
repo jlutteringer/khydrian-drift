@@ -23,7 +23,7 @@ export const namespace = <T extends NamespaceKey>(value: T): ResourceNamespace<T
     return value as any as ResourceNamespace<T>
   }
 
-  if (!/^[^\s\/]\S*(?:\/[^\s\/]\S*)*$/.test(value)) {
+  if (!/^[^\s\/][^\s\/]*(?:\/[^\s\/][^\s\/]*)*$/.test(value)) {
     throw new Error(`Unsupported Namespace format: ${value}`)
   }
 
@@ -36,6 +36,9 @@ export const applyNamespace = <KeyType extends ResourceKey = ResourceKey, Namesp
   key: KeyType,
   namespace: ResourceNamespace<NamespaceType>
 ): NamespacedKey<KeyType, NamespaceType> => {
+  if (isUndefined(namespace)) {
+    return encodeKey(key) as NamespacedKey<KeyType, NamespaceType>
+  }
   return `${namespace}${ResourceNamespaceSeparator}${encodeKey(key)}` as NamespacedKey<KeyType, NamespaceType>
 }
 
