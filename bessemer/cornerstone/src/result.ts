@@ -18,7 +18,7 @@ export const success = <T>(value: T): Success<T> => {
   return { ...right(value), isSuccess: true }
 }
 
-export function failure(): Failure<void>
+export function failure(): Failure<never>
 export function failure<N>(failure: N): Failure<N>
 export function failure(failure?: unknown): Failure {
   return { ...left(failure ?? null), isSuccess: false }
