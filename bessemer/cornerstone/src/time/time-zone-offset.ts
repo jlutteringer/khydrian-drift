@@ -1,15 +1,17 @@
 import { NominalType } from '@bessemer/cornerstone/types'
-import { Duration, fromHours, fromMinutes, fromSeconds } from '@bessemer/cornerstone/time/duration'
+import * as Durations from '@bessemer/cornerstone/time/duration'
+import { Duration } from '@bessemer/cornerstone/time/duration'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import Zod from 'zod'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { namespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
+import * as LocalTimes from '@bessemer/cornerstone/time/local-time'
 
 export const Namespace = namespace('time-zone-offset')
 export type TimeZoneOffset = NominalType<number, typeof Namespace>
 
-const EighteenHours = fromHours(18)
+const EighteenHours = Durations.fromHours(18)
 
 export const parseNumber = (value: number): Result<TimeZoneOffset, ErrorEvent> => {
   if (value < -EighteenHours || value > EighteenHours) {
@@ -27,6 +29,7 @@ export const fromDuration = (duration: Duration): TimeZoneOffset => {
   return fromMilliseconds(duration)
 }
 
+// JOHN maybe this parsing could be consolidated with LocalTime?
 export const parseString = (value: string): Result<TimeZoneOffset, ErrorEvent> => {
   if (value === 'Z') {
     return success(0 as TimeZoneOffset)
@@ -106,7 +109,7 @@ export const parseString = (value: string): Result<TimeZoneOffset, ErrorEvent> =
     )
   }
 
-  const totalMilliseconds = sign * (fromHours(hours) + fromMinutes(minutes) + fromSeconds(seconds))
+  const totalMilliseconds = sign * (Durations.fromHours(hours) + Durations.fromMinutes(minutes) + Durations.fromSeconds(seconds))
 
   if (totalMilliseconds < -EighteenHours || totalMilliseconds > EighteenHours) {
     return failure(invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset must be between -18:00 and +18:00 inclusive.` }))
@@ -120,5 +123,23 @@ export const fromString = (value: string): TimeZoneOffset => {
 }
 
 export const Schema = Zod.union([structuredTransform(Zod.number(), parseNumber), structuredTransform(Zod.string(), parseString)])
+
+export const toDuration = (offset: TimeZoneOffset): Duration => {
+  return Durations.fromMilliseconds(offset)
+}
+
+export const toMilliseconds = (offset: TimeZoneOffset): number => {
+  return offset
+}
+
+export const toString = (offset: TimeZoneOffset): string => {
+  if (offset === 0) {
+    return 'Z'
+  }
+
+  const sign = offset > 0 ? '+' : '-'
+  const localTime = LocalTimes.fromDuration(Math.abs(offset) as Duration)
+  return `${sign}${localTime.toLiteral()}`
+}
 
 export const Utc = 0 as TimeZoneOffset

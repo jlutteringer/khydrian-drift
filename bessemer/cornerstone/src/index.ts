@@ -31,6 +31,7 @@ import * as ObjectDiffs from '@bessemer/cornerstone/object/object-diff'
 import * as TimeZoneIds from '@bessemer/cornerstone/time/time-zone-id'
 import * as TimeZoneOffsets from '@bessemer/cornerstone/time/time-zone-offset'
 import * as LocalTimes from '@bessemer/cornerstone/time/local-time'
+import * as OffsetDateTimes from '@bessemer/cornerstone/time/offset-date-time'
 import * as Clocks from '@bessemer/cornerstone/time/clock'
 
 import * as ZodUtil from '@bessemer/cornerstone/zod-util'
@@ -97,6 +98,7 @@ export {
   TimeZoneIds,
   TimeZoneOffsets,
   LocalTimes,
+  OffsetDateTimes,
   ZodUtil,
   Tags,
   Promises,

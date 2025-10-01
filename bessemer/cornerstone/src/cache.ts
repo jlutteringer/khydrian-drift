@@ -1,5 +1,5 @@
 import { AbstractLocalKeyValueStore, AbstractRemoteKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } from '@bessemer/cornerstone/store'
-import { Duration, OneDay, OneHour, toMilliseconds } from '@bessemer/cornerstone/time/duration'
+import { Duration, OneDay, OneHour } from '@bessemer/cornerstone/time/duration'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { TaggedType } from '@bessemer/cornerstone/types'
@@ -9,7 +9,7 @@ import { Arrayable } from 'type-fest'
 import Zod, { ZodType } from 'zod'
 import { deepMerge, isNil } from '@bessemer/cornerstone/object'
 import { toArray } from '@bessemer/cornerstone/array'
-import { addMilliseconds, isBefore, now } from '@bessemer/cornerstone/time/date'
+import { addDuration, isBefore, now } from '@bessemer/cornerstone/time/date'
 import { Arrays, Entries, ResourceKeys } from '@bessemer/cornerstone'
 
 export type CacheProps = {
@@ -184,7 +184,7 @@ export namespace CacheEntry {
   export const applyProps = <T>(originalEntry: CacheEntry<T>, props: CacheProps): CacheEntry<T> => {
     let liveTimestamp: Date | null = originalEntry.liveTimestamp
     if (!isNil(props.timeToLive)) {
-      const limit = addMilliseconds(now(), toMilliseconds(props.timeToLive))
+      const limit = addDuration(now(), props.timeToLive)
       if (isBefore(limit, liveTimestamp ?? limit)) {
         liveTimestamp = limit
       }
@@ -192,7 +192,7 @@ export namespace CacheEntry {
 
     let staleTimestamp: Date | null = originalEntry.staleTimestamp
     if (!isNil(props.timeToStale)) {
-      const limit = addMilliseconds(now(), toMilliseconds(props.timeToStale))
+      const limit = addDuration(now(), props.timeToStale)
       if (isBefore(limit, staleTimestamp ?? limit)) {
         staleTimestamp = limit
       }
