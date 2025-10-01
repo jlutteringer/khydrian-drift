@@ -62,10 +62,10 @@ export function tryResult<SOURCE_VALUE>(resolver: () => Result<SOURCE_VALUE> | A
   }
 }
 
-export function map<SOURCE_VALUE, TARGET_VALUE>(
-  result: Result<SOURCE_VALUE>,
-  valueMapper: (element: SOURCE_VALUE) => TARGET_VALUE
-): Result<TARGET_VALUE> {
+export function map<SourceType, TargetType, ErrorType>(
+  result: Result<SourceType, ErrorType>,
+  valueMapper: (element: SourceType) => TargetType
+): Result<TargetType, ErrorType> {
   if (result.isSuccess) {
     return {
       ...result,

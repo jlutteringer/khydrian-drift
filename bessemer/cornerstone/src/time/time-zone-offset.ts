@@ -7,7 +7,7 @@ import { namespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
 export const Namespace = namespace('time-zone-offset')
-export type TimeZoneOffset = NominalType<Duration, typeof Namespace>
+export type TimeZoneOffset = NominalType<number, typeof Namespace>
 
 const EighteenHours = fromHours(18)
 
@@ -120,3 +120,5 @@ export const fromString = (value: string): TimeZoneOffset => {
 }
 
 export const Schema = Zod.union([structuredTransform(Zod.number(), parseNumber), structuredTransform(Zod.string(), parseString)])
+
+export const Utc = 0 as TimeZoneOffset

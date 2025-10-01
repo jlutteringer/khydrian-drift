@@ -134,3 +134,11 @@ export const random = (min: number, max: number): number => {
 export const greatestCommonFactor = (first: number, second: number): number => {
   return second === 0 ? first : greatestCommonFactor(second, first % second)
 }
+
+export const sum = (...numbers: Array<number>): number => {
+  return numbers.reduce((first, second) => first + second, 0)
+}
+
+export const subtract = (...numbers: Array<number>): number => {
+  return numbers.reduce((first, second) => first - second, 0)
+}

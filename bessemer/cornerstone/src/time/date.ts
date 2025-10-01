@@ -1,5 +1,6 @@
 import { addHours as _addHours, addMilliseconds as _addMilliseconds, isAfter as _isAfter, isBefore as _isBefore, parseISO } from 'date-fns'
 import { Duration, toMilliseconds } from '@bessemer/cornerstone/time/duration'
+import { Default as DefaultClock } from '@bessemer/cornerstone/time/clock'
 import Zod from 'zod'
 
 export const SchemaX = Zod.union([
@@ -20,8 +21,8 @@ export const isDate = (value: unknown): value is Date => {
   return value instanceof Date && !isNaN(value.getTime())
 }
 
-export const now = (): Date => {
-  return new Date()
+export const now = (clock = DefaultClock): Date => {
+  return clock.instant()
 }
 
 export const of = (dateString: string): Date => {

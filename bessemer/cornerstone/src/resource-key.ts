@@ -1,7 +1,5 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
-import { splitLast } from '@bessemer/cornerstone/string'
-import { isPresent, isUndefined } from '@bessemer/cornerstone/object'
 
 export type ResourceKey = string
 const ResourceNamespaceSeparator = '/'
@@ -19,7 +17,7 @@ export const emptyNamespace = (): ResourceNamespace<undefined> => {
 }
 
 export const namespace = <T extends NamespaceKey>(value: T): ResourceNamespace<T> => {
-  if (isUndefined(value)) {
+  if (value === undefined) {
     return value as any as ResourceNamespace<T>
   }
 
@@ -36,9 +34,10 @@ export const applyNamespace = <KeyType extends ResourceKey = ResourceKey, Namesp
   key: KeyType,
   namespace: ResourceNamespace<NamespaceType>
 ): NamespacedKey<KeyType, NamespaceType> => {
-  if (isUndefined(namespace)) {
+  if (namespace === undefined) {
     return encodeKey(key) as NamespacedKey<KeyType, NamespaceType>
   }
+
   return `${namespace}${ResourceNamespaceSeparator}${encodeKey(key)}` as NamespacedKey<KeyType, NamespaceType>
 }
 
@@ -52,11 +51,16 @@ export const applyNamespaceAll = <KeyType extends ResourceKey = ResourceKey, Nam
 export const splitNamespace = <KeyType extends ResourceKey, NamespaceType extends NamespaceKey>(
   key: NamespacedKey<KeyType, NamespaceType>
 ): [KeyType, ResourceNamespace<NamespaceType>] => {
-  const { selection, rest } = splitLast(key, ResourceNamespaceSeparator)
-  if (isPresent(selection)) {
-    return [decodeKey(selection) as KeyType, rest as ResourceNamespace<NamespaceType>]
+  const lastIndex = key.lastIndexOf(ResourceNamespaceSeparator)
+
+  if (lastIndex !== -1) {
+    const namespacePart = key.substring(0, lastIndex)
+    const keyPart = key.substring(lastIndex + 1)
+
+    return [decodeKey(keyPart) as KeyType, namespacePart as ResourceNamespace<NamespaceType>]
   } else {
-    return [decodeKey(rest) as KeyType, undefined as ResourceNamespace<NamespaceType>]
+    const keyPart = key
+    return [decodeKey(keyPart) as KeyType, undefined as ResourceNamespace<NamespaceType>]
   }
 }
 

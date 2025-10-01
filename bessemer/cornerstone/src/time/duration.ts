@@ -1,10 +1,11 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
+import { roundDown, subtract as numericSubtract, sum as numericSum } from '@bessemer/cornerstone/math'
 
 export type Duration = NominalType<number, 'Duration'>
 
 export const fromMilliseconds = (value: number): Duration => {
-  return value as Duration
+  return roundDown(value, 0) as Duration
 }
 
 export const Schema = Zod.number().transform(fromMilliseconds)
@@ -43,6 +44,14 @@ export const fromDays = (value: number): Duration => {
 
 export const toDays = (duration: Duration): number => {
   return toHours(duration) / 24
+}
+
+export const sum = (...durations: Array<Duration>): Duration => {
+  return numericSum(...durations) as Duration
+}
+
+export const subtract = (...durations: Array<Duration>): Duration => {
+  return numericSubtract(...durations) as Duration
 }
 
 export const Zero = fromMilliseconds(0)
