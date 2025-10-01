@@ -644,3 +644,146 @@ describe('LocalTimeInstance.fromString', () => {
     expect(() => LocalTimeInstance.fromString('12:30:45.1.2')).toThrow()
   })
 })
+
+describe('LocalTimeInstance.addDuration', () => {
+  test('should add duration correctly', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const oneHour = Durations.fromHours(1)
+
+    const result = baseTime.addDuration(oneHour)
+
+    expect(result.hour).toBe(11)
+    expect(result.minute).toBe(30)
+    expect(result.second).toBe(45)
+    expect(result.millisecond).toBe(500)
+  })
+
+  test('should wrap around midnight', () => {
+    const lateTime = new LocalTimeInstance(23, 30, 0, 0)
+    const oneHour = Durations.fromHours(1)
+
+    const result = lateTime.addDuration(oneHour)
+
+    expect(result.hour).toBe(0)
+    expect(result.minute).toBe(30)
+  })
+})
+
+describe('LocalTimeInstance.subtractDuration', () => {
+  test('should subtract duration correctly', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const thirtyMinutes = Durations.fromMinutes(30)
+
+    const result = baseTime.subtractDuration(thirtyMinutes)
+
+    expect(result.hour).toBe(10)
+    expect(result.minute).toBe(0)
+    expect(result.second).toBe(45)
+    expect(result.millisecond).toBe(500)
+  })
+
+  test('should wrap before midnight', () => {
+    const earlyTime = new LocalTimeInstance(0, 30, 0, 0)
+    const oneHour = Durations.fromHours(1)
+
+    const result = earlyTime.subtractDuration(oneHour)
+
+    expect(result.hour).toBe(23)
+    expect(result.minute).toBe(30)
+  })
+})
+
+describe('LocalTimeInstance.timeBetween', () => {
+  test('should calculate positive duration', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const later = new LocalTimeInstance(11, 30, 45, 500)
+
+    const result = baseTime.timeBetween(later)
+
+    expect(result).toBe(Durations.fromHours(1))
+  })
+
+  test('should calculate negative duration', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const earlier = new LocalTimeInstance(9, 30, 45, 500)
+
+    const result = baseTime.timeBetween(earlier)
+
+    expect(result).toBe(-Durations.fromHours(1))
+  })
+})
+
+describe('LocalTimeInstance.isBefore', () => {
+  test('should return true for later time', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const later = new LocalTimeInstance(11, 0, 0, 0)
+
+    expect(baseTime.isBefore(later)).toBe(true)
+  })
+
+  test('should return false for earlier time', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const earlier = new LocalTimeInstance(9, 0, 0, 0)
+
+    expect(baseTime.isBefore(earlier)).toBe(false)
+  })
+
+  test('should return false for same time', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const same = new LocalTimeInstance(10, 30, 45, 500)
+
+    expect(baseTime.isBefore(same)).toBe(false)
+  })
+})
+
+describe('LocalTimeInstance.isAfter', () => {
+  test('should return true for earlier time', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const earlier = new LocalTimeInstance(9, 0, 0, 0)
+
+    expect(baseTime.isAfter(earlier)).toBe(true)
+  })
+
+  test('should return false for later time', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const later = new LocalTimeInstance(11, 0, 0, 0)
+
+    expect(baseTime.isAfter(later)).toBe(false)
+  })
+
+  test('should return false for same time', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const same = new LocalTimeInstance(10, 30, 45, 500)
+
+    expect(baseTime.isAfter(same)).toBe(false)
+  })
+})
+
+describe('LocalTimeInstance.timeUntil', () => {
+  test('should calculate duration until later time same day', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const later = new LocalTimeInstance(12, 30, 45, 500)
+
+    const result = baseTime.timeUntil(later)
+
+    expect(result).toBe(Durations.fromHours(2))
+  })
+
+  test('should calculate duration until earlier time next day', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const earlier = new LocalTimeInstance(8, 30, 45, 500)
+
+    const result = baseTime.timeUntil(earlier)
+
+    expect(result).toBe(Durations.fromHours(22))
+  })
+
+  test('should return zero for same time', () => {
+    const baseTime = new LocalTimeInstance(10, 30, 45, 500)
+    const same = new LocalTimeInstance(10, 30, 45, 500)
+
+    const result = baseTime.timeUntil(same)
+
+    expect(result).toBe(Durations.Zero)
+  })
+})

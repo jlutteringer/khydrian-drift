@@ -140,5 +140,9 @@ export const sum = (...numbers: Array<number>): number => {
 }
 
 export const subtract = (...numbers: Array<number>): number => {
-  return numbers.reduce((first, second) => first - second, 0)
+  if (numbers.length === 0) {
+    return 0
+  }
+
+  return numbers.slice(1).reduce((result, current) => result - current, numbers[0]!)
 }

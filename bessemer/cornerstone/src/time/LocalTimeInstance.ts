@@ -2,11 +2,15 @@ import * as Durations from '@bessemer/cornerstone/time/duration'
 import { Duration } from '@bessemer/cornerstone/time/duration'
 import * as Dates from '@bessemer/cornerstone/time/date'
 import * as TimeZoneIds from '@bessemer/cornerstone/time/time-zone-id'
+import { TimeZoneId } from '@bessemer/cornerstone/time/time-zone-id'
 import * as Clocks from '@bessemer/cornerstone/time/clock'
 
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { Namespace } from '@bessemer/cornerstone/time/local-time'
+
+export type LocalTimeInstanceProps = { hour: number; minute: number; second: number; millisecond: number }
+export type LocalTimeAugment = Partial<LocalTimeInstanceProps>
 
 export class LocalTimeInstance {
   readonly duration: Duration
@@ -21,10 +25,48 @@ export class LocalTimeInstance {
   }
 
   static now = (clock = Clocks.Default): LocalTimeInstance => {
-    const now = Dates.now(clock)
-    const timeZone = clock.zone
-    const offset = TimeZoneIds.getOffset(timeZone, now)
-    return LocalTimeInstance.fromDuration(Durations.fromMilliseconds(now.getTime() + offset))
+    return LocalTimeInstance.fromInstant(Dates.now(clock), clock.zone)
+  }
+
+  static fromProps = (props: LocalTimeInstanceProps): LocalTimeInstance => {
+    if (!Number.isInteger(props.hour)) {
+      throw new Error(`LocalTime - Hours must be an integer, got ${props.hour}`)
+    }
+
+    if (!Number.isInteger(props.minute)) {
+      throw new Error(`LocalTime - Minutes must be an integer, got ${props.minute}`)
+    }
+
+    if (!Number.isInteger(props.second)) {
+      throw new Error(`LocalTime - Seconds must be an integer, got ${props.second}`)
+    }
+
+    if (!Number.isInteger(props.millisecond)) {
+      throw new Error(`LocalTime - Milliseconds must be an integer, got ${props.millisecond}`)
+    }
+
+    if (props.hour < 0 || props.hour > 23) {
+      throw new Error(`LocalTime - Hours must be between 0 and 23, got ${props.hour}`)
+    }
+
+    if (props.minute < 0 || props.minute > 59) {
+      throw new Error(`LocalTime - Minutes must be between 0 and 59, got ${props.minute}`)
+    }
+
+    if (props.second < 0 || props.second > 59) {
+      throw new Error(`LocalTime - Seconds must be between 0 and 59, got ${props.second}`)
+    }
+
+    if (props.millisecond < 0 || props.millisecond > 999) {
+      throw new Error(`LocalTime - Milliseconds must be between 0 and 999, got ${props.millisecond}`)
+    }
+
+    return new LocalTimeInstance(props.hour, props.minute, props.second, props.millisecond)
+  }
+
+  static fromInstant = (instant: Date, zone: TimeZoneId): LocalTimeInstance => {
+    const offset = TimeZoneIds.getOffset(zone, instant)
+    return LocalTimeInstance.fromDuration(Durations.fromMilliseconds(instant.getTime() + offset))
   }
 
   static fromDuration = (duration: Duration): LocalTimeInstance => {
@@ -81,7 +123,7 @@ export class LocalTimeInstance {
     return unpackResult(LocalTimeInstance.parseString(value))
   }
 
-  with = (builder: { hour?: number; minute?: number; second?: number; millisecond?: number }): LocalTimeInstance => {
+  augment = (builder: LocalTimeAugment): LocalTimeInstance => {
     return new LocalTimeInstance(
       builder.hour ?? this.hour,
       builder.minute ?? this.minute,
@@ -99,14 +141,23 @@ export class LocalTimeInstance {
   }
 
   timeBetween = (other: LocalTimeInstance): Duration => {
-    return Math.abs(Durations.subtract(other.duration, this.duration)) as Duration
+    return Durations.subtract(other.duration, this.duration)
   }
 
   isBefore = (other: LocalTimeInstance): boolean => {
-    return other.duration - this.duration > 0
+    return this.timeBetween(other) > 0
   }
 
   isAfter = (other: LocalTimeInstance): boolean => {
-    return other.duration - this.duration < 0
+    return this.timeBetween(other) < 0
+  }
+
+  timeUntil = (other: LocalTimeInstance): Duration => {
+    let duration = other.duration
+    if (duration < this.duration) {
+      duration = Durations.sum(duration, Durations.OneDay)
+    }
+
+    return Durations.subtract(duration, this.duration)
   }
 }
