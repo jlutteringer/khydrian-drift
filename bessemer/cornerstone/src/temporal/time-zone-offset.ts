@@ -1,7 +1,7 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import {
   Duration,
-  DurationInput,
+  DurationLike,
   from as _fromDuration,
   fromHours,
   fromMilliseconds,
@@ -44,7 +44,7 @@ export const fromMinutes = (value: number): TimeZoneOffset => {
   return unpackResult(parseMinutes(value))
 }
 
-export const fromDuration = (value: DurationInput): TimeZoneOffset => {
+export const fromDuration = (value: DurationLike): TimeZoneOffset => {
   return unpackResult(parseDuration(_fromDuration(value)))
 }
 

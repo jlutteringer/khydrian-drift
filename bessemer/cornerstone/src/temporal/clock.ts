@@ -1,6 +1,6 @@
 import { TimeZoneId, Utc } from '@bessemer/cornerstone/temporal/time-zone-id'
-import { Duration, DurationInput, from as fromDuration, isZero } from '@bessemer/cornerstone/temporal/duration'
-import { from as fromInstant, Instant, InstantInput } from '@bessemer/cornerstone/temporal/instant'
+import { Duration, DurationLike, from as fromDuration, isZero } from '@bessemer/cornerstone/temporal/duration'
+import { from as fromInstant, Instant, InstantLike } from '@bessemer/cornerstone/temporal/instant'
 import { Temporal } from '@js-temporal/polyfill'
 
 export interface Clock {
@@ -74,11 +74,11 @@ export const system = (zone: TimeZoneId = Utc): Clock => {
   return new SystemClock(zone)
 }
 
-export const fixed = (fixedInstant: InstantInput, zone: TimeZoneId = Utc): Clock => {
+export const fixed = (fixedInstant: InstantLike, zone: TimeZoneId = Utc): Clock => {
   return new FixedClock(fromInstant(fixedInstant), zone)
 }
 
-export const offset = (clock: Clock, offset: DurationInput): Clock => {
+export const offset = (clock: Clock, offset: DurationLike): Clock => {
   if (isZero(offset)) {
     return clock
   }

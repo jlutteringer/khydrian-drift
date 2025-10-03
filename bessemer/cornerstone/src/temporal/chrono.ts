@@ -30,7 +30,7 @@ export const ChronoUnit = {
 export type ChronoUnit = ValueOf<typeof ChronoUnit>
 
 // These methods are here to avoid circular dependencies
-export const _toLiteral = (value: Instant): InstantLiteral => {
+export const instantToLiteral = (value: Instant): InstantLiteral => {
   return value.toJSON() as InstantLiteral
 }
 

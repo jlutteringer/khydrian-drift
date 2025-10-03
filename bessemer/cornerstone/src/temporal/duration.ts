@@ -22,9 +22,9 @@ export type DurationBuilder = {
   microseconds?: number
   nanoseconds?: number
 }
-export type DurationInput = Duration | DurationLiteral | DurationBuilder
+export type DurationLike = Duration | DurationLiteral | DurationBuilder
 
-export const from = (value: DurationInput): Duration => {
+export const from = (value: DurationLike): Duration => {
   if (value instanceof Temporal.Duration) {
     return value
   }
@@ -54,8 +54,8 @@ export const fromString = (value: string): Duration => {
   return unpackResult(parseString(value))
 }
 
-export const toLiteral = (value: Duration): DurationLiteral => {
-  return value.toString() as DurationLiteral
+export const toLiteral = (value: DurationLike): DurationLiteral => {
+  return from(value).toString() as DurationLiteral
 }
 
 export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), toLiteral))
@@ -65,7 +65,7 @@ export const isDuration = (value: unknown): value is Duration => {
   return value instanceof Temporal.Duration
 }
 
-export const merge = (element: DurationInput, builder: DurationBuilder): Duration => {
+export const merge = (element: DurationLike, builder: DurationBuilder): Duration => {
   return from(element).with(builder)
 }
 
@@ -73,7 +73,7 @@ export const fromMilliseconds = (value: number): Duration => {
   return from({ milliseconds: value })
 }
 
-export const toMilliseconds = (duration: DurationInput): number => {
+export const toMilliseconds = (duration: DurationLike): number => {
   return from(duration).total(TimeUnit.Millisecond)
 }
 
@@ -81,7 +81,7 @@ export const fromSeconds = (value: number): Duration => {
   return from({ seconds: value })
 }
 
-export const toSeconds = (duration: DurationInput): number => {
+export const toSeconds = (duration: DurationLike): number => {
   return from(duration).total(TimeUnit.Second)
 }
 
@@ -89,7 +89,7 @@ export const fromMinutes = (value: number): Duration => {
   return from({ minutes: value })
 }
 
-export const toMinutes = (duration: DurationInput): number => {
+export const toMinutes = (duration: DurationLike): number => {
   return from(duration).total(TimeUnit.Minute)
 }
 
@@ -97,7 +97,7 @@ export const fromHours = (value: number): Duration => {
   return from({ hours: value })
 }
 
-export const toHours = (duration: DurationInput): number => {
+export const toHours = (duration: DurationLike): number => {
   return from(duration).total(TimeUnit.Hour)
 }
 
@@ -118,23 +118,23 @@ export const fromUnit = (value: number, timeUnit: TimeUnit): Duration => {
   }
 }
 
-export const toUnit = (duration: DurationInput, timeUnit: TimeUnit): number => {
+export const toUnit = (duration: DurationLike, timeUnit: TimeUnit): number => {
   return from(duration).total(timeUnit)
 }
 
-export const isZero = (duration: DurationInput): boolean => {
+export const isZero = (duration: DurationLike): boolean => {
   return EqualBy(from(duration), Zero)
 }
 
-export const round = (element: DurationInput, unit: TimeUnit): Duration => {
+export const round = (element: DurationLike, unit: TimeUnit): Duration => {
   return from(element).round({ smallestUnit: unit })
 }
 
-export const add = (...durations: Array<DurationInput>): Duration => {
+export const add = (...durations: Array<DurationLike>): Duration => {
   return durations.map(from).reduce((first, second) => first.add(second), Zero)
 }
 
-export const subtract = (...durations: Array<DurationInput>): Duration => {
+export const subtract = (...durations: Array<DurationLike>): Duration => {
   if (durations.length === 0) {
     return Zero
   }
@@ -143,19 +143,19 @@ export const subtract = (...durations: Array<DurationInput>): Duration => {
   return instances.slice(1).reduce((result, current) => result.subtract(current), instances[0]!)
 }
 
-export const negate = (element: DurationInput): Duration => {
+export const negate = (element: DurationLike): Duration => {
   return from(element).negated()
 }
 
-export const isEqual = (element: DurationInput, other: DurationInput): boolean => {
+export const isEqual = (element: DurationLike, other: DurationLike): boolean => {
   return EqualBy(from(element), from(other))
 }
 
-export const isLess = (element: DurationInput, other: DurationInput): boolean => {
+export const isLess = (element: DurationLike, other: DurationLike): boolean => {
   return CompareBy(from(element), from(other)) < 0
 }
 
-export const isGreater = (element: DurationInput, other: DurationInput): boolean => {
+export const isGreater = (element: DurationLike, other: DurationLike): boolean => {
   return CompareBy(from(element), from(other)) > 0
 }
 

@@ -2,7 +2,7 @@ import { isReferencable, Reference } from '@bessemer/cornerstone/reference'
 import { BasicType } from '@bessemer/cornerstone/types'
 import { isObject } from '@bessemer/cornerstone/object'
 import { isDate } from '@bessemer/cornerstone/temporal/date'
-import { _isInstant, _toLiteral } from '@bessemer/cornerstone/temporal/chrono'
+import { _isInstant, instantToLiteral } from '@bessemer/cornerstone/temporal/chrono'
 
 // JOHN it is probably worth revisiting this in the context of using this library code more frequently... in particular
 // all of these things have similar properties ("primitives", sortable, value equality, etc.) but this method of implementation
@@ -29,7 +29,7 @@ export const sign = (value: Signable): Signature => {
   }
 
   if (_isInstant(value)) {
-    return _toLiteral(value)
+    return instantToLiteral(value)
   }
 
   if (value === true) {

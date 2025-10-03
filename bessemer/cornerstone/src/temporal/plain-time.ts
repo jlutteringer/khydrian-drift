@@ -9,8 +9,8 @@ import { isError } from '@bessemer/cornerstone/error/error'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
 import { Default as DefaultClock } from '@bessemer/cornerstone/temporal/clock'
-import { Duration, DurationInput, from as _fromDuration } from '@bessemer/cornerstone/temporal/duration'
-import { from as _fromInstant, InstantInput } from '@bessemer/cornerstone/temporal/instant'
+import { Duration, DurationLike, from as _fromDuration } from '@bessemer/cornerstone/temporal/duration'
+import { from as _fromInstant, InstantLike } from '@bessemer/cornerstone/temporal/instant'
 import { TimeZoneId } from '@bessemer/cornerstone/temporal/time-zone-id'
 import { TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 import { isString } from '@bessemer/cornerstone/string'
@@ -26,9 +26,9 @@ export type PlainTimeBuilder = {
   microsecond?: number
   nanosecond?: number
 }
-export type PlainTimeInput = PlainTime | PlainTimeLiteral | PlainTimeBuilder
+export type PlainTimeLike = PlainTime | PlainTimeLiteral | PlainTimeBuilder
 
-export const from = (value: PlainTimeInput): PlainTime => {
+export const from = (value: PlainTimeLike): PlainTime => {
   if (value instanceof Temporal.PlainTime) {
     return value
   }
@@ -58,15 +58,17 @@ export const fromString = (value: string): PlainTime => {
   return unpackResult(parseString(value))
 }
 
-export const fromDuration = (duration: DurationInput): PlainTime => {
+export const fromDuration = (duration: DurationLike): PlainTime => {
   return Midnight.add(_fromDuration(duration))
 }
 
-export const fromInstant = (instant: InstantInput, zone: TimeZoneId): PlainTime => {
+export const fromInstant = (instant: InstantLike, zone: TimeZoneId): PlainTime => {
   return _fromInstant(instant).toZonedDateTimeISO(zone).toPlainTime()
 }
 
-export const toLiteral = (value: PlainTime): PlainTimeLiteral => {
+export const toLiteral = (likeValue: PlainTimeLike): PlainTimeLiteral => {
+  const value = from(likeValue)
+
   if (value.second === 0 && value.millisecond === 0 && value.microsecond === 0 && value.nanosecond === 0) {
     return `${value.hour.toString().padStart(2, '0')}:${value.minute.toString().padStart(2, '0')}` as PlainTimeLiteral
   }
@@ -85,35 +87,35 @@ export const now = (clock = DefaultClock): PlainTime => {
   return fromInstant(clock.instant(), clock.zone)
 }
 
-export const merge = (element: PlainTimeInput, builder: PlainTimeBuilder): PlainTime => {
+export const merge = (element: PlainTimeLike, builder: PlainTimeBuilder): PlainTime => {
   return from(element).with(builder)
 }
 
-export const add = (element: PlainTimeInput, duration: DurationInput): PlainTime => {
+export const add = (element: PlainTimeLike, duration: DurationLike): PlainTime => {
   return from(element).add(_fromDuration(duration))
 }
 
-export const subtract = (element: PlainTimeInput, duration: DurationInput): PlainTime => {
+export const subtract = (element: PlainTimeLike, duration: DurationLike): PlainTime => {
   return from(element).subtract(_fromDuration(duration))
 }
 
-export const until = (element: PlainTimeInput, other: PlainTimeInput): Duration => {
+export const until = (element: PlainTimeLike, other: PlainTimeLike): Duration => {
   return from(element).until(from(other))
 }
 
-export const round = (element: PlainTimeInput, unit: TimeUnit): PlainTime => {
+export const round = (element: PlainTimeLike, unit: TimeUnit): PlainTime => {
   return from(element).round({ smallestUnit: unit })
 }
 
-export const isEqual = (element: PlainTimeInput, other: PlainTimeInput): boolean => {
+export const isEqual = (element: PlainTimeLike, other: PlainTimeLike): boolean => {
   return EqualBy(from(element), from(other))
 }
 
-export const isBefore = (element: PlainTimeInput, other: PlainTimeInput): boolean => {
+export const isBefore = (element: PlainTimeLike, other: PlainTimeLike): boolean => {
   return CompareBy(from(element), from(other)) < 0
 }
 
-export const isAfter = (element: PlainTimeInput, other: PlainTimeInput): boolean => {
+export const isAfter = (element: PlainTimeLike, other: PlainTimeLike): boolean => {
   return CompareBy(from(element), from(other)) > 0
 }
 

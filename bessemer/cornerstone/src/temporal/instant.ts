@@ -9,16 +9,16 @@ import { isError } from '@bessemer/cornerstone/error/error'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
 import { Default as DefaultClock } from '@bessemer/cornerstone/temporal/clock'
-import { Duration, DurationInput, from as fromDuration } from '@bessemer/cornerstone/temporal/duration'
-import { _isInstant, _toLiteral, TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
+import { Duration, DurationLike, from as fromDuration } from '@bessemer/cornerstone/temporal/duration'
+import { _isInstant, instantToLiteral, TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 import { isString } from '@bessemer/cornerstone/string'
 
 export type Instant = Temporal.Instant
 export const Namespace = namespace('instant')
 export type InstantLiteral = NominalType<string, typeof Namespace>
-export type InstantInput = Instant | Date | InstantLiteral
+export type InstantLike = Instant | Date | InstantLiteral
 
-export const from = (value: InstantInput): Instant => {
+export const from = (value: InstantLike): Instant => {
   if (value instanceof Temporal.Instant) {
     return value
   }
@@ -48,7 +48,9 @@ export const fromString = (value: string): Instant => {
   return unpackResult(parseString(value))
 }
 
-export const toLiteral = _toLiteral
+export const toLiteral = (value: InstantLike) => {
+  return instantToLiteral(from(value))
+}
 
 export const toDate = (value: Instant): Date => {
   return new Date(value.epochMilliseconds)
@@ -63,30 +65,30 @@ export const now = (clock = DefaultClock): Instant => {
   return clock.instant()
 }
 
-export const add = (element: InstantInput, duration: DurationInput): Instant => {
+export const add = (element: InstantLike, duration: DurationLike): Instant => {
   return from(element).add(fromDuration(duration))
 }
 
-export const subtract = (element: InstantInput, duration: DurationInput): Instant => {
+export const subtract = (element: InstantLike, duration: DurationLike): Instant => {
   return from(element).subtract(fromDuration(duration))
 }
 
-export const until = (element: InstantInput, other: InstantInput): Duration => {
+export const until = (element: InstantLike, other: InstantLike): Duration => {
   return from(element).until(from(other))
 }
 
-export const round = (element: InstantInput, unit: TimeUnit): Instant => {
+export const round = (element: InstantLike, unit: TimeUnit): Instant => {
   return from(element).round({ smallestUnit: unit })
 }
 
-export const isEqual = (element: InstantInput, other: InstantInput): boolean => {
+export const isEqual = (element: InstantLike, other: InstantLike): boolean => {
   return EqualBy(from(element), from(other))
 }
 
-export const isBefore = (element: InstantInput, other: InstantInput): boolean => {
+export const isBefore = (element: InstantLike, other: InstantLike): boolean => {
   return CompareBy(from(element), from(other)) < 0
 }
 
-export const isAfter = (element: InstantInput, other: InstantInput): boolean => {
+export const isAfter = (element: InstantLike, other: InstantLike): boolean => {
   return CompareBy(from(element), from(other)) > 0
 }
