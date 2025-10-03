@@ -1,7 +1,7 @@
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { AdvisoryLock, AdvisoryLockProps, AdvisoryLockProvider, ProviderAdvisoryLock } from '@bessemer/framework/advisory-lock'
-import { Arrays, Dates, Durations, Eithers, Objects, Results, Retry, Ulids } from '@bessemer/cornerstone'
+import { Arrays, Durations, Eithers, Instants, Objects, Results, Retry, Ulids } from '@bessemer/cornerstone'
 import { Unit } from '@bessemer/cornerstone/unit'
 import { Either } from '@bessemer/cornerstone/either'
 import { Duration } from '@bessemer/cornerstone/temporal/duration'
@@ -9,13 +9,14 @@ import { AdvisoryLockUtil } from '@bessemer/framework/advisory-lock/util'
 import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { Ulid } from '@bessemer/cornerstone/ulid'
 import { GlobalContextType } from '@bessemer/framework'
+import { Instant } from '@bessemer/cornerstone/temporal/instant'
 
 export type LocalProviderAdvisoryLock = Array<LocalResourceLock> & ProviderAdvisoryLock
 
 type LocalResourceLock = {
   id: Ulid
   resourceKey: ResourceKey
-  expires: Date
+  expires: Instant
 }
 
 export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
@@ -35,14 +36,14 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
       const locks: Array<LocalResourceLock> = []
       for (const resourceKey of resourceKeys) {
         const existingLock = this.expiryMap.get(resourceKey)
-        if (Objects.isPresent(existingLock) && Dates.isAfter(existingLock.expires, Dates.now())) {
+        if (Objects.isPresent(existingLock) && Instants.isAfter(existingLock.expires, Instants.now())) {
           return Results.failure(AdvisoryLockUtil.buildLockLockedError(resourceKey))
         }
 
         const lock: LocalResourceLock = {
           id: Ulids.generate(),
           resourceKey,
-          expires: Dates.addDuration(Dates.now(), props.duration),
+          expires: Instants.add(Instants.now(), props.duration),
         }
 
         locks.push(lock)
@@ -82,7 +83,7 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
       const newLock: LocalResourceLock = {
         id: Ulids.generate(),
         resourceKey: it.resourceKey,
-        expires: Dates.addDuration(Dates.now(), duration),
+        expires: Instants.add(Instants.now(), duration),
       }
 
       this.expiryMap.set(it.resourceKey, newLock)
@@ -111,7 +112,7 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
         return Eithers.left(it)
       }
 
-      if (Dates.isBefore(matchingLock.expires, Dates.now())) {
+      if (Instants.isBefore(matchingLock.expires, Instants.now())) {
         return Eithers.left(it)
       }
 
@@ -120,9 +121,9 @@ export class LocalAdvisoryLockProvider implements AdvisoryLockProvider {
   }
 
   private garbageCollect = (): void => {
-    const now = Dates.now()
+    const now = Instants.now()
     for (const [key, lock] of this.expiryMap.entries()) {
-      if (Dates.isAfter(lock.expires, now)) {
+      if (Instants.isAfter(lock.expires, now)) {
         this.expiryMap.delete(key)
       }
     }
