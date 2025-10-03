@@ -10,6 +10,7 @@ import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/er
 import { isError } from '@bessemer/cornerstone/error/error'
 import { TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 import { isString } from '@bessemer/cornerstone/string'
+import { isNil } from '@bessemer/cornerstone/object'
 
 export type Duration = Temporal.Duration
 export const Namespace = namespace('duration')
@@ -54,7 +55,15 @@ export const fromString = (value: string): Duration => {
   return unpackResult(parseString(value))
 }
 
-export const toLiteral = (value: DurationLike): DurationLiteral => {
+export function toLiteral(value: DurationLike): DurationLiteral
+export function toLiteral(value: DurationLike | null): DurationLiteral | null
+export function toLiteral(value: DurationLike | undefined): DurationLiteral | undefined
+export function toLiteral(value: DurationLike | null | undefined): DurationLiteral | null | undefined
+export function toLiteral(value: DurationLike | null | undefined): DurationLiteral | null | undefined {
+  if (isNil(value)) {
+    return value
+  }
+
   return from(value).toString() as DurationLiteral
 }
 

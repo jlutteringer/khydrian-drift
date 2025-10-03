@@ -14,6 +14,7 @@ import { from as _fromInstant, InstantLike } from '@bessemer/cornerstone/tempora
 import { TimeZoneId } from '@bessemer/cornerstone/temporal/time-zone-id'
 import { TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 import { isString } from '@bessemer/cornerstone/string'
+import { isNil } from '@bessemer/cornerstone/object'
 
 export type PlainTime = Temporal.PlainTime
 export const Namespace = namespace('plain-time')
@@ -66,7 +67,15 @@ export const fromInstant = (instant: InstantLike, zone: TimeZoneId): PlainTime =
   return _fromInstant(instant).toZonedDateTimeISO(zone).toPlainTime()
 }
 
-export const toLiteral = (likeValue: PlainTimeLike): PlainTimeLiteral => {
+export function toLiteral(likeValue: PlainTimeLike): PlainTimeLiteral
+export function toLiteral(likeValue: PlainTimeLike | null): PlainTimeLiteral | null
+export function toLiteral(likeValue: PlainTimeLike | undefined): PlainTimeLiteral | undefined
+export function toLiteral(likeValue: PlainTimeLike | null | undefined): PlainTimeLiteral | null | undefined
+export function toLiteral(likeValue: PlainTimeLike | null | undefined): PlainTimeLiteral | null | undefined {
+  if (isNil(likeValue)) {
+    return likeValue
+  }
+
   const value = from(likeValue)
 
   if (value.second === 0 && value.millisecond === 0 && value.microsecond === 0 && value.nanosecond === 0) {

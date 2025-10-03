@@ -12,6 +12,7 @@ import { Default as DefaultClock } from '@bessemer/cornerstone/temporal/clock'
 import { Duration, DurationLike, from as fromDuration } from '@bessemer/cornerstone/temporal/duration'
 import { _isInstant, instantToLiteral, TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 import { isString } from '@bessemer/cornerstone/string'
+import { isNil } from '@bessemer/cornerstone/object'
 
 export type Instant = Temporal.Instant
 export const Namespace = namespace('instant')
@@ -48,7 +49,15 @@ export const fromString = (value: string): Instant => {
   return unpackResult(parseString(value))
 }
 
-export const toLiteral = (value: InstantLike) => {
+export function toLiteral(value: InstantLike): InstantLiteral
+export function toLiteral(value: InstantLike | null): InstantLiteral | null
+export function toLiteral(value: InstantLike | undefined): InstantLiteral | undefined
+export function toLiteral(value: InstantLike | null | undefined): InstantLiteral | null | undefined
+export function toLiteral(value: InstantLike | null | undefined): InstantLiteral | null | undefined {
+  if (isNil(value)) {
+    return value
+  }
+
   return instantToLiteral(from(value))
 }
 
