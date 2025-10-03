@@ -1,20 +1,21 @@
-import { TimeZoneId, Utc } from '@bessemer/cornerstone/time/time-zone-id'
-import { Duration } from '@bessemer/cornerstone/time/duration'
-import { addDuration } from '@bessemer/cornerstone/time/date'
+import { TimeZoneId, Utc } from '@bessemer/cornerstone/temporal/time-zone-id'
+import { Duration, DurationInput, from as fromDuration, isZero } from '@bessemer/cornerstone/temporal/duration'
+import { from as fromInstant, Instant, InstantInput } from '@bessemer/cornerstone/temporal/instant'
+import { Temporal } from '@js-temporal/polyfill'
 
 export interface Clock {
   readonly zone: TimeZoneId
 
   withZone: (zone: TimeZoneId) => Clock
 
-  instant: () => Date
+  instant: () => Instant
 }
 
 class SystemClock implements Clock {
   constructor(readonly zone: TimeZoneId) {}
 
-  instant(): Date {
-    return new Date()
+  instant(): Instant {
+    return Temporal.Now.instant()
   }
 
   withZone(zone: TimeZoneId): Clock {
@@ -27,9 +28,9 @@ class SystemClock implements Clock {
 }
 
 class FixedClock implements Clock {
-  constructor(private fixedInstant: Date, readonly zone: TimeZoneId) {}
+  constructor(private fixedInstant: Instant, readonly zone: TimeZoneId) {}
 
-  instant(): Date {
+  instant(): Instant {
     return this.fixedInstant
   }
 
@@ -49,8 +50,8 @@ class OffsetClock implements Clock {
     this.zone = this.clock.zone
   }
 
-  instant(): Date {
-    return addDuration(this.clock.instant(), this.offset)
+  instant(): Instant {
+    return this.clock.instant().add(this.offset)
   }
 
   withZone(zone: TimeZoneId): Clock {
@@ -73,14 +74,14 @@ export const system = (zone: TimeZoneId = Utc): Clock => {
   return new SystemClock(zone)
 }
 
-export const fixed = (fixedInstant: Date, zone: TimeZoneId = Utc): Clock => {
-  return new FixedClock(fixedInstant, zone)
+export const fixed = (fixedInstant: InstantInput, zone: TimeZoneId = Utc): Clock => {
+  return new FixedClock(fromInstant(fixedInstant), zone)
 }
 
-export const offset = (clock: Clock, offset: Duration): Clock => {
-  if (offset === 0) {
+export const offset = (clock: Clock, offset: DurationInput): Clock => {
+  if (isZero(offset)) {
     return clock
   }
 
-  return new OffsetClock(clock, offset)
+  return new OffsetClock(clock, fromDuration(offset))
 }

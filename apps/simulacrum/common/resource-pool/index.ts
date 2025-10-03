@@ -1,4 +1,4 @@
-import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
+import { GameTimeUnit, RelativeAmount } from '@simulacrum/common/types'
 import { EvaluateExpression, Expression } from '@bessemer/cornerstone/expression'
 import { Referencable, Reference, ReferenceType } from '@bessemer/cornerstone/reference'
 import { Assertions, References } from '@bessemer/cornerstone'
@@ -10,7 +10,7 @@ export type ResourcePool = {
 }
 
 export type CooldownRate = {
-  period: TimeUnit
+  period: GameTimeUnit
   amount: Expression<number> | RelativeAmount
 }
 

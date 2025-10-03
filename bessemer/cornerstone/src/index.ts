@@ -7,10 +7,10 @@ import * as AsyncValues from '@bessemer/cornerstone/async-value'
 import * as Maths from '@bessemer/cornerstone/math'
 import * as Maps from '@bessemer/cornerstone/map'
 import * as Sets from '@bessemer/cornerstone/set'
-import * as Dates from '@bessemer/cornerstone/time/date'
+import * as Dates from '@bessemer/cornerstone/temporal/date'
 import * as Comparators from '@bessemer/cornerstone/comparator'
 import * as Equalitors from '@bessemer/cornerstone/equalitor'
-import * as Durations from '@bessemer/cornerstone/time/duration'
+import * as Durations from '@bessemer/cornerstone/temporal/duration'
 import * as Uris from '@bessemer/cornerstone/uri'
 import * as Urls from '@bessemer/cornerstone/url'
 import * as Loggers from '@bessemer/cornerstone/logger'
@@ -28,11 +28,11 @@ import * as Ranges from '@bessemer/cornerstone/range'
 import * as ObjectPaths from '@bessemer/cornerstone/object/object-path'
 import * as TypePaths from '@bessemer/cornerstone/object/type-path'
 import * as ObjectDiffs from '@bessemer/cornerstone/object/object-diff'
-import * as TimeZoneIds from '@bessemer/cornerstone/time/time-zone-id'
-import * as TimeZoneOffsets from '@bessemer/cornerstone/time/time-zone-offset'
-import * as LocalTimes from '@bessemer/cornerstone/time/local-time'
-import * as OffsetDateTimes from '@bessemer/cornerstone/time/offset-date-time'
-import * as Clocks from '@bessemer/cornerstone/time/clock'
+import * as TimeZoneIds from '@bessemer/cornerstone/temporal/time-zone-id'
+import * as TimeZoneOffsets from '@bessemer/cornerstone/temporal/time-zone-offset'
+import * as Instants from '@bessemer/cornerstone/temporal/instant'
+import * as PlainTimes from '@bessemer/cornerstone/temporal/plain-time'
+import * as Clocks from '@bessemer/cornerstone/temporal/clock'
 
 import * as ZodUtil from '@bessemer/cornerstone/zod-util'
 import * as Tags from '@bessemer/cornerstone/tag'
@@ -97,8 +97,8 @@ export {
   Clocks,
   TimeZoneIds,
   TimeZoneOffsets,
-  LocalTimes,
-  OffsetDateTimes,
+  Instants,
+  PlainTimes,
   ZodUtil,
   Tags,
   Promises,

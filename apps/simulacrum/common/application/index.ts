@@ -47,7 +47,7 @@ export const ApplicationModule: BessemerModule<ApplicationContext, ApplicationOp
     return tags
   },
   configure: async (options) => {
-    // JOHN concerning cast here...
+    // FUTURE concerning cast here...
     const application: DeepPartial<ApplicationContext> = { serverOnlyTest, client: { ruleset: Dnd5e as DeepPartial<Ruleset> } }
     return application
   },

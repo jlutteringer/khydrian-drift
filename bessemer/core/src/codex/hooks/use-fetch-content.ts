@@ -11,7 +11,7 @@ import { CodexClient } from '@bessemer/client'
 import { useBessemerClientContext } from '@bessemer/framework-next/hooks/use-client-context'
 import { AsyncValue } from '@bessemer/cornerstone/async-value'
 
-// JOHN lots of type coercion in here...
+// FUTURE lots of type coercion in here...
 export const useFetchContent = <Type extends ContentType>(
   key: ContentKey,
   sector?: ContentSector,

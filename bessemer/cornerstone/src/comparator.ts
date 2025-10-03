@@ -1,7 +1,7 @@
 import { BasicType } from '@bessemer/cornerstone/types'
 import { isString } from '@bessemer/cornerstone/string'
 import { isNumber } from '@bessemer/cornerstone/math'
-import { isDate } from '@bessemer/cornerstone/time/date'
+import { isDate } from '@bessemer/cornerstone/temporal/date'
 import { isBoolean } from '@bessemer/cornerstone/object'
 
 export type Comparator<T> = (first: T, second: T) => number

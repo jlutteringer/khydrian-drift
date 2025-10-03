@@ -1,5 +1,5 @@
 import { AbstractLocalKeyValueStore, AbstractRemoteKeyValueStore, LocalKeyValueStore, RemoteKeyValueStore } from '@bessemer/cornerstone/store'
-import { Duration, OneDay, OneHour } from '@bessemer/cornerstone/time/duration'
+import { Duration, OneDay, OneHour } from '@bessemer/cornerstone/temporal/duration'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { AbstractApplicationContext } from '@bessemer/cornerstone/context'
 import { TaggedType } from '@bessemer/cornerstone/types'
@@ -9,8 +9,9 @@ import { Arrayable } from 'type-fest'
 import Zod, { ZodType } from 'zod'
 import { deepMerge, isNil } from '@bessemer/cornerstone/object'
 import { toArray } from '@bessemer/cornerstone/array'
-import { addDuration, isBefore, now } from '@bessemer/cornerstone/time/date'
 import { Arrays, Entries, ResourceKeys } from '@bessemer/cornerstone'
+import * as Instants from '@bessemer/cornerstone/temporal/instant'
+import { InstantLiteral } from '@bessemer/cornerstone/temporal/instant'
 
 export type CacheProps = {
   maxSize: number | null
@@ -135,8 +136,8 @@ export abstract class AbstractLocalCacheProvider<T> extends AbstractLocalKeyValu
 
 export type CacheEntry<T> = {
   value: T
-  liveTimestamp: Date | null
-  staleTimestamp: Date | null
+  liveTimestamp: InstantLiteral | null
+  staleTimestamp: InstantLiteral | null
 }
 
 export namespace CacheEntry {
@@ -157,7 +158,7 @@ export namespace CacheEntry {
       return false
     }
 
-    return isBefore(entry.liveTimestamp, now())
+    return Instants.isBefore(entry.liveTimestamp, Instants.now())
   }
 
   export const isAlive = <T>(entry: CacheEntry<T> | undefined): boolean => !isDead(entry)
@@ -167,7 +168,7 @@ export namespace CacheEntry {
       return false
     }
 
-    return isBefore(entry.staleTimestamp, now())
+    return Instants.isBefore(entry.staleTimestamp, Instants.now())
   }
 
   export const of = <T>(value: T) => {
@@ -182,19 +183,19 @@ export namespace CacheEntry {
 
   // JOHN do we want to enforce some kind of minimum liveness threshold?
   export const applyProps = <T>(originalEntry: CacheEntry<T>, props: CacheProps): CacheEntry<T> => {
-    let liveTimestamp: Date | null = originalEntry.liveTimestamp
+    let liveTimestamp: InstantLiteral | null = originalEntry.liveTimestamp
     if (!isNil(props.timeToLive)) {
-      const limit = addDuration(now(), props.timeToLive)
-      if (isBefore(limit, liveTimestamp ?? limit)) {
-        liveTimestamp = limit
+      const limit = Instants.add(Instants.now(), props.timeToLive)
+      if (Instants.isBefore(limit, liveTimestamp ?? limit)) {
+        liveTimestamp = Instants.toLiteral(limit)
       }
     }
 
-    let staleTimestamp: Date | null = originalEntry.staleTimestamp
+    let staleTimestamp: InstantLiteral | null = originalEntry.staleTimestamp
     if (!isNil(props.timeToStale)) {
-      const limit = addDuration(now(), props.timeToStale)
-      if (isBefore(limit, staleTimestamp ?? limit)) {
-        staleTimestamp = limit
+      const limit = Instants.add(Instants.now(), props.timeToStale)
+      if (Instants.isBefore(limit, staleTimestamp ?? limit)) {
+        staleTimestamp = Instants.toLiteral(limit)
       }
     }
 

@@ -1,6 +1,6 @@
 import { Expression } from '@bessemer/cornerstone/expression'
 
-export enum TimeUnit {
+export enum GameTimeUnit {
   Day = 'Day',
   LongRest = 'LongRest',
   ShortRest = 'ShortRest',
@@ -15,6 +15,6 @@ export enum RelativeAmount {
 }
 
 export type CooldownRateMutation = {
-  period?: TimeUnit
+  period?: GameTimeUnit
   amount?: Expression<number>
 }

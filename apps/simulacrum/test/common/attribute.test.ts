@@ -1,5 +1,5 @@
 import { Attributes, ResourcePools } from '@simulacrum/common'
-import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
+import { GameTimeUnit, RelativeAmount } from '@simulacrum/common/types'
 import { Patches } from '@bessemer/cornerstone'
 import { Expressions, NumericExpressions } from '@bessemer/cornerstone/expression'
 
@@ -54,7 +54,7 @@ test('Test Objects', () => {
       path: 'hitPoints',
       description: '',
       size: 10,
-      refresh: [{ period: TimeUnit.LongRest, amount: RelativeAmount.All }],
+      refresh: [{ period: GameTimeUnit.LongRest, amount: RelativeAmount.All }],
     })
 
     // TODO any way to fix the cast issue...?

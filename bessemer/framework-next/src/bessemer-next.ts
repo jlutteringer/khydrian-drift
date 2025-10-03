@@ -11,7 +11,7 @@ export const getInstance = async <ApplicationContext extends BessemerApplication
   tags?: Array<Tag>
 ): Promise<BessemerInstance<ApplicationContext, ApplicationOptions>> => {
   const instance = await context.fetchValue(() => Bessemer.initialize(tags))
-  // JOHN fix cast?
+  // FUTURE fix cast?
   const response = instance as any as BessemerInstance<ApplicationContext, ApplicationOptions>
   return response
 }

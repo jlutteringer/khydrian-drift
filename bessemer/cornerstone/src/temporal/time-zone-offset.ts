@@ -1,32 +1,75 @@
 import { NominalType } from '@bessemer/cornerstone/types'
-import * as Durations from '@bessemer/cornerstone/time/duration'
-import { Duration } from '@bessemer/cornerstone/time/duration'
+import {
+  Duration,
+  DurationInput,
+  from as _fromDuration,
+  fromHours,
+  fromMilliseconds,
+  fromMinutes as durationFromMinutes,
+  isGreater,
+  isLess,
+  toMinutes,
+} from '@bessemer/cornerstone/temporal/duration'
+import { fromDuration as plainTimeFromDuration, toLiteral as plainTimeToLiteral } from '@bessemer/cornerstone/temporal/plain-time'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import Zod from 'zod'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { namespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
-import * as LocalTimes from '@bessemer/cornerstone/time/local-time'
+import { Instant } from '@bessemer/cornerstone/temporal/instant'
+import { TimeZoneId } from '@bessemer/cornerstone/temporal/time-zone-id'
 
 export const Namespace = namespace('time-zone-offset')
 export type TimeZoneOffset = NominalType<number, typeof Namespace>
 
-const EighteenHours = Durations.fromHours(18)
+const EighteenHours = fromHours(18)
 
-export const parseNumber = (value: number): Result<TimeZoneOffset, ErrorEvent> => {
-  if (value < -EighteenHours || value > EighteenHours) {
+export const parseMinutes = (value: number): Result<TimeZoneOffset, ErrorEvent> => {
+  if (!Number.isInteger(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset must be a round number of minutes.` }))
+  }
+
+  if (value < toMinutes(EighteenHours.negated()) || value > toMinutes(EighteenHours)) {
     return failure(invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset must be between -18:00 and +18:00 inclusive.` }))
   }
 
   return success(value as TimeZoneOffset)
 }
 
-export const fromMilliseconds = (value: number): TimeZoneOffset => {
-  return unpackResult(parseNumber(value))
+export const parseDuration = (value: Duration): Result<TimeZoneOffset, ErrorEvent> => {
+  return parseMinutes(toMinutes(value))
 }
 
-export const fromDuration = (duration: Duration): TimeZoneOffset => {
-  return fromMilliseconds(duration)
+export const fromMinutes = (value: number): TimeZoneOffset => {
+  return unpackResult(parseMinutes(value))
+}
+
+export const fromDuration = (value: DurationInput): TimeZoneOffset => {
+  return unpackResult(parseDuration(_fromDuration(value)))
+}
+
+export const fromTimeZone = (timeZone: TimeZoneId, instant: Instant): TimeZoneOffset => {
+  const instantWithoutMs = new Date(Math.floor(instant.epochMilliseconds / 1000) * 1000)
+
+  // Note: We use 'en-CA' locale because it produces ISO 8601 format (YYYY-MM-DD, HH:MM:SS)
+  // which is predictable and easily parseable. The locale only affects the output format,
+  // not the timezone conversion - that's handled by the timeZone parameter.
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+
+  const formatted = formatter.format(instantWithoutMs)
+  const localTime = new Date(formatted + 'Z').getTime()
+
+  const offsetMs = localTime - instantWithoutMs.getTime()
+  return fromDuration({ milliseconds: offsetMs })
 }
 
 // JOHN maybe this parsing could be consolidated with LocalTime?
@@ -44,7 +87,6 @@ export const parseString = (value: string): Result<TimeZoneOffset, ErrorEvent> =
 
   let hours = 0
   let minutes = 0
-  let seconds = 0
 
   // Parse different formats
   if (offsetStr.length === 1) {
@@ -70,10 +112,10 @@ export const parseString = (value: string): Result<TimeZoneOffset, ErrorEvent> =
     minutes = parseInt(parts[1]!, 10)
 
     if (parts.length === 3) {
-      seconds = parseInt(parts[2]!, 10)
+      return failure(invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset - Invalid time values in time zone offset.` }))
     }
 
-    if (isNaN(hours) || isNaN(minutes) || (parts.length === 3 && isNaN(seconds))) {
+    if (isNaN(hours) || isNaN(minutes)) {
       return failure(invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset - Invalid time values in time zone offset.` }))
     }
   } else if (offsetStr.length === 4) {
@@ -82,15 +124,6 @@ export const parseString = (value: string): Result<TimeZoneOffset, ErrorEvent> =
     minutes = parseInt(offsetStr.slice(2, 4), 10)
 
     if (isNaN(hours) || isNaN(minutes)) {
-      return failure(invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset - Invalid time values in time zone offset.` }))
-    }
-  } else if (offsetStr.length === 6) {
-    // +hhmmss format
-    hours = parseInt(offsetStr.slice(0, 2), 10)
-    minutes = parseInt(offsetStr.slice(2, 4), 10)
-    seconds = parseInt(offsetStr.slice(4, 6), 10)
-
-    if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
       return failure(invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset - Invalid time values in time zone offset.` }))
     }
   } else {
@@ -103,29 +136,26 @@ export const parseString = (value: string): Result<TimeZoneOffset, ErrorEvent> =
     )
   }
 
-  if (seconds >= 60) {
-    return failure(
-      invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset - Invalid seconds in time zone offset: must be less than 60.` })
-    )
+  let duration = _fromDuration({ hours, minutes })
+  if (sign === -1) {
+    duration = duration.negated()
   }
 
-  const totalMilliseconds = sign * (Durations.fromHours(hours) + Durations.fromMinutes(minutes) + Durations.fromSeconds(seconds))
-
-  if (totalMilliseconds < -EighteenHours || totalMilliseconds > EighteenHours) {
+  if (isLess(duration, EighteenHours.negated()) || isGreater(duration, EighteenHours)) {
     return failure(invalidValue(value, { namespace: Namespace, message: `TimeZoneOffset must be between -18:00 and +18:00 inclusive.` }))
   }
 
-  return success(totalMilliseconds as TimeZoneOffset)
+  return success(toMinutes(duration) as TimeZoneOffset)
 }
 
 export const fromString = (value: string): TimeZoneOffset => {
   return unpackResult(parseString(value))
 }
 
-export const Schema = Zod.union([structuredTransform(Zod.number(), parseNumber), structuredTransform(Zod.string(), parseString)])
+export const Schema = Zod.union([structuredTransform(Zod.number(), parseMinutes), structuredTransform(Zod.string(), parseString)])
 
 export const toDuration = (offset: TimeZoneOffset): Duration => {
-  return Durations.fromMilliseconds(offset)
+  return fromMilliseconds(offset)
 }
 
 export const toMilliseconds = (offset: TimeZoneOffset): number => {
@@ -138,8 +168,9 @@ export const toString = (offset: TimeZoneOffset): string => {
   }
 
   const sign = offset > 0 ? '+' : '-'
-  const localTime = LocalTimes.fromDuration(Math.abs(offset) as Duration)
-  return `${sign}${localTime.toLiteral()}`
+
+  const time = plainTimeFromDuration(durationFromMinutes(Math.abs(offset)))
+  return `${sign}${plainTimeToLiteral(time)}`
 }
 
 export const Utc = 0 as TimeZoneOffset

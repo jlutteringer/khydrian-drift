@@ -130,7 +130,7 @@ export const fetchContentByKey = async <Type extends ContentType>(
 
 const IndividualContentCacheKey = 'Codex.fetchContentByKeys'
 
-// JOHN lots of code duplication
+// FUTURE lots of code duplication
 export const fetchContentByKeys = async <Type extends ContentType>(
   keys: Array<ContentKey>,
   context: CoreApplicationContext,
@@ -207,7 +207,7 @@ export const fetchContentBySectors = async <Type extends ContentType>(
       await Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context).writeValues(entries)
     })
 
-    // JOHN this is wrong
+    // FUTURE this is wrong
     const entries: Array<RecordEntry<Array<ContentData<Type>>>> = Object.entries(Arrays.groupBy(content, (it) => it.sector ?? ''))
     return entries
   })

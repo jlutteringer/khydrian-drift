@@ -209,7 +209,7 @@ const evaluateResourcePools = (
 export const buildExpressionContext = (character: CharacterState, context: ApplicationContext): ExpressionContext => {
   const characterAttributes = context.client.ruleset.playerCharacteristics
   const attributeVariables = characterAttributes.map((it) => {
-    // JOHN excessive casting - work on api
+    // FUTURE excessive casting - work on api
     const characteristic = ObjectPaths.getValue(it.path as any, character.characteristics) as any as CharacteristicValue<unknown>
     Assertions.assertPresent(characteristic)
     return Expressions.buildVariable(it.variable, characteristic.value)

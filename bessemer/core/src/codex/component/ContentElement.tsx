@@ -21,7 +21,7 @@ export type ContentElementProps<Content extends ContentData = ContentData> = {
   options?: FetchContentOptions<ContentTypeConstructor<Content>>
 }
 
-// JOHN better api... cant reference typography here ;_;
+// FUTURE better api... cant reference typography here ;_;
 export const ContentElement = <Content extends ContentData>({
   contentKey,
   sector,

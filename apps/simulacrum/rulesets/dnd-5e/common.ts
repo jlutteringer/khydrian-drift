@@ -1,6 +1,6 @@
 import { Abilities } from '@simulacrum/common'
 import { ActionType } from '@simulacrum/common/ability'
-import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
+import { GameTimeUnit, RelativeAmount } from '@simulacrum/common/types'
 import { CharacterValues } from '@simulacrum/common/character/character'
 
 export const Dodge = Abilities.defineAbility('b53bd920-1996-47ee-9b90-eebeef1abde2', {
@@ -41,7 +41,7 @@ export const HealingSurge = Abilities.defineAbility('e5df0430-9c73-49e3-bd76-675
   actions: [
     {
       action: ActionType.Standard,
-      costs: [{ cost: 1, resource: { size: CharacterValues.Level, refresh: [{ period: TimeUnit.LongRest, amount: RelativeAmount.Half }] } }],
+      costs: [{ cost: 1, resource: { size: CharacterValues.Level, refresh: [{ period: GameTimeUnit.LongRest, amount: RelativeAmount.Half }] } }],
     },
   ],
 })

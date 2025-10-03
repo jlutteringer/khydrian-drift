@@ -1,5 +1,5 @@
 import { ResourcePool } from '@simulacrum/common/resource-pool'
-import { TimeUnit } from '@simulacrum/common/types'
+import { GameTimeUnit } from '@simulacrum/common/types'
 import {
   ArrayExpressions,
   EvaluateExpression,
@@ -129,7 +129,7 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
       return [value, modifierValues]
     })
 
-    // JOHN we added a cast here as a temporary fix - it should be fixed for real
+    // FUTURE we added a cast here as a temporary fix - it should be fixed for real
     const winningPermutationValue = evaluate(Expressions.dereference(attribute.optimizer, permutationValues.map(Arrays.first) as any))
     const [_, winningModifiers] = permutationValues.find((it) => winningPermutationValue === Arrays.first(it)) ?? []
     return [winningPermutationValue, winningModifiers ?? []]
@@ -141,7 +141,7 @@ export const evaluateAttribute = <T>(attribute: Attribute<T>, modifiers: Array<M
   if (Arrays.isEmpty(combinationValues)) {
     value = initialValue
   } else {
-    // JOHN we added a cast here as a temporary fix - it should be fixed for real
+    // FUTURE we added a cast here as a temporary fix - it should be fixed for real
     value = evaluate(Expressions.dereference(attribute.optimizer, combinationValues.map(Arrays.first) as any))
     const [_, modifierValues] = combinationValues.find((it) => value === Arrays.first(it)) ?? []
     winningModifiers = modifierValues!
@@ -167,7 +167,7 @@ const resourcePool: ResourcePool = {
   size: 10,
   refresh: [
     {
-      period: TimeUnit.ShortRest,
+      period: GameTimeUnit.ShortRest,
       amount: 10,
     },
   ],
@@ -178,7 +178,7 @@ blah<ResourcePool>(
     size: attribute(10, NumericExpressions.MaxExpression),
     refresh: [
       {
-        period: attribute(TimeUnit.ShortRest, ArrayExpressions.FirstExpression as any),
+        period: attribute(GameTimeUnit.ShortRest, ArrayExpressions.FirstExpression as any),
         amount: attribute(10, NumericExpressions.MaxExpression),
       },
     ],

@@ -35,7 +35,7 @@ const CodexApi = makeApi([
 
 const client = new Zodios('/api', CodexApi)
 
-// JOHN fully implement me
+// FUTURE fully implement me
 export const fetchContentByKey = async <Type extends ContentType>(
   key: ContentKey,
   context: CodexClientContext,

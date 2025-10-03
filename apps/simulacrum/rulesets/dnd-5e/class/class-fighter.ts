@@ -5,7 +5,7 @@ import { CharacterOptions } from '@simulacrum/common/character'
 import { PlayerCharacteristics } from '@simulacrum/rulesets/dnd-5e/characteristic'
 import { CharacterValues } from '@simulacrum/common/character/character'
 import { ActionType } from '@simulacrum/common/ability'
-import { RelativeAmount, TimeUnit } from '@simulacrum/common/types'
+import { GameTimeUnit, RelativeAmount } from '@simulacrum/common/types'
 import { Expressions } from '@bessemer/cornerstone/expression'
 import { Patches } from '@bessemer/cornerstone'
 
@@ -24,11 +24,11 @@ export const SecondWind = Abilities.defineAbility('5783fc7f-7915-40c7-8a51-8406e
             size: 2,
             refresh: [
               {
-                period: TimeUnit.LongRest,
+                period: GameTimeUnit.LongRest,
                 amount: RelativeAmount.All,
               },
               {
-                period: TimeUnit.ShortRest,
+                period: GameTimeUnit.ShortRest,
                 amount: 1,
               },
             ],
@@ -64,7 +64,7 @@ export const ActionSurge = Abilities.defineAbility('a781f8be-1a9b-403d-84d7-155c
             size: 1,
             refresh: [
               {
-                period: TimeUnit.ShortRest,
+                period: GameTimeUnit.ShortRest,
                 amount: RelativeAmount.All,
               },
             ],

@@ -2,7 +2,7 @@ import { RemoteStore } from '@bessemer/cornerstone/store'
 import { GlobalContextType } from '@bessemer/framework'
 import { RedisApplicationContext } from '@bessemer/redis/application'
 import { ResourceKey } from '@bessemer/cornerstone/resource-key'
-import { Duration } from '@bessemer/cornerstone/time/duration'
+import { Duration } from '@bessemer/cornerstone/temporal/duration'
 import { Redis } from '@bessemer/redis'
 import { Durations, Objects } from '@bessemer/cornerstone'
 

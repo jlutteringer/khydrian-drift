@@ -6,7 +6,7 @@ export type RedisSingletonClient = IORedisClient
 export type RedisClusterClient = IORedisCluster
 export type RedisClient = RedisSingletonClient | RedisClusterClient
 
-// JOHN
+// FUTURE
 // export const getStore = <T>(namespace: StoreKey, context: TenantContext, timeToLive?: Millisecond): RemoteKeyValueStore<T> => {
 //   return new RedisStore<T>(namespace, context, timeToLive)
 // }

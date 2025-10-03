@@ -1,6 +1,6 @@
 import { Expressions } from '@bessemer/cornerstone/expression'
 import { Sql } from '@bessemer/cornerstone/sql'
-import { Dates } from '@bessemer/cornerstone'
+import { Instants } from '@bessemer/cornerstone'
 
 test('Sql.parseExpression', () => {
   const variables = {
@@ -17,27 +17,27 @@ test('Sql.parseExpression', () => {
   }
 
   {
-    const [fragment, parameters] = Sql.parseExpression(Expressions.greaterThan(Expressions.variable('test'), Dates.now()), variables)
+    const [fragment, parameters] = Sql.parseExpression(Expressions.greaterThan(Expressions.variable('test'), Instants.now()), variables)
   }
 
   {
-    const [fragment, parameters] = Sql.parseExpression(Expressions.greaterThanOrEqual(Dates.now(), Expressions.variable('test')), variables)
+    const [fragment, parameters] = Sql.parseExpression(Expressions.greaterThanOrEqual(Instants.now(), Expressions.variable('test')), variables)
   }
 
   {
-    const [fragment, parameters] = Sql.parseExpression(Expressions.not(Expressions.equals([Expressions.variable('test'), Dates.now()])), variables)
+    const [fragment, parameters] = Sql.parseExpression(Expressions.not(Expressions.equals([Expressions.variable('test'), Instants.now()])), variables)
   }
 
   {
     const [fragment, parameters] = Sql.parseExpression(
-      Expressions.and([Expressions.lessThan(Expressions.variable('test'), 10), Expressions.equals([Expressions.variable('test2'), Dates.now()])]),
+      Expressions.and([Expressions.lessThan(Expressions.variable('test'), 10), Expressions.equals([Expressions.variable('test2'), Instants.now()])]),
       variables
     )
   }
 
   {
     const [fragment, parameters] = Sql.parseExpression(
-      Expressions.or([Expressions.lessThan(Expressions.variable('test'), 10), Expressions.equals([Expressions.variable('test2'), Dates.now()])]),
+      Expressions.or([Expressions.lessThan(Expressions.variable('test'), 10), Expressions.equals([Expressions.variable('test2'), Instants.now()])]),
       variables
     )
   }

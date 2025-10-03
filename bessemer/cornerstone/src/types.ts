@@ -1,3 +1,5 @@
+import { Instant } from '@bessemer/cornerstone/temporal/instant'
+
 declare const __type: unique symbol
 
 export type NominalTyping<NominalType> = { [__type]: NominalType }
@@ -20,7 +22,8 @@ export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer U> ? DeepPartial<U>[] : T[P] extends object | undefined ? DeepPartial<T[P]> : T[P]
 }
 
-export type BasicType = string | number | boolean | Date
+// JOHN maybe this needs a different definition...
+export type BasicType = string | number | boolean | Date | Instant
 
 export type ToString<T> = T extends string | number ? `${T}` : never
 

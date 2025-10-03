@@ -1,4 +1,4 @@
-import { Duration, fromMilliseconds, toMilliseconds, Zero } from '@bessemer/cornerstone/time/duration'
+import { Duration, fromMilliseconds, toMilliseconds, Zero } from '@bessemer/cornerstone/temporal/duration'
 import { AsyncResult, failure, Result } from '@bessemer/cornerstone/result'
 import { PartialDeep } from 'type-fest'
 import { deepMerge, isUndefined } from '@bessemer/cornerstone/object'

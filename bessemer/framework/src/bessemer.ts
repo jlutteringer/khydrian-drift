@@ -63,8 +63,7 @@ export const configure = <ApplicationContext extends BessemerApplicationContext,
     .filter(Objects.isPresent)
     .forEach((initialize) => initialize(options, globalContext))
 
-  // JOHN validate that context is complete
-
+  // FUTURE validate that context is complete
   GlobalConfigurationState.setValue({
     configuration,
     globalContext,
@@ -115,7 +114,7 @@ export const initialize = async <ApplicationContext extends BessemerApplicationC
   context.client.tags = tags
   context.client.runtime = runtimeProvider.initializeRuntime(options)
 
-  // JOHN validate that context is complete
+  // FUTURE validate that context is complete
   const dehydratedApplication = dehydrateApplication(context)
   const publicProperties = toPublicProperties(properties)
   return { context, clientProps: { dehydratedApplication, publicProperties } }

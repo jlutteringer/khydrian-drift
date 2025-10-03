@@ -33,7 +33,7 @@ export const BessemerNextApplicationModule: BessemerModule<BessemerNextApplicati
       try {
         buildId = fs.readFileSync('.next/BUILD_ID').toString()
       } catch {
-        // JOHN this should be an enum? flag? something?
+        // FUTURE this should be an enum? flag? something?
         if (Environments.getEnvironment() === 'development') {
           buildId = 'static'
         } else {

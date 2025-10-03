@@ -19,7 +19,7 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
   }
 
   getValues = (keys: Array<ResourceKey>, fetch: (keys: Array<ResourceKey>) => Array<RecordEntry<T>>): Array<RecordEntry<T>> => {
-    // JOHN
+    // FUTURE
     // if (CacheKey.isDisabled(initialNamespace)) {
     //   return fetch(keys)
     // }
@@ -41,7 +41,7 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
   }
 
   setValues = (entries: Array<RecordEntry<T | undefined>>): void => {
-    // JOHN
+    // FUTURE
     // if (CacheKey.isDisabled(initialNamespace)) {
     //   return
     // }

@@ -196,8 +196,8 @@ export class RedlockClient extends EventEmitter {
    * This method acquires a locks on the resources for the duration specified by
    * the `duration`.
    */
-  // JOHN maybe shouldnt be using the AdvisoryLockProps here even tho they contain the props we want?
-  // JOHN should this take a context object instead of relying on its internal dealio?
+  // FUTURE maybe shouldnt be using the AdvisoryLockProps here even tho they contain the props we want?
+  // FUTURE should this take a context object instead of relying on its internal dealio?
   acquire = async (resourceKeys: Array<ResourceKey>, props: AdvisoryLockProps): Promise<RedlockLock> => {
     const durationMs = Durations.toMilliseconds(props.duration)
     Assertions.assert(Number.isInteger(durationMs), () => 'Duration must be an integer value')
@@ -477,7 +477,7 @@ export class RedlockClient extends EventEmitter {
    * ```
    */
 
-  // JOHN we don't leverage these using methods because it happens outside of the provider level... but we might be able to make use of the code
+  // FUTURE we don't leverage these using methods because it happens outside of the provider level... but we might be able to make use of the code
   // public async using<T>(
   //   resources: string[],
   //   duration: number,

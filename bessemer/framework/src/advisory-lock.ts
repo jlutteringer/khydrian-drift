@@ -1,4 +1,4 @@
-import { Duration } from '@bessemer/cornerstone/time/duration'
+import { Duration } from '@bessemer/cornerstone/temporal/duration'
 import { RetryProps } from '@bessemer/cornerstone/retry'
 import { TaggedType } from '@bessemer/cornerstone/types'
 import { Arrays, Assertions, Durations, Loggers, Objects, Results, Retry } from '@bessemer/cornerstone'
@@ -144,8 +144,7 @@ const withLock = async <T>(
   computeValue: () => Promise<T>,
   options: AdvisoryLockOptions = {}
 ): Promise<T> => {
-  // JOHN automatically extend lock in here ?
-
+  // FUTURE automatically extend lock in here ?
   try {
     const value = await computeValue()
     return value
@@ -184,7 +183,7 @@ export const acquireLock = async (
     }
   })
 
-  return Results.map(providerLock, (it) => {
+  return Results.mapResult(providerLock, (it) => {
     return {
       resourceKeys: sortedKeys,
       props,
@@ -196,7 +195,7 @@ export const acquireLock = async (
 export const extendLock = async (lock: AdvisoryLock, context: GlobalContextType<BessemerApplicationContext>): AsyncResult<AdvisoryLock> => {
   const providerLock = await getProvider(context).extendLock(lock, context)
 
-  return Results.map(providerLock, (it) => {
+  return Results.mapResult(providerLock, (it) => {
     return {
       resourceKeys: lock.resourceKeys,
       props: lock.props,

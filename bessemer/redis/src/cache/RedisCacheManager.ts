@@ -37,7 +37,7 @@ export class RedisCacheManager implements CacheManager<RedisApplicationContext> 
     const client = Redis.getClient(context.global.redis)
 
     client.subscribe(this.getChannel(context), (err, count) => {
-      // JOHN how to handle?
+      // FUTURE how to handle?
       if (err) {
         // Just like other commands, subscribe() can fail for some reasons,
         // ex network issues.

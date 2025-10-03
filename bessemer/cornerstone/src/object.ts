@@ -4,7 +4,8 @@ import { BasicType, Dictionary, TaggedType } from '@bessemer/cornerstone/types'
 import { Primitive, UnknownRecord } from 'type-fest'
 import { isNumber } from '@bessemer/cornerstone/math'
 import { isString } from '@bessemer/cornerstone/string'
-import { isDate } from '@bessemer/cornerstone/time/date'
+import { isDate } from '@bessemer/cornerstone/temporal/date'
+import { _isInstant } from '@bessemer/cornerstone/temporal/chrono'
 
 export const isUndefined = (value: unknown): value is undefined => {
   return value === undefined
@@ -173,7 +174,7 @@ export const isPrimitive = (value: any): value is Primitive => {
 }
 
 export const isBasic = (value: any): value is BasicType => {
-  return isNumber(value) || isString(value) || isDate(value) || isBoolean(value)
+  return isNumber(value) || isString(value) || isDate(value) || isBoolean(value) || _isInstant(value)
 }
 
 export const isBoolean = (value: unknown): value is boolean => {
