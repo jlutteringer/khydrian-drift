@@ -280,8 +280,8 @@ describe('Durations.add', () => {
     const duration3 = Durations.from({ seconds: 15 })
 
     const result = Durations.add(duration1, duration2, duration3)
-    expect(result.hours).toBe(1)
-    expect(result.minutes).toBe(75)
+    expect(result.hours).toBe(2)
+    expect(result.minutes).toBe(15)
     expect(result.seconds).toBe(45)
   })
 

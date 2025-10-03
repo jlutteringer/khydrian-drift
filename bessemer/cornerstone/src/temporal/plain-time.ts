@@ -74,8 +74,8 @@ export const toLiteral = (value: PlainTime): PlainTimeLiteral => {
   return value.toString() as PlainTimeLiteral
 }
 
-export const Schema = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), toLiteral))
-export const InstanceSchema = structuredTransform(Zod.string(), parseString)
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), toLiteral))
+export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isPlainTime = (value: unknown): value is PlainTime => {
   return value instanceof Temporal.PlainTime

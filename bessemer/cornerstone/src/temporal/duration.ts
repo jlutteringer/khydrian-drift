@@ -11,7 +11,6 @@ import { isError } from '@bessemer/cornerstone/error/error'
 import { TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 import { isString } from '@bessemer/cornerstone/string'
 
-// JOHN find a way to exclude calendar durations from this? is it worth it?
 export type Duration = Temporal.Duration
 export const Namespace = namespace('duration')
 export type DurationLiteral = NominalType<string, typeof Namespace>
@@ -59,8 +58,8 @@ export const toLiteral = (value: Duration): DurationLiteral => {
   return value.toString() as DurationLiteral
 }
 
-export const Schema = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), toLiteral))
-export const InstanceSchema = structuredTransform(Zod.string(), parseString)
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), toLiteral))
+export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isDuration = (value: unknown): value is Duration => {
   return value instanceof Temporal.Duration
