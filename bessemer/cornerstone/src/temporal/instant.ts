@@ -65,7 +65,7 @@ export const toDate = (value: Instant): Date => {
   return new Date(value.epochMilliseconds)
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), toLiteral))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), (it) => toLiteral(it)))
 export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isInstant = _isInstant

@@ -67,7 +67,7 @@ export function toLiteral(value: DurationLike | null | undefined): DurationLiter
   return from(value).toString() as DurationLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), toLiteral))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), (it) => toLiteral(it)))
 export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isDuration = (value: unknown): value is Duration => {
