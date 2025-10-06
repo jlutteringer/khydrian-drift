@@ -17,15 +17,12 @@ import { isString } from '@bessemer/cornerstone/string'
 import { isNil } from '@bessemer/cornerstone/object'
 import { PlainTimeBuilder, TimeFormatOptions } from '@bessemer/cornerstone/temporal/plain-time'
 import { Locale } from '@bessemer/cornerstone/intl/locale'
+import { DateFormatOptions, PlainDateBuilder } from '@bessemer/cornerstone/temporal/plain-date'
 
 export type PlainDateTime = Temporal.PlainDateTime
 export const Namespace = namespace('plain-date-time')
 export type PlainDateTimeLiteral = NominalType<string, typeof Namespace>
-export type PlainDateTimeBuilder = PlainTimeBuilder & {
-  year?: number
-  month?: number
-  day?: number
-}
+export type PlainDateTimeBuilder = PlainDateBuilder & PlainTimeBuilder
 
 export type PlainDateTimeLike = PlainDateTime | PlainDateTimeLiteral | PlainDateTimeBuilder
 
@@ -93,8 +90,8 @@ export const isPlainDateTime = (value: unknown): value is PlainDateTime => {
   return value instanceof Temporal.PlainDateTime
 }
 
-export const now = (clock = DefaultClock): PlainDateTime => {
-  return fromInstant(clock.instant(), clock.zone)
+export const now = (zone: TimeZoneId, clock = DefaultClock): PlainDateTime => {
+  return fromInstant(clock.instant(), zone)
 }
 
 export const merge = (element: PlainDateTimeLike, builder: PlainDateTimeBuilder): PlainDateTime => {
@@ -136,13 +133,7 @@ export const isAfter = (element: PlainDateTimeLike, other: PlainDateTimeLike): b
   return CompareBy(from(element), from(other)) > 0
 }
 
-export type DateTimeFormatOptions = TimeFormatOptions & {
-  era?: 'long' | 'short' | 'narrow' | undefined
-  weekday?: 'long' | 'short' | 'narrow' | undefined
-  year?: 'numeric' | '2-digit' | undefined
-  month?: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' | undefined
-  day?: 'numeric' | '2-digit' | undefined
-}
+export type DateTimeFormatOptions = DateFormatOptions & TimeFormatOptions
 
 export const format = (element: PlainDateTimeLike, locale: Locale, options: DateTimeFormatOptions): string => {
   const plainDateTime = from(element)

@@ -101,8 +101,8 @@ export const isPlainTime = (value: unknown): value is PlainTime => {
   return value instanceof Temporal.PlainTime
 }
 
-export const now = (clock = DefaultClock): PlainTime => {
-  return fromInstant(clock.instant(), clock.zone)
+export const now = (zone: TimeZoneId, clock = DefaultClock): PlainTime => {
+  return fromInstant(clock.instant(), zone)
 }
 
 export const merge = (element: PlainTimeLike, builder: PlainTimeBuilder): PlainTime => {

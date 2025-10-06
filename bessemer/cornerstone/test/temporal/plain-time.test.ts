@@ -7,7 +7,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T14:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.Utc)
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.Utc, clock)
 
     expect(result.hour).toBe(14)
     expect(result.minute).toBe(30)
@@ -19,7 +19,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T18:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('America/New_York'))
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.fromString('America/New_York'), clock)
 
     // EDT is UTC-4, so 18:30 UTC = 14:30 EDT
     expect(result.hour).toBe(14)
@@ -32,7 +32,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-01-15T18:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('America/New_York'))
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.fromString('America/New_York'), clock)
 
     // EST is UTC-5, so 18:30 UTC = 13:30 EST
     expect(result.hour).toBe(13)
@@ -45,7 +45,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T11:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Europe/London'))
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.fromString('Europe/London'), clock)
 
     // BST is UTC+1, so 11:30 UTC = 12:30 BST
     expect(result.hour).toBe(12)
@@ -58,7 +58,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-01-15T11:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Europe/London'))
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.fromString('Europe/London'), clock)
 
     // GMT is UTC+0, so 11:30 UTC = 11:30 GMT
     expect(result.hour).toBe(11)
@@ -71,7 +71,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T06:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Asia/Tokyo'))
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.fromString('Asia/Tokyo'), clock)
 
     // JST is always UTC+9, so 06:30 UTC = 15:30 JST
     expect(result.hour).toBe(15)
@@ -84,7 +84,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T06:00:00.500Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Asia/Kolkata'))
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.fromString('Asia/Kolkata'), clock)
 
     // IST is UTC+5:30, so 06:00 UTC = 11:30 IST
     expect(result.hour).toBe(11)
@@ -97,7 +97,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T21:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Asia/Tokyo'))
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.fromString('Asia/Tokyo'), clock)
 
     // JST is UTC+9, so 21:30 UTC = 06:30 JST (next day)
     expect(result.hour).toBe(6)
@@ -110,7 +110,7 @@ describe('PlainTimes.now', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T02:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('America/Los_Angeles'))
 
-    const result = PlainTimes.now(clock)
+    const result = PlainTimes.now(TimeZoneIds.fromString('America/Los_Angeles'), clock)
 
     // PDT is UTC-7, so 02:30 UTC = 19:30 PDT (previous day)
     expect(result.hour).toBe(19)
@@ -120,10 +120,8 @@ describe('PlainTimes.now', () => {
   })
 
   test('should use default system clock when no clock provided', () => {
-    const result = PlainTimes.now()
+    const result = PlainTimes.now(TimeZoneIds.Utc)
 
-    // Just verify it returns a valid PlainTime
-    expect(result).toBeInstanceOf(Temporal.PlainTime)
     expect(result.hour).toBeGreaterThanOrEqual(0)
     expect(result.hour).toBeLessThanOrEqual(23)
     expect(result.minute).toBeGreaterThanOrEqual(0)

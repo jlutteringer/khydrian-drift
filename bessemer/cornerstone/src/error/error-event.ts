@@ -229,6 +229,18 @@ export const forbidden = (builder?: ErrorEventAugment): ErrorEvent =>
     )
   )
 
+export const badRequest = (builder?: ErrorEventAugment): ErrorEvent =>
+  of(
+    deepMerge(
+      {
+        type: InvalidValue,
+        message: 'The format is invalid and cannot be processed.',
+        attributes: { [HttpStatusCodeAttribute]: 400 },
+      },
+      builder
+    )
+  )
+
 export const invalidValue = (value: unknown, builder?: ErrorEventAugment): ErrorEvent =>
   of(
     deepMerge(
@@ -259,13 +271,9 @@ export function assertPermitted(value: boolean, builder: LazyValue<ErrorEventAug
   }
 }
 
-export function assertValid(
-  valid: boolean,
-  value: unknown,
-  builder: LazyValue<ErrorEventAugment | undefined> = () => undefined
-): asserts value is true {
-  if (!valid) {
-    throw new ErrorEventException(invalidValue(value, evaluate(builder)))
+export function assertValid(value: boolean, builder: LazyValue<ErrorEventAugment | undefined> = () => undefined): asserts value is true {
+  if (!value) {
+    throw new ErrorEventException(badRequest(evaluate(builder)))
   }
 }
 
