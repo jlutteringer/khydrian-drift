@@ -1,4 +1,4 @@
-import { Clocks, Durations, Instants, TimeZoneIds } from '@bessemer/cornerstone'
+import { Clocks, Durations, Instants, Locales, TimeZoneIds } from '@bessemer/cornerstone'
 import { Temporal } from '@js-temporal/polyfill'
 import { TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 
@@ -9,8 +9,8 @@ describe('Instants.from', () => {
     expect(result).toBe(instant)
   })
 
-  test('should create Instant from string', () => {
-    const result = Instants.from('2024-07-15T14:30:45.123Z')
+  test('should create Instant from a literal', () => {
+    const result = Instants.from(Instants.toLiteral(Instants.fromString('2024-07-15T14:30:45.123Z')))
     expect(result).toBeInstanceOf(Temporal.Instant)
     expect(result.epochMilliseconds).toBe(1721053845123)
   })
@@ -186,12 +186,6 @@ describe('Instants.add', () => {
     expect(Instants.toLiteral(result)).toBe('2024-07-15T15:00:45.123Z')
   })
 
-  test('should work with string input', () => {
-    const duration = Durations.fromHours(1)
-    const result = Instants.add('2024-07-15T14:30:45.123Z', duration)
-    expect(Instants.toLiteral(result)).toBe('2024-07-15T15:30:45.123Z')
-  })
-
   test('should handle negative durations', () => {
     const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
     const duration = Durations.fromHours(-2)
@@ -310,15 +304,6 @@ describe('Instants.isEqual', () => {
     const date2 = new Date('2024-07-15T14:30:45.123Z')
     expect(Instants.isEqual(date1, date2)).toBe(true)
   })
-
-  test('should work with mixed input types', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const date = new Date('2024-07-15T14:30:45.123Z')
-    const string = '2024-07-15T14:30:45.123Z'
-    expect(Instants.isEqual(instant, date)).toBe(true)
-    expect(Instants.isEqual(instant, string)).toBe(true)
-    expect(Instants.isEqual(date, string)).toBe(true)
-  })
 })
 
 describe('Instants.isBefore', () => {
@@ -371,12 +356,6 @@ describe('Instants.isAfter', () => {
     const instant2 = Instants.fromString('2024-07-15T14:30:45.123Z')
     expect(Instants.isAfter(instant1, instant2)).toBe(false)
   })
-
-  test('should work with mixed input types', () => {
-    const laterDate = new Date('2024-07-15T14:30:45.124Z')
-    const earlierString = '2024-07-15T14:30:45.123Z'
-    expect(Instants.isAfter(laterDate, earlierString)).toBe(true)
-  })
 })
 
 describe('Instants.CompareBy', () => {
@@ -410,5 +389,109 @@ describe('Instants.EqualBy', () => {
     const instant1 = Instants.fromString('2024-07-15T14:30:45.123Z')
     const instant2 = Instants.fromString('2024-07-15T14:30:45.124Z')
     expect(Instants.EqualBy(instant1, instant2)).toBe(false)
+  })
+})
+
+describe('Instants.format', () => {
+  test('should format instant with date and time in US locale', () => {
+    const instant = Instants.fromString('2023-12-25T14:30:45Z')
+    const result = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+
+    expect(result).toContain('12/25/2023')
+    expect(result).toContain('2:30')
+    expect(result).toContain('PM')
+  })
+
+  test('should format instant in different timezone', () => {
+    const instant = Instants.fromString('2023-12-25T14:30:45Z')
+    const utcResult = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: false,
+    })
+
+    // Should show 14:30 in UTC
+    expect(utcResult).toContain('14:30')
+  })
+
+  test('should work with different locales', () => {
+    const instant = Instants.fromString('2023-12-25T14:30:45Z')
+
+    const usResult = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
+    const deResult = Instants.format(instant, TimeZoneIds.Utc, Locales.German, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
+    // Should be different due to locale
+    expect(usResult).not.toBe(deResult)
+    expect(usResult).toContain('December')
+    expect(deResult).toContain('Dezember')
+  })
+
+  test('should format with various date options', () => {
+    const instant = Instants.fromString('2023-12-25T14:30:45Z')
+
+    const shortDate = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+
+    expect(shortDate).toContain('Dec')
+    expect(shortDate).toContain('25')
+    expect(shortDate).toContain('2023')
+  })
+
+  test('should format time only options', () => {
+    const instant = Instants.fromString('2023-12-25T09:15:30Z')
+
+    const timeOnly = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+
+    expect(timeOnly).toContain('9:15:30')
+    expect(timeOnly).toContain('AM')
+  })
+
+  test('should format with weekday options', () => {
+    const instant = Instants.fromString('2023-12-25T12:00:00Z') // Christmas 2023 is a Monday
+
+    const withWeekday = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
+    expect(withWeekday).toContain('Monday')
+    expect(withWeekday).toContain('December')
+  })
+
+  test('should handle 24-hour format', () => {
+    const instant = Instants.fromString('2023-12-25T23:45:00Z')
+
+    const result = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+
+    expect(result).toContain('23:45')
+    expect(result).not.toContain('PM')
   })
 })

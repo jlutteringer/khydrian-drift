@@ -29,4 +29,6 @@ export const fromString = (value: string): TimeZoneId => {
 export const Schema = structuredTransform(Zod.string(), parseString)
 
 export const Utc = 'UTC' as TimeZoneId
-export const SystemDefault = Intl.DateTimeFormat().resolvedOptions().timeZone as TimeZoneId
+export const getSystemDefault = (): TimeZoneId => {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone as TimeZoneId
+}

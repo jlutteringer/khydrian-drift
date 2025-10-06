@@ -13,13 +13,24 @@ import { Duration, DurationLike, from as fromDuration } from '@bessemer/cornerst
 import { _isInstant, instantToLiteral, TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 import { isString } from '@bessemer/cornerstone/string'
 import { isNil } from '@bessemer/cornerstone/object'
+import { Locale } from '@bessemer/cornerstone/intl/locale'
+import { DateTimeFormatOptions, format as formatPlainDateTime, fromInstant } from '@bessemer/cornerstone/temporal/plain-date-time'
+import { TimeZoneId } from '@bessemer/cornerstone/temporal/time-zone-id'
 
 export type Instant = Temporal.Instant
 export const Namespace = namespace('instant')
 export type InstantLiteral = NominalType<string, typeof Namespace>
 export type InstantLike = Instant | Date | InstantLiteral
 
-export const from = (value: InstantLike): Instant => {
+export function from(value: InstantLike): Instant
+export function from(value: InstantLike | null): Instant | null
+export function from(value: InstantLike | undefined): Instant | undefined
+export function from(value: InstantLike | null | undefined): Instant | null | undefined
+export function from(value: InstantLike | null | undefined): Instant | null | undefined {
+  if (isNil(value)) {
+    return value
+  }
+
   if (value instanceof Temporal.Instant) {
     return value
   }
@@ -61,8 +72,16 @@ export function toLiteral(value: InstantLike | null | undefined): InstantLiteral
   return instantToLiteral(from(value))
 }
 
-export const toDate = (value: Instant): Date => {
-  return new Date(value.epochMilliseconds)
+export function toDate(value: InstantLike): Date
+export function toDate(value: InstantLike | null): Date | null
+export function toDate(value: InstantLike | undefined): Date | undefined
+export function toDate(value: InstantLike | null | undefined): Date | null | undefined
+export function toDate(value: InstantLike | null | undefined): Date | null | undefined {
+  if (isNil(value)) {
+    return value
+  }
+
+  return new Date(from(value).epochMilliseconds)
 }
 
 export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), (it) => toLiteral(it)))
@@ -90,7 +109,14 @@ export const round = (element: InstantLike, unit: TimeUnit): Instant => {
   return from(element).round({ smallestUnit: unit })
 }
 
-export const isEqual = (element: InstantLike, other: InstantLike): boolean => {
+export function isEqual(element: InstantLike, other: InstantLike): boolean
+export function isEqual(element: InstantLike | null, other: InstantLike | null): boolean
+export function isEqual(element: InstantLike | undefined, other: InstantLike | undefined): boolean
+export function isEqual(element: InstantLike | null | undefined, other: InstantLike | null | undefined): boolean {
+  if (isNil(element) || isNil(other)) {
+    return element === other
+  }
+
   return EqualBy(from(element), from(other))
 }
 
@@ -100,4 +126,9 @@ export const isBefore = (element: InstantLike, other: InstantLike): boolean => {
 
 export const isAfter = (element: InstantLike, other: InstantLike): boolean => {
   return CompareBy(from(element), from(other)) > 0
+}
+
+export const format = (element: InstantLike, timeZone: TimeZoneId, locale: Locale, options: DateTimeFormatOptions): string => {
+  const plainDateTime = fromInstant(from(element), timeZone)
+  return formatPlainDateTime(plainDateTime, locale, options)
 }

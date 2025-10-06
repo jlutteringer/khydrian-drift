@@ -15,6 +15,7 @@ import { TimeZoneId } from '@bessemer/cornerstone/temporal/time-zone-id'
 import { TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 import { isString } from '@bessemer/cornerstone/string'
 import { isNil } from '@bessemer/cornerstone/object'
+import { Locale } from '@bessemer/cornerstone/intl/locale'
 
 export type PlainTime = Temporal.PlainTime
 export const Namespace = namespace('plain-time')
@@ -29,7 +30,15 @@ export type PlainTimeBuilder = {
 }
 export type PlainTimeLike = PlainTime | PlainTimeLiteral | PlainTimeBuilder
 
-export const from = (value: PlainTimeLike): PlainTime => {
+export function from(value: PlainTimeLike): PlainTime
+export function from(value: PlainTimeLike | null): PlainTime | null
+export function from(value: PlainTimeLike | undefined): PlainTime | undefined
+export function from(value: PlainTimeLike | null | undefined): PlainTime | null | undefined
+export function from(value: PlainTimeLike | null | undefined): PlainTime | null | undefined {
+  if (isNil(value)) {
+    return value
+  }
+
   if (value instanceof Temporal.PlainTime) {
     return value
   }
@@ -116,7 +125,14 @@ export const round = (element: PlainTimeLike, unit: TimeUnit): PlainTime => {
   return from(element).round({ smallestUnit: unit })
 }
 
-export const isEqual = (element: PlainTimeLike, other: PlainTimeLike): boolean => {
+export function isEqual(element: PlainTimeLike, other: PlainTimeLike): boolean
+export function isEqual(element: PlainTimeLike | null, other: PlainTimeLike | null): boolean
+export function isEqual(element: PlainTimeLike | undefined, other: PlainTimeLike | undefined): boolean
+export function isEqual(element: PlainTimeLike | null | undefined, other: PlainTimeLike | null | undefined): boolean {
+  if (isNil(element) || isNil(other)) {
+    return element === other
+  }
+
   return EqualBy(from(element), from(other))
 }
 
@@ -126,6 +142,27 @@ export const isBefore = (element: PlainTimeLike, other: PlainTimeLike): boolean 
 
 export const isAfter = (element: PlainTimeLike, other: PlainTimeLike): boolean => {
   return CompareBy(from(element), from(other)) > 0
+}
+
+export type TimeFormatOptions = {
+  hour12?: boolean | undefined
+  hour?: 'numeric' | '2-digit' | undefined
+  minute?: 'numeric' | '2-digit' | undefined
+  second?: 'numeric' | '2-digit' | undefined
+}
+
+export const format = (element: PlainTimeLike, locale: Locale, options?: TimeFormatOptions): string => {
+  const plainTime = from(element)
+
+  // Create a Date at Unix epoch with the time components
+  const date = new Date(1970, 0, 1, plainTime.hour, plainTime.minute, plainTime.second, plainTime.millisecond)
+
+  if (isNil(options) || (isNil(options.hour) && isNil(options.minute) && isNil(options.second))) {
+    options = { ...options, hour: 'numeric', minute: '2-digit', ...(plainTime.second > 0 || plainTime.millisecond > 0 ? { second: '2-digit' } : {}) }
+  }
+
+  const formatter = new Intl.DateTimeFormat(locale, options)
+  return formatter.format(date)
 }
 
 export const Midnight = from({ nanosecond: 0 })

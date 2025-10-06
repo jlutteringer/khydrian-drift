@@ -25,7 +25,15 @@ export type DurationBuilder = {
 }
 export type DurationLike = Duration | DurationLiteral | DurationBuilder
 
-export const from = (value: DurationLike): Duration => {
+export function from(value: DurationLike): Duration
+export function from(value: DurationLike | null): Duration | null
+export function from(value: DurationLike | undefined): Duration | undefined
+export function from(value: DurationLike | null | undefined): Duration | null | undefined
+export function from(value: DurationLike | null | undefined): Duration | null | undefined {
+  if (isNil(value)) {
+    return value
+  }
+
   if (value instanceof Temporal.Duration) {
     return value
   }
@@ -140,7 +148,7 @@ export const round = (element: DurationLike, unit: TimeUnit): Duration => {
 }
 
 export const add = (...durations: Array<DurationLike>): Duration => {
-  return durations.map(from).reduce((first, second) => first.add(second), Zero)
+  return durations.map((it) => from(it)).reduce((first, second) => first.add(second), Zero)
 }
 
 export const subtract = (...durations: Array<DurationLike>): Duration => {
@@ -148,7 +156,7 @@ export const subtract = (...durations: Array<DurationLike>): Duration => {
     return Zero
   }
 
-  const instances = durations.map(from)
+  const instances = durations.map((it) => from(it))
   return instances.slice(1).reduce((result, current) => result.subtract(current), instances[0]!)
 }
 
@@ -156,7 +164,14 @@ export const negate = (element: DurationLike): Duration => {
   return from(element).negated()
 }
 
-export const isEqual = (element: DurationLike, other: DurationLike): boolean => {
+export function isEqual(element: DurationLike, other: DurationLike): boolean
+export function isEqual(element: DurationLike | null, other: DurationLike | null): boolean
+export function isEqual(element: DurationLike | undefined, other: DurationLike | undefined): boolean
+export function isEqual(element: DurationLike | null | undefined, other: DurationLike | null | undefined): boolean {
+  if (isNil(element) || isNil(other)) {
+    return element === other
+  }
+
   return EqualBy(from(element), from(other))
 }
 

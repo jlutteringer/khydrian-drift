@@ -1,4 +1,4 @@
-import { Clocks, Durations, PlainTimes, TimeZoneIds } from '@bessemer/cornerstone'
+import { Clocks, Durations, Locales, PlainTimes, TimeZoneIds } from '@bessemer/cornerstone'
 import { Temporal } from '@js-temporal/polyfill'
 import { PlainTimeLiteral } from '@bessemer/cornerstone/temporal/plain-time'
 
@@ -499,5 +499,50 @@ describe('PlainTimes.toLiteral', () => {
     const time = PlainTimes.fromString('12:30:45.000')
     const result = PlainTimes.toLiteral(time)
     expect(result).toMatch('12:30:45')
+  })
+})
+
+describe('PlainTimes.format', () => {
+  test('should format time with default options in English locale', () => {
+    const time = PlainTimes.from({ hour: 14, minute: 30, second: 45 })
+    const result = PlainTimes.format(time, Locales.AmericanEnglish)
+
+    // Should produce something like "2:30:45 PM" for US locale
+    expect(result).toContain('2:30')
+    expect(result).toContain('PM')
+  })
+
+  test('should format time with 24-hour format', () => {
+    const time = PlainTimes.from({ hour: 14, minute: 30, second: 0 })
+    const result = PlainTimes.format(time, Locales.AmericanEnglish, { hour12: false })
+
+    expect(result).toContain('14:30')
+  })
+
+  test('should format time without seconds', () => {
+    const time = PlainTimes.from({ hour: 9, minute: 15, second: 30 })
+    const result = PlainTimes.format(time, Locales.AmericanEnglish, {
+      hour: '2-digit',
+      minute: '2-digit',
+      // No second option means seconds won't be shown
+    })
+
+    expect(result).toContain('09:15')
+    expect(result).not.toContain(':30')
+  })
+
+  test('should work with different locales', () => {
+    const time = PlainTimes.from({ hour: 14, minute: 30 })
+
+    const usResult = PlainTimes.format(time, Locales.AmericanEnglish, {})
+    const deResult = PlainTimes.format(time, Locales.fromString('de-DE'), {})
+
+    // Just verify they're different (locale-specific formatting)
+    expect(usResult).not.toBe(deResult)
+  })
+
+  test('should work with builder object input', () => {
+    const result = PlainTimes.format({ hour: 9, minute: 45 }, Locales.AmericanEnglish, { hour: 'numeric', minute: '2-digit' })
+    expect(result).toContain('9:45')
   })
 })
