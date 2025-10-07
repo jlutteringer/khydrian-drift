@@ -61,6 +61,14 @@ export const schema = <T extends ZodType>(_: T): ZodType<AsyncValue<Zod.infer<T>
   }) as any
 }
 
+export const pending = (): PendingValue => ({ isSuccess: false, isError: false, isLoading: false, isFetching: false, data: undefined })
+
+export const isPending = (value: AsyncValue<unknown>): value is PendingValue => {
+  return !value.isLoading && !value.isSuccess && !value.isError && !value.isFetching
+}
+
+export const settled = <T>(data: T): SettledValue<T> => ({ isSuccess: true, isError: false, isLoading: false, isFetching: false, data })
+
 export const isSettled = <T>(value: AsyncValue<T>): value is SettledValue<T> => {
   return value.isSuccess && !value.isError && !value.isLoading && !value.isFetching
 }
@@ -74,8 +82,6 @@ export const fetching = <T>(data: T): FetchingValueSuccess<T> => ({
   isFetching: true,
   data,
 })
-
-export const settled = <T>(data: T): SettledValue<T> => ({ isSuccess: true, isError: false, isLoading: false, isFetching: false, data })
 
 export const error = (error: unknown): ErrorValue => ({ isSuccess: false, isError: true, isLoading: false, isFetching: false, data: error })
 
