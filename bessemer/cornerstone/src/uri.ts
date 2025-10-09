@@ -1,7 +1,13 @@
-import { TaggedType } from '@bessemer/cornerstone/types'
+import { NominalType, TaggedType } from '@bessemer/cornerstone/types'
 import { isEmpty, isString, removeStart, splitFirst, startsWith, StringSplitResult } from '@bessemer/cornerstone/string'
-import { isNil, isPresent } from '@bessemer/cornerstone/object'
+import { isNil, isObject, isPresent } from '@bessemer/cornerstone/object'
 import { contains } from '@bessemer/cornerstone/array'
+import { namespace } from '@bessemer/cornerstone/resource-key'
+import { failure, mapResult, Result, success } from '@bessemer/cornerstone/result'
+import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
+import { isError } from '@bessemer/cornerstone/error/error'
+import { structuredTransform } from '@bessemer/cornerstone/zod-util'
+import Zod from 'zod'
 
 export const encode = (uriComponent: UriComponent) => {
   return encodeURIComponent(uriComponent)
@@ -33,10 +39,104 @@ export interface UriLocation {
 }
 
 export interface Uri {
+  type: 'uri' | 'url'
   scheme: UriScheme | null
   host: UriHost | null
   authentication: UriAuthentication | null
   location: UriLocation
+}
+
+export const Namespace = namespace('uri')
+export type UriLiteral = NominalType<string, typeof Namespace>
+export type UriBuilder = {
+  scheme?: string
+  host?:
+    | {
+        value: string
+        port?: number
+      }
+    | string
+  authentication?:
+    | {
+        principal: string
+        password?: string
+      }
+    | string
+  location?:
+    | {
+        path: string
+        query?: string
+        fragment?: string
+      }
+    | string
+}
+
+export type UriLike = Uri | UriLiteral | UriBuilder
+
+export const parseString = (value: string): Result<Uri, ErrorEvent> => {
+  try {
+    // JOHN parse should be rewritten to return descriptive result objects
+    const [scheme, rest1] = parseSchemePart(value)
+    const [authentication, rest2] = parseAuthenticationPart(rest1)
+    const [host, rest3] = parseHostPart(rest2)
+    const location = parseLocation(rest3)
+    const uri: Uri = { type: 'uri', scheme, host, authentication, location }
+    return success(uri)
+  } catch (e) {
+    if (!isError(e)) {
+      throw e
+    }
+
+    return failure(invalidValue(value, { namespace: Namespace, message: e.message }))
+  }
+}
+
+export const fromString = (value: string): Uri => {
+  return unpackResult(parseString(value))
+}
+
+export function from(value: UriLike): Uri
+export function from(value: UriLike | null): Uri | null
+export function from(value: UriLike | undefined): Uri | undefined
+export function from(value: UriLike | null | undefined): Uri | null | undefined
+export function from(value: UriLike | null | undefined): Uri | null | undefined {
+  if (isNil(value)) {
+    return value
+  }
+  if (isUri(value)) {
+    return value
+  }
+  if (isString(value)) {
+    return fromString(value)
+  }
+
+  return build(value as UriBuilder)
+}
+
+export function toLiteral(likeValue: UriLike): UriLiteral
+export function toLiteral(likeValue: UriLike | null): UriLiteral | null
+export function toLiteral(likeValue: UriLike | undefined): UriLiteral | undefined
+export function toLiteral(likeValue: UriLike | null | undefined): UriLiteral | null | undefined
+export function toLiteral(likeValue: UriLike | null | undefined): UriLiteral | null | undefined {
+  if (isNil(likeValue)) {
+    return likeValue
+  }
+
+  const value = from(likeValue)
+  return format(value) as UriLiteral
+}
+
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), (it) => toLiteral(it)))
+// JOHN need a schema for the object version...
+// export const SchemaInstance = structuredTransform(Zod.string(), parseString)
+
+export const isUri = (value: unknown): value is Uri => {
+  if (!isObject(value)) {
+    return false
+  }
+
+  const uriValue = value as any as Uri
+  return uriValue.type === 'uri' || uriValue.type === 'url'
 }
 
 const parseSchemePart = (url: UriComponent): [UriScheme | null, UriComponent] => {
@@ -179,15 +279,6 @@ const parseLocation = (url: UriComponent): UriLocation => {
   return location
 }
 
-export const parse = (urlString: UriString): Uri => {
-  const [scheme, rest1] = parseSchemePart(urlString)
-  const [authentication, rest2] = parseAuthenticationPart(rest1)
-  const [host, rest3] = parseHostPart(rest2)
-  const location = parseLocation(rest3)
-  const url: Uri = { scheme, host, authentication, location }
-  return url
-}
-
 export const emptyLocation = (): UriLocation => {
   return {
     path: '',
@@ -196,30 +287,7 @@ export const emptyLocation = (): UriLocation => {
   }
 }
 
-export type UriBuilder = {
-  scheme?: string
-  host?:
-    | {
-        value: string
-        port?: number
-      }
-    | string
-  authentication?:
-    | {
-        principal: string
-        password?: string
-      }
-    | string
-  location?:
-    | {
-        path: string
-        query?: string
-        fragment?: string
-      }
-    | string
-}
-
-export const build = (builder: UriBuilder): Uri => {
+const build = (builder: UriBuilder): Uri => {
   const scheme = builder.scheme ?? null
 
   let host: UriHost | null = null
@@ -260,6 +328,7 @@ export const build = (builder: UriBuilder): Uri => {
   }
 
   return {
+    type: 'uri',
     scheme,
     host,
     authentication,
@@ -302,12 +371,13 @@ export const format = (uri: Uri, format: Array<UriComponentType> = Object.values
   }
 
   if (contains(format, UriComponentType.Location)) {
-    urlString = urlString + formatLocation(uri.location, format)
+    urlString = urlString + formatLocation(uri.location)
   }
+
   return urlString
 }
 
-const formatLocation = (location: UriLocation, format: Array<UriComponentType>): string => {
+const formatLocation = (location: UriLocation): string => {
   let urlString = ''
 
   if (!isEmpty(location.path)) {
@@ -323,8 +393,4 @@ const formatLocation = (location: UriLocation, format: Array<UriComponentType>):
   }
 
   return urlString
-}
-
-export const buildString = (builder: UriBuilder): UriString => {
-  return format(build(builder))
 }

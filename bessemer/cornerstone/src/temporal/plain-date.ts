@@ -20,9 +20,9 @@ export type PlainDate = Temporal.PlainDate
 export const Namespace = namespace('plain-date')
 export type PlainDateLiteral = NominalType<string, typeof Namespace>
 export type PlainDateBuilder = {
-  year?: number
-  month?: number
-  day?: number
+  year: number
+  month: number
+  day: number
 }
 
 export type PlainDateLike = PlainDate | PlainDateLiteral | PlainDateBuilder
@@ -94,7 +94,7 @@ export const now = (zone: TimeZoneId, clock = DefaultClock): PlainDate => {
   return fromInstant(clock.instant(), zone)
 }
 
-export const merge = (element: PlainDateLike, builder: PlainDateBuilder): PlainDate => {
+export const merge = (element: PlainDateLike, builder: Partial<PlainDateBuilder>): PlainDate => {
   return from(element).with(builder)
 }
 

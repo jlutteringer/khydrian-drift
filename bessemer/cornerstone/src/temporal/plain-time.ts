@@ -21,7 +21,7 @@ export type PlainTime = Temporal.PlainTime
 export const Namespace = namespace('plain-time')
 export type PlainTimeLiteral = NominalType<string, typeof Namespace>
 export type PlainTimeBuilder = {
-  hour?: number
+  hour: number
   minute?: number
   second?: number
   millisecond?: number
@@ -105,7 +105,7 @@ export const now = (zone: TimeZoneId, clock = DefaultClock): PlainTime => {
   return fromInstant(clock.instant(), zone)
 }
 
-export const merge = (element: PlainTimeLike, builder: PlainTimeBuilder): PlainTime => {
+export const merge = (element: PlainTimeLike, builder: Partial<PlainTimeBuilder>): PlainTime => {
   return from(element).with(builder)
 }
 
@@ -165,5 +165,5 @@ export const format = (element: PlainTimeLike, locale: Locale, options?: TimeFor
   return formatter.format(date)
 }
 
-export const Midnight = from({ nanosecond: 0 })
+export const Midnight = from({ hour: 0 })
 export const Noon = from({ hour: 12 })

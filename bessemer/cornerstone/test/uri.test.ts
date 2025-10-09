@@ -1,8 +1,8 @@
 import { Uris } from '@bessemer/cornerstone'
 
-test('Uris.parse / Uris.build', () => {
-  expect(Uris.parse('tel:+1-816-555-1212')).toEqual(
-    Uris.build({
+test('Uris.fromString', () => {
+  expect(Uris.fromString('tel:+1-816-555-1212')).toEqual(
+    Uris.from({
       scheme: 'tel',
       location: {
         path: '+1-816-555-1212',
@@ -10,15 +10,15 @@ test('Uris.parse / Uris.build', () => {
     })
   )
 
-  expect(Uris.parse('tel:+1-816-555-1212?#')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('tel:+1-816-555-1212?#')).toEqual(
+    Uris.from({
       scheme: 'tel',
       location: '+1-816-555-1212',
     })
   )
 
-  expect(Uris.parse('tel:+1-816-555-1212?#fragment')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('tel:+1-816-555-1212?#fragment')).toEqual(
+    Uris.from({
       scheme: 'tel',
       location: {
         path: '+1-816-555-1212',
@@ -27,8 +27,8 @@ test('Uris.parse / Uris.build', () => {
     })
   )
 
-  expect(Uris.parse('telnet://192.0.2.16:80/')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('telnet://192.0.2.16:80/')).toEqual(
+    Uris.from({
       scheme: 'telnet',
       host: {
         value: '192.0.2.16',
@@ -40,23 +40,22 @@ test('Uris.parse / Uris.build', () => {
     })
   )
 
-  expect(Uris.parse('telnet://192.0.2.16:80')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('telnet://192.0.2.16:80')).toEqual(
+    Uris.from({
       scheme: 'telnet',
       host: '192.0.2.16:80',
-      location: '',
     })
   )
 
-  expect(Uris.parse('urn:oasis:names:specification:docbook:dtd:xml:4.1.2')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('urn:oasis:names:specification:docbook:dtd:xml:4.1.2')).toEqual(
+    Uris.from({
       scheme: 'urn',
       location: 'oasis:names:specification:docbook:dtd:xml:4.1.2',
     })
   )
 
-  expect(Uris.parse('news:comp.infosystems.www.servers.unix')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('news:comp.infosystems.www.servers.unix')).toEqual(
+    Uris.from({
       scheme: 'news',
       location: {
         path: 'comp.infosystems.www.servers.unix',
@@ -64,8 +63,8 @@ test('Uris.parse / Uris.build', () => {
     })
   )
 
-  expect(Uris.parse('ldap://[2001:db8::7]/c=GB?objectClass?one')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('ldap://[2001:db8::7]/c=GB?objectClass?one')).toEqual(
+    Uris.from({
       scheme: 'ldap',
       host: {
         value: '[2001:db8::7]',
@@ -77,8 +76,8 @@ test('Uris.parse / Uris.build', () => {
     })
   )
 
-  expect(Uris.parse('ldap://[2001:db8::7]:389/c=GB?objectClass?one')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('ldap://[2001:db8::7]:389/c=GB?objectClass?one')).toEqual(
+    Uris.from({
       scheme: 'ldap',
       host: {
         value: '[2001:db8::7]',
@@ -91,8 +90,8 @@ test('Uris.parse / Uris.build', () => {
     })
   )
 
-  expect(Uris.parse('https://john.doe@www.example.com:1234/forum/questions/?tag=networking&order=newest#:~:text=whatever')).toEqual(
-    Uris.build({
+  expect(Uris.fromString('https://john.doe@www.example.com:1234/forum/questions/?tag=networking&order=newest#:~:text=whatever')).toEqual(
+    Uris.from({
       scheme: 'https',
       authentication: {
         principal: 'john.doe',

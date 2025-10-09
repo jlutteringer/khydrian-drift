@@ -1,43 +1,43 @@
 import { Urls } from '@bessemer/cornerstone'
 
-test('Urls.parse / Urls.build', () => {
+test('Urls.fromString', () => {
   {
-    expect(Urls.parse('https://www.google.com')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('https://www.google.com')).toEqual(
+      Urls.from({
         scheme: 'https',
         host: 'www.google.com',
       })
     )
   }
   {
-    expect(Urls.parse('https://www.google.com/')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('https://www.google.com/')).toEqual(
+      Urls.from({
         scheme: 'https',
         host: 'www.google.com',
       })
     )
   }
 
-  // TODO i think we should try and support these URLs without having to have the double slash
+  // JOHN i think we should try and support these URLs without having to have the double slash
   {
-    expect(Urls.parse('//www.google.com')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('//www.google.com')).toEqual(
+      Urls.from({
         host: 'www.google.com',
       })
     )
   }
 
   {
-    expect(Urls.parse('//www.google.com/')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('//www.google.com/')).toEqual(
+      Urls.from({
         host: 'www.google.com',
       })
     )
   }
 
   {
-    expect(Urls.parse('http://localhost:8080')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('http://localhost:8080')).toEqual(
+      Urls.from({
         scheme: 'http',
         host: {
           value: 'localhost',
@@ -48,16 +48,16 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('http://localhost:8080/')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('http://localhost:8080/')).toEqual(
+      Urls.from({
         scheme: 'http',
         host: 'localhost:8080',
       })
     )
   }
   {
-    expect(Urls.parse('//localhost:8080')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('//localhost:8080')).toEqual(
+      Urls.from({
         host: {
           value: 'localhost',
           port: 8080,
@@ -66,8 +66,8 @@ test('Urls.parse / Urls.build', () => {
     )
   }
   {
-    expect(Urls.parse('//localhost:8080/')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('//localhost:8080/')).toEqual(
+      Urls.from({
         host: {
           value: 'localhost',
           port: 8080,
@@ -77,8 +77,8 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('https://john.lutteringer:password123@www.google.com')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('https://john.lutteringer:password123@www.google.com')).toEqual(
+      Urls.from({
         scheme: 'https',
         host: 'www.google.com',
         authentication: {
@@ -90,8 +90,8 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('https://john.lutteringer:password123@www.google.com/')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('https://john.lutteringer:password123@www.google.com/')).toEqual(
+      Urls.from({
         scheme: 'https',
         host: 'www.google.com',
         authentication: 'john.lutteringer:password123',
@@ -100,8 +100,8 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('https://john.lutteringer@www.google.com/')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('https://john.lutteringer@www.google.com/')).toEqual(
+      Urls.from({
         scheme: 'https',
         host: 'www.google.com',
         authentication: 'john.lutteringer',
@@ -110,8 +110,8 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('john.lutteringer@www.google.com')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('john.lutteringer@www.google.com')).toEqual(
+      Urls.from({
         host: 'www.google.com',
         authentication: {
           principal: 'john.lutteringer',
@@ -121,8 +121,8 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('//john.lutteringer:password123@www.google.com')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('//john.lutteringer:password123@www.google.com')).toEqual(
+      Urls.from({
         host: 'www.google.com',
         authentication: {
           principal: 'john.lutteringer',
@@ -133,8 +133,8 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('//www.google.com?q=Search%20Query')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('//www.google.com?q=Search%20Query')).toEqual(
+      Urls.from({
         host: 'www.google.com',
         location: {
           path: '',
@@ -147,8 +147,8 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('/search?q=Search%20Query')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('/search?q=Search%20Query')).toEqual(
+      Urls.from({
         location: {
           path: '/search',
           parameters: {
@@ -160,8 +160,8 @@ test('Urls.parse / Urls.build', () => {
   }
 
   {
-    expect(Urls.parse('search?q=Search%20Query')).toEqual(
-      Urls.build({
+    expect(Urls.fromString('search?q=Search%20Query')).toEqual(
+      Urls.from({
         location: {
           path: 'search',
           parameters: {
