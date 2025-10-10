@@ -137,7 +137,6 @@ test('Urls.fromString', () => {
       Urls.from({
         host: 'www.google.com',
         location: {
-          path: '',
           parameters: {
             q: 'Search Query',
           },

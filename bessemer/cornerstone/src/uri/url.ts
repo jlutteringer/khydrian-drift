@@ -9,13 +9,13 @@ import {
   UriBuilder,
   UriComponent,
   UriLocation,
-} from '@bessemer/cornerstone/uri'
+} from '@bessemer/cornerstone/uri/uri'
 import { namespace } from '@bessemer/cornerstone/resource-key'
 import { failure, mapResult, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { isError } from '@bessemer/cornerstone/error/error'
 import { isNil, isObject, isPresent } from '@bessemer/cornerstone/object'
-import { isBlank, isString, removeStart, startsWith } from '@bessemer/cornerstone/string'
+import { isBlank, isString, removeStart } from '@bessemer/cornerstone/string'
 import { first, isEmpty } from '@bessemer/cornerstone/array'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
@@ -37,10 +37,17 @@ export interface Url extends Uri {
 
 export const Namespace = namespace('url')
 export type UrlLiteral = NominalType<string, typeof Namespace>
+
+type UrlBuilderParametersPart = { parameters?: Dictionary<string | Array<string>> }
+
 export type UrlBuilder = UriBuilder & {
-  location?: {
-    parameters?: Dictionary<string | Array<string>>
-  }
+  location?:
+    | ({
+        path?: string | null
+        fragment?: string | null
+      } & (UrlBuilderParametersPart | { query?: string | null }))
+    | string
+    | null
 }
 
 export type UrlLike = Url | UrlLiteral | UrlBuilder
@@ -58,9 +65,9 @@ export const parseString = (value: string, normalize = true): Result<Url, ErrorE
 
     if (normalize) {
       if (!isEmpty(location.pathSegments)) {
-        location.path = (startsWith(location.path, '/') ? '/' : '') + formatPathSegments(location.pathSegments)
+        location.path = ((location.path ?? '').startsWith('/') ? '/' : '') + formatPathSegments(location.pathSegments)
       } else {
-        location.path = ''
+        location.path = null
       }
 
       location.query = formatQueryParameters(location.parameters)
@@ -99,7 +106,7 @@ export function from(value: UrlLike | null | undefined): Url | null | undefined 
     return fromString(value)
   }
 
-  return build(value as UriBuilder)
+  return build(value as UrlBuilder)
 }
 
 export function toLiteral(likeValue: UrlLike): UrlLiteral
@@ -132,7 +139,7 @@ const augmentUriLocation = (uriLocation: UriLocation, normalize: boolean): UrlLo
   const pathSegments: Array<string> = []
   const parameters: Dictionary<string | Array<string>> = {}
 
-  if (!isBlank(uriLocation.path)) {
+  if (isPresent(uriLocation.path)) {
     removeStart(uriLocation.path, '/')
       .split('/')
       .forEach((urlPathPart) => {
@@ -198,12 +205,15 @@ const formatQueryParameters = (parameters: Dictionary<string | Array<string>>): 
 const build = (builder: UrlBuilder): Url => {
   const uri = uriFrom(builder)
 
-  if (isPresent(builder.location?.parameters)) {
-    uri.location.query = formatQueryParameters(builder.location.parameters)
+  if (isPresent(builder.location)) {
+    const parameters = builder.location as UrlBuilderParametersPart
+
+    if (isPresent(parameters.parameters)) {
+      uri.location.query = formatQueryParameters(parameters.parameters)
+    }
   }
 
   const urlLocation = augmentUriLocation(uri.location, false)
-
   return {
     ...uri,
     type: 'url',

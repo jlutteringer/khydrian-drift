@@ -1,3 +1,3 @@
-import { isFunction as _isFunction } from 'lodash-es'
-
-export const isFunction = _isFunction
+export const isFunction = (value: any): value is Function => {
+  return typeof value === 'function'
+}

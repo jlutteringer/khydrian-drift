@@ -1,20 +1,35 @@
-import {
-  endsWith as _endsWith,
-  includes as _includes,
-  isEmpty as _isEmpty,
-  padEnd as _padEnd,
-  padStart as _padStart,
-  replace as _replace,
-  startsWith as _startsWith,
-} from 'lodash-es'
 import { UnknownRecord } from 'type-fest'
 import { rest } from '@bessemer/cornerstone/array'
+import { isNil } from '@bessemer/cornerstone/object'
 
-export const isString = (value?: any): value is string => {
+export const isString = (value: any): value is string => {
   return typeof value === 'string'
 }
 
-export const isEmpty = _isEmpty
+export const isEmpty = (value: string): boolean => {
+  return value.length === 0
+}
+
+export const isEmptyOrNil = (value: string | null | undefined): boolean => {
+  if (isNil(value)) {
+    return true
+  }
+
+  return isEmpty(value)
+}
+
+export const emptyToNull = (value: string): string | null => {
+  if (isEmptyOrNil(value)) {
+    return null
+  }
+
+  return value
+}
+
+export const isBlank = (str?: string | null): boolean => {
+  const testStr = str ?? ''
+  return /^\s*$/.test(testStr)
+}
 
 export type StringSplitResult = { selection: string; separator: string; rest: string } | { selection: null; separator: null; rest: string }
 
@@ -104,9 +119,6 @@ export const splitAt = (str: string, index: number): [string, string] => {
   return [str.slice(0, index), str.slice(index)] as const
 }
 
-export const startsWith = _startsWith
-export const endsWith = _endsWith
-
 export const removeStart = (string: string, substring: string): string => {
   if (!string.startsWith(substring)) {
     return string
@@ -121,11 +133,6 @@ export const removeEnd = (string: string, substring: string): string => {
   }
 
   return string.slice(0, -substring.length)
-}
-
-export const isBlank = (str?: string | null): boolean => {
-  const testStr = str ?? ''
-  return /^\s*$/.test(testStr)
 }
 
 export const mostCentralOccurrence = (str: string, substr: string): number | null => {
@@ -164,9 +171,24 @@ export const replacePlaceholders = (string: string, parameters: UnknownRecord, g
   )
 }
 
-export const padStart = _padStart
-export const padEnd = _padEnd
+export const padStart = (str: string, length: number, chars: string): string => {
+  if (str.length >= length) {
+    return str
+  }
 
-export const contains = _includes
+  const padLength = length - str.length
+  const padString = chars.repeat(Math.ceil(padLength / chars.length))
 
-export const replace = _replace
+  return padString.slice(0, padLength) + str
+}
+
+export const padEnd = (str: string, length: number, chars: string): string => {
+  if (str.length >= length) {
+    return str
+  }
+
+  const padLength = length - str.length
+  const padString = chars.repeat(Math.ceil(padLength / chars.length))
+
+  return str + padString.slice(0, padLength)
+}
