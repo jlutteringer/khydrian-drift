@@ -16,6 +16,8 @@ import * as Urls from '@bessemer/cornerstone/uri/url'
 import * as Loggers from '@bessemer/cornerstone/logger'
 import * as Errors from '@bessemer/cornerstone/error/error'
 import * as ErrorTypes from '@bessemer/cornerstone/error/error-type'
+import * as ErrorCodes from '@bessemer/cornerstone/error/error-code'
+import * as ErrorCauses from '@bessemer/cornerstone/error/error-cause'
 import * as ErrorEvents from '@bessemer/cornerstone/error/error-event'
 import * as Assertions from '@bessemer/cornerstone/assertion'
 import * as Uuids from '@bessemer/cornerstone/uuid'
@@ -84,6 +86,8 @@ export {
   Loggers,
   Errors,
   ErrorTypes,
+  ErrorCodes,
+  ErrorCauses,
   ErrorEvents,
   Assertions,
   Uuids,

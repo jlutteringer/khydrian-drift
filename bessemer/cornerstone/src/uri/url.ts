@@ -10,7 +10,7 @@ import {
   UriComponent,
   UriLocation,
 } from '@bessemer/cornerstone/uri/uri'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { failure, mapResult, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { isError } from '@bessemer/cornerstone/error/error'
@@ -35,7 +35,7 @@ export interface Url extends Uri {
   location: UrlLocation
 }
 
-export const Namespace = namespace('url')
+export const Namespace = createNamespace('url')
 export type UrlLiteral = NominalType<string, typeof Namespace>
 
 type UrlBuilderParametersPart = { parameters?: Dictionary<string | Array<string>> }

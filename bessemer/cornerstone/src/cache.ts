@@ -51,7 +51,7 @@ export namespace CacheSector {
   }
 
   export const namespace = (namespace: ResourceNamespace, sector: CacheSector): CacheSector => {
-    return { globs: ResourceKeys.applyNamespaceAll(sector.globs, namespace).map((it) => it as string as GlobPattern) }
+    return { globs: ResourceKeys.namespaceKeys(sector.globs, namespace).map((it) => it as string as GlobPattern) }
   }
 }
 

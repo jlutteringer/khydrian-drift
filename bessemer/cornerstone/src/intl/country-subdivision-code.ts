@@ -2,12 +2,12 @@ import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 import { CountryCode } from '@bessemer/cornerstone/intl/country-code'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
 // ISO 3166-2 country subdivision codes
-export const Namespace = namespace('country-subdivision-code')
+export const Namespace = createNamespace('country-subdivision-code')
 export type CountrySubdivisionCode = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<CountrySubdivisionCode, ErrorEvent> => {

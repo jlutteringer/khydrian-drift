@@ -7,7 +7,7 @@ export namespace AdvisoryLockUtil {
   const ResourceKeyAttribute: ErrorAttribute<string> = 'resourceKey'
 
   export const buildLockLockedError = (resourceKey: ResourceKey) => {
-    return ErrorEvents.of({
+    return ErrorEvents.from({
       code: AdvisoryLockLockedErrorCode,
       message: `${resourceKey} is locked.`,
       attributes: { [ResourceKeyAttribute]: resourceKey },

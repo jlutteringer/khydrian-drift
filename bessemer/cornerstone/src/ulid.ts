@@ -2,11 +2,11 @@ import { ulid } from 'ulid'
 import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = namespace('ulid')
+export const Namespace = createNamespace('ulid')
 export type Ulid = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<Ulid, ErrorEvent> => {

@@ -192,3 +192,12 @@ export const padEnd = (str: string, length: number, chars: string): string => {
 
   return str + padString.slice(0, padLength)
 }
+
+export const isNumber = (value: string): boolean => {
+  if (value.trim() === '') {
+    return false
+  }
+
+  const num = Number(value)
+  return !isNaN(num) && isFinite(num)
+}

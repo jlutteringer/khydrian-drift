@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
@@ -19,7 +19,7 @@ import { PlainTimeBuilder, TimeFormatOptions } from '@bessemer/cornerstone/tempo
 import { DateFormatOptions, PlainDateBuilder } from '@bessemer/cornerstone/temporal/plain-date'
 
 export type ZonedDateTime = Temporal.ZonedDateTime
-export const Namespace = namespace('zoned-date-time')
+export const Namespace = createNamespace('zoned-date-time')
 export type ZonedDateTimeLiteral = NominalType<string, typeof Namespace>
 export type ZonedDateTimeBuilder = PlainDateBuilder &
   PlainTimeBuilder & {

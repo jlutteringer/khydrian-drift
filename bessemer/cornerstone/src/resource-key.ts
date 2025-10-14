@@ -1,5 +1,6 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
+import { isPresent } from '@bessemer/cornerstone/object'
 
 export type ResourceKey = string
 const ResourceNamespaceSeparator = '/'
@@ -16,7 +17,7 @@ export const emptyNamespace = (): ResourceNamespace<undefined> => {
   return undefined
 }
 
-export const namespace = <T extends NamespaceKey>(value: T): ResourceNamespace<T> => {
+export const createNamespace = <T extends NamespaceKey>(value: T): ResourceNamespace<T> => {
   if (value === undefined) {
     return value as any as ResourceNamespace<T>
   }
@@ -28,9 +29,13 @@ export const namespace = <T extends NamespaceKey>(value: T): ResourceNamespace<T
   return value as ResourceNamespace<T>
 }
 
-export const ResourceNamespaceSchema = Zod.string().optional().transform(namespace)
+export const createCompositeNamespace = (...names: Array<ResourceNamespace>): ResourceNamespace => {
+  return names.filter(isPresent).join(ResourceNamespaceSeparator) as ResourceNamespace
+}
 
-export const applyNamespace = <KeyType extends ResourceKey = ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey>(
+export const ResourceNamespaceSchema = Zod.string().optional().transform(createNamespace)
+
+export const namespaceKey = <KeyType extends ResourceKey = ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey>(
   key: KeyType,
   namespace: ResourceNamespace<NamespaceType>
 ): NamespacedKey<KeyType, NamespaceType> => {
@@ -41,14 +46,14 @@ export const applyNamespace = <KeyType extends ResourceKey = ResourceKey, Namesp
   return `${namespace}${ResourceNamespaceSeparator}${encodeKey(key)}` as NamespacedKey<KeyType, NamespaceType>
 }
 
-export const applyNamespaceAll = <KeyType extends ResourceKey = ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey>(
+export const namespaceKeys = <KeyType extends ResourceKey = ResourceKey, NamespaceType extends NamespaceKey = NamespaceKey>(
   keys: Array<KeyType>,
   namespace: ResourceNamespace<NamespaceType>
 ): Array<NamespacedKey<KeyType, NamespaceType>> => {
-  return keys.map((it) => applyNamespace(it, namespace))
+  return keys.map((it) => namespaceKey(it, namespace))
 }
 
-export const splitNamespace = <KeyType extends ResourceKey, NamespaceType extends NamespaceKey>(
+export const destructureKey = <KeyType extends ResourceKey, NamespaceType extends NamespaceKey>(
   key: NamespacedKey<KeyType, NamespaceType>
 ): [KeyType, ResourceNamespace<NamespaceType>] => {
   const lastIndex = key.lastIndexOf(ResourceNamespaceSeparator)
@@ -67,12 +72,24 @@ export const splitNamespace = <KeyType extends ResourceKey, NamespaceType extend
 export const getKey = <KeyType extends ResourceKey, NamespaceType extends NamespaceKey>(
   namespacedKey: NamespacedKey<KeyType, NamespaceType>
 ): KeyType => {
-  const [key, _] = splitNamespace(namespacedKey)
+  const [key, _] = destructureKey(namespacedKey)
   return key
 }
 
-export const extendNamespace = (...names: Array<ResourceNamespace>): ResourceNamespace => {
-  return names.join(ResourceNamespaceSeparator) as ResourceNamespace
+export const getNamespace = <KeyType extends ResourceKey, NamespaceType extends NamespaceKey>(
+  namespacedKey: NamespacedKey<KeyType, NamespaceType>
+): ResourceNamespace<NamespaceType> => {
+  const [_, namespace] = destructureKey(namespacedKey)
+  return namespace
+}
+
+export const extendNamespace = <KeyType extends ResourceKey, NamespaceType extends NamespaceKey>(
+  namespacedKey: NamespacedKey<KeyType, NamespaceType>,
+  additionalNamespace: ResourceNamespace
+): NamespacedKey<KeyType> => {
+  const [type, namespace] = destructureKey(namespacedKey)
+  const extendedNamespace = createCompositeNamespace(additionalNamespace, namespace)
+  return namespaceKey(type, extendedNamespace)
 }
 
 export const encodeKey = (key: ResourceKey): ResourceKey => {

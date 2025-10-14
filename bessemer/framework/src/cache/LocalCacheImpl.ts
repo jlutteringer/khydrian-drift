@@ -7,7 +7,7 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
   constructor(readonly name: string, private readonly providers: Array<LocalCacheProvider<T>>) {}
 
   private getNamespace = (): ResourceNamespace => {
-    return ResourceKeys.namespace(this.name)
+    return ResourceKeys.createNamespace(this.name)
   }
 
   getValue = (key: ResourceKey, fetch: () => T): T => {
@@ -24,7 +24,7 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     //   return fetch(keys)
     // }
 
-    const namespacedKeys = ResourceKeys.applyNamespaceAll(keys, this.getNamespace())
+    const namespacedKeys = ResourceKeys.namespaceKeys(keys, this.getNamespace())
     const entries = this.getCachedValues(namespacedKeys)
     this.revalidate(entries, fetch)
 
@@ -47,7 +47,7 @@ export class LocalCacheImpl<T> implements LocalCache<T> {
     // }
 
     const namespacedEntries = entries.map(([key, value]) => {
-      return Entries.of(ResourceKeys.applyNamespace(key, this.getNamespace()), value !== undefined ? CacheEntry.of(value) : undefined)
+      return Entries.of(ResourceKeys.namespaceKey(key, this.getNamespace()), value !== undefined ? CacheEntry.of(value) : undefined)
     })
 
     this.providers.forEach((provider) => provider.setValues(namespacedEntries))

@@ -18,7 +18,7 @@ export class RedisKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> {
   }
 
   private namespaceKey = (key: ResourceKey): ResourceKey => {
-    return ResourceKeys.applyNamespace(key, this.props.namespace)
+    return ResourceKeys.namespaceKey(key, this.props.namespace)
   }
 
   fetchValues = async (keys: Array<ResourceKey>): Promise<Array<RecordEntry<T>>> => {

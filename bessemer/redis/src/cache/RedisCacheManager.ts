@@ -74,7 +74,7 @@ export class RedisCacheManager implements CacheManager<RedisApplicationContext> 
   }
 
   private getChannel = (context: GlobalContextType<RedisApplicationContext>): string => {
-    return ResourceKeys.applyNamespace('RedisCacheManager', ResourceKeys.namespace(context.global.buildId))
+    return ResourceKeys.namespaceKey('RedisCacheManager', ResourceKeys.createNamespace(context.global.buildId))
   }
 
   getCaches = async (context: GlobalContextType<RedisApplicationContext>): Promise<Array<CacheSummary>> => {

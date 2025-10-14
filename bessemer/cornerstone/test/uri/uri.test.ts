@@ -294,4 +294,290 @@ describe('Uris.fromString', () => {
       })
     )
   })
+
+  test('should parse IPV6 address', () => {
+    console.log(Uris.fromString('https://[2001:db8::1]/path'))
+
+    expect(Uris.fromString('https://[2001:db8::1]/path')).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: { value: '[2001:db8::1]' },
+        location: { path: '/path' },
+      })
+    )
+  })
+
+  test('should throw error for malformed authentication with colon but no username', () => {
+    expect(() => Uris.fromString('https://:password@example.com')).toThrow()
+  })
+
+  test('should throw error for malformed host with colon but no hostname', () => {
+    expect(() => Uris.fromString('https://:8080/path')).toThrow()
+  })
+
+  test('should throw error for incomplete IPv6 address without closing bracket', () => {
+    expect(() => Uris.fromString('https://[2001:db8::1/path')).toThrow()
+  })
+
+  test('should throw error for invalid port number', () => {
+    expect(() => Uris.fromString('https://example.com:abc/path')).toThrow()
+  })
+
+  test('should throw error for authentication with only colon', () => {
+    expect(() => Uris.fromString('ftp://:@example.com')).toThrow()
+  })
+
+  test('should throw error for malformed IPv6 with port but missing closing bracket', () => {
+    expect(() => Uris.fromString('http://[::1:8080/path')).toThrow()
+  })
+
+  test('should throw error for host starting with colon only', () => {
+    expect(() => Uris.fromString('http://:/')).toThrow()
+  })
+
+  test('should throw error for extremely malformed URI structures', () => {
+    expect(() => Uris.fromString('::://@@@:::')).toThrow()
+  })
+
+  test('should throw error for authentication section with multiple consecutive colons', () => {
+    console.log(Uris.fromString('https://user::pass@example.com'))
+
+    expect(() => Uris.fromString('https://user::pass@example.com')).toThrow()
+  })
+
+  test('should throw error for invalid characters in scheme', () => {
+    expect(() => Uris.fromString('ht@tp://example.com')).toThrow()
+  })
+})
+
+describe('Uris.merge', () => {
+  test('should merge scheme into existing URI', () => {
+    const baseUri = Uris.from({
+      host: 'example.com',
+      location: { path: '/api' },
+    })
+
+    const result = Uris.merge(baseUri, {
+      scheme: 'https',
+    })
+
+    expect(result).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: 'example.com',
+        location: { path: '/api' },
+      })
+    )
+  })
+
+  test('should merge host into existing URI', () => {
+    const baseUri = Uris.from({
+      scheme: 'https',
+      location: { path: '/api' },
+    })
+
+    const result = Uris.merge(baseUri, {
+      host: 'api.example.com:8080',
+    })
+
+    expect(result).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: {
+          value: 'api.example.com',
+          port: 8080,
+        },
+        location: { path: '/api' },
+      })
+    )
+  })
+
+  test('should merge authentication into existing URI', () => {
+    const baseUri = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+    })
+
+    const result = Uris.merge(baseUri, {
+      authentication: {
+        principal: 'user',
+        password: 'pass',
+      },
+    })
+
+    expect(result).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: 'example.com',
+        authentication: {
+          principal: 'user',
+          password: 'pass',
+        },
+      })
+    )
+  })
+
+  test('should merge location path into existing URI', () => {
+    const baseUri = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+      location: { query: 'param=value' },
+    })
+
+    const result = Uris.merge(baseUri, {
+      location: { path: '/new-path' },
+    })
+
+    expect(result).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: 'example.com',
+        location: {
+          path: '/new-path',
+          query: 'param=value',
+        },
+      })
+    )
+  })
+
+  test('should merge complete location object', () => {
+    const baseUri = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+    })
+
+    const result = Uris.merge(baseUri, {
+      location: {
+        path: '/api/v1',
+        query: 'format=json',
+        fragment: 'section1',
+      },
+    })
+
+    expect(result).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: 'example.com',
+        location: {
+          path: '/api/v1',
+          query: 'format=json',
+          fragment: 'section1',
+        },
+      })
+    )
+  })
+
+  test('should override existing values when merging', () => {
+    const baseUri = Uris.from({
+      scheme: 'http',
+      host: 'old.example.com',
+      location: { path: '/old-path' },
+    })
+
+    const result = Uris.merge(baseUri, {
+      scheme: 'https',
+      host: 'new.example.com',
+      location: { path: '/new-path' },
+    })
+
+    expect(result).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: 'new.example.com',
+        location: { path: '/new-path' },
+      })
+    )
+  })
+
+  test('should merge multiple components at once', () => {
+    const baseUri = Uris.from({
+      scheme: 'http',
+      host: 'example.com',
+    })
+
+    const result = Uris.merge(baseUri, {
+      scheme: 'https',
+      authentication: 'admin:secret',
+      location: {
+        path: '/secure',
+        fragment: 'top',
+      },
+    })
+
+    expect(result).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: 'example.com',
+        authentication: {
+          principal: 'admin',
+          password: 'secret',
+        },
+        location: {
+          path: '/secure',
+          fragment: 'top',
+        },
+      })
+    )
+  })
+
+  test('should preserve null values when merging', () => {
+    const baseUri = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+      authentication: {
+        principal: 'user',
+        password: 'oldpass',
+      },
+    })
+
+    const result = Uris.merge(baseUri, {
+      authentication: {
+        principal: 'user',
+        password: null,
+      },
+    })
+
+    expect(result.authentication?.password).toBeNull()
+  })
+
+  test('should deep merge location properties', () => {
+    const baseUri = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+      location: {
+        path: '/api',
+        query: 'version=1',
+      },
+    })
+
+    const result = Uris.merge(baseUri, {
+      location: {
+        fragment: 'docs',
+      },
+    })
+
+    expect(result).toEqual(
+      Uris.from({
+        scheme: 'https',
+        host: 'example.com',
+        location: {
+          path: '/api',
+          query: 'version=1',
+          fragment: 'docs',
+        },
+      })
+    )
+  })
+
+  test('should handle empty merge builder', () => {
+    const baseUri = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+      location: { path: '/test' },
+    })
+
+    const result = Uris.merge(baseUri, {})
+
+    expect(result).toEqual(baseUri)
+  })
 })

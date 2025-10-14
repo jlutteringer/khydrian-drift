@@ -1,12 +1,12 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
 // ISO 639 language codes
-export const Namespace = namespace('language-code')
+export const Namespace = createNamespace('language-code')
 export type LanguageCode = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<LanguageCode, ErrorEvent> => {

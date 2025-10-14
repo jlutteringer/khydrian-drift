@@ -1,6 +1,6 @@
 import Zod from 'zod'
 import { Temporal } from '@js-temporal/polyfill'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
@@ -13,7 +13,7 @@ import { isString } from '@bessemer/cornerstone/string'
 import { isNil } from '@bessemer/cornerstone/object'
 
 export type Duration = Temporal.Duration
-export const Namespace = namespace('duration')
+export const Namespace = createNamespace('duration')
 export type DurationLiteral = NominalType<string, typeof Namespace>
 export type DurationBuilder = {
   hours?: number

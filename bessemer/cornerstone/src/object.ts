@@ -1,4 +1,4 @@
-import { clone as _clone, cloneDeep as _cloneDeep, mapValues as _mapValues, merge as unsafeMerge, mergeWith as unsafeMergeWith } from 'lodash-es'
+import { cloneDeep as _cloneDeep, mapValues as _mapValues, merge as unsafeMerge, mergeWith as unsafeMergeWith } from 'lodash-es'
 
 import { BasicType, Dictionary, TaggedType } from '@bessemer/cornerstone/types'
 import { Primitive, UnknownRecord } from 'type-fest'
@@ -91,7 +91,6 @@ export const deepEqual = (value1: unknown, value2: unknown): boolean => {
 
 export const mapValues = _mapValues
 
-export const clone = _clone
 export const cloneDeep = _cloneDeep
 
 export function deepMerge<TObject, TSource>(object: TObject, source: TSource): TObject & TSource

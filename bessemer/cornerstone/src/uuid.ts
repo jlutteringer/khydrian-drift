@@ -4,10 +4,10 @@ import { isNil } from '@bessemer/cornerstone/object'
 import { padStart } from '@bessemer/cornerstone/string'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = namespace('uuid')
+export const Namespace = createNamespace('uuid')
 export type Uuid = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<Uuid, ErrorEvent> => {

@@ -1,11 +1,10 @@
 import { NominalType, TaggedType } from '@bessemer/cornerstone/types'
-import { emptyToNull, isEmpty, isEmptyOrNil, isString, removeStart, splitFirst, StringSplitResult } from '@bessemer/cornerstone/string'
+import { emptyToNull, isEmpty, isEmptyOrNil, isNumber, isString, removeStart, splitFirst, StringSplitResult } from '@bessemer/cornerstone/string'
 import { deepMerge, isNil, isObject, isPresent } from '@bessemer/cornerstone/object'
 import { contains } from '@bessemer/cornerstone/array'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { failure, mapResult, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
-import { isError } from '@bessemer/cornerstone/error/error'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
 
@@ -38,15 +37,17 @@ export interface UriLocation {
   fragment: string | null
 }
 
+export const Namespace = createNamespace('uri')
+export const UrlNamespace = createNamespace('url')
+
 export interface Uri {
-  type: 'uri' | 'url'
+  _type: typeof Namespace
   scheme: UriScheme | null
   host: UriHost | null
   authentication: UriAuthentication | null
   location: UriLocation
 }
 
-export const Namespace = namespace('uri')
 export type UriLiteral = NominalType<string, typeof Namespace>
 
 type UriBuilderLocation =
@@ -81,21 +82,23 @@ export type UriBuilder = {
 export type UriLike = Uri | UriLiteral | UriBuilder
 
 export const parseString = (value: string): Result<Uri, ErrorEvent> => {
-  try {
-    // JOHN parse should be rewritten to return descriptive result objects
-    const [scheme, rest1] = parseSchemePart(value)
-    const [authentication, rest2] = parseAuthenticationPart(rest1)
-    const [host, rest3] = parseHostPart(rest2)
-    const location = parseLocation(rest3)
-    const uri: Uri = { type: 'uri', scheme, host, authentication, location }
-    return success(uri)
-  } catch (e) {
-    if (!isError(e)) {
-      throw e
-    }
+  const [scheme, rest1] = parseSchemePart(value)
 
-    return failure(invalidValue(value, { namespace: Namespace, message: e.message }))
+  const authenticationPartResult = parseAuthenticationPart(rest1)
+  if (!authenticationPartResult.isSuccess) {
+    return authenticationPartResult
   }
+  const [authentication, rest2] = authenticationPartResult.value
+
+  const hostPartResult = parseHostPart(rest2)
+  if (!hostPartResult.isSuccess) {
+    return hostPartResult
+  }
+  const [host, rest3] = hostPartResult.value
+
+  const location = parseLocation(rest3)
+  const uri: Uri = { _type: Namespace, scheme, host, authentication, location }
+  return success(uri)
 }
 
 export const fromString = (value: string): Uri => {
@@ -143,7 +146,7 @@ export const isUri = (value: unknown): value is Uri => {
   }
 
   const uriValue = value as any as Uri
-  return uriValue.type === 'uri' || uriValue.type === 'url'
+  return uriValue._type === Namespace || uriValue._type === UrlNamespace
 }
 
 export const merge = (element: UriLike, builder: Partial<UriBuilder>): Uri => {
@@ -177,7 +180,7 @@ const parseSchemePart = (url: UriComponent): [UriScheme | null, UriComponent] =>
   }
 }
 
-const parseAuthenticationPart = (url: UriComponent): [UriAuthentication | null, UriComponent] => {
+const parseAuthenticationPart = (url: UriComponent): Result<[UriAuthentication | null, UriComponent], ErrorEvent> => {
   let targetPart = url
   const queryMatch = splitFirst(targetPart, '?')
   const fragmentMatch = splitFirst(targetPart, '#')
@@ -191,40 +194,47 @@ const parseAuthenticationPart = (url: UriComponent): [UriAuthentication | null, 
 
   // If there is no @, then we don't have an authentication
   if (isNil(authentication)) {
-    return [null, url]
+    return success([null, url])
   }
 
   const { rest } = splitFirst(url, '@')
 
-  return [parseAuthentication(removeStart(authentication, '//')), '//' + rest]
+  const authenticationParseResult = parseAuthentication(removeStart(authentication, '//'))
+  if (!authenticationParseResult.isSuccess) {
+    return authenticationParseResult
+  }
+
+  return success([authenticationParseResult.value, '//' + rest])
 }
 
-const parseAuthentication = (authentication: UriComponent): UriAuthentication => {
+const parseAuthentication = (authentication: UriComponent): Result<UriAuthentication, ErrorEvent> => {
   const { selection: principal, rest: authenticationRest } = splitFirst(authentication, ':')
 
   // If there isn't a colon, then there is no password but there is a username
   if (isNil(principal)) {
-    return { principal: authenticationRest, password: null }
+    return success({ principal: authenticationRest, password: null })
   }
 
   // The authentication section started with a :, don't know what to make of this... password but no username?
   if (isEmpty(principal)) {
-    throw new Error(`Unable to parse Authentication: ${authentication}`)
+    return failure(
+      invalidValue(authentication, { namespace: Namespace, message: `Uri - Unable to parse UriAuthentication from authentication string.` })
+    )
   }
 
   // Otherwise, we have both, so return the complete authentication object and the rest
-  return { principal, password: authenticationRest }
+  return success({ principal, password: authenticationRest })
 }
 
-const parseHostPart = (url: UriComponent): [UriHost | null, UriComponent] => {
+const parseHostPart = (url: UriComponent): Result<[UriHost | null, UriComponent], ErrorEvent> => {
   // Check if the host is starting with reserved characters, if so we should just bail on trying to parse
   if (url.startsWith('?') || url.startsWith('#')) {
-    return [null, url]
+    return success([null, url])
   }
 
   let hostRequired = url.startsWith('//')
   if (!hostRequired) {
-    return [null, url]
+    return success([null, url])
   }
 
   url = removeStart(url, '//')
@@ -240,25 +250,32 @@ const parseHostPart = (url: UriComponent): [UriHost | null, UriComponent] => {
   }
 
   if (isEmpty(host)) {
-    return [null, rest]
+    return success([null, rest])
   }
 
-  return [parseHost(host), rest]
+  const parseHostResult = parseHost(host)
+  if (!parseHostResult.isSuccess) {
+    return parseHostResult
+  }
+
+  return success([parseHostResult.value, rest])
 }
 
-const parseHost = (host: UriComponent): UriHost => {
+const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
   // Try to see if we have an ipv6 address like the form [2001:db8::7] and handle it
   if (host.startsWith('[')) {
     const ipMatch = splitFirst(host, ']')
 
     if (isPresent(ipMatch.selection)) {
       const portMatch = splitFirst(ipMatch.rest, ':')
-      if (isPresent(portMatch.selection)) {
-        if (isEmpty(portMatch.selection)) {
-          return { value: ipMatch.selection + ']', port: Number(portMatch.rest) }
+      if (isPresent(portMatch.selection) && isEmpty(portMatch.selection)) {
+        if (!isNumber(portMatch.rest)) {
+          return failure(invalidValue(host, { namespace: Namespace, message: `Unable to parse Host` }))
         }
+
+        return success({ value: ipMatch.selection + ']', port: Number(portMatch.rest) })
       } else {
-        return { value: ipMatch.selection + ']', port: null }
+        return success({ value: ipMatch.selection + ']', port: null })
       }
     }
   }
@@ -267,18 +284,22 @@ const parseHost = (host: UriComponent): UriHost => {
 
   // We have no :, which means no port, so treat the rest as the hostname
   if (isNil(hostMatch.selection)) {
-    return { value: hostMatch.rest, port: null }
+    return success({ value: hostMatch.rest, port: null })
   }
 
   // The host started with a :, this is odd
   if (isEmpty(hostMatch.selection)) {
-    throw new Error(`Unable to parse Host: ${host}`)
+    return failure(invalidValue(host, { namespace: Namespace, message: `Unable to parse Host` }))
   }
 
   const hostName = hostMatch.selection
 
+  if (!isNumber(hostMatch.rest)) {
+    return failure(invalidValue(host, { namespace: Namespace, message: `Unable to parse Host` }))
+  }
+
   // Otherwise, we have both, so return the complete authentication object and the rest
-  return { value: hostName, port: Number(hostMatch.rest) }
+  return success({ value: hostName, port: Number(hostMatch.rest) })
 }
 
 const parseLocation = (url: UriComponent): UriLocation => {
@@ -307,7 +328,7 @@ const build = (builder: UriBuilder): Uri => {
 
   if (isPresent(builder.host)) {
     if (isString(builder.host)) {
-      host = parseHost(builder.host)
+      host = unpackResult(parseHost(builder.host))
     } else {
       host = {
         value: builder.host.value,
@@ -317,7 +338,7 @@ const build = (builder: UriBuilder): Uri => {
 
     if (isPresent(builder.authentication)) {
       if (isString(builder.authentication)) {
-        authentication = parseAuthentication(builder.authentication)
+        authentication = unpackResult(parseAuthentication(builder.authentication))
       } else {
         authentication = {
           principal: builder.authentication.principal,
@@ -346,7 +367,7 @@ const build = (builder: UriBuilder): Uri => {
   }
 
   return {
-    type: 'uri',
+    _type: Namespace,
     scheme,
     host,
     authentication,

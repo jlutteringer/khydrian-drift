@@ -3,10 +3,10 @@ import Zod from 'zod'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = namespace('glob-pattern')
+export const Namespace = createNamespace('glob-pattern')
 export type GlobPattern = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<GlobPattern, ErrorEvent> => {

@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
@@ -18,7 +18,7 @@ import { isNil } from '@bessemer/cornerstone/object'
 import { Locale } from '@bessemer/cornerstone/intl/locale'
 
 export type PlainTime = Temporal.PlainTime
-export const Namespace = namespace('plain-time')
+export const Namespace = createNamespace('plain-time')
 export type PlainTimeLiteral = NominalType<string, typeof Namespace>
 export type PlainTimeBuilder = {
   hour: number

@@ -14,12 +14,12 @@ import { fromDuration as plainTimeFromDuration, toLiteral as plainTimeToLiteral 
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import Zod from 'zod'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import { Instant } from '@bessemer/cornerstone/temporal/instant'
 import { TimeZoneId } from '@bessemer/cornerstone/temporal/time-zone-id'
 
-export const Namespace = namespace('time-zone-offset')
+export const Namespace = createNamespace('time-zone-offset')
 export type TimeZoneOffset = NominalType<number, typeof Namespace>
 
 const EighteenHours = fromHours(18)

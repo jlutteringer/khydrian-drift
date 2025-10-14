@@ -16,7 +16,7 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
   }
 
   private getNamespace = (): ResourceNamespace => {
-    return ResourceKeys.namespace(this.name)
+    return ResourceKeys.createNamespace(this.name)
   }
 
   fetchValues = async (
@@ -25,7 +25,7 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
   ): Promise<Array<RecordEntry<T>>> => {
     logger.trace(() => `Fetching cache values: ${JSON.stringify(keys)} under namespace: [${this.name}]`)
 
-    const namespacedKeys = ResourceKeys.applyNamespaceAll(keys, this.getNamespace())
+    const namespacedKeys = ResourceKeys.namespaceKeys(keys, this.getNamespace())
 
     const entries = await AdvisoryLocks.usingIncrementalLocks(
       namespacedKeys,
@@ -39,7 +39,7 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
         logger.trace(() => `Cache Miss! Retrieving from source: ${JSON.stringify(keys)} under namespace: [${this.name}]`)
 
         const fetchedValues = (await fetch(keys)).map(([key, value]) =>
-          Entries.of(ResourceKeys.applyNamespace(key, this.getNamespace()), CacheEntry.of(value))
+          Entries.of(ResourceKeys.namespaceKey(key, this.getNamespace()), CacheEntry.of(value))
         )
         await this.writeValueInternal(fetchedValues)
         return fetchedValues
@@ -99,7 +99,7 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
       await AdvisoryLocks.usingLock(staleKeys, this.context, async () => {
         const keys = staleKeys.map((it) => ResourceKeys.getKey(it as NamespacedKey))
         const fetchedValues = (await fetch(keys)).map(([key, value]) =>
-          Entries.of(ResourceKeys.applyNamespace(key, this.getNamespace()), CacheEntry.of(value))
+          Entries.of(ResourceKeys.namespaceKey(key, this.getNamespace()), CacheEntry.of(value))
         )
         await this.writeValueInternal(fetchedValues)
       })
@@ -108,7 +108,7 @@ export class CacheImpl<T> extends AbstractAsyncCache<T> {
 
   writeValues = async (entries: Array<RecordEntry<T | undefined>>): Promise<void> => {
     const namespacedEntries = entries.map(([key, value]) => {
-      return Entries.of(ResourceKeys.applyNamespace(key, this.getNamespace()), value !== undefined ? CacheEntry.of(value) : undefined)
+      return Entries.of(ResourceKeys.namespaceKey(key, this.getNamespace()), value !== undefined ? CacheEntry.of(value) : undefined)
     })
 
     return this.writeValueInternal(namespacedEntries)

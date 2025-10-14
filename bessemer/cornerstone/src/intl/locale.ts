@@ -5,11 +5,11 @@ import { CountryCode, fromString as countryCodeFromString } from '@bessemer/corn
 import { isPresent } from '@bessemer/cornerstone/object'
 import { Assertions } from '@bessemer/cornerstone'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = namespace('locale')
+export const Namespace = createNamespace('locale')
 export type Locale = NominalType<string, typeof Namespace>
 
 export const fromCode = (language: LanguageCode, country?: CountryCode | null): Locale => {

@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
@@ -17,7 +17,7 @@ import { isNil } from '@bessemer/cornerstone/object'
 import { Locale } from '@bessemer/cornerstone/intl/locale'
 
 export type PlainDate = Temporal.PlainDate
-export const Namespace = namespace('plain-date')
+export const Namespace = createNamespace('plain-date')
 export type PlainDateLiteral = NominalType<string, typeof Namespace>
 export type PlainDateBuilder = {
   year: number

@@ -1,11 +1,11 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = namespace('country-code')
+export const Namespace = createNamespace('country-code')
 export type CountryCode = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<CountryCode, ErrorEvent> => {

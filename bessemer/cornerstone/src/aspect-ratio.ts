@@ -3,10 +3,10 @@ import { greatestCommonFactor } from '@bessemer/cornerstone/math'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = namespace('aspect-ratio')
+export const Namespace = createNamespace('aspect-ratio')
 export type AspectRatio = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<AspectRatio, ErrorEvent> => {

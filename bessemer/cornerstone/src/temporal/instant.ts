@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { namespace } from '@bessemer/cornerstone/resource-key'
+import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
@@ -18,7 +18,7 @@ import { DateTimeFormatOptions, format as formatPlainDateTime, fromInstant } fro
 import { TimeZoneId } from '@bessemer/cornerstone/temporal/time-zone-id'
 
 export type Instant = Temporal.Instant
-export const Namespace = namespace('instant')
+export const Namespace = createNamespace('instant')
 export type InstantLiteral = NominalType<string, typeof Namespace>
 export type InstantLike = Instant | Date | InstantLiteral
 

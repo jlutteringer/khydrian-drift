@@ -9,84 +9,86 @@ describe('ResourceKeys.emptyNamespace', () => {
   expectTypeOf(ResourceKeys.emptyNamespace()).toEqualTypeOf<ResourceNamespace<undefined>>()
 })
 
-describe('ResourceKeys.namespace', () => {
+describe('ResourceKeys.createNamespace', () => {
   test('should support constant namespaces', () => {
-    expect(ResourceKeys.namespace('1234')).toEqual('1234')
-    expectTypeOf(ResourceKeys.namespace('1234')).toEqualTypeOf<ResourceNamespace<'1234'>>()
+    expect(ResourceKeys.createNamespace('1234')).toEqual('1234')
+    expectTypeOf(ResourceKeys.createNamespace('1234')).toEqualTypeOf<ResourceNamespace<'1234'>>()
 
-    expect(ResourceKeys.namespace('test-namespace')).toEqual('test-namespace')
-    expectTypeOf(ResourceKeys.namespace('test-namespace')).toEqualTypeOf<ResourceNamespace<'test-namespace'>>()
+    expect(ResourceKeys.createNamespace('test-namespace')).toEqual('test-namespace')
+    expectTypeOf(ResourceKeys.createNamespace('test-namespace')).toEqualTypeOf<ResourceNamespace<'test-namespace'>>()
 
-    expect(ResourceKeys.namespace('test-namespace/with-sub-namespace')).toEqual('test-namespace/with-sub-namespace')
-    expectTypeOf(ResourceKeys.namespace('test-namespace/with-sub-namespace')).toEqualTypeOf<ResourceNamespace<'test-namespace/with-sub-namespace'>>()
+    expect(ResourceKeys.createNamespace('test-namespace/with-sub-namespace')).toEqual('test-namespace/with-sub-namespace')
+    expectTypeOf(ResourceKeys.createNamespace('test-namespace/with-sub-namespace')).toEqualTypeOf<
+      ResourceNamespace<'test-namespace/with-sub-namespace'>
+    >()
 
-    expect(ResourceKeys.namespace('1234/buckle-my-shoe/5678')).toEqual('1234/buckle-my-shoe/5678')
-    expectTypeOf(ResourceKeys.namespace('1234/buckle-my-shoe/5678')).toEqualTypeOf<ResourceNamespace<'1234/buckle-my-shoe/5678'>>()
+    expect(ResourceKeys.createNamespace('1234/buckle-my-shoe/5678')).toEqual('1234/buckle-my-shoe/5678')
+    expectTypeOf(ResourceKeys.createNamespace('1234/buckle-my-shoe/5678')).toEqualTypeOf<ResourceNamespace<'1234/buckle-my-shoe/5678'>>()
   })
 
   test('should throw on invalid namespaces', () => {
-    expect(() => ResourceKeys.namespace('/1234')).toThrow()
-    expect(() => ResourceKeys.namespace('1234/')).toThrow()
-    expect(() => ResourceKeys.namespace('  test-namespace')).toThrow()
-    expect(() => ResourceKeys.namespace('test-name   space  ')).toThrow()
-    expect(() => ResourceKeys.namespace('test-namespace/with-sub-namespace/')).toThrow()
-    expect(() => ResourceKeys.namespace('test-namespace//with-sub-namespace')).toThrow()
-    expect(() => ResourceKeys.namespace('')).toThrow()
-    expect(() => ResourceKeys.namespace('   ')).toThrow()
+    expect(() => ResourceKeys.createNamespace('/1234')).toThrow()
+    expect(() => ResourceKeys.createNamespace('1234/')).toThrow()
+    expect(() => ResourceKeys.createNamespace('  test-namespace')).toThrow()
+    expect(() => ResourceKeys.createNamespace('test-name   space  ')).toThrow()
+    expect(() => ResourceKeys.createNamespace('test-namespace/with-sub-namespace/')).toThrow()
+    expect(() => ResourceKeys.createNamespace('test-namespace//with-sub-namespace')).toThrow()
+    expect(() => ResourceKeys.createNamespace('')).toThrow()
+    expect(() => ResourceKeys.createNamespace('   ')).toThrow()
   })
 
   test('should support string namespaces', () => {
     {
       const namespace: string = 'test-namespace'
-      expect(ResourceKeys.namespace(namespace)).toEqual(namespace)
-      expectTypeOf(ResourceKeys.namespace(namespace)).toEqualTypeOf<ResourceNamespace<string>>()
+      expect(ResourceKeys.createNamespace(namespace)).toEqual(namespace)
+      expectTypeOf(ResourceKeys.createNamespace(namespace)).toEqualTypeOf<ResourceNamespace<string>>()
     }
 
     {
       const namespace: string = 'test-namespace/with-sub-namespace'
-      expect(ResourceKeys.namespace(namespace)).toEqual(namespace)
-      expectTypeOf(ResourceKeys.namespace(namespace)).toEqualTypeOf<ResourceNamespace<string>>()
+      expect(ResourceKeys.createNamespace(namespace)).toEqual(namespace)
+      expectTypeOf(ResourceKeys.createNamespace(namespace)).toEqualTypeOf<ResourceNamespace<string>>()
     }
   })
 
   test('should work with undefined', () => {
-    expect(ResourceKeys.namespace(undefined)).toEqual(undefined)
-    expectTypeOf(ResourceKeys.namespace(undefined)).toEqualTypeOf<ResourceNamespace<undefined>>()
+    expect(ResourceKeys.createNamespace(undefined)).toEqual(undefined)
+    expectTypeOf(ResourceKeys.createNamespace(undefined)).toEqualTypeOf<ResourceNamespace<undefined>>()
 
     const test = (): string | undefined => {
       return undefined
     }
 
-    expect(ResourceKeys.namespace(test())).toEqual(test())
-    expectTypeOf(ResourceKeys.namespace(test())).toEqualTypeOf<ResourceNamespace<undefined | string>>()
+    expect(ResourceKeys.createNamespace(test())).toEqual(test())
+    expectTypeOf(ResourceKeys.createNamespace(test())).toEqualTypeOf<ResourceNamespace<undefined | string>>()
   })
 })
 
-describe('ResourceKeys.applyNamespace', () => {
+describe('ResourceKeys.namespaceKey', () => {
   test('should support applying empty namespaces', () => {
     {
       const key = '1234'
-      expect(ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())).toEqual(key)
-      expectTypeOf(ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())).toEqualTypeOf<NamespacedKey<typeof key, undefined>>()
+      expect(ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())).toEqual(key)
+      expectTypeOf(ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())).toEqualTypeOf<NamespacedKey<typeof key, undefined>>()
     }
 
     {
       const key: string = '1234'
-      expect(ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())).toEqual(key)
-      expectTypeOf(ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())).toEqualTypeOf<NamespacedKey<string, undefined>>()
+      expect(ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())).toEqual(key)
+      expectTypeOf(ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())).toEqualTypeOf<NamespacedKey<string, undefined>>()
     }
 
     {
       type TestType = NominalType<string, 'test-type'>
       const key: TestType = '1234' as TestType
-      expect(ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())).toEqual(key)
-      expectTypeOf(ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())).toEqualTypeOf<NamespacedKey<TestType, undefined>>()
+      expect(ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())).toEqual(key)
+      expectTypeOf(ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())).toEqualTypeOf<NamespacedKey<TestType, undefined>>()
     }
 
     {
       const key = '12/34'
-      expect(ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())).toEqual('12%2F34')
-      expectTypeOf(ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())).toEqualTypeOf<NamespacedKey<typeof key, undefined>>()
+      expect(ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())).toEqual('12%2F34')
+      expectTypeOf(ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())).toEqualTypeOf<NamespacedKey<typeof key, undefined>>()
     }
   })
 
@@ -94,51 +96,55 @@ describe('ResourceKeys.applyNamespace', () => {
     {
       const key = '1234'
       const namespace = 'foo/bar'
-      expect(ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))).toEqual(`${namespace}/${key}`)
-      expectTypeOf(ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))).toEqualTypeOf<NamespacedKey<typeof key, typeof namespace>>()
+      expect(ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))).toEqual(`${namespace}/${key}`)
+      expectTypeOf(ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))).toEqualTypeOf<
+        NamespacedKey<typeof key, typeof namespace>
+      >()
     }
 
     {
       const key: string = '1234'
       const namespace = 'foo/bar'
-      expect(ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))).toEqual(`${namespace}/${key}`)
-      expectTypeOf(ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))).toEqualTypeOf<NamespacedKey<string, typeof namespace>>()
+      expect(ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))).toEqual(`${namespace}/${key}`)
+      expectTypeOf(ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))).toEqualTypeOf<NamespacedKey<string, typeof namespace>>()
     }
 
     {
       type TestType = NominalType<string, 'test-type'>
       const key: TestType = '1234' as TestType
       const namespace = 'foo'
-      expect(ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))).toEqual(`${namespace}/${key}`)
-      expectTypeOf(ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))).toEqualTypeOf<NamespacedKey<TestType, typeof namespace>>()
+      expect(ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))).toEqual(`${namespace}/${key}`)
+      expectTypeOf(ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))).toEqualTypeOf<NamespacedKey<TestType, typeof namespace>>()
     }
 
     {
       const key = '12/34'
       const namespace = 'foo/bar/baz'
-      expect(ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))).toEqual(`${namespace}/12%2F34`)
-      expectTypeOf(ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))).toEqualTypeOf<NamespacedKey<typeof key, typeof namespace>>()
+      expect(ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))).toEqual(`${namespace}/12%2F34`)
+      expectTypeOf(ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))).toEqualTypeOf<
+        NamespacedKey<typeof key, typeof namespace>
+      >()
     }
   })
 
   test('should support namespacing a namespace', () => {
     const key = '12/34'
     const namespace = 'foo/bar/baz'
-    const namespacedKey = ResourceKeys.applyNamespace(key, ResourceKeys.namespace(namespace))
+    const namespacedKey = ResourceKeys.namespaceKey(key, ResourceKeys.createNamespace(namespace))
     expect(namespacedKey).toEqual(`${namespace}/${ResourceKeys.encodeKey(key)}`)
 
     const secondNamespace = 'another-one'
-    const doublyNamespacedKey = ResourceKeys.applyNamespace(namespacedKey, ResourceKeys.namespace(secondNamespace))
+    const doublyNamespacedKey = ResourceKeys.namespaceKey(namespacedKey, ResourceKeys.createNamespace(secondNamespace))
     expect(doublyNamespacedKey).toEqual(`${secondNamespace}/${ResourceKeys.encodeKey(`${namespace}/${ResourceKeys.encodeKey(key)}`)}`)
   })
 })
 
-describe('ResourceKeys.splitNamespace', () => {
+describe('ResourceKeys.destructureKey', () => {
   test('should support splitting empty namespaces', () => {
     {
       const key = '1234'
-      const namespacedKey = ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())
-      const [keyValue, namespaceValue] = ResourceKeys.splitNamespace(namespacedKey)
+      const namespacedKey = ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())
+      const [keyValue, namespaceValue] = ResourceKeys.destructureKey(namespacedKey)
 
       expect(keyValue).toEqual(key)
       expect(namespaceValue).toEqual(undefined)
@@ -148,8 +154,8 @@ describe('ResourceKeys.splitNamespace', () => {
 
     {
       const key: string = '1234'
-      const namespacedKey = ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())
-      const [keyValue, namespaceValue] = ResourceKeys.splitNamespace(namespacedKey)
+      const namespacedKey = ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())
+      const [keyValue, namespaceValue] = ResourceKeys.destructureKey(namespacedKey)
 
       expect(keyValue).toEqual(key)
       expect(namespaceValue).toEqual(undefined)
@@ -161,8 +167,8 @@ describe('ResourceKeys.splitNamespace', () => {
       type TestType = NominalType<string, 'test-type'>
 
       const key: TestType = '1234' as TestType
-      const namespacedKey = ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())
-      const [keyValue, namespaceValue] = ResourceKeys.splitNamespace(namespacedKey)
+      const namespacedKey = ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())
+      const [keyValue, namespaceValue] = ResourceKeys.destructureKey(namespacedKey)
 
       expect(keyValue).toEqual(key)
       expect(namespaceValue).toEqual(undefined)
@@ -172,8 +178,8 @@ describe('ResourceKeys.splitNamespace', () => {
 
     {
       const key = '12/34'
-      const namespacedKey = ResourceKeys.applyNamespace(key, ResourceKeys.emptyNamespace())
-      const [keyValue, namespaceValue] = ResourceKeys.splitNamespace(namespacedKey)
+      const namespacedKey = ResourceKeys.namespaceKey(key, ResourceKeys.emptyNamespace())
+      const [keyValue, namespaceValue] = ResourceKeys.destructureKey(namespacedKey)
 
       expect(keyValue).toEqual(key)
       expect(namespaceValue).toEqual(undefined)

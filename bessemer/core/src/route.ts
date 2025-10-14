@@ -15,7 +15,7 @@ export const CoreRouteErrorHandler: RouteErrorHandler<CoreApplicationContext> = 
 ) => {
   logger.error(() => `Handling error at endpoint: ${request.url}`, { error })
 
-  let errorEvent = ErrorEvents.from(error)
+  let errorEvent = ErrorEvents.fromThrowable(error)
   const content = await Codex.fetchTextByKey(errorEvent.causes[0]!.code as string as ContentKey, context)
 
   if (Objects.isPresent(content)) {

@@ -32,7 +32,10 @@ export class RedisCacheProviderImpl<T> extends AbstractCacheProvider<T> {
     Assertions.assertPresent(props.timeToLive, () => 'RedisCacheProvider requires the timeToLive property to be set.')
 
     this.store = new RedisKeyValueStore(Redis.getClient(context.global.redis), {
-      namespace: ResourceKeys.extendNamespace(ResourceKeys.namespace(context.global.buildId), ResourceKeys.namespace(RedisCacheProvider.Type)),
+      namespace: ResourceKeys.createCompositeNamespace(
+        ResourceKeys.createNamespace(context.global.buildId),
+        ResourceKeys.createNamespace(RedisCacheProvider.Type)
+      ),
       timeToLive: props.timeToLive,
     })
   }

@@ -138,7 +138,7 @@ export const fetchContentByKeys = async <Type extends ContentType>(
 ): Promise<Array<ContentData<Type>>> => {
   const cache = Caches.getCache<ContentData<Type>>('Codex.fetchContentByKeys', context)
   const namespace = Contexts.getNamespace(context)
-  const namespacedKeys = ResourceKeys.applyNamespaceAll(keys, namespace)
+  const namespacedKeys = ResourceKeys.namespaceKeys(keys, namespace)
 
   const results = await cache.fetchValues(namespacedKeys, async (keys) => {
     keys = keys.map((it) => ResourceKeys.getKey(it as NamespacedKey))
@@ -180,7 +180,7 @@ export const fetchContentBySectors = async <Type extends ContentType>(
 ): Promise<Array<ContentData<Type>>> => {
   const cache = Caches.getCache<Array<ContentData<Type>>>('Codex.fetchContentBySectors', context)
   const namespace = Contexts.getNamespace(context)
-  const keys = ResourceKeys.applyNamespaceAll(sectors, namespace)
+  const keys = ResourceKeys.namespaceKeys(sectors, namespace)
 
   const results = await cache.fetchValues(keys, async (sectors) => {
     sectors = sectors.map((it) => ResourceKeys.getKey(it as NamespacedKey))
@@ -201,7 +201,7 @@ export const fetchContentBySectors = async <Type extends ContentType>(
 
     Async.execute(async () => {
       const entries: Array<RecordEntry<ContentData<Type>>> = content.map((it) => {
-        return [ResourceKeys.applyNamespace(it.key, namespace), it]
+        return [ResourceKeys.namespaceKey(it.key, namespace), it]
       })
 
       await Caches.getCache<ContentData<Type>>(IndividualContentCacheKey, context).writeValues(entries)
