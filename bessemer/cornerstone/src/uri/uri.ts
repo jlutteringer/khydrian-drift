@@ -84,23 +84,42 @@ export type UriBuilder = {
 
 export type UriLike = Uri | UriLiteral | UriBuilder
 
+// JOHN we want to improve the syntax burden of handling a series of Result objects like this
 export const parseString = (value: string): Result<Uri, ErrorEvent> => {
   const schemeResult = parseSchemePart(value)
   if (!schemeResult.isSuccess) {
-    return Results.failure(ErrorEvents.invalidValue(value, { namespace: Namespace, causes: schemeResult.value.causes }))
+    return Results.failure(
+      ErrorEvents.invalidValue(value, {
+        namespace: Namespace,
+        message: `[${Namespace}]: Unable to parse Uri from uri string: [${value}]`,
+        causes: schemeResult.value.causes,
+      })
+    )
   }
 
   const [scheme, rest1] = schemeResult.value
 
   const authenticationPartResult = parseAuthenticationPart(rest1)
   if (!authenticationPartResult.isSuccess) {
-    return authenticationPartResult
+    return Results.failure(
+      ErrorEvents.invalidValue(value, {
+        namespace: Namespace,
+        message: `[${Namespace}]: Unable to parse Uri from uri string: [${value}]`,
+        causes: authenticationPartResult.value.causes,
+      })
+    )
   }
   const [authentication, rest2] = authenticationPartResult.value
 
   const hostPartResult = parseHostPart(rest2)
   if (!hostPartResult.isSuccess) {
-    return hostPartResult
+    return Results.failure(
+      ErrorEvents.invalidValue(value, {
+        namespace: Namespace,
+        message: `[${Namespace}]: Unable to parse Uri from uri string: [${value}]`,
+        causes: hostPartResult.value.causes,
+      })
+    )
   }
   const [host, rest3] = hostPartResult.value
 
@@ -200,7 +219,7 @@ const parseScheme = (scheme: UriComponent): Result<UriScheme, ErrorEvent> => {
     return Results.failure(
       ErrorEvents.invalidValue(scheme, {
         namespace: Namespace,
-        message: `Uri - Invalid characters in Scheme.`,
+        message: `[${Namespace}]: Invalid characters in Scheme.`,
       })
     )
   }
@@ -240,7 +259,16 @@ const parseAuthentication = (authentication: UriComponent): Result<UriAuthentica
 
   // If there isn't a colon, then there is no password but there is a username
   if (Objects.isNil(principal)) {
-    return Results.success({ principal: authenticationRest, password: null })
+    if (!isAuthenticationComponentValid(authenticationRest)) {
+      return Results.failure(
+        ErrorEvents.invalidValue(authenticationRest, {
+          namespace: Namespace,
+          message: `[${Namespace}]: Invalid characters for UriAuthentication in principal string.`,
+        })
+      )
+    }
+
+    return Results.success({ principal: decode(authenticationRest), password: null })
   }
 
   // The authentication section started with a :, don't know what to make of this... password but no username?
@@ -248,13 +276,47 @@ const parseAuthentication = (authentication: UriComponent): Result<UriAuthentica
     return Results.failure(
       ErrorEvents.invalidValue(authentication, {
         namespace: Namespace,
-        message: `Uri - Unable to parse UriAuthentication from authentication string.`,
+        message: `[${Namespace}]: Unable to parse UriAuthentication from authentication string.`,
+      })
+    )
+  }
+
+  if (!isAuthenticationComponentValid(principal)) {
+    return Results.failure(
+      ErrorEvents.invalidValue(principal, {
+        namespace: Namespace,
+        message: `[${Namespace}]: Invalid characters for UriAuthentication in principal string.`,
+      })
+    )
+  }
+
+  if (!isAuthenticationComponentValid(authenticationRest)) {
+    return Results.failure(
+      ErrorEvents.invalidValue(authenticationRest, {
+        namespace: Namespace,
+        message: `[${Namespace}]: Invalid characters for UriAuthentication in password string.`,
       })
     )
   }
 
   // Otherwise, we have both, so return the complete authentication object and the rest
-  return Results.success({ principal, password: authenticationRest })
+  return Results.success({ principal: decode(principal), password: decode(authenticationRest) })
+}
+
+const isAuthenticationComponentValid = (component: UriComponent): boolean => {
+  const userinfoRegex = /^[A-Za-z0-9\-._~!$&'()*+,;=%]*$/
+
+  if (component.includes('%')) {
+    const percentEncodingRegex = /%[0-9A-Fa-f]{2}/g
+    const percentMatches = component.match(/%/g) || []
+    const validEncodingMatches = component.match(percentEncodingRegex) || []
+
+    if (percentMatches.length !== validEncodingMatches.length) {
+      return false
+    }
+  }
+
+  return userinfoRegex.test(component)
 }
 
 const parseHostPart = (url: UriComponent): Result<[UriHost | null, UriComponent], ErrorEvent> => {
@@ -320,13 +382,17 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
 
   // The host started with a :, this is odd
   if (Strings.isEmpty(hostMatch.selection)) {
-    return Results.failure(ErrorEvents.invalidValue(host, { namespace: Namespace, message: `Unable to parse Host` }))
+    return Results.failure(
+      ErrorEvents.invalidValue(host, { namespace: Namespace, message: `[${Namespace}]: Unable to parse Host from host string.` })
+    )
   }
 
   const hostName = hostMatch.selection
 
   if (!Strings.isNumber(hostMatch.rest)) {
-    return Results.failure(ErrorEvents.invalidValue(host, { namespace: Namespace, message: `Unable to parse Host` }))
+    return Results.failure(
+      ErrorEvents.invalidValue(host, { namespace: Namespace, message: `[${Namespace}]: Unable to parse Host from host string.` })
+    )
   }
 
   // Otherwise, we have both, so return the complete authentication object and the rest
@@ -424,10 +490,10 @@ export const format = (uri: Uri, format: Array<UriComponentType> = Object.values
     }
 
     if (Objects.isPresent(uri.authentication)) {
-      urlString = urlString + uri.authentication.principal
+      urlString = urlString + encode(uri.authentication.principal)
 
       if (Objects.isPresent(uri.authentication.password)) {
-        urlString = urlString + ':' + uri.authentication.password
+        urlString = urlString + ':' + encode(uri.authentication.password)
       }
 
       urlString = urlString + '@'

@@ -118,7 +118,7 @@ export const invalidValue = (value: unknown, builder?: ErrorCauseAugment): Error
     ...deepMerge(
       {
         message: 'The format is invalid and cannot be processed.',
-        attributes: { [HttpStatusCodeAttribute]: 400, [ValueAttribute]: value },
+        attributes: { [ValueAttribute]: value },
       },
       builder
     ),

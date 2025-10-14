@@ -166,7 +166,6 @@ describe('ErrorCauses.invalidValue', () => {
 
     expect(result.code).toMatch(/invalid-value$/)
     expect(result.message).toBe('The format is invalid and cannot be processed.')
-    expect(result.attributes[HttpStatusCodeAttribute]).toBe(400)
     expect(result.attributes[ValueAttribute]).toBe('invalid-email@bessemer.com')
     expect(result.causes).toEqual([])
   })
@@ -184,7 +183,6 @@ describe('ErrorCauses.invalidValue', () => {
 
     expect(result.code).toBe('game/validation/invalid-value')
     expect(result.message).toBe('Score exceeds maximum allowed value')
-    expect(result.attributes[HttpStatusCodeAttribute]).toBe(400)
     expect(result.attributes[ValueAttribute]).toEqual({ score: 150 })
     expect(result.attributes.maxValue).toBe(100)
     expect(result.attributes.field).toBe('score')
