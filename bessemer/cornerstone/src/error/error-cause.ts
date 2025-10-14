@@ -4,12 +4,10 @@ import { BadRequest, Forbidden, InvalidValue, Required, Unauthorized, Unhandled 
 import { Dictionary } from '@bessemer/cornerstone/types'
 import { deepMerge, RecordAttribute } from '@bessemer/cornerstone/object'
 import * as ErrorCodes from '@bessemer/cornerstone/error/error-code'
-import { ErrorCodeLike } from '@bessemer/cornerstone/error/error-code'
+import { ErrorCode, ErrorCodeLike } from '@bessemer/cornerstone/error/error-code'
 
 export type ErrorAttribute<Type = unknown> = RecordAttribute<Type, 'ErrorAttribute'>
-export const ErrorAttributeSchema: ZodType<ErrorAttribute, string> = Zod.string()
 export const ValueAttribute: ErrorAttribute = 'value'
-export const RequestCorrelationIdAttribute: ErrorAttribute<string> = 'requestCorrelationId'
 export const HttpStatusCodeAttribute: ErrorAttribute<number> = 'httpStatusCode'
 
 const BaseErrorCauseSchema = Zod.object({
@@ -18,7 +16,10 @@ const BaseErrorCauseSchema = Zod.object({
   attributes: Zod.record(Zod.string(), Zod.unknown()),
 })
 
-export type ErrorCause = Zod.infer<typeof BaseErrorCauseSchema> & {
+export type ErrorCause = {
+  code: ErrorCode
+  message: string
+  attributes: Dictionary<unknown>
   causes: Array<ErrorCause>
 }
 

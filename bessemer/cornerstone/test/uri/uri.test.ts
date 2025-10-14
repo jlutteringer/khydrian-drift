@@ -346,6 +346,8 @@ describe('Uris.fromString', () => {
   })
 
   test('should throw error for invalid characters in scheme', () => {
+    // JOHN need to clean this up after errors look good
+    console.log("Uris.parseString('ht@tp://example.com')\n", JSON.stringify(Uris.parseString('ht@tp://example.com').value, null, 2))
     expect(() => Uris.fromString('ht@tp://example.com')).toThrow()
   })
 })

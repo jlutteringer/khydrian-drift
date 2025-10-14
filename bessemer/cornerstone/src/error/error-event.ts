@@ -7,7 +7,7 @@ import { isPromise } from '@bessemer/cornerstone/promise'
 import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { Result } from '@bessemer/cornerstone/result'
 import * as ErrorCauses from '@bessemer/cornerstone/error/error-cause'
-import { ErrorCauseAugment, ErrorCauseBuilder } from '@bessemer/cornerstone/error/error-cause'
+import { ErrorCause, ErrorCauseAugment, ErrorCauseBuilder } from '@bessemer/cornerstone/error/error-cause'
 import * as Assertions from '@bessemer/cornerstone/assertion'
 import { MergeExclusive } from 'type-fest'
 import { isEmpty } from '@bessemer/cornerstone/array'
@@ -21,7 +21,12 @@ export const Schema = Zod.object({
   context: Zod.record(Zod.string(), Zod.unknown()),
 })
 
-export type ErrorEvent = Zod.infer<typeof Schema>
+export type ErrorEvent = {
+  _type: typeof Namespace
+  message: string
+  causes: Array<ErrorCause>
+  context: Dictionary<unknown>
+}
 
 type ErrorEventCommonBuilder = {
   message: string
