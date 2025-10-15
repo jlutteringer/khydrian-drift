@@ -66,6 +66,8 @@ import * as LanguageCodes from '@bessemer/cornerstone/intl/language-code'
 import * as Locales from '@bessemer/cornerstone/intl/locale'
 import * as ResourceKeys from '@bessemer/cornerstone/resource-key'
 import * as HexCodes from '@bessemer/cornerstone/hex-code'
+import * as IpV6Addresses from '@bessemer/cornerstone/ipv6-address'
+import * as IpV4Addresses from '@bessemer/cornerstone/ipv4-address'
 
 export {
   Objects,
@@ -135,4 +137,6 @@ export {
   Locales,
   ResourceKeys,
   HexCodes,
+  IpV6Addresses,
+  IpV4Addresses,
 }

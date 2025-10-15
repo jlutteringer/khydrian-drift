@@ -5,11 +5,12 @@ import * as Objects from '@bessemer/cornerstone/object'
 import * as Arrays from '@bessemer/cornerstone/array'
 import * as ResourceKeys from '@bessemer/cornerstone/resource-key'
 import * as Results from '@bessemer/cornerstone/result'
-import { Result } from '@bessemer/cornerstone/result'
+import { Result, success } from '@bessemer/cornerstone/result'
 import * as ErrorEvents from '@bessemer/cornerstone/error/error-event'
 import { ErrorEvent } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
+import * as IpV6Addresses from '@bessemer/cornerstone/ipv6-address'
 
 export const encode = (uriComponent: UriComponent) => {
   return encodeURIComponent(uriComponent)
@@ -99,32 +100,20 @@ export const parseString = (value: string): Result<Uri, ErrorEvent> => {
 
   const [scheme, rest1] = schemeResult.value
 
-  const authenticationPartResult = parseAuthenticationPart(rest1)
-  if (!authenticationPartResult.isSuccess) {
+  const authorityPartResult = parseAuthorityPart(rest1)
+  if (!authorityPartResult.isSuccess) {
     return Results.failure(
       ErrorEvents.invalidValue(value, {
         namespace: Namespace,
         message: `[${Namespace}]: Unable to parse Uri from uri string: [${value}]`,
-        causes: authenticationPartResult.value.causes,
+        causes: authorityPartResult.value.causes,
       })
     )
   }
-  const [authentication, rest2] = authenticationPartResult.value
+  const [authority, rest2] = authorityPartResult.value
 
-  const hostPartResult = parseHostPart(rest2)
-  if (!hostPartResult.isSuccess) {
-    return Results.failure(
-      ErrorEvents.invalidValue(value, {
-        namespace: Namespace,
-        message: `[${Namespace}]: Unable to parse Uri from uri string: [${value}]`,
-        causes: hostPartResult.value.causes,
-      })
-    )
-  }
-  const [host, rest3] = hostPartResult.value
-
-  const location = parseLocation(rest3)
-  const uri: Uri = { _type: Namespace, scheme, host, authentication, location }
+  const location = parseLocation(rest2)
+  const uri: Uri = { _type: Namespace, scheme, host: authority.host, authentication: authority.authentication, location }
   return Results.success(uri)
 }
 
@@ -199,9 +188,9 @@ const parseSchemePart = (url: UriComponent): Result<[UriScheme | null, UriCompon
     return Results.success([null, url])
   }
 
-  // This means the string started with :, so no protocol. We'll go ahead and remove the : from consideration
+  // This means the string started with :, so no protocol
   if (Strings.isEmpty(schemeMatch.selection)) {
-    return Results.success([null, schemeMatch.rest])
+    return Results.success([null, ':' + schemeMatch.rest])
   } else {
     const schemeResult = parseScheme(schemeMatch.selection)
     if (!schemeResult.isSuccess) {
@@ -227,6 +216,30 @@ const parseScheme = (scheme: UriComponent): Result<UriScheme, ErrorEvent> => {
   return Results.success(scheme)
 }
 
+const parseAuthorityPart = (
+  initialUrl: UriComponent
+): Result<[{ host: UriHost | null; authentication: UriAuthentication | null }, UriComponent], ErrorEvent> => {
+  if (!initialUrl.startsWith('//')) {
+    return success([{ host: null, authentication: null }, initialUrl])
+  }
+
+  const url = Strings.removeStart(initialUrl, '//')
+
+  const authenticationPartResult = parseAuthenticationPart(url)
+  if (!authenticationPartResult.isSuccess) {
+    return authenticationPartResult
+  }
+  const [authentication, rest1] = authenticationPartResult.value
+
+  const hostPartResult = parseHostPart(rest1)
+  if (!hostPartResult.isSuccess) {
+    return hostPartResult
+  }
+  const [host, rest2] = hostPartResult.value
+
+  return success([{ host, authentication }, rest2])
+}
+
 const parseAuthenticationPart = (url: UriComponent): Result<[UriAuthentication | null, UriComponent], ErrorEvent> => {
   let targetPart = url
   const queryMatch = Strings.splitFirst(targetPart, '?')
@@ -246,12 +259,12 @@ const parseAuthenticationPart = (url: UriComponent): Result<[UriAuthentication |
 
   const { rest } = Strings.splitFirst(url, '@')
 
-  const authenticationParseResult = parseAuthentication(Strings.removeStart(authentication, '//'))
+  const authenticationParseResult = parseAuthentication(authentication)
   if (!authenticationParseResult.isSuccess) {
     return authenticationParseResult
   }
 
-  return Results.success([authenticationParseResult.value, '//' + rest])
+  return Results.success([authenticationParseResult.value, rest])
 }
 
 const parseAuthentication = (authentication: UriComponent): Result<UriAuthentication, ErrorEvent> => {
@@ -263,7 +276,7 @@ const parseAuthentication = (authentication: UriComponent): Result<UriAuthentica
       return Results.failure(
         ErrorEvents.invalidValue(authenticationRest, {
           namespace: Namespace,
-          message: `[${Namespace}]: Invalid characters for UriAuthentication in principal string.`,
+          message: `[${Namespace}]: Invalid characters for UriAuthentication in principal string: [${authenticationRest}]`,
         })
       )
     }
@@ -276,7 +289,7 @@ const parseAuthentication = (authentication: UriComponent): Result<UriAuthentica
     return Results.failure(
       ErrorEvents.invalidValue(authentication, {
         namespace: Namespace,
-        message: `[${Namespace}]: Unable to parse UriAuthentication from authentication string.`,
+        message: `[${Namespace}]: Unable to parse UriAuthentication from authentication string: [${authentication}]`,
       })
     )
   }
@@ -285,7 +298,7 @@ const parseAuthentication = (authentication: UriComponent): Result<UriAuthentica
     return Results.failure(
       ErrorEvents.invalidValue(principal, {
         namespace: Namespace,
-        message: `[${Namespace}]: Invalid characters for UriAuthentication in principal string.`,
+        message: `[${Namespace}]: Invalid characters for UriAuthentication in principal string: [${principal}]`,
       })
     )
   }
@@ -294,7 +307,7 @@ const parseAuthentication = (authentication: UriComponent): Result<UriAuthentica
     return Results.failure(
       ErrorEvents.invalidValue(authenticationRest, {
         namespace: Namespace,
-        message: `[${Namespace}]: Invalid characters for UriAuthentication in password string.`,
+        message: `[${Namespace}]: Invalid characters for UriAuthentication in password string: [${authenticationRest}]`,
       })
     )
   }
@@ -325,13 +338,6 @@ const parseHostPart = (url: UriComponent): Result<[UriHost | null, UriComponent]
     return Results.success([null, url])
   }
 
-  let hostRequired = url.startsWith('//')
-  if (!hostRequired) {
-    return Results.success([null, url])
-  }
-
-  url = Strings.removeStart(url, '//')
-
   // Lets grab everything to the left of the first / ? or #, this is the remainder of our authority (if any)
   const urlMatch = Strings.splitFirst(url, /[\/?#]/)
   let host = urlMatch.rest
@@ -357,18 +363,24 @@ const parseHostPart = (url: UriComponent): Result<[UriHost | null, UriComponent]
 const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
   // Try to see if we have an ipv6 address like the form [2001:db8::7] and handle it
   if (host.startsWith('[')) {
-    const ipMatch = Strings.splitFirst(host, ']')
+    const ipMatch = Strings.splitFirst(Strings.removeStart(host, '['), ']')
 
     if (Objects.isPresent(ipMatch.selection)) {
       const portMatch = Strings.splitFirst(ipMatch.rest, ':')
+
+      const ipV6Result = IpV6Addresses.parseString(ipMatch.selection)
+      if (!ipV6Result.isSuccess) {
+        return ipV6Result
+      }
+
       if (Objects.isPresent(portMatch.selection) && Strings.isEmpty(portMatch.selection)) {
         if (!Strings.isNumber(portMatch.rest)) {
-          return Results.failure(ErrorEvents.invalidValue(host, { namespace: Namespace, message: `Unable to parse Host` }))
+          return Results.failure(ErrorEvents.invalidValue(host, { namespace: Namespace, message: `[${Namespace}]: Unable to parse Host: [${host}]` }))
         }
 
-        return Results.success({ value: ipMatch.selection + ']', port: Number(portMatch.rest) })
+        return Results.success({ value: `[${ipMatch.selection}]`, port: Number(portMatch.rest) })
       } else {
-        return Results.success({ value: ipMatch.selection + ']', port: null })
+        return Results.success({ value: `[${ipMatch.selection}]`, port: null })
       }
     }
   }
@@ -383,7 +395,7 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
   // The host started with a :, this is odd
   if (Strings.isEmpty(hostMatch.selection)) {
     return Results.failure(
-      ErrorEvents.invalidValue(host, { namespace: Namespace, message: `[${Namespace}]: Unable to parse Host from host string.` })
+      ErrorEvents.invalidValue(host, { namespace: Namespace, message: `[${Namespace}]: Unable to parse Host from host string: [${host}]` })
     )
   }
 
@@ -391,7 +403,7 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
 
   if (!Strings.isNumber(hostMatch.rest)) {
     return Results.failure(
-      ErrorEvents.invalidValue(host, { namespace: Namespace, message: `[${Namespace}]: Unable to parse Host from host string.` })
+      ErrorEvents.invalidValue(host, { namespace: Namespace, message: `[${Namespace}]: Unable to parse Host from host string: [${host}]` })
     )
   }
 
