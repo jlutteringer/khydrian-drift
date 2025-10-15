@@ -18,8 +18,8 @@ export type Dictionary<T> = Record<string, T>
 
 export type Nil = null | undefined
 
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends Array<infer U> ? DeepPartial<U>[] : T[P] extends object | undefined ? DeepPartial<T[P]> : T[P]
+export type DEPRECATEDDeepPartial<T> = {
+  [P in keyof T]?: T[P] extends Array<infer U> ? DEPRECATEDDeepPartial<U>[] : T[P] extends object | undefined ? DEPRECATEDDeepPartial<T[P]> : T[P]
 }
 
 // JOHN maybe this needs a different definition...

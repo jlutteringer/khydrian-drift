@@ -1,7 +1,7 @@
 import { BessemerApplicationContext, BessemerModule, BessemerOptions, Caches, Environments } from '@bessemer/framework'
 import { Loggers, Ulids } from '@bessemer/cornerstone'
 import { LocalAdvisoryLockProvider } from '@bessemer/framework/advisory-lock/LocalAdvisoryLockProvider'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { DEPRECATEDDeepPartial } from '@bessemer/cornerstone/types'
 
 export const BaseApplicationModule: BessemerModule<BessemerApplicationContext, BessemerOptions> = {
   global: {
@@ -24,7 +24,7 @@ export const BaseApplicationModule: BessemerModule<BessemerApplicationContext, B
     },
   },
   configure: async (options) => {
-    const application: DeepPartial<BessemerApplicationContext> = {
+    const application: DEPRECATEDDeepPartial<BessemerApplicationContext> = {
       client: {
         correlationId: 'asdf',
         environment: Environments.getEnvironment(),

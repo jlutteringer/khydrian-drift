@@ -2,7 +2,7 @@ import { BessemerApplicationContext, BessemerModule, BessemerOptions, GlobalCont
 import { RedisAdvisoryLockProvider } from '@bessemer/redis/advisory-lock/RedisAdvisoryLockProvider'
 import { Objects } from '@bessemer/cornerstone'
 import { BaseApplicationModule } from '@bessemer/framework/application'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { DEPRECATEDDeepPartial } from '@bessemer/cornerstone/types'
 import { RedisCacheManager } from '@bessemer/redis/cache/RedisCacheManager'
 import { RedisCacheProvider } from '@bessemer/redis/cache/RedisCacheProvider'
 
@@ -27,7 +27,7 @@ export const RedisApplicationModule: BessemerModule<RedisApplicationContext, Red
         return {}
       }
 
-      const redisApplication: DeepPartial<GlobalContextType<RedisApplicationContext>> = {
+      const redisApplication: DEPRECATEDDeepPartial<GlobalContextType<RedisApplicationContext>> = {
         global: {
           redis: options.redis,
           advisoryLockProvider: new RedisAdvisoryLockProvider(),

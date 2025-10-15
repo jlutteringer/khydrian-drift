@@ -11,7 +11,7 @@ import { Tag } from '@bessemer/cornerstone/tag'
 import { CacheConfiguration } from '@bessemer/cornerstone/cache'
 import * as Caches from '@bessemer/framework/cache'
 import { CacheContext } from '@bessemer/framework/cache'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { DEPRECATEDDeepPartial } from '@bessemer/cornerstone/types'
 import { Ulid } from '@bessemer/cornerstone/ulid'
 
 export { Bessemer, Environments, Contexts, AdvisoryLocks, Caches }
@@ -63,12 +63,12 @@ export type BessemerModule<ApplicationContext extends BessemerApplicationContext
     tags?: (tags: Array<Tag>) => Array<Tag>
     configure?: (
       options: ApplicationOptions,
-      context: DeepPartial<GlobalContextType<ApplicationContext>>
-    ) => DeepPartial<GlobalContextType<ApplicationContext>>
+      context: DEPRECATEDDeepPartial<GlobalContextType<ApplicationContext>>
+    ) => DEPRECATEDDeepPartial<GlobalContextType<ApplicationContext>>
     initialize?: (options: ApplicationOptions, context: GlobalContextType<ApplicationContext>) => void
   }
   tags?: (tags: Array<Tag>) => Promise<Array<Tag>>
-  configure?: (options: ApplicationOptions, context: DeepPartial<ApplicationContext>) => Promise<DeepPartial<ApplicationContext>>
+  configure?: (options: ApplicationOptions, context: DEPRECATEDDeepPartial<ApplicationContext>) => Promise<DEPRECATEDDeepPartial<ApplicationContext>>
   dependencies?: Array<BessemerModule<ApplicationContext, ApplicationOptions>>
 }
 

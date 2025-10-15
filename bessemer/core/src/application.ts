@@ -10,7 +10,7 @@ import {
   BessemerNextClientContext,
   BessemerNextOptions,
 } from '@bessemer/framework-next/application'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { DEPRECATEDDeepPartial } from '@bessemer/cornerstone/types'
 
 export type CoreOptions = BessemerNextOptions & {
   codex?: CodexOptions
@@ -40,7 +40,7 @@ export type CoreClientContext = BessemerNextClientContext &
 
 export const CoreApplicationModule: BessemerModule<CoreApplicationContext, CoreOptions> = {
   configure: async (options) => {
-    const application: DeepPartial<CoreApplicationContext> = {
+    const application: DEPRECATEDDeepPartial<CoreApplicationContext> = {
       codex: options.codex && {
         provider: options.codex.provider,
       },

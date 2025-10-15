@@ -112,7 +112,7 @@ describe('Urls.fromString', () => {
   })
 
   test('should parse URL with authentication without scheme', () => {
-    expect(Urls.fromString('john.lutteringer@www.google.com')).toEqual(
+    expect(Urls.fromString('//john.lutteringer@www.google.com')).toEqual(
       Urls.from({
         host: 'www.google.com',
         authentication: {

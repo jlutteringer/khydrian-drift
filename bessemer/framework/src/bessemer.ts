@@ -12,7 +12,7 @@ import { Arrays, Assertions, Hashes, Loggers, Objects, Properties, Tags } from '
 import { RscRuntimes } from '@bessemer/react'
 import { createGlobalVariable } from '@bessemer/cornerstone/global-variable'
 import { Tag } from '@bessemer/cornerstone/tag'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { DEPRECATEDDeepPartial } from '@bessemer/cornerstone/types'
 
 const logger = Loggers.child('Bessemer')
 
@@ -54,7 +54,7 @@ export const configure = <ApplicationContext extends BessemerApplicationContext,
 
   const options = Properties.resolve(properties, tags)
   const globalContext = dependencyList.reduce((context, module) => {
-    const partialContext = module?.global?.configure?.(options, context as DeepPartial<GlobalContextType<ApplicationContext>>) ?? {}
+    const partialContext = module?.global?.configure?.(options, context as DEPRECATEDDeepPartial<GlobalContextType<ApplicationContext>>) ?? {}
     return Objects.deepMerge(context, partialContext)
   }, {} as GlobalContextType<ApplicationContext>)
 
@@ -106,7 +106,7 @@ export const initialize = async <ApplicationContext extends BessemerApplicationC
   const options = Properties.resolve(properties, tags)
   const context = await dependencyList.reduce(async (context, module) => {
     const awaitedContext = await context
-    const partialContext = (await module?.configure?.(options, awaitedContext as DeepPartial<ApplicationContext>)) ?? {}
+    const partialContext = (await module?.configure?.(options, awaitedContext as DEPRECATEDDeepPartial<ApplicationContext>)) ?? {}
     return Objects.deepMerge(awaitedContext, partialContext)
   }, Promise.resolve(globalContext as ApplicationContext))
 

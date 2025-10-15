@@ -11,6 +11,7 @@ import { ErrorEvent } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
 import * as IpV6Addresses from '@bessemer/cornerstone/ipv6-address'
+import { PartialDeep, ValueOf } from 'type-fest'
 
 export const encode = (uriComponent: UriComponent) => {
   return encodeURIComponent(uriComponent)
@@ -85,8 +86,45 @@ export type UriBuilder = {
 
 export type UriLike = Uri | UriLiteral | UriBuilder
 
-// JOHN we want to improve the syntax burden of handling a series of Result objects like this
+/**
+ * Parses a string into a Uri object, handling all URI components including scheme,
+ * authority (host and authentication), and location (path, query, fragment).
+ * Returns a Result containing either the parsed Uri or an ErrorEvent on failure.
+ *
+ * **Example**
+ *
+ * ```ts
+ * import { Uris } from "@bessemer/cornerstone"
+ *
+ * // Parse a complete HTTPS URI
+ * const result = Uris.parseString('https://user:pass@example.com:8080/api/v1?q=test#section')
+ * if (result.isSuccess) {
+ *   console.log(result.value.scheme) // 'https'
+ *   console.log(result.value.host?.value) // 'example.com'
+ *   console.log(result.value.authentication?.principal) // 'user'
+ * }
+ *
+ * // Parse a simple URI without authority
+ * const urnResult = Uris.parseString('urn:isbn:0451450523')
+ * if (urnResult.isSuccess) {
+ *   console.log(urnResult.value.scheme) // 'urn'
+ *   console.log(urnResult.value.location.path) // 'isbn:0451450523'
+ * }
+ * ```
+ *
+ * @category parsing
+ */
 export const parseString = (value: string): Result<Uri, ErrorEvent> => {
+  // JOHN we want to improve the syntax burden of handling a series of Result objects like this
+  if (Strings.isBlank(value)) {
+    return Results.failure(
+      ErrorEvents.required({
+        namespace: Namespace,
+        message: `[${Namespace}]: Unable to parse Uri from empty string.`,
+      })
+    )
+  }
+
   const schemeResult = parseSchemePart(value)
   if (!schemeResult.isSuccess) {
     return Results.failure(
@@ -117,10 +155,59 @@ export const parseString = (value: string): Result<Uri, ErrorEvent> => {
   return Results.success(uri)
 }
 
+/**
+ * Parses a string into a Uri object, throwing an error if parsing fails.
+ * This is a convenience method that wraps `parseString` and unwraps the Result,
+ * converting any parsing errors into thrown exceptions.
+ *
+ * **Example**
+ *
+ * ```ts
+ * import { Uris } from "@bessemer/cornerstone"
+ *
+ * // Parse a complete HTTPS URI
+ * const uri = Uris.fromString('https://user:pass@example.com:8080/api/v1?q=test#section')
+ * console.log(uri.scheme) // 'https'
+ * console.log(uri.host?.value) // 'example.com'
+ * console.log(uri.authentication?.principal) // 'user'
+ *
+ * // Parse a simple path-only URI
+ * const pathUri = Uris.fromString('/api/users')
+ * console.log(pathUri.location.path) // '/api/users'
+ * ```
+ *
+ * @throws {ErrorEventException} When the input string cannot be parsed as a valid URI
+ * @category parsing
+ */
 export const fromString = (value: string): Uri => {
   return ErrorEvents.unpackResult(parseString(value))
 }
 
+/**
+ * Converts various URI-like inputs into a Uri object. Handles Uri instances,
+ * string literals, and builder objects, returning them as-is when already a Uri
+ * or converting them appropriately.
+ *
+ * **Example**
+ *
+ * ```ts
+ * import { Uris } from "@bessemer/cornerstone"
+ *
+ * // String literal parsed into Uri
+ * const fromString = Uris.from('https://api.example.com/v1' as UriLiteral)
+ * console.log(fromString.scheme) // 'https'
+ * console.log(fromString.host?.value) // 'api.example.com'
+ *
+ * // Builder object converted to Uri
+ * const fromBuilder = Uris.from({
+ *   scheme: 'https',
+ *   host: { value: 'example.com', port: 8080 },
+ *   location: { path: '/api' }
+ * })
+ * console.log(fromBuilder.host?.port) // 8080
+ *
+ * @category conversion
+ */
 export function from(value: UriLike): Uri
 export function from(value: UriLike | null): Uri | null
 export function from(value: UriLike | undefined): Uri | undefined
@@ -139,6 +226,32 @@ export function from(value: UriLike | null | undefined): Uri | null | undefined 
   return build(value as UriBuilder)
 }
 
+/**
+ * Converts various URI-like inputs into a normalized string literal representation.
+ * Takes any URI-like value and returns its canonical string form
+ *
+ * **Example**
+ *
+ * ```ts
+ * import { Uris } from "@bessemer/cornerstone"
+ *
+ * // Convert Uri instance to string literal
+ * const uri = Uris.build({ scheme: 'https', host: 'example.com', location: { path: '/api' } })
+ * const literal = Uris.toLiteral(uri)
+ * console.log(literal) // "https://example.com/api"
+ *
+ * // Convert builder object to string literal
+ * const fromBuilder = Uris.toLiteral({
+ *   scheme: 'https',
+ *   host: { value: 'api.example.com', port: 8080 },
+ *   authentication: { principal: 'user', password: 'pass' },
+ *   location: { path: '/v1', parameters: { q: 'search' } }
+ * })
+ * console.log(fromBuilder) // "https://user:pass@api.example.com:8080/v1?q=search"
+ * ```
+ *
+ * @category serialization
+ */
 export function toLiteral(likeValue: UriLike): UriLiteral
 export function toLiteral(likeValue: UriLike | null): UriLiteral | null
 export function toLiteral(likeValue: UriLike | undefined): UriLiteral | undefined
@@ -156,6 +269,25 @@ export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => R
 // JOHN need a schema for the object version...
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
+/**
+ * Tests if the provided value is a Uri.
+ *
+ * **Example**
+ *
+ * ```ts
+ * import { Uris } from "@bessemer/cornerstone"
+ *
+ * // Check if unknown value is a Uri
+ * function processValue(value: unknown) {
+ *   if (Uris.isUri(value)) {
+ *     console.log(value.scheme) // Type-safe access
+ *     console.log(value.location.path)
+ *   }
+ * }
+ * ```
+ *
+ * @category type-guards
+ */
 export const isUri = (value: unknown): value is Uri => {
   if (!Objects.isObject(value)) {
     return false
@@ -165,7 +297,39 @@ export const isUri = (value: unknown): value is Uri => {
   return uriValue._type === Namespace || uriValue._type === UrlNamespace
 }
 
-export const merge = (element: UriLike, builder: Partial<UriBuilder>): Uri => {
+/**
+ * Merges an existing URI with partial changes to create a new URI instance.
+ * Allows selective updates without replacing the entire URI.
+ *
+ * **Example**
+ *
+ * ```ts
+ * import { Uris } from "@bessemer/cornerstone"
+ *
+ * // Start with a base URI
+ * const baseUri = Uris.build({
+ *   scheme: 'https',
+ *   host: { value: 'api.example.com', port: 443 },
+ *   authentication: { principal: 'user', password: 'pass' },
+ *   location: { path: '/v1', parameters: { format: 'json' } }
+ * })
+ *
+ * // Change just the host and add query parameter
+ * const updatedUri = Uris.merge(baseUri, {
+ *   host: { value: 'api.production.com' }, // Port preserved from original
+ *   location: {
+ *     parameters: { version: '2.0' } // Merges with existing parameters
+ *   }
+ * })
+ *
+ * console.log(updatedUri.host?.value) // 'api.production.com'
+ * console.log(updatedUri.host?.port) // 443 (preserved)
+ * console.log(updatedUri.location.parameters) // { format: 'json', version: '2.0' }
+ * ```
+ *
+ * @category transformation
+ */
+export const merge = (element: UriLike, builder: PartialDeep<UriBuilder>): Uri => {
   const uri = from(element)
 
   const uriBuilder: UriBuilder = {
@@ -484,24 +648,62 @@ const build = (builder: UriBuilder): Uri => {
   }
 }
 
-export enum UriComponentType {
-  Scheme = 'Scheme',
-  Host = 'Host',
-  Location = 'Location',
-}
+export const UriComponentType = {
+  Scheme: 'Scheme',
+  Authentication: 'Authentication',
+  Host: 'Host',
+  Location: 'Location',
+  Path: 'Path',
+  Query: 'Query',
+  Fragment: 'Fragment',
+} as const
 
-export const format = (uri: Uri, format: Array<UriComponentType> = Object.values(UriComponentType)): UriString => {
+export type UriComponentType = ValueOf<typeof UriComponentType>
+
+/**
+ * Converts a URI object into its string representation, with optional exclusion of specific URI components.
+ *
+ * **Example**
+ *
+ * ```ts
+ * import { Uris, UriComponentType } from "@bessemer/cornerstone"
+ *
+ * const uri = Uris.build({
+ *   scheme: 'https',
+ *   authentication: { principal: 'user', password: 'secret' },
+ *   host: { value: 'api.example.com', port: 8080 },
+ *   location: { path: '/v1/data', parameters: { format: 'json' }, fragment: 'results' }
+ * })
+ *
+ * // Format complete URI
+ * const fullUri = Uris.format(uri)
+ * console.log(fullUri) // "https://user:secret@api.example.com:8080/v1/data?format=json#results"
+ *
+ * // Exclude authentication for public sharing
+ * const publicUri = Uris.format(uri, [UriComponentType.Authentication])
+ * console.log(publicUri) // "https://api.example.com:8080/v1/data?format=json#results"
+ *
+ * // Format path-only URI
+ * const pathOnly = Uris.format(uri, [
+ *   UriComponentType.Scheme,
+ *   UriComponentType.Host,
+ *   UriComponentType.Authentication
+ * ])
+ * console.log(pathOnly) // "/v1/data?format=json#results"
+ * ```
+ *
+ * @category serialization
+ */
+export const format = (uri: Uri, excludedUriComponents: Array<UriComponentType> = []): UriLiteral => {
   let urlString = ''
-  if (Objects.isPresent(uri.scheme) && Arrays.contains(format, UriComponentType.Scheme)) {
-    urlString = urlString + uri.scheme
+  if (Objects.isPresent(uri.scheme) && !Arrays.contains(excludedUriComponents, UriComponentType.Scheme)) {
+    urlString = urlString + uri.scheme + ':'
   }
 
-  if (Objects.isPresent(uri.host) && Arrays.contains(format, UriComponentType.Host)) {
-    if (Objects.isPresent(uri.scheme)) {
-      urlString = urlString + '://'
-    }
+  if (Objects.isPresent(uri.host) && !Arrays.contains(excludedUriComponents, UriComponentType.Host)) {
+    urlString = urlString + '//'
 
-    if (Objects.isPresent(uri.authentication)) {
+    if (Objects.isPresent(uri.authentication) && !Arrays.contains(excludedUriComponents, UriComponentType.Authentication)) {
       urlString = urlString + encode(uri.authentication.principal)
 
       if (Objects.isPresent(uri.authentication.password)) {
@@ -512,31 +714,30 @@ export const format = (uri: Uri, format: Array<UriComponentType> = Object.values
     }
 
     urlString = urlString + uri.host.value
-
     if (Objects.isPresent(uri.host.port)) {
       urlString = urlString + ':' + uri.host.port
     }
   }
 
-  if (Arrays.contains(format, UriComponentType.Location)) {
-    urlString = urlString + formatLocation(uri.location)
+  if (!Arrays.contains(excludedUriComponents, UriComponentType.Location)) {
+    urlString = urlString + formatLocation(uri.location, excludedUriComponents)
   }
 
   return urlString
 }
 
-const formatLocation = (location: UriLocation): string => {
+const formatLocation = (location: UriLocation, excludedUriComponents: Array<UriComponentType> = []): string => {
   let urlString = ''
 
-  if (!Strings.isEmptyOrNil(location.path)) {
+  if (Objects.isPresent(location.path) && !Arrays.contains(excludedUriComponents, UriComponentType.Path)) {
     urlString = urlString + location.path
   }
 
-  if (!Strings.isEmptyOrNil(location.query)) {
+  if (Objects.isPresent(location.query) && !Arrays.contains(excludedUriComponents, UriComponentType.Query)) {
     urlString = urlString + '?' + location.query
   }
 
-  if (!Strings.isEmptyOrNil(location.fragment)) {
+  if (Objects.isPresent(location.fragment) && !Arrays.contains(excludedUriComponents, UriComponentType.Fragment)) {
     urlString = urlString + '#' + encode(location.fragment!)
   }
 

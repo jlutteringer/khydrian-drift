@@ -1,6 +1,6 @@
 import { BessemerModule } from '@bessemer/framework'
 import { Objects } from '@bessemer/cornerstone'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { DEPRECATEDDeepPartial } from '@bessemer/cornerstone/types'
 import { CoreApplicationContext, CoreApplicationModule, CoreOptions } from '@bessemer/core/application'
 
 export type ContentfulClientKeys = {
@@ -29,7 +29,7 @@ export const ContentfulApplicationModule: BessemerModule<ContentfulApplicationCo
       return {}
     }
 
-    const contentfulApplication: DeepPartial<ContentfulApplicationContext> = {}
+    const contentfulApplication: DEPRECATEDDeepPartial<ContentfulApplicationContext> = {}
 
     return contentfulApplication
   },

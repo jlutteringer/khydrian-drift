@@ -6,7 +6,7 @@ import { BessemerModule, ClientContextType } from '@bessemer/framework'
 import { headers } from 'next/headers'
 import { FoundryApplicationContext, FoundryApplicationModule, FoundryClientContext, FoundryOptions } from '@bessemer/foundry/application'
 import { RedisApplicationContext, RedisApplicationModule, RedisOptions } from '@bessemer/redis/application'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { DEPRECATEDDeepPartial } from '@bessemer/cornerstone/types'
 
 export type ApplicationOptions = FoundryOptions &
   RedisOptions & {
@@ -48,7 +48,7 @@ export const ApplicationModule: BessemerModule<ApplicationContext, ApplicationOp
   },
   configure: async (options) => {
     // FUTURE concerning cast here...
-    const application: DeepPartial<ApplicationContext> = { serverOnlyTest, client: { ruleset: Dnd5e as DeepPartial<Ruleset> } }
+    const application: DEPRECATEDDeepPartial<ApplicationContext> = { serverOnlyTest, client: { ruleset: Dnd5e as DEPRECATEDDeepPartial<Ruleset> } }
     return application
   },
   dependencies: [FoundryApplicationModule, RedisApplicationModule],

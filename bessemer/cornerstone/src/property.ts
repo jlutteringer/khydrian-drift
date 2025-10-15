@@ -1,6 +1,5 @@
 import { resolve as resolveTag, SerializedTags, serializeTags, Tag, TaggedValue } from '@bessemer/cornerstone/tag'
-import { UnknownRecord } from 'type-fest'
-import { DeepPartial } from '@bessemer/cornerstone/types'
+import { PartialDeep, UnknownRecord } from 'type-fest'
 import { deepMergeAll } from '@bessemer/cornerstone/object'
 
 export type PropertyRecord<T extends UnknownRecord> = {
@@ -8,7 +7,7 @@ export type PropertyRecord<T extends UnknownRecord> = {
   overrides: Record<SerializedTags, PropertyOverride<T>>
 }
 
-export type PropertyOverride<T> = TaggedValue<DeepPartial<T>>
+export type PropertyOverride<T> = TaggedValue<PartialDeep<T>>
 
 export const properties = <T extends UnknownRecord>(values: T, overrides?: Array<PropertyOverride<T>>): PropertyRecord<T> => {
   const propertyOverrideEntries = (overrides ?? []).map((override) => {
