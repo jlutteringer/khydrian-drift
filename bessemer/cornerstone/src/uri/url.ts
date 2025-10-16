@@ -1,61 +1,57 @@
 import { Dictionary, NominalType } from '@bessemer/cornerstone/types'
-import {
-  decode as uriDecode,
-  encode as uriEncode,
-  format as uriFormat,
-  from as uriFrom,
-  parseString as uriParseString,
-  Uri,
-  UriBuilder,
-  UriComponent,
-  UriLocation,
-} from '@bessemer/cornerstone/uri/uri'
-import { createNamespace } from '@bessemer/cornerstone/resource-key'
+import * as Uris from '@bessemer/cornerstone/uri/uri'
+import { Uri, UriBuilder, UriComponent, UriLocation } from '@bessemer/cornerstone/uri/uri'
 import { failure, mapResult, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { isError } from '@bessemer/cornerstone/error/error'
-import { isNil, isObject, isPresent } from '@bessemer/cornerstone/object'
-import { isBlank, isString, removeStart } from '@bessemer/cornerstone/string'
+import * as Strings from '@bessemer/cornerstone/string'
 import { first, isEmpty } from '@bessemer/cornerstone/array'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
+import * as Equalitors from '@bessemer/cornerstone/equalitor'
+import { Equalitor } from '@bessemer/cornerstone/equalitor'
+import { MergeExclusive } from 'type-fest'
+import * as Objects from '@bessemer/cornerstone/object'
 
 // JOHN UPDATING URLS NEEDS WORK
-export const encode = uriEncode
+export const encode = Uris.encode
 
-export const decode = uriDecode
+export const decode = Uris.decode
 
 export interface UrlLocation extends UriLocation {
+  relative: boolean
   pathSegments: Array<string>
   parameters: Dictionary<string | Array<string>>
 }
 
 export interface Url extends Uri {
-  type: 'url'
+  _type: typeof Namespace
   location: UrlLocation
 }
 
-export const Namespace = createNamespace('url')
+export const Namespace = Uris.UrlNamespace
+export const EqualBy: Equalitor<Url> = Equalitors.deepNatural()
+
 export type UrlLiteral = NominalType<string, typeof Namespace>
 
-type UrlBuilderParametersPart = { parameters?: Dictionary<string | Array<string>> }
+type UrlBuilderPathPart = MergeExclusive<{ path?: string | null }, { pathSegments?: Array<string>; relative?: boolean }>
+type UrlBuilderQueryPart = MergeExclusive<{ query?: string | null }, { parameters?: Dictionary<string | Array<string>> }>
+type UrlBuilderLocationPart = UrlBuilderPathPart &
+  UrlBuilderQueryPart & {
+    fragment?: string | null
+  }
 
 export type UrlBuilder = UriBuilder & {
-  location?:
-    | ({
-        path?: string | null
-        fragment?: string | null
-      } & (UrlBuilderParametersPart | { query?: string | null }))
-    | string
-    | null
+  location?: UrlBuilderLocationPart | null | undefined
 }
 
 export type UrlLike = Url | UrlLiteral | UrlBuilder
 
+export const blah = (uri: Uri): Url => {}
+
 export const parseString = (value: string, normalize = true): Result<Url, ErrorEvent> => {
   try {
-    // JOHN parse should be rewritten to return descriptive result objects
-    const result = uriParseString(value)
+    const result = Uris.parseString(value)
     if (!result.isSuccess) {
       return result
     }
@@ -96,13 +92,13 @@ export function from(value: UrlLike | null): Url | null
 export function from(value: UrlLike | undefined): Url | undefined
 export function from(value: UrlLike | null | undefined): Url | null | undefined
 export function from(value: UrlLike | null | undefined): Url | null | undefined {
-  if (isNil(value)) {
+  if (Objects.isNil(value)) {
     return value
   }
   if (isUrl(value)) {
     return value
   }
-  if (isString(value)) {
+  if (Strings.isString(value)) {
     return fromString(value)
   }
 
@@ -114,7 +110,7 @@ export function toLiteral(likeValue: UrlLike | null): UrlLiteral | null
 export function toLiteral(likeValue: UrlLike | undefined): UrlLiteral | undefined
 export function toLiteral(likeValue: UrlLike | null | undefined): UrlLiteral | null | undefined
 export function toLiteral(likeValue: UrlLike | null | undefined): UrlLiteral | null | undefined {
-  if (isNil(likeValue)) {
+  if (Objects.isNil(likeValue)) {
     return likeValue
   }
 
@@ -127,59 +123,54 @@ export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => m
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isUrl = (value: unknown): value is Url => {
-  if (!isObject(value)) {
+  if (!Objects.isObject(value)) {
     return false
   }
 
   const uriValue = value as any as Url
-  return uriValue.type === 'url'
+  return uriValue._type === Namespace
 }
 
-const augmentUriLocation = (uriLocation: UriLocation, normalize: boolean): UrlLocation => {
-  const pathSegments: Array<string> = []
-  const parameters: Dictionary<string | Array<string>> = {}
+export const format = Uris.format
 
-  if (isPresent(uriLocation.path)) {
-    removeStart(uriLocation.path, '/')
-      .split('/')
-      .forEach((urlPathPart) => {
-        if (!isBlank(urlPathPart) || !normalize) {
-          pathSegments.push(decode(urlPathPart))
-        }
-      })
+const build = (builder: UrlBuilder): Url => {
+  if ((builder.location?.relative ?? false) && Objects.isPresent(builder.host)) {
+    throw new Error(`[${Namespace}]: Unable to construct a relative url with a non-null host: ${builder}`)
   }
 
-  if (isPresent(uriLocation.query)) {
-    uriLocation.query.split('&').forEach((parameterPair) => {
-      let splitParameters = parameterPair.split('=')
+  const uriBuilder = convertUrlBuilderToUriBuilder(builder)
+  const uri = Uris.from(uriBuilder)
+  const urlLocation = augmentUriLocation(uri.location)
 
-      if (!isBlank(first(splitParameters))) {
-        let key = decode(splitParameters[0]!)
-        let value = ''
-        if (splitParameters.length === 2) {
-          value = splitParameters[1]!
-        }
-        if (isNil(parameters[key])) {
-          parameters[key] = decode(value)
-        } else if (!Array.isArray(parameters[key])) {
-          let paramList = [parameters[key]]
-          paramList.push(decode(value))
-          parameters[key] = paramList
-        } else {
-          parameters[key].push(decode(value))
-        }
-      }
-    })
+  return {
+    ...uri,
+    _type: Namespace,
+    location: urlLocation,
+  }
+}
+
+const convertUrlBuilderToUriBuilder = (builder: UrlBuilder): UriBuilder => {
+  if (Objects.isNil(builder.location)) {
+    return builder
+  }
+
+  let path = builder.location.path
+  if (Objects.isPresent(builder.location.pathSegments)) {
+    const relative = builder.location.relative ?? false
+    const formattedSegments = formatPathSegments(builder.location.pathSegments)
+    path = (relative ? '' : '/') + formattedSegments
+  }
+
+  let query = builder.location.query
+  if (Objects.isPresent(builder.location.parameters)) {
+    query = formatQueryParameters(builder.location.parameters)
   }
 
   return {
-    ...uriLocation,
-    pathSegments,
-    parameters,
+    ...builder,
+    location: { path, query, fragment: builder.location.fragment },
   }
 }
-
-export const format = uriFormat
 
 const formatPathSegments = (pathSegments: Array<string>): UriComponent => {
   return pathSegments.map((it) => encode(it)).join('/')
@@ -202,28 +193,56 @@ const formatQueryParameters = (parameters: Dictionary<string | Array<string>>): 
     .join('&')
 }
 
-const build = (builder: UrlBuilder): Url => {
-  const uri = uriFrom(builder)
+const augmentUriLocation = (uriLocation: UriLocation): UrlLocation => {
+  let relative: boolean = false
+  let pathSegments: Array<string> = []
+  const parameters: Dictionary<string | Array<string>> = {}
 
-  if (isPresent(builder.location)) {
-    const parameters = builder.location as UrlBuilderParametersPart
-
-    if (isPresent(parameters.parameters)) {
-      uri.location.query = formatQueryParameters(parameters.parameters)
+  if (Objects.isPresent(uriLocation.path)) {
+    if (!uriLocation.path.startsWith('/')) {
+      relative = true
     }
+
+    pathSegments = Strings.removeStart(uriLocation.path, '/')
+      .split('/')
+      .filter((it) => !Strings.isBlank(it))
+      .map((urlPathPart) => decode(urlPathPart))
   }
 
-  const urlLocation = augmentUriLocation(uri.location, false)
+  if (Objects.isPresent(uriLocation.query)) {
+    uriLocation.query.split('&').forEach((parameterPair) => {
+      let splitParameters = parameterPair.split('=')
+
+      if (!Strings.isBlank(first(splitParameters))) {
+        let key = decode(splitParameters[0]!)
+        let value = ''
+        if (splitParameters.length === 2) {
+          value = splitParameters[1]!
+        }
+        if (Objects.isNil(parameters[key])) {
+          parameters[key] = decode(value)
+        } else if (!Array.isArray(parameters[key])) {
+          let paramList = [parameters[key]]
+          paramList.push(decode(value))
+          parameters[key] = paramList
+        } else {
+          parameters[key].push(decode(value))
+        }
+      }
+    })
+  }
+
   return {
-    ...uri,
-    type: 'url',
-    location: urlLocation,
+    ...uriLocation,
+    relative,
+    pathSegments,
+    parameters,
   }
 }
 
 export const getParameter = (url: UrlLike, name: string): string | undefined => {
   const parameter = from(url).location.parameters[name]
-  if (isNil(parameter)) {
+  if (Objects.isNil(parameter)) {
     return undefined
   }
 
@@ -236,5 +255,5 @@ export const getParameter = (url: UrlLike, name: string): string | undefined => 
 
 export const getJsonParameter = <T>(url: UrlLike, name: string): T | undefined => {
   const value = getParameter(url, name)
-  return isPresent(value) ? JSON.parse(value) : undefined
+  return Objects.isPresent(value) ? JSON.parse(value) : undefined
 }

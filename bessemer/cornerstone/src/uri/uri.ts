@@ -12,6 +12,8 @@ import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
 import * as IpV6Addresses from '@bessemer/cornerstone/ipv6-address'
 import { PartialDeep, ValueOf } from 'type-fest'
+import * as Equalitors from '@bessemer/cornerstone/equalitor'
+import { Equalitor } from '@bessemer/cornerstone/equalitor'
 
 export const encode = (uriComponent: UriComponent) => {
   return encodeURIComponent(uriComponent)
@@ -44,9 +46,10 @@ export interface UriLocation {
 
 export const Namespace = ResourceKeys.createNamespace('uri')
 export const UrlNamespace = ResourceKeys.createNamespace('url')
+export const EqualBy: Equalitor<Uri> = Equalitors.deepNatural()
 
 export interface Uri {
-  _type: typeof Namespace
+  _type: typeof Namespace | typeof UrlNamespace
   scheme: UriScheme | null
   host: UriHost | null
   authentication: UriAuthentication | null
@@ -55,11 +58,10 @@ export interface Uri {
 
 export type UriLiteral = NominalType<string, typeof Namespace>
 
-type UriBuilderLocation =
+type UriBuilderAuthentication =
   | {
-      path?: string | null
-      query?: string | null
-      fragment?: string | null
+      principal: string
+      password?: string | null
     }
   | string
 
@@ -70,18 +72,19 @@ type UriBuilderHost =
     }
   | string
 
-type UriBuilderAuthentication =
+type UriBuilderLocation =
   | {
-      principal: string
-      password?: string | null
+      path?: string | null
+      query?: string | null
+      fragment?: string | null
     }
   | string
 
 export type UriBuilder = {
   scheme?: string | null | undefined
-  location?: UriBuilderLocation | null | undefined
-  host?: UriBuilderHost | null | undefined
   authentication?: UriBuilderAuthentication | null | undefined
+  host?: UriBuilderHost | null | undefined
+  location?: UriBuilderLocation | null | undefined
 }
 
 export type UriLike = Uri | UriLiteral | UriBuilder
@@ -723,7 +726,7 @@ export const format = (uri: Uri, excludedUriComponents: Array<UriComponentType> 
     urlString = urlString + formatLocation(uri.location, excludedUriComponents)
   }
 
-  return urlString
+  return urlString as UriLiteral
 }
 
 const formatLocation = (location: UriLocation, excludedUriComponents: Array<UriComponentType> = []): string => {

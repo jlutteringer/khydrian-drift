@@ -1,5 +1,6 @@
 import Zod, { ZodType } from 'zod'
 import { isNil } from '@bessemer/cornerstone/object'
+import * as Assertions from '@bessemer/cornerstone/assertion'
 
 export type PendingValue = {
   isSuccess: false
@@ -67,13 +68,39 @@ export const isPending = (value: AsyncValue<unknown>): value is PendingValue => 
   return !value.isLoading && !value.isSuccess && !value.isError && !value.isFetching
 }
 
+export function assertPending<T>(value: AsyncValue<T>): asserts value is PendingValue {
+  Assertions.assert(isPending(value))
+}
+
 export const settled = <T>(data: T): SettledValue<T> => ({ isSuccess: true, isError: false, isLoading: false, isFetching: false, data })
 
 export const isSettled = <T>(value: AsyncValue<T>): value is SettledValue<T> => {
   return value.isSuccess && !value.isError && !value.isLoading && !value.isFetching
 }
 
+export function assertSettled<T>(value: AsyncValue<T>): asserts value is SettledValue<T> {
+  Assertions.assert(isSettled(value))
+}
+
 export const loading = (): LoadingValue => ({ isSuccess: false, isError: false, isLoading: true, isFetching: true, data: undefined })
+
+export const isLoading = <T>(value: AsyncValue<T>): value is LoadingValue => {
+  return value.isLoading
+}
+
+export function assertLoading<T>(value: AsyncValue<T>): asserts value is LoadingValue {
+  Assertions.assert(isLoading(value))
+}
+
+export const error = (error: unknown): ErrorValue => ({ isSuccess: false, isError: true, isLoading: false, isFetching: false, data: error })
+
+export const isError = <T>(value: AsyncValue<T>): value is ErrorValue => {
+  return value.isError
+}
+
+export function assertError<T>(value: AsyncValue<T>): asserts value is ErrorValue {
+  Assertions.assert(isError(value))
+}
 
 export const fetching = <T>(data: T): FetchingValueSuccess<T> => ({
   isSuccess: true,
@@ -82,8 +109,6 @@ export const fetching = <T>(data: T): FetchingValueSuccess<T> => ({
   isFetching: true,
   data,
 })
-
-export const error = (error: unknown): ErrorValue => ({ isSuccess: false, isError: true, isLoading: false, isFetching: false, data: error })
 
 export const handle = <T, N>(
   value: AsyncValue<T | null>,

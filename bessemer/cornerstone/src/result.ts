@@ -1,4 +1,5 @@
-import { left, Left, right, Right } from '@bessemer/cornerstone/either'
+import * as Eithers from '@bessemer/cornerstone/either'
+import { Left, Right } from '@bessemer/cornerstone/either'
 import { Throwable } from '@bessemer/cornerstone/types'
 import { isPromise } from '@bessemer/cornerstone/promise'
 
@@ -15,13 +16,13 @@ export type Result<T, N = Throwable> = Success<T> | Failure<N>
 export type AsyncResult<T, N = Throwable> = Promise<Result<T, N>>
 
 export const success = <T>(value: T): Success<T> => {
-  return { ...right(value), isSuccess: true }
+  return { ...Eithers.right(value), isSuccess: true }
 }
 
 export function failure(): Failure<never>
 export function failure<N>(failure: N): Failure<N>
 export function failure(failure?: unknown): Failure {
-  return { ...left(failure ?? null), isSuccess: false }
+  return { ...Eithers.left(failure ?? null), isSuccess: false }
 }
 
 export const getValueOrThrow = <T>(result: Result<T>): T => {

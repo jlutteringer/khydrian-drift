@@ -1,6 +1,7 @@
 import { UnknownRecord } from 'type-fest'
 import { rest } from '@bessemer/cornerstone/array'
 import { isNil } from '@bessemer/cornerstone/object'
+import Zod from 'zod'
 
 export const isString = (value: any): value is string => {
   return typeof value === 'string'
@@ -200,4 +201,12 @@ export const isNumber = (value: string): boolean => {
 
   const num = Number(value)
   return !isNaN(num) && isFinite(num)
+}
+
+export namespace Schema {
+  const Text = Zod.string().trim().min(1)
+
+  const TextNullable = Zod.string()
+    .trim()
+    .transform((val) => (isEmpty(val) ? null : val))
 }
