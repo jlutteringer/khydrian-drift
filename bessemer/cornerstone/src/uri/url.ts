@@ -1,19 +1,17 @@
 import { Dictionary, NominalType } from '@bessemer/cornerstone/types'
 import * as Uris from '@bessemer/cornerstone/uri/uri'
-import { Uri, UriBuilder, UriComponent, UriLocation } from '@bessemer/cornerstone/uri/uri'
-import { failure, mapResult, Result, success } from '@bessemer/cornerstone/result'
-import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
-import { isError } from '@bessemer/cornerstone/error/error'
+import { Uri, UriBuilder, UriComponent, UriLiteral, UriLocation } from '@bessemer/cornerstone/uri/uri'
+import { mapResult, Result, success } from '@bessemer/cornerstone/result'
+import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import * as Strings from '@bessemer/cornerstone/string'
 import { first, isEmpty } from '@bessemer/cornerstone/array'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
 import * as Equalitors from '@bessemer/cornerstone/equalitor'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
-import { MergeExclusive } from 'type-fest'
+import { MergeExclusive, PartialDeep } from 'type-fest'
 import * as Objects from '@bessemer/cornerstone/object'
 
-// JOHN UPDATING URLS NEEDS WORK
 export const encode = Uris.encode
 
 export const decode = Uris.decode
@@ -45,42 +43,15 @@ export type UrlBuilder = UriBuilder & {
   location?: UrlBuilderLocationPart | null | undefined
 }
 
-export type UrlLike = Url | UrlLiteral | UrlBuilder
+export type UrlLike = Url | Uri | UriLiteral | UrlLiteral | UrlBuilder
 
-export const blah = (uri: Uri): Url => {}
-
-export const parseString = (value: string, normalize = true): Result<Url, ErrorEvent> => {
-  try {
-    const result = Uris.parseString(value)
-    if (!result.isSuccess) {
-      return result
-    }
-
-    const uri = result.value
-    const location = augmentUriLocation(uri.location, normalize)
-
-    if (normalize) {
-      if (!isEmpty(location.pathSegments)) {
-        location.path = ((location.path ?? '').startsWith('/') ? '/' : '') + formatPathSegments(location.pathSegments)
-      } else {
-        location.path = null
-      }
-
-      location.query = formatQueryParameters(location.parameters)
-    }
-
-    return success({
-      ...uri,
-      type: 'url',
-      location,
-    })
-  } catch (e) {
-    if (!isError(e)) {
-      throw e
-    }
-
-    return failure(invalidValue(value, { namespace: Namespace, message: e.message }))
+export const parseString = (value: string): Result<Url, ErrorEvent> => {
+  const result = Uris.parseString(value)
+  if (!result.isSuccess) {
+    return result
   }
+
+  return success(fromUri(result.value))
 }
 
 export const fromString = (value: string): Url => {
@@ -97,6 +68,9 @@ export function from(value: UrlLike | null | undefined): Url | null | undefined 
   }
   if (isUrl(value)) {
     return value
+  }
+  if (Uris.isUri(value)) {
+    return fromUri(value)
   }
   if (Strings.isString(value)) {
     return fromString(value)
@@ -131,6 +105,24 @@ export const isUrl = (value: unknown): value is Url => {
   return uriValue._type === Namespace
 }
 
+export const merge = (element: UrlLike, builder: PartialDeep<UrlBuilder>): Url => {
+  const url = from(element)
+
+  const urlBuilder: UrlBuilder = {
+    scheme: url.scheme,
+    host: url.host,
+    authentication: url.authentication,
+    location: {
+      path: url.location.path,
+      query: url.location.query,
+      fragment: url.location.fragment,
+    },
+  }
+
+  const mergedBuilder = Objects.deepMerge(urlBuilder, builder)
+  return from(mergedBuilder)
+}
+
 export const format = Uris.format
 
 const build = (builder: UrlBuilder): Url => {
@@ -140,13 +132,7 @@ const build = (builder: UrlBuilder): Url => {
 
   const uriBuilder = convertUrlBuilderToUriBuilder(builder)
   const uri = Uris.from(uriBuilder)
-  const urlLocation = augmentUriLocation(uri.location)
-
-  return {
-    ...uri,
-    _type: Namespace,
-    location: urlLocation,
-  }
+  return fromUri(uri)
 }
 
 const convertUrlBuilderToUriBuilder = (builder: UrlBuilder): UriBuilder => {
@@ -172,45 +158,24 @@ const convertUrlBuilderToUriBuilder = (builder: UrlBuilder): UriBuilder => {
   }
 }
 
-const formatPathSegments = (pathSegments: Array<string>): UriComponent => {
-  return pathSegments.map((it) => encode(it)).join('/')
-}
-
-const formatQueryParameters = (parameters: Dictionary<string | Array<string>>): UriComponent | null => {
-  const parameterEntries = Object.entries(parameters)
-  if (isEmpty(parameterEntries)) {
-    return null
-  }
-
-  return Object.entries(parameters)
-    .flatMap(([key, value]) => {
-      if (Array.isArray(value)) {
-        return value.map((it) => `${encode(key)}=${encode(it)}`)
-      } else {
-        return [`${encode(key)}=${encode(value)}`]
-      }
-    })
-    .join('&')
-}
-
-const augmentUriLocation = (uriLocation: UriLocation): UrlLocation => {
+const fromUri = (uri: Uri): Url => {
   let relative: boolean = false
   let pathSegments: Array<string> = []
   const parameters: Dictionary<string | Array<string>> = {}
 
-  if (Objects.isPresent(uriLocation.path)) {
-    if (!uriLocation.path.startsWith('/')) {
+  if (Objects.isPresent(uri.location.path)) {
+    if (!uri.location.path.startsWith('/')) {
       relative = true
     }
 
-    pathSegments = Strings.removeStart(uriLocation.path, '/')
+    pathSegments = Strings.removeStart(uri.location.path, '/')
       .split('/')
       .filter((it) => !Strings.isBlank(it))
       .map((urlPathPart) => decode(urlPathPart))
   }
 
-  if (Objects.isPresent(uriLocation.query)) {
-    uriLocation.query.split('&').forEach((parameterPair) => {
+  if (Objects.isPresent(uri.location.query)) {
+    uri.location.query.split('&').forEach((parameterPair) => {
       let splitParameters = parameterPair.split('=')
 
       if (!Strings.isBlank(first(splitParameters))) {
@@ -233,13 +198,41 @@ const augmentUriLocation = (uriLocation: UriLocation): UrlLocation => {
   }
 
   return {
-    ...uriLocation,
-    relative,
-    pathSegments,
-    parameters,
+    ...uri,
+    _type: Namespace,
+    location: {
+      path: (relative ? '' : '/') + formatPathSegments(pathSegments),
+      relative,
+      pathSegments,
+      query: formatQueryParameters(parameters),
+      parameters,
+      fragment: uri.location.fragment,
+    },
   }
 }
 
+const formatPathSegments = (pathSegments: Array<string>): UriComponent => {
+  return pathSegments.map((it) => encode(it)).join('/')
+}
+
+const formatQueryParameters = (parameters: Dictionary<string | Array<string>>): UriComponent | null => {
+  const parameterEntries = Object.entries(parameters)
+  if (isEmpty(parameterEntries)) {
+    return null
+  }
+
+  return Object.entries(parameters)
+    .flatMap(([key, value]) => {
+      if (Array.isArray(value)) {
+        return value.map((it) => `${encode(key)}=${encode(it)}`)
+      } else {
+        return [`${encode(key)}=${encode(value)}`]
+      }
+    })
+    .join('&')
+}
+
+// JOHN I don't know about these two methods...
 export const getParameter = (url: UrlLike, name: string): string | undefined => {
   const parameter = from(url).location.parameters[name]
   if (Objects.isNil(parameter)) {

@@ -7,28 +7,28 @@ import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/er
 import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = createNamespace('uuid')
-export type Uuid = NominalType<string, typeof Namespace>
+export const Namespace = createNamespace('uuid-v4')
+export type UuidV4 = NominalType<string, typeof Namespace>
 
-export const parseString = (value: string): Result<Uuid, ErrorEvent> => {
+export const parse = (value: string): Result<UuidV4, ErrorEvent> => {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) {
-    return failure(invalidValue(value, { namespace: Namespace, message: `Invalid Uuid format.` }))
+    return failure(invalidValue(value, { namespace: Namespace, message: `[${Namespace}]: Invalid UuidV4 format: [${value}]` }))
   }
 
-  return success(value.toLowerCase() as Uuid)
+  return success(value.toLowerCase() as UuidV4)
 }
 
-export const fromString = (value: string): Uuid => {
-  return unpackResult(parseString(value))
+export const from = (value: string): UuidV4 => {
+  return unpackResult(parse(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parseString)
+export const Schema = structuredTransform(Zod.string(), parse)
 
-export const generate = (): Uuid => {
+export const generate = (): UuidV4 => {
   if (isNil(crypto.randomUUID)) {
-    return `${randomHex(8)}-${randomHex(4)}-${randomHex(4)}-${randomHex(4)}-${randomHex(12)}` as Uuid
+    return `${randomHex(8)}-${randomHex(4)}-${randomHex(4)}-${randomHex(4)}-${randomHex(12)}` as UuidV4
   } else {
-    return crypto.randomUUID() as Uuid
+    return crypto.randomUUID() as UuidV4
   }
 }
 

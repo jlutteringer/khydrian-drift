@@ -20,8 +20,9 @@ import * as ErrorCodes from '@bessemer/cornerstone/error/error-code'
 import * as ErrorCauses from '@bessemer/cornerstone/error/error-cause'
 import * as ErrorEvents from '@bessemer/cornerstone/error/error-event'
 import * as Assertions from '@bessemer/cornerstone/assertion'
-import * as Uuids from '@bessemer/cornerstone/uuid'
-import * as Ulids from '@bessemer/cornerstone/ulid'
+import * as Uuid4 from '@bessemer/cornerstone/uuid/uuid-v4'
+import * as Uuid7 from '@bessemer/cornerstone/uuid/uuid-v7'
+import * as Ulids from '@bessemer/cornerstone/uuid/ulid'
 import * as Entries from '@bessemer/cornerstone/entry'
 import * as Hashes from '@bessemer/cornerstone/hash'
 import * as Crypto from '@bessemer/cornerstone/crypto'
@@ -92,7 +93,8 @@ export {
   ErrorCauses,
   ErrorEvents,
   Assertions,
-  Uuids,
+  Uuid4,
+  Uuid7,
   Ulids,
   Entries,
   Hashes,

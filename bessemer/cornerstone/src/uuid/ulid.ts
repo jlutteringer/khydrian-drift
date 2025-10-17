@@ -9,19 +9,19 @@ import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 export const Namespace = createNamespace('ulid')
 export type Ulid = NominalType<string, typeof Namespace>
 
-export const parseString = (value: string): Result<Ulid, ErrorEvent> => {
-  if (!/^[0-9A-HJKMNP-TV-Z]{26}$/.test(value)) {
-    return failure(invalidValue(value, { namespace: Namespace, message: `Invalid ULID format.` }))
+export const parse = (value: string): Result<Ulid, ErrorEvent> => {
+  if (!/^[0-9A-HJKMNP-TV-Z]{26}$/i.test(value)) {
+    return failure(invalidValue(value, { namespace: Namespace, message: `[${Namespace}]: Invalid Ulid format: [${value}]` }))
   }
 
-  return success(value as Ulid)
+  return success(value.toUpperCase() as Ulid)
 }
 
-export const fromString = (value: string): Ulid => {
-  return unpackResult(parseString(value))
+export const from = (value: string): Ulid => {
+  return unpackResult(parse(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parseString)
+export const Schema = structuredTransform(Zod.string(), parse)
 
 export const generate = (): Ulid => {
   return ulid() as Ulid
