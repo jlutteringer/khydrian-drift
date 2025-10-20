@@ -4,6 +4,7 @@ import { Uri, UriBuilder, UriComponent, UriLiteral, UriLocation } from '@besseme
 import { mapResult, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import * as Strings from '@bessemer/cornerstone/string'
+import * as Arrays from '@bessemer/cornerstone/array'
 import { first, isEmpty } from '@bessemer/cornerstone/array'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
@@ -141,10 +142,9 @@ const convertUrlBuilderToUriBuilder = (builder: UrlBuilder): UriBuilder => {
   }
 
   let path = builder.location.path
-  if (Objects.isPresent(builder.location.pathSegments)) {
+  if (Objects.isPresent(builder.location.pathSegments) && !Arrays.isEmpty(builder.location.pathSegments)) {
     const relative = builder.location.relative ?? false
-    const formattedSegments = formatPathSegments(builder.location.pathSegments)
-    path = (relative ? '' : '/') + formattedSegments
+    path = formatPathSegments(builder.location.pathSegments, relative)
   }
 
   let query = builder.location.query
@@ -201,7 +201,7 @@ const fromUri = (uri: Uri): Url => {
     ...uri,
     _type: Namespace,
     location: {
-      path: (relative ? '' : '/') + formatPathSegments(pathSegments),
+      path: formatPathSegments(pathSegments, relative),
       relative,
       pathSegments,
       query: formatQueryParameters(parameters),
@@ -211,8 +211,12 @@ const fromUri = (uri: Uri): Url => {
   }
 }
 
-const formatPathSegments = (pathSegments: Array<string>): UriComponent => {
-  return pathSegments.map((it) => encode(it)).join('/')
+const formatPathSegments = (pathSegments: Array<string>, relative: boolean): UriComponent | null => {
+  if (Arrays.isEmpty(pathSegments)) {
+    return null
+  }
+
+  return (relative ? '' : '/') + pathSegments.map((it) => encode(it)).join('/')
 }
 
 const formatQueryParameters = (parameters: Dictionary<string | Array<string>>): UriComponent | null => {
