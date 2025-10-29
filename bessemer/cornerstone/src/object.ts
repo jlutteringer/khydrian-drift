@@ -11,8 +11,12 @@ export const isUndefined = (value: unknown): value is undefined => {
   return value === undefined
 }
 
+export const isNull = (value: unknown): value is null => {
+  return value === null
+}
+
 export const isNil = (value: unknown): value is null | undefined => {
-  return value === null || value === undefined
+  return isNull(value) || isUndefined(value)
 }
 
 export const isPresent = <T>(value: T): value is NonNullable<T> => {

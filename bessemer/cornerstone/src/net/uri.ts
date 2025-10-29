@@ -10,18 +10,12 @@ import * as ErrorEvents from '@bessemer/cornerstone/error/error-event'
 import { ErrorEvent } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 import Zod from 'zod'
-import * as IpV6Addresses from '@bessemer/cornerstone/ipv6-address'
-import { PartialDeep, ValueOf } from 'type-fest'
+import * as IpV6Addresses from '@bessemer/cornerstone/net/ipv6-address'
+import { ValueOf } from 'type-fest'
 import * as Equalitors from '@bessemer/cornerstone/equalitor'
 import { Equalitor } from '@bessemer/cornerstone/equalitor'
-
-export const encode = (uriComponent: UriComponent) => {
-  return encodeURIComponent(uriComponent)
-}
-
-export const decode = (uriComponent: UriComponent) => {
-  return decodeURIComponent(uriComponent)
-}
+import * as UriHostNames from '@bessemer/cornerstone/net/uri-host-name'
+import { UriHostName } from '@bessemer/cornerstone/net/uri-host-name'
 
 export type UriString = TaggedType<string, 'UriString'>
 export type UriComponent = string
@@ -34,7 +28,7 @@ export type UriAuthentication = {
 }
 
 export type UriHost = {
-  value: string
+  value: UriHostName
   port: number | null
 }
 
@@ -48,7 +42,9 @@ export const Namespace = ResourceKeys.createNamespace('uri')
 export const UrlNamespace = ResourceKeys.createNamespace('url')
 export const EqualBy: Equalitor<Uri> = Equalitors.deepNatural()
 
-export interface Uri {
+export type UriLiteral = NominalType<string, typeof Namespace>
+
+export interface UriStructure {
   _type: typeof Namespace | typeof UrlNamespace
   scheme: UriScheme | null
   host: UriHost | null
@@ -56,7 +52,9 @@ export interface Uri {
   location: UriLocation
 }
 
-export type UriLiteral = NominalType<string, typeof Namespace>
+export interface Uri extends UriStructure {
+  href: UriLiteral
+}
 
 type UriBuilderAuthentication =
   | {
@@ -154,36 +152,19 @@ export const parseString = (value: string): Result<Uri, ErrorEvent> => {
   const [authority, rest2] = authorityPartResult.value
 
   const location = parseLocation(rest2)
-  const uri: Uri = { _type: Namespace, scheme, host: authority.host, authentication: authority.authentication, location }
-  return Results.success(uri)
-}
 
-/**
- * Parses a string into a Uri object, throwing an error if parsing fails.
- * This is a convenience method that wraps `parseString` and unwraps the Result,
- * converting any parsing errors into thrown exceptions.
- *
- * **Example**
- *
- * ```ts
- * import { Uris } from "@bessemer/cornerstone"
- *
- * // Parse a complete HTTPS URI
- * const uri = Uris.fromString('https://user:pass@example.com:8080/api/v1?q=test#section')
- * console.log(uri.scheme) // 'https'
- * console.log(uri.host?.value) // 'example.com'
- * console.log(uri.authentication?.principal) // 'user'
- *
- * // Parse a simple path-only URI
- * const pathUri = Uris.fromString('/api/users')
- * console.log(pathUri.location.path) // '/api/users'
- * ```
- *
- * @throws {ErrorEventException} When the input string cannot be parsed as a valid URI
- * @category parsing
- */
-export const fromString = (value: string): Uri => {
-  return ErrorEvents.unpackResult(parseString(value))
+  const structure: UriStructure = {
+    _type: Namespace,
+    scheme,
+    host: authority.host,
+    authentication: authority.authentication,
+    location,
+  }
+
+  return Results.success({
+    ...structure,
+    href: formatInternal(structure),
+  })
 }
 
 /**
@@ -211,11 +192,11 @@ export const fromString = (value: string): Uri => {
  *
  * @category conversion
  */
-export function from(value: UriLike): Uri
-export function from(value: UriLike | null): Uri | null
-export function from(value: UriLike | undefined): Uri | undefined
-export function from(value: UriLike | null | undefined): Uri | null | undefined
-export function from(value: UriLike | null | undefined): Uri | null | undefined {
+export function from(value: UriLike | string): Uri
+export function from(value: UriLike | string | null): Uri | null
+export function from(value: UriLike | string | undefined): Uri | undefined
+export function from(value: UriLike | string | null | undefined): Uri | null | undefined
+export function from(value: UriLike | string | null | undefined): Uri | null | undefined {
   if (Objects.isNil(value)) {
     return value
   }
@@ -223,7 +204,7 @@ export function from(value: UriLike | null | undefined): Uri | null | undefined 
     return value
   }
   if (Strings.isString(value)) {
-    return fromString(value)
+    return ErrorEvents.unpackResult(parseString(value))
   }
 
   return build(value as UriBuilder)
@@ -332,18 +313,24 @@ export const isUri = (value: unknown): value is Uri => {
  *
  * @category transformation
  */
-export const merge = (element: UriLike, builder: PartialDeep<UriBuilder>): Uri => {
+export const merge = (element: UriLike, builder: UriBuilder): Uri => {
   const uri = from(element)
 
-  const uriBuilder: UriBuilder = {
-    scheme: uri.scheme,
-    host: uri.host,
-    authentication: uri.authentication,
-    location: uri.location,
+  let location: UriBuilderLocation | null | undefined
+  if (Strings.isString(builder.location) || Objects.isNull(builder.location)) {
+    location = builder.location
+  } else {
+    location = { ...uri.location, ...(builder.location ?? {}) }
   }
 
-  const mergedBuilder = Objects.deepMerge(uriBuilder, builder)
-  return from(mergedBuilder)
+  const uriBuilder: UriBuilder = {
+    scheme: Objects.isUndefined(builder.scheme) ? uri.scheme : builder.scheme,
+    host: Objects.isUndefined(builder.host) ? uri.host : builder.host,
+    authentication: Objects.isUndefined(builder.authentication) ? uri.authentication : builder.authentication,
+    location,
+  }
+
+  return from(uriBuilder)
 }
 
 const parseSchemePart = (url: UriComponent): Result<[UriScheme | null, UriComponent], ErrorEvent> => {
@@ -533,21 +520,20 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
     const ipMatch = Strings.splitFirst(Strings.removeStart(host, '['), ']')
 
     if (Objects.isPresent(ipMatch.selection)) {
-      const portMatch = Strings.splitFirst(ipMatch.rest, ':')
-
       const ipV6Result = IpV6Addresses.parseString(ipMatch.selection)
       if (!ipV6Result.isSuccess) {
         return ipV6Result
       }
 
+      const portMatch = Strings.splitFirst(ipMatch.rest, ':')
       if (Objects.isPresent(portMatch.selection) && Strings.isEmpty(portMatch.selection)) {
         if (!Strings.isNumber(portMatch.rest)) {
           return Results.failure(ErrorEvents.invalidValue(host, { namespace: Namespace, message: `[${Namespace}]: Unable to parse Host: [${host}]` }))
         }
 
-        return Results.success({ value: `[${ipMatch.selection}]`, port: Number(portMatch.rest) })
+        return Results.success({ value: `[${ipMatch.selection}]` as UriHostName, port: Number(portMatch.rest) })
       } else {
-        return Results.success({ value: `[${ipMatch.selection}]`, port: null })
+        return Results.success({ value: `[${ipMatch.selection}]` as UriHostName, port: null })
       }
     }
   }
@@ -556,7 +542,18 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
 
   // We have no :, which means no port, so treat the rest as the hostname
   if (Objects.isNil(hostMatch.selection)) {
-    return Results.success({ value: hostMatch.rest, port: null })
+    const hostNameResult = UriHostNames.parseString(hostMatch.rest)
+    if (!hostNameResult.isSuccess) {
+      return Results.failure(
+        ErrorEvents.invalidValue(host, {
+          namespace: Namespace,
+          message: `[${Namespace}]: Unable to parse Host from host string: [${host}]`,
+          causes: hostNameResult.value.causes,
+        })
+      )
+    }
+
+    return Results.success({ value: hostNameResult.value, port: null })
   }
 
   // The host started with a :, this is odd
@@ -575,7 +572,18 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
   }
 
   // Otherwise, we have both, so return the complete authentication object and the rest
-  return Results.success({ value: hostName, port: Number(hostMatch.rest) })
+  const hostNameResult = UriHostNames.parseString(hostName)
+  if (!hostNameResult.isSuccess) {
+    return Results.failure(
+      ErrorEvents.invalidValue(host, {
+        namespace: Namespace,
+        message: `[${Namespace}]: Unable to parse Host from host string: [${host}]`,
+        causes: hostNameResult.value.causes,
+      })
+    )
+  }
+
+  return Results.success({ value: hostNameResult.value, port: Number(hostMatch.rest) })
 }
 
 const parseLocation = (url: UriComponent): UriLocation => {
@@ -584,16 +592,19 @@ const parseLocation = (url: UriComponent): UriLocation => {
   // Lets see if we have a fragment and parse it off the end
   const fragmentMatch = Strings.splitFirst(url, '#')
   if (Objects.isPresent(fragmentMatch.selection) && !Strings.isEmpty(fragmentMatch.rest)) {
-    location.fragment = fragmentMatch.rest
+    location.fragment = encodeWhitespace(fragmentMatch.rest)
   }
 
   // Lets see if we have a query string and parse it off the remainder
   const queryMatch = Strings.splitFirst(fragmentMatch.selection ?? fragmentMatch.rest, '?')
   if (Objects.isPresent(queryMatch.selection) && !Strings.isEmpty(queryMatch.rest)) {
-    location.query = queryMatch.rest
+    location.query = encodeWhitespace(queryMatch.rest)
   }
 
-  location.path = Strings.emptyToNull(queryMatch.selection ?? queryMatch.rest)
+  const path = Strings.emptyToNull(queryMatch.selection ?? queryMatch.rest)
+  if (Objects.isPresent(path)) {
+    location.path = encodeWhitespace(path)
+  }
   return location
 }
 
@@ -607,7 +618,7 @@ const build = (builder: UriBuilder): Uri => {
       host = ErrorEvents.unpackResult(parseHost(builder.host))
     } else {
       host = {
-        value: builder.host.value,
+        value: UriHostNames.from(builder.host.value),
         port: builder.host.port ?? null,
       }
     }
@@ -632,22 +643,37 @@ const build = (builder: UriBuilder): Uri => {
 
   if (Objects.isPresent(builder.location)) {
     if (Strings.isString(builder.location)) {
-      location = parseLocation(builder.location)
+      let locationString = builder.location
+      if (Objects.isPresent(builder.host) && !locationString.startsWith('/') && !locationString.startsWith('?') && !locationString.startsWith('#')) {
+        locationString = '/' + locationString
+      }
+
+      location = parseLocation(locationString)
     } else {
+      let path = builder.location.path ?? null
+      if (Objects.isPresent(path) && !path.startsWith('/') && Objects.isPresent(builder.host)) {
+        path = '/' + path
+      }
+
       location = {
-        path: builder.location.path ?? null,
-        query: builder.location.query ?? null,
-        fragment: builder.location.fragment ?? null,
+        path: Objects.isPresent(path) ? encodeWhitespace(path) : null,
+        query: Objects.isPresent(builder.location.query) ? encodeWhitespace(builder.location.query) : null,
+        fragment: Objects.isPresent(builder.location.fragment) ? encodeWhitespace(builder.location.fragment) : null,
       }
     }
   }
 
-  return {
+  const structure: UriStructure = {
     _type: Namespace,
     scheme,
     host,
     authentication,
     location,
+  }
+
+  return {
+    ...structure,
+    href: formatInternal(structure),
   }
 }
 
@@ -697,7 +723,11 @@ export type UriComponentType = ValueOf<typeof UriComponentType>
  *
  * @category serialization
  */
-export const format = (uri: Uri, excludedUriComponents: Array<UriComponentType> = []): UriLiteral => {
+export const format = (uriLike: UriLike, excludedUriComponents: Array<UriComponentType> = []): UriLiteral => {
+  return formatInternal(from(uriLike), excludedUriComponents)
+}
+
+const formatInternal = (uri: UriStructure, excludedUriComponents: Array<UriComponentType> = []): UriLiteral => {
   let urlString = ''
   if (Objects.isPresent(uri.scheme) && !Arrays.contains(excludedUriComponents, UriComponentType.Scheme)) {
     urlString = urlString + uri.scheme + ':'
@@ -741,8 +771,20 @@ const formatLocation = (location: UriLocation, excludedUriComponents: Array<UriC
   }
 
   if (Objects.isPresent(location.fragment) && !Arrays.contains(excludedUriComponents, UriComponentType.Fragment)) {
-    urlString = urlString + '#' + encode(location.fragment!)
+    urlString = urlString + '#' + location.fragment
   }
 
   return urlString
+}
+
+const encodeWhitespace = (uriComponent: UriComponent) => {
+  return uriComponent.replaceAll(' ', '%20')
+}
+
+export const encode = (uriComponent: UriComponent) => {
+  return encodeURIComponent(uriComponent)
+}
+
+export const decode = (uriComponent: UriComponent) => {
+  return decodeURIComponent(uriComponent)
 }

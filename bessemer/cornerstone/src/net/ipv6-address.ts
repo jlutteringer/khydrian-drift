@@ -24,7 +24,7 @@ export const parseString = (value: string): Result<IpV6Address, ErrorEvent> => {
   return success(value as IpV6Address)
 }
 
-export const fromString = (value: string): IpV6Address => {
+export const from = (value: string): IpV6Address => {
   return unpackResult(parseString(value))
 }
 

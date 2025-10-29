@@ -5,25 +5,26 @@ import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = createNamespace('ipv4-address')
-export type IpV4Address = NominalType<string, typeof Namespace>
+export const Namespace = createNamespace('domain-name')
+export type DomainName = NominalType<string, typeof Namespace>
 
-const regex = /^(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}$/
+const regex =
+  /^[a-zA-Z0-9\u00a1-\uffff](?:[a-zA-Z0-9\u00a1-\uffff-]{0,61}[a-zA-Z0-9\u00a1-\uffff])?(?:\.[a-zA-Z0-9\u00a1-\uffff](?:[a-zA-Z0-9\u00a1-\uffff-]{0,61}[a-zA-Z0-9\u00a1-\uffff])?)*$/
 
-export const parseString = (value: string): Result<IpV4Address, ErrorEvent> => {
+export const parseString = (value: string): Result<DomainName, ErrorEvent> => {
   if (!regex.test(value)) {
     return failure(
       invalidValue(value, {
         namespace: Namespace,
-        message: `[${Namespace}]: Invalid characters for IpV4Address in string: [${value}]`,
+        message: `[${Namespace}]: Invalid characters for DomainName in string: [${value}]`,
       })
     )
   }
 
-  return success(value as IpV4Address)
+  return success(value as DomainName)
 }
 
-export const fromString = (value: string): IpV4Address => {
+export const from = (value: string): DomainName => {
   return unpackResult(parseString(value))
 }
 

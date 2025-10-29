@@ -1,5 +1,5 @@
 import { Uris } from '@bessemer/cornerstone'
-import { UriComponentType } from '@bessemer/cornerstone/uri/uri'
+import { UriComponentType } from '@bessemer/cornerstone/net/uri'
 
 describe('Uris.from', () => {
   test('should build URI with scheme and host object', () => {
@@ -15,6 +15,7 @@ describe('Uris.from', () => {
     expect(result.host?.value).toBe('example.com')
     expect(result.host?.port).toBe(8080)
     expect(result.location.path).toBe(null)
+    expect(result.href).toBe('https://example.com:8080')
   })
 
   test('should build URI with scheme and host string', () => {
@@ -59,6 +60,7 @@ describe('Uris.from', () => {
       host: 'server.com',
       authentication: {
         principal: 'root',
+        password: null,
       },
     })
 
@@ -166,11 +168,9 @@ describe('Uris.from', () => {
     expect(result.host).toBeNull()
     expect(result.location.path).toBe('isbn:0451450523')
   })
-})
 
-describe('Uris.fromString', () => {
   test('should parse telephone URI with path', () => {
-    expect(Uris.fromString('tel:+1-816-555-1212')).toEqual(
+    expect(Uris.from('tel:+1-816-555-1212')).toEqual(
       Uris.from({
         scheme: 'tel',
         location: {
@@ -181,7 +181,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse telephone URI with empty query and fragment', () => {
-    expect(Uris.fromString('tel:+1-816-555-1212?#')).toEqual(
+    expect(Uris.from('tel:+1-816-555-1212?#')).toEqual(
       Uris.from({
         scheme: 'tel',
         location: '+1-816-555-1212',
@@ -190,7 +190,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse telephone URI with fragment', () => {
-    expect(Uris.fromString('tel:+1-816-555-1212?#fragment')).toEqual(
+    expect(Uris.from('tel:+1-816-555-1212?#fragment')).toEqual(
       Uris.from({
         scheme: 'tel',
         location: {
@@ -202,7 +202,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse telnet URI with host object and path', () => {
-    expect(Uris.fromString('telnet://192.0.2.16:80/')).toEqual(
+    expect(Uris.from('telnet://192.0.2.16:80/')).toEqual(
       Uris.from({
         scheme: 'telnet',
         host: {
@@ -217,7 +217,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse telnet URI with host string', () => {
-    expect(Uris.fromString('telnet://192.0.2.16:80')).toEqual(
+    expect(Uris.from('telnet://192.0.2.16:80')).toEqual(
       Uris.from({
         scheme: 'telnet',
         host: '192.0.2.16:80',
@@ -226,7 +226,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse URN with location string', () => {
-    expect(Uris.fromString('urn:oasis:names:specification:docbook:dtd:xml:4.1.2')).toEqual(
+    expect(Uris.from('urn:oasis:names:specification:docbook:dtd:xml:4.1.2')).toEqual(
       Uris.from({
         scheme: 'urn',
         location: 'oasis:names:specification:docbook:dtd:xml:4.1.2',
@@ -235,7 +235,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse news URI with path', () => {
-    expect(Uris.fromString('news:comp.infosystems.www.servers.unix')).toEqual(
+    expect(Uris.from('news:comp.infosystems.www.servers.unix')).toEqual(
       Uris.from({
         scheme: 'news',
         location: {
@@ -246,7 +246,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse LDAP URI with IPv6 host and query', () => {
-    expect(Uris.fromString('ldap://[2001:db8::7]/c=GB?objectClass?one')).toEqual(
+    expect(Uris.from('ldap://[2001:db8::7]/c=GB?objectClass?one')).toEqual(
       Uris.from({
         scheme: 'ldap',
         host: {
@@ -261,7 +261,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse LDAP URI with IPv6 host, port and query', () => {
-    expect(Uris.fromString('ldap://[2001:db8::7]:389/c=GB?objectClass?one')).toEqual(
+    expect(Uris.from('ldap://[2001:db8::7]:389/c=GB?objectClass?one')).toEqual(
       Uris.from({
         scheme: 'ldap',
         host: {
@@ -277,11 +277,12 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse complex HTTPS URI with all components', () => {
-    expect(Uris.fromString('https://john.doe@www.example.com:1234/forum/questions/?tag=networking&order=newest#:~:text=whatever')).toEqual(
+    expect(Uris.from('https://john.doe@www.example.com:1234/forum/questions/?tag=networking&order=newest#:~:text=wha tever')).toEqual(
       Uris.from({
         scheme: 'https',
         authentication: {
           principal: 'john.doe',
+          password: null,
         },
         host: {
           value: 'www.example.com',
@@ -290,14 +291,14 @@ describe('Uris.fromString', () => {
         location: {
           path: '/forum/questions/',
           query: 'tag=networking&order=newest',
-          fragment: ':~:text=whatever',
+          fragment: ':~:text=wha tever',
         },
       })
     )
   })
 
   test('should parse IPV6 address', () => {
-    expect(Uris.fromString('https://[2001:db8::1]/path')).toEqual(
+    expect(Uris.from('https://[2001:db8::1]/path')).toEqual(
       Uris.from({
         scheme: 'https',
         host: { value: '[2001:db8::1]' },
@@ -307,7 +308,7 @@ describe('Uris.fromString', () => {
   })
 
   test('should parse URI with unusual but valid path characters', () => {
-    const result = Uris.fromString('::://@@@:::')
+    const result = Uris.from('::://@@@:::')
     expect(result.scheme).toBeNull()
     expect(result.host).toBeNull()
     expect(result.authentication).toBeNull()
@@ -316,44 +317,287 @@ describe('Uris.fromString', () => {
     expect(result.location.fragment).toBeNull()
   })
 
+  test('should parse simple HTTP URI', () => {
+    const result = Uris.from('https://example.com')
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.host?.port).toBeNull()
+    expect(result.authentication).toBeNull()
+    expect(result.location.path).toBeNull()
+  })
+
+  test('should parse URI with port', () => {
+    const result = Uris.from('https://example.com:8080/path')
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.host?.port).toBe(8080)
+    expect(result.location.path).toBe('/path')
+  })
+
+  test('should parse URI with authentication', () => {
+    const result = Uris.from('ftp://user:pass@ftp.example.com')
+    expect(result.scheme).toBe('ftp')
+    expect(result.authentication?.principal).toBe('user')
+    expect(result.authentication?.password).toBe('pass')
+    expect(result.host?.value).toBe('ftp.example.com')
+  })
+
+  test('should parse URI with authentication principal only', () => {
+    const result = Uris.from('ssh://admin@server.com')
+    expect(result.scheme).toBe('ssh')
+    expect(result.authentication?.principal).toBe('admin')
+    expect(result.authentication?.password).toBeNull()
+    expect(result.host?.value).toBe('server.com')
+  })
+
+  test('should parse URI with query parameters', () => {
+    const result = Uris.from('https://api.example.com/users?page=1&limit=10')
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('api.example.com')
+    expect(result.location.path).toBe('/users')
+    expect(result.location.query).toBe('page=1&limit=10')
+  })
+
+  test('should parse URI with fragment', () => {
+    const result = Uris.from('https://docs.example.com/guide#installation')
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('docs.example.com')
+    expect(result.location.path).toBe('/guide')
+    expect(result.location.fragment).toBe('installation')
+  })
+
+  test('should parse URI with all components', () => {
+    const result = Uris.from('https://user:pass@api.example.com:443/v1/data?format=json#results')
+    expect(result.scheme).toBe('https')
+    expect(result.authentication?.principal).toBe('user')
+    expect(result.authentication?.password).toBe('pass')
+    expect(result.host?.value).toBe('api.example.com')
+    expect(result.host?.port).toBe(443)
+    expect(result.location.path).toBe('/v1/data')
+    expect(result.location.query).toBe('format=json')
+    expect(result.location.fragment).toBe('results')
+  })
+
+  test('should parse IPv6 URI', () => {
+    const result = Uris.from('http://[2001:db8::1]:8080/path')
+    expect(result.scheme).toBe('http')
+    expect(result.host?.value).toBe('[2001:db8::1]')
+    expect(result.host?.port).toBe(8080)
+    expect(result.location.path).toBe('/path')
+  })
+
+  test('should parse telephone URI', () => {
+    const result = Uris.from('tel:+1-800-555-1212')
+    expect(result.scheme).toBe('tel')
+    expect(result.host).toBeNull()
+    expect(result.location.path).toBe('+1-800-555-1212')
+  })
+
+  test('should parse mailto URI', () => {
+    const result = Uris.from('mailto:user@example.com')
+    expect(result.scheme).toBe('mailto')
+    expect(result.host).toBeNull()
+    expect(result.location.path).toBe('user@example.com')
+  })
+
+  test('should parse URN', () => {
+    const result = Uris.from('urn:isbn:0451450523')
+    expect(result.scheme).toBe('urn')
+    expect(result.host).toBeNull()
+    expect(result.location.path).toBe('isbn:0451450523')
+  })
+
+  test('should parse file URI 1', () => {
+    const result = Uris.from('file:///path/to/file.txt')
+    expect(result.scheme).toBe('file')
+    expect(result.host).toBeNull()
+    expect(result.location.path).toBe('/path/to/file.txt')
+  })
+
+  test('should parse file URI 2', () => {
+    const result = Uris.from('file://localhost/etc/fstab')
+    expect(result.scheme).toBe('file')
+    expect(result.host?.value).toBe('localhost')
+    expect(result.location.path).toBe('/etc/fstab')
+  })
+
+  test('should parse file URI 3', () => {
+    const result = Uris.from('file:///etc/fstab')
+    expect(result.scheme).toBe('file')
+    expect(result.host).toBeNull()
+    expect(result.location.path).toBe('/etc/fstab')
+  })
+
+  test('should parse file URI 4', () => {
+    const result = Uris.from('file://localhost/c:/WINDOWS/clock.avi')
+    expect(result.scheme).toBe('file')
+    expect(result.host?.value).toBe('localhost')
+    expect(result.location.path).toBe('/c:/WINDOWS/clock.avi')
+  })
+
+  test('should parse file URI 5', () => {
+    const result = Uris.from('file:///c:/WINDOWS/clock.avi')
+    expect(result.scheme).toBe('file')
+    expect(result.host).toBeNull()
+    expect(result.location.path).toBe('/c:/WINDOWS/clock.avi')
+  })
+
+  test('should parse URI with encoded characters', () => {
+    const result = Uris.from('https://example.com/path%20with%20spaces?query%3Dvalue')
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.path).toBe('/path%20with%20spaces')
+    expect(result.location.query).toBe('query%3Dvalue')
+  })
+
+  test('should parse localhost URI', () => {
+    const result = Uris.from('http://localhost:3000/app')
+    expect(result.scheme).toBe('http')
+    expect(result.host?.value).toBe('localhost')
+    expect(result.host?.port).toBe(3000)
+    expect(result.location.path).toBe('/app')
+  })
+
+  test('should parse IP address URI', () => {
+    const result = Uris.from('http://192.168.1.1:8080/api')
+    expect(result.scheme).toBe('http')
+    expect(result.host?.value).toBe('192.168.1.1')
+    expect(result.host?.port).toBe(8080)
+    expect(result.location.path).toBe('/api')
+  })
+
+  test('should parse URI with root path', () => {
+    const result = Uris.from('https://example.com/')
+    expect(result.location.path).toBe('/')
+  })
+
+  test('should parse URI with empty query', () => {
+    const result = Uris.from('https://example.com/path?')
+    expect(result.location.query).toBe(null)
+  })
+
+  test('should parse URI with empty fragment', () => {
+    const result = Uris.from('https://example.com/path#')
+    expect(result.location.fragment).toBe(null)
+  })
+
+  test('should parse URI with complex fragment', () => {
+    const result = Uris.from('https://example.com/page#:~:text=hello%20world')
+    expect(result.location.fragment).toBe(':~:text=hello%20world')
+  })
+
+  test('should convert relative path to absolute when host is present', () => {
+    expect(
+      Uris.from({
+        host: 'example.com',
+        location: {
+          path: 'path',
+        },
+      })
+    ).toStrictEqual(
+      Uris.from({
+        host: 'example.com',
+        location: {
+          path: '/path',
+        },
+      })
+    )
+
+    expect(
+      Uris.from({
+        host: 'example.com',
+        location: 'path',
+      })
+    ).toStrictEqual(
+      Uris.from({
+        host: 'example.com',
+        location: {
+          path: '/path',
+        },
+      })
+    )
+  })
+
   test('should throw error for malformed authentication with colon but no username', () => {
-    expect(() => Uris.fromString('https://:password@example.com')).toThrow()
+    expect(() => Uris.from('https://:password@example.com')).toThrow()
   })
 
   test('should throw error for malformed host with colon but no hostname', () => {
-    expect(() => Uris.fromString('https://:8080/path')).toThrow()
+    expect(() => Uris.from('https://:8080/path')).toThrow()
   })
 
   test('should throw error for incomplete IPv6 address without closing bracket', () => {
-    expect(() => Uris.fromString('https://[2001:db8::1/path')).toThrow()
+    expect(() => Uris.from('https://[2001:db8::1/path')).toThrow()
   })
 
   test('should throw error for invalid port number', () => {
-    expect(() => Uris.fromString('https://example.com:abc/path')).toThrow()
+    expect(() => Uris.from('https://example.com:abc/path')).toThrow()
   })
 
   test('should throw error for authentication with only colon', () => {
-    expect(() => Uris.fromString('ftp://:@example.com')).toThrow()
+    expect(() => Uris.from('ftp://:@example.com')).toThrow()
   })
 
   test('should throw error for malformed IPv6 with port but missing closing bracket', () => {
-    expect(() => Uris.fromString('http://[::1:8080/path')).toThrow()
+    expect(() => Uris.from('http://[::1:8080/path')).toThrow()
   })
 
   test('should throw error for host starting with colon only', () => {
-    expect(() => Uris.fromString('http://:/')).toThrow()
+    expect(() => Uris.from('http://:/')).toThrow()
   })
 
   test('should throw for URI with invalid scheme characters', () => {
-    expect(() => Uris.fromString('ht tp://example.com')).toThrow()
+    expect(() => Uris.from('ht tp://example.com')).toThrow()
   })
 
   test('should throw error for authentication section with multiple consecutive colons', () => {
-    expect(() => Uris.fromString('https://user::pass@example.com')).toThrow()
+    expect(() => Uris.from('https://user::pass@example.com')).toThrow()
   })
 
   test('should throw error for invalid characters in scheme', () => {
-    expect(() => Uris.fromString('ht@tp://example.com')).toThrow()
+    expect(() => Uris.from('ht@tp://example.com')).toThrow()
+  })
+
+  test('should throw for empty string', () => {
+    expect(() => Uris.from('')).toThrow()
+    expect(() => Uris.from('   ')).toThrow()
+  })
+
+  test('should throw for invalid scheme characters', () => {
+    expect(() => Uris.from('ht@tp://example.com')).toThrow()
+  })
+
+  test('should throw for malformed authentication', () => {
+    expect(() => Uris.from('https://:password@example.com')).toThrow()
+  })
+
+  test('should throw for invalid port', () => {
+    expect(() => Uris.from('https://example.com:abc/path')).toThrow()
+  })
+
+  test('should throw for incomplete IPv6 address', () => {
+    expect(() => Uris.from('https://[2001:db8::1/path')).toThrow()
+  })
+
+  test('should throw for malformed host', () => {
+    expect(() => Uris.from('https://:8080/path')).toThrow()
+  })
+
+  test('should throw for invalid characters in authentication', () => {
+    expect(() => Uris.from('https://user name:pass@example.com')).toThrow()
+  })
+
+  test('should throw for multiple consecutive colons in authentication', () => {
+    expect(() => Uris.from('https://user::pass@example.com')).toThrow()
+  })
+
+  test('should throw for invalid IPv6 format', () => {
+    expect(() => Uris.from('https://[invalid:ipv6::format]/path')).toThrow()
+  })
+
+  test('should throw for invalid host', () => {
+    expect(() => Uris.from('https://exa mple.com/path')).toThrow()
+    expect(() => Uris.from('https://exa%20mple.com/path')).toThrow()
   })
 })
 
@@ -589,214 +833,6 @@ describe('Uris.merge', () => {
   })
 })
 
-describe('Uris.fromString', () => {
-  test('should parse simple HTTP URI', () => {
-    const result = Uris.fromString('https://example.com')
-    expect(result.scheme).toBe('https')
-    expect(result.host?.value).toBe('example.com')
-    expect(result.host?.port).toBeNull()
-    expect(result.authentication).toBeNull()
-    expect(result.location.path).toBeNull()
-  })
-
-  test('should parse URI with port', () => {
-    const result = Uris.fromString('https://example.com:8080/path')
-    expect(result.scheme).toBe('https')
-    expect(result.host?.value).toBe('example.com')
-    expect(result.host?.port).toBe(8080)
-    expect(result.location.path).toBe('/path')
-  })
-
-  test('should parse URI with authentication', () => {
-    const result = Uris.fromString('ftp://user:pass@ftp.example.com')
-    expect(result.scheme).toBe('ftp')
-    expect(result.authentication?.principal).toBe('user')
-    expect(result.authentication?.password).toBe('pass')
-    expect(result.host?.value).toBe('ftp.example.com')
-  })
-
-  test('should parse URI with authentication principal only', () => {
-    const result = Uris.fromString('ssh://admin@server.com')
-    expect(result.scheme).toBe('ssh')
-    expect(result.authentication?.principal).toBe('admin')
-    expect(result.authentication?.password).toBeNull()
-    expect(result.host?.value).toBe('server.com')
-  })
-
-  test('should parse URI with query parameters', () => {
-    const result = Uris.fromString('https://api.example.com/users?page=1&limit=10')
-    expect(result.scheme).toBe('https')
-    expect(result.host?.value).toBe('api.example.com')
-    expect(result.location.path).toBe('/users')
-    expect(result.location.query).toBe('page=1&limit=10')
-  })
-
-  test('should parse URI with fragment', () => {
-    const result = Uris.fromString('https://docs.example.com/guide#installation')
-    expect(result.scheme).toBe('https')
-    expect(result.host?.value).toBe('docs.example.com')
-    expect(result.location.path).toBe('/guide')
-    expect(result.location.fragment).toBe('installation')
-  })
-
-  test('should parse URI with all components', () => {
-    const result = Uris.fromString('https://user:pass@api.example.com:443/v1/data?format=json#results')
-    expect(result.scheme).toBe('https')
-    expect(result.authentication?.principal).toBe('user')
-    expect(result.authentication?.password).toBe('pass')
-    expect(result.host?.value).toBe('api.example.com')
-    expect(result.host?.port).toBe(443)
-    expect(result.location.path).toBe('/v1/data')
-    expect(result.location.query).toBe('format=json')
-    expect(result.location.fragment).toBe('results')
-  })
-
-  test('should parse IPv6 URI', () => {
-    const result = Uris.fromString('http://[2001:db8::1]:8080/path')
-    expect(result.scheme).toBe('http')
-    expect(result.host?.value).toBe('[2001:db8::1]')
-    expect(result.host?.port).toBe(8080)
-    expect(result.location.path).toBe('/path')
-  })
-
-  test('should parse telephone URI', () => {
-    const result = Uris.fromString('tel:+1-800-555-1212')
-    expect(result.scheme).toBe('tel')
-    expect(result.host).toBeNull()
-    expect(result.location.path).toBe('+1-800-555-1212')
-  })
-
-  test('should parse mailto URI', () => {
-    const result = Uris.fromString('mailto:user@example.com')
-    expect(result.scheme).toBe('mailto')
-    expect(result.host).toBeNull()
-    expect(result.location.path).toBe('user@example.com')
-  })
-
-  test('should parse URN', () => {
-    const result = Uris.fromString('urn:isbn:0451450523')
-    expect(result.scheme).toBe('urn')
-    expect(result.host).toBeNull()
-    expect(result.location.path).toBe('isbn:0451450523')
-  })
-
-  test('should parse file URI 1', () => {
-    const result = Uris.fromString('file:///path/to/file.txt')
-    expect(result.scheme).toBe('file')
-    expect(result.host).toBeNull()
-    expect(result.location.path).toBe('/path/to/file.txt')
-  })
-
-  test('should parse file URI 2', () => {
-    const result = Uris.fromString('file://localhost/etc/fstab')
-    expect(result.scheme).toBe('file')
-    expect(result.host?.value).toBe('localhost')
-    expect(result.location.path).toBe('/etc/fstab')
-  })
-
-  test('should parse file URI 3', () => {
-    const result = Uris.fromString('file:///etc/fstab')
-    expect(result.scheme).toBe('file')
-    expect(result.host).toBeNull()
-    expect(result.location.path).toBe('/etc/fstab')
-  })
-
-  test('should parse file URI 4', () => {
-    const result = Uris.fromString('file://localhost/c:/WINDOWS/clock.avi')
-    expect(result.scheme).toBe('file')
-    expect(result.host?.value).toBe('localhost')
-    expect(result.location.path).toBe('/c:/WINDOWS/clock.avi')
-  })
-
-  test('should parse file URI 5', () => {
-    const result = Uris.fromString('file:///c:/WINDOWS/clock.avi')
-    expect(result.scheme).toBe('file')
-    expect(result.host).toBeNull()
-    expect(result.location.path).toBe('/c:/WINDOWS/clock.avi')
-  })
-
-  test('should parse URI with encoded characters', () => {
-    const result = Uris.fromString('https://example.com/path%20with%20spaces?query%3Dvalue')
-    expect(result.scheme).toBe('https')
-    expect(result.host?.value).toBe('example.com')
-    expect(result.location.path).toBe('/path%20with%20spaces')
-    expect(result.location.query).toBe('query%3Dvalue')
-  })
-
-  test('should parse localhost URI', () => {
-    const result = Uris.fromString('http://localhost:3000/app')
-    expect(result.scheme).toBe('http')
-    expect(result.host?.value).toBe('localhost')
-    expect(result.host?.port).toBe(3000)
-    expect(result.location.path).toBe('/app')
-  })
-
-  test('should parse IP address URI', () => {
-    const result = Uris.fromString('http://192.168.1.1:8080/api')
-    expect(result.scheme).toBe('http')
-    expect(result.host?.value).toBe('192.168.1.1')
-    expect(result.host?.port).toBe(8080)
-    expect(result.location.path).toBe('/api')
-  })
-
-  test('should parse URI with root path', () => {
-    const result = Uris.fromString('https://example.com/')
-    expect(result.location.path).toBe('/')
-  })
-
-  test('should parse URI with empty query', () => {
-    const result = Uris.fromString('https://example.com/path?')
-    expect(result.location.query).toBe(null)
-  })
-
-  test('should parse URI with empty fragment', () => {
-    const result = Uris.fromString('https://example.com/path#')
-    expect(result.location.fragment).toBe(null)
-  })
-
-  test('should parse URI with complex fragment', () => {
-    const result = Uris.fromString('https://example.com/page#:~:text=hello%20world')
-    expect(result.location.fragment).toBe(':~:text=hello%20world')
-  })
-
-  test('should throw for empty string', () => {
-    expect(() => Uris.fromString('')).toThrow()
-    expect(() => Uris.fromString('   ')).toThrow()
-  })
-
-  test('should throw for invalid scheme characters', () => {
-    expect(() => Uris.fromString('ht@tp://example.com')).toThrow()
-  })
-
-  test('should throw for malformed authentication', () => {
-    expect(() => Uris.fromString('https://:password@example.com')).toThrow()
-  })
-
-  test('should throw for invalid port', () => {
-    expect(() => Uris.fromString('https://example.com:abc/path')).toThrow()
-  })
-
-  test('should throw for incomplete IPv6 address', () => {
-    expect(() => Uris.fromString('https://[2001:db8::1/path')).toThrow()
-  })
-
-  test('should throw for malformed host', () => {
-    expect(() => Uris.fromString('https://:8080/path')).toThrow()
-  })
-
-  test('should throw for invalid characters in authentication', () => {
-    expect(() => Uris.fromString('https://user name:pass@example.com')).toThrow()
-  })
-
-  test('should throw for multiple consecutive colons in authentication', () => {
-    expect(() => Uris.fromString('https://user::pass@example.com')).toThrow()
-  })
-
-  test('should throw for invalid IPv6 format', () => {
-    expect(() => Uris.fromString('https://[invalid:ipv6::format]/path')).toThrow()
-  })
-})
-
 describe('Uris.format', () => {
   test('should format complete URI with all components', () => {
     const uri = Uris.from({
@@ -835,6 +871,7 @@ describe('Uris.format', () => {
       scheme: 'ftp',
       authentication: {
         principal: 'user',
+        password: null,
       },
       host: 'server.com',
     })
@@ -1088,6 +1125,42 @@ describe('Uris.format', () => {
     const result = Uris.format(uri)
     expect(result).toBe('#section1')
   })
+
+  test('should format URL with spaces', () => {
+    const url = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+      location: {
+        fragment: 'section with spaces',
+      },
+    })
+    const result = Uris.format(url)
+    expect(result).toBe('https://example.com#section%20with%20spaces')
+  })
+
+  test('should format URL with spaces', () => {
+    const url = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+      location: {
+        path: 'one two three',
+        query: 'four five six',
+        fragment: 'seven eight nine',
+      },
+    })
+    const result = Uris.format(url)
+    expect(result).toBe('https://example.com/one%20two%20three?four%20five%20six#seven%20eight%20nine')
+  })
+
+  test('should format URL with spaces', () => {
+    const url = Uris.from({
+      scheme: 'https',
+      host: 'example.com',
+      location: 'one two three#four five six',
+    })
+    const result = Uris.format(url)
+    expect(result).toBe('https://example.com/one%20two%20three#four%20five%20six')
+  })
 })
 
 describe('Uris.merge', () => {
@@ -1253,7 +1326,7 @@ describe('Uris.merge', () => {
         host: { value: 'example.com', port: 8080 },
       },
       {
-        host: { port: 9000 },
+        host: { value: 'example.com', port: 9000 },
       }
     )
 
@@ -1270,7 +1343,7 @@ describe('Uris.merge', () => {
         authentication: { principal: 'user', password: 'oldpass' },
       },
       {
-        authentication: { password: 'newpass' },
+        authentication: { principal: 'user', password: 'newpass' },
       }
     )
 
@@ -1285,12 +1358,13 @@ describe('Uris.merge', () => {
       {
         scheme: 'https',
         host: 'example.com',
-        authentication: { principal: 'user' },
-        location: { path: '/api' },
+        authentication: { principal: 'user', password: null },
+        location: { path: '/api', query: 'thisisaquery' },
       },
       {
         scheme: null,
         authentication: null,
+        location: { query: null },
       }
     )
 
@@ -1298,5 +1372,26 @@ describe('Uris.merge', () => {
     expect(result.host?.value).toBe('example.com')
     expect(result.authentication).toBeNull()
     expect(result.location.path).toBe('/api')
+    expect(result.location.query).toBe(null)
+  })
+
+  test('should merge authentication', () => {
+    const baseUrl = Uris.from({
+      scheme: 'https',
+      host: 'api.example.com',
+      authentication: {
+        principal: 'olduser',
+        password: 'oldpass',
+      },
+    })
+
+    const result = Uris.merge(baseUrl, {
+      authentication: {
+        principal: 'newuser',
+      },
+    })
+
+    expect(result.authentication?.principal).toBe('newuser')
+    expect(result.authentication?.password).toBe(null)
   })
 })
