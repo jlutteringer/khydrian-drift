@@ -30,11 +30,11 @@ export type PlainTimeBuilder = {
 }
 export type PlainTimeLike = PlainTime | PlainTimeLiteral | PlainTimeBuilder
 
-export function from(value: PlainTimeLike): PlainTime
-export function from(value: PlainTimeLike | null): PlainTime | null
-export function from(value: PlainTimeLike | undefined): PlainTime | undefined
-export function from(value: PlainTimeLike | null | undefined): PlainTime | null | undefined
-export function from(value: PlainTimeLike | null | undefined): PlainTime | null | undefined {
+export function from(value: PlainTimeLike | string): PlainTime
+export function from(value: PlainTimeLike | string | null): PlainTime | null
+export function from(value: PlainTimeLike | string | undefined): PlainTime | undefined
+export function from(value: PlainTimeLike | string | null | undefined): PlainTime | null | undefined
+export function from(value: PlainTimeLike | string | null | undefined): PlainTime | null | undefined {
   if (isNil(value)) {
     return value
   }
@@ -43,7 +43,7 @@ export function from(value: PlainTimeLike | null | undefined): PlainTime | null 
     return value
   }
   if (isString(value)) {
-    return fromString(value)
+    return unpackResult(parseString(value))
   }
 
   return Temporal.PlainTime.from(value)
@@ -62,10 +62,6 @@ export const parseString = (value: string): Result<PlainTime, ErrorEvent> => {
 
     return failure(invalidValue(value, { namespace: Namespace, message: e.message }))
   }
-}
-
-export const fromString = (value: string): PlainTime => {
-  return unpackResult(parseString(value))
 }
 
 export const fromDuration = (duration: DurationLike): PlainTime => {

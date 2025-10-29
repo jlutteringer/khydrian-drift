@@ -23,7 +23,7 @@ export const parseString = (value: string): Result<HexCode, ErrorEvent> => {
   return success(normalizedValue as HexCode)
 }
 
-export const fromString = (value: string): HexCode => {
+export const from = (value: string): HexCode => {
   return unpackResult(parseString(value))
 }
 

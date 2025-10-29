@@ -1,7 +1,7 @@
 import { NominalType } from '@bessemer/cornerstone/types'
 import Zod from 'zod'
-import { fromString as languageCodeFromString, LanguageCode } from '@bessemer/cornerstone/intl/language-code'
-import { CountryCode, fromString as countryCodeFromString } from '@bessemer/cornerstone/intl/country-code'
+import { from as languageCodeFromString, LanguageCode } from '@bessemer/cornerstone/intl/language-code'
+import { CountryCode, from as countryCodeFromString } from '@bessemer/cornerstone/intl/country-code'
 import { isPresent } from '@bessemer/cornerstone/object'
 import { Assertions } from '@bessemer/cornerstone'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
@@ -32,7 +32,7 @@ export const parseString = (value: string): Result<Locale, ErrorEvent> => {
   return success(fromCode(languageCode, countryCode))
 }
 
-export const fromString = (value: string): Locale => {
+export const from = (value: string): Locale => {
   return unpackResult(parseString(value))
 }
 

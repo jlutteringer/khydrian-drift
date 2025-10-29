@@ -16,7 +16,7 @@ export const parseString = (value: string): Result<CurrencyCode, ErrorEvent> => 
   return success(value.toUpperCase() as CurrencyCode)
 }
 
-export const fromString = (value: string): CurrencyCode => {
+export const from = (value: string): CurrencyCode => {
   return unpackResult(parseString(value))
 }
 

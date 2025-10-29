@@ -178,7 +178,7 @@ export const parseString = (value: string): Result<Uri, ErrorEvent> => {
  * import { Uris } from "@bessemer/cornerstone"
  *
  * // String literal parsed into Uri
- * const fromString = Uris.from('https://api.example.com/v1' as UriLiteral)
+ * const fromString = Uris.from('https://api.example.com/v1')
  * console.log(fromString.scheme) // 'https'
  * console.log(fromString.host?.value) // 'api.example.com'
  *

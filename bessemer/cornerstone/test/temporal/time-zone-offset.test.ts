@@ -216,96 +216,96 @@ describe('TimeZoneOffset.parseString', () => {
   })
 })
 
-describe('TimeZoneOffset.fromString', () => {
+describe('TimeZoneOffset.from', () => {
   test('should throw for invalid formats', () => {
-    expect(() => TimeZoneOffsets.fromString('invalid')).toThrow()
-    expect(() => TimeZoneOffsets.fromString('+25:00')).toThrow()
-    expect(() => TimeZoneOffsets.fromString('+05:60')).toThrow()
+    expect(() => TimeZoneOffsets.from('invalid')).toThrow()
+    expect(() => TimeZoneOffsets.from('+25:00')).toThrow()
+    expect(() => TimeZoneOffsets.from('+05:60')).toThrow()
   })
 
   test('should return correct values for valid inputs', () => {
-    expect(TimeZoneOffsets.fromString('Z')).toBe(0)
-    expect(TimeZoneOffsets.fromString('+5')).toBe(TimeZoneOffsets.fromDuration({ hours: 5 }))
-    expect(TimeZoneOffsets.fromString('-08:30')).toBe(TimeZoneOffsets.fromDuration({ hours: -8, minutes: -30 }))
+    expect(TimeZoneOffsets.from('Z')).toBe(0)
+    expect(TimeZoneOffsets.from('+5')).toBe(TimeZoneOffsets.fromDuration({ hours: 5 }))
+    expect(TimeZoneOffsets.from('-08:30')).toBe(TimeZoneOffsets.fromDuration({ hours: -8, minutes: -30 }))
   })
 })
 
 describe('TimeZoneOffsets.fromTimeZone', () => {
   test('should return zero offset for UTC', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z')
+    const instant = Instants.from('2024-07-15T12:00:00Z')
     const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.Utc, instant)
     expect(offset).toBe(0)
   })
 
   test('should return correct offset for America/New_York in summer (EDT)', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z') // Summer time
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/New_York'), instant)
+    const instant = Instants.from('2024-07-15T12:00:00Z') // Summer time
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), instant)
     console.log('TimeZoneOffsets.fromDuration(Durations.fromHours(-4))', TimeZoneOffsets.fromDuration(Durations.fromHours(-4)))
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: -4 })) // EDT is UTC-4
   })
 
   test('should return correct offset for America/New_York in winter (EST)', () => {
-    const instant = Instants.fromString('2024-01-15T12:00:00Z') // Winter time
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/New_York'), instant)
+    const instant = Instants.from('2024-01-15T12:00:00Z') // Winter time
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: -5 })) // EST is UTC-5
   })
 
   test('should return correct offset for Europe/London in summer (BST)', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z') // Summer time
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('Europe/London'), instant)
+    const instant = Instants.from('2024-07-15T12:00:00Z') // Summer time
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('Europe/London'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: 1 })) // BST is UTC+1
   })
 
   test('should return correct offset for Europe/London in winter (GMT)', () => {
-    const instant = Instants.fromString('2024-01-15T12:00:00Z') // Winter time
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('Europe/London'), instant)
+    const instant = Instants.from('2024-01-15T12:00:00Z') // Winter time
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('Europe/London'), instant)
     expect(offset).toBe(0) // GMT is UTC+0
   })
 
   test('should return correct offset for Asia/Tokyo', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z')
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('Asia/Tokyo'), instant)
+    const instant = Instants.from('2024-07-15T12:00:00Z')
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('Asia/Tokyo'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: 9 })) // JST is always UTC+9
   })
 
   test('should return correct offset for Australia/Sydney in summer (AEDT)', () => {
-    const instant = Instants.fromString('2024-01-15T12:00:00Z') // Summer time in southern hemisphere
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('Australia/Sydney'), instant)
+    const instant = Instants.from('2024-01-15T12:00:00Z') // Summer time in southern hemisphere
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('Australia/Sydney'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: 11 })) // AEDT is UTC+11
   })
 
   test('should return correct offset for Australia/Sydney in winter (AEST)', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z') // Winter time in southern hemisphere
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('Australia/Sydney'), instant)
+    const instant = Instants.from('2024-07-15T12:00:00Z') // Winter time in southern hemisphere
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('Australia/Sydney'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: 10 })) // AEST is UTC+10
   })
 
   test('should return correct offset for Asia/Kolkata (half-hour offset)', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z')
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('Asia/Kolkata'), instant)
+    const instant = Instants.from('2024-07-15T12:00:00Z')
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('Asia/Kolkata'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: 5, minutes: 30 })) // IST is UTC+5:30
   })
 
   test('should return correct offset for America/Los_Angeles in summer (PDT)', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z') // Summer time
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/Los_Angeles'), instant)
+    const instant = Instants.from('2024-07-15T12:00:00Z') // Summer time
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/Los_Angeles'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: -7 })) // PDT is UTC-7
   })
 
   test('should return correct offset for America/Los_Angeles in winter (PST)', () => {
-    const instant = Instants.fromString('2024-01-15T12:00:00Z') // Winter time
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/Los_Angeles'), instant)
+    const instant = Instants.from('2024-01-15T12:00:00Z') // Winter time
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/Los_Angeles'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: -8 })) // PST is UTC-8
   })
 
   test('should handle DST transition dates correctly', () => {
     // Test a few hours before and after DST transition in 2024
     // Spring forward in US: March 10, 2024, 2:00 AM -> 3:00 AM
-    const beforeSpringTransition = Instants.fromString('2024-03-10T06:00:00Z') // 1:00 AM EST
-    const afterSpringTransition = Instants.fromString('2024-03-10T08:00:00Z') // 4:00 AM EDT (3:00 AM doesn't exist)
+    const beforeSpringTransition = Instants.from('2024-03-10T06:00:00Z') // 1:00 AM EST
+    const afterSpringTransition = Instants.from('2024-03-10T08:00:00Z') // 4:00 AM EDT (3:00 AM doesn't exist)
 
-    const offsetBefore = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/New_York'), beforeSpringTransition)
-    const offsetAfter = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/New_York'), afterSpringTransition)
+    const offsetBefore = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), beforeSpringTransition)
+    const offsetAfter = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), afterSpringTransition)
 
     expect(offsetBefore).toBe(TimeZoneOffsets.fromDuration({ hours: -5 })) // EST
     expect(offsetAfter).toBe(TimeZoneOffsets.fromDuration({ hours: -4 })) // EDT
@@ -313,21 +313,21 @@ describe('TimeZoneOffsets.fromTimeZone', () => {
 
   test('should handle fall back DST transition correctly', () => {
     // Fall back in US: November 3, 2024, 2:00 AM -> 1:00 AM
-    const beforeFallTransition = Instants.fromString('2024-11-03T05:00:00Z') // 1:00 AM EDT
-    const afterFallTransition = Instants.fromString('2024-11-03T07:00:00Z') // 2:00 AM EST
+    const beforeFallTransition = Instants.from('2024-11-03T05:00:00Z') // 1:00 AM EDT
+    const afterFallTransition = Instants.from('2024-11-03T07:00:00Z') // 2:00 AM EST
 
-    const offsetBefore = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/New_York'), beforeFallTransition)
-    const offsetAfter = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/New_York'), afterFallTransition)
+    const offsetBefore = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), beforeFallTransition)
+    const offsetAfter = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), afterFallTransition)
 
     expect(offsetBefore).toBe(TimeZoneOffsets.fromDuration({ hours: -4 })) // EDT
     expect(offsetAfter).toBe(TimeZoneOffsets.fromDuration({ hours: -5 })) // EST
   })
 
   test('should work with different instant values on same timezone', () => {
-    const timeZone = TimeZoneIds.fromString('Europe/Paris')
-    const instant1 = Instants.fromString('2024-01-01T00:00:00Z')
-    const instant2 = Instants.fromString('2024-06-01T00:00:00Z')
-    const instant3 = Instants.fromString('2024-12-31T23:59:59Z')
+    const timeZone = TimeZoneIds.from('Europe/Paris')
+    const instant1 = Instants.from('2024-01-01T00:00:00Z')
+    const instant2 = Instants.from('2024-06-01T00:00:00Z')
+    const instant3 = Instants.from('2024-12-31T23:59:59Z')
 
     const offset1 = TimeZoneOffsets.fromTimeZone(timeZone, instant1)
     const offset2 = TimeZoneOffsets.fromTimeZone(timeZone, instant2)
@@ -339,23 +339,23 @@ describe('TimeZoneOffsets.fromTimeZone', () => {
   })
 
   test('should handle extreme positive offset timezone', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z')
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('Pacific/Kiritimati'), instant)
+    const instant = Instants.from('2024-07-15T12:00:00Z')
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('Pacific/Kiritimati'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: 14 })) // UTC+14
   })
 
   test('should handle extreme negative offset timezone', () => {
-    const instant = Instants.fromString('2024-07-15T12:00:00Z')
-    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('Pacific/Marquesas'), instant)
+    const instant = Instants.from('2024-07-15T12:00:00Z')
+    const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('Pacific/Marquesas'), instant)
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: -9, minutes: -30 })) // UTC-9:30
   })
 
   test('should handle millisecond precision instants', () => {
-    const instant1 = Instants.fromString('2024-07-15T12:00:00.000Z')
-    const instant2 = Instants.fromString('2024-07-15T12:10:10.999Z')
+    const instant1 = Instants.from('2024-07-15T12:00:00.000Z')
+    const instant2 = Instants.from('2024-07-15T12:10:10.999Z')
 
-    const offset1 = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/New_York'), instant1)
-    const offset2 = TimeZoneOffsets.fromTimeZone(TimeZoneIds.fromString('America/New_York'), instant2)
+    const offset1 = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), instant1)
+    const offset2 = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), instant2)
 
     // Offsets should be the same since they're within the same minute
     expect(offset1).toBe(offset2)

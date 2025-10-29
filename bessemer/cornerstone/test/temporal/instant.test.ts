@@ -10,7 +10,7 @@ describe('Instants.from', () => {
   })
 
   test('should create Instant from a literal', () => {
-    const result = Instants.from(Instants.toLiteral(Instants.fromString('2024-07-15T14:30:45.123Z')))
+    const result = Instants.from(Instants.toLiteral(Instants.from('2024-07-15T14:30:45.123Z')))
     expect(result).toBeInstanceOf(Temporal.Instant)
     expect(result.epochMilliseconds).toBe(1721053845123)
   })
@@ -20,6 +20,15 @@ describe('Instants.from', () => {
     const result = Instants.from(date)
     expect(result).toBeInstanceOf(Temporal.Instant)
     expect(result.epochMilliseconds).toBe(date.getTime())
+  })
+
+  test('should parse valid instant string', () => {
+    const result = Instants.from('2024-07-15T14:30:45.123Z')
+    expect(result.epochMilliseconds).toBe(1721053845123)
+  })
+
+  test('should throw on invalid string', () => {
+    expect(() => Instants.from('invalid-instant')).toThrow()
   })
 })
 
@@ -64,26 +73,15 @@ describe('Instants.parseString', () => {
   })
 })
 
-describe('Instants.fromString', () => {
-  test('should parse valid instant string', () => {
-    const result = Instants.fromString('2024-07-15T14:30:45.123Z')
-    expect(result.epochMilliseconds).toBe(1721053845123)
-  })
-
-  test('should throw on invalid string', () => {
-    expect(() => Instants.fromString('invalid-instant')).toThrow()
-  })
-})
-
 describe('Instants.toLiteral', () => {
   test('should convert Instant to ISO 8601 string', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant = Instants.from('2024-07-15T14:30:45.123Z')
     const result = Instants.toLiteral(instant)
     expect(result).toBe('2024-07-15T14:30:45.123Z')
   })
 
   test('should handle instant without milliseconds', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45Z')
+    const instant = Instants.from('2024-07-15T14:30:45Z')
     const result = Instants.toLiteral(instant)
     expect(result).toBe('2024-07-15T14:30:45Z')
   })
@@ -97,7 +95,7 @@ describe('Instants.toLiteral', () => {
 
 describe('Instants.toDate', () => {
   test('should convert Instant to Date', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant = Instants.from('2024-07-15T14:30:45.123Z')
     const result = Instants.toDate(instant)
     expect(result).toBeInstanceOf(Date)
     expect(result.getTime()).toBe(instant.epochMilliseconds)
@@ -111,7 +109,7 @@ describe('Instants.toDate', () => {
   })
 
   test('should handle future instant', () => {
-    const instant = Instants.fromString('2030-12-31T23:59:59.999Z')
+    const instant = Instants.from('2030-12-31T23:59:59.999Z')
     const result = Instants.toDate(instant)
     expect(result.getTime()).toBe(instant.epochMilliseconds)
   })
@@ -119,7 +117,7 @@ describe('Instants.toDate', () => {
 
 describe('Instants.isInstant', () => {
   test('should return true for Instant instance', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant = Instants.from('2024-07-15T14:30:45.123Z')
     expect(Instants.isInstant(instant)).toBe(true)
   })
 
@@ -143,16 +141,16 @@ describe('Instants.now', () => {
   })
 
   test('should return fixed instant with fixed clock', () => {
-    const fixedInstant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const fixedInstant = Instants.from('2024-07-15T14:30:45.123Z')
     const clock = Clocks.fixed(fixedInstant)
     const result = Instants.now(clock)
     expect(result).toEqual(fixedInstant)
   })
 
   test('should respect clock timezone (though instant itself is timezone-agnostic)', () => {
-    const fixedInstant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const fixedInstant = Instants.from('2024-07-15T14:30:45.123Z')
     const utcClock = Clocks.fixed(fixedInstant, TimeZoneIds.Utc)
-    const nyClock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('America/New_York'))
+    const nyClock = Clocks.fixed(fixedInstant, TimeZoneIds.from('America/New_York'))
 
     const utcResult = Instants.now(utcClock)
     const nyResult = Instants.now(nyClock)
@@ -165,7 +163,7 @@ describe('Instants.now', () => {
 
 describe('Instants.add', () => {
   test('should add duration to instant', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant = Instants.from('2024-07-15T14:30:45.123Z')
     const duration = Durations.fromHours(2)
     const result = Instants.add(instant, duration)
     expect(result).toBeInstanceOf(Temporal.Instant)
@@ -173,7 +171,7 @@ describe('Instants.add', () => {
   })
 
   test('should add complex duration', () => {
-    const instant = Instants.fromString('2024-07-15T10:15:30.500Z')
+    const instant = Instants.from('2024-07-15T10:15:30.500Z')
     const duration = Durations.add(Durations.fromHours(1), Durations.fromMinutes(20), Durations.fromSeconds(15), Durations.fromMilliseconds(250))
     const result = Instants.add(instant, duration)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T11:35:45.75Z')
@@ -187,7 +185,7 @@ describe('Instants.add', () => {
   })
 
   test('should handle negative durations', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant = Instants.from('2024-07-15T14:30:45.123Z')
     const duration = Durations.fromHours(-2)
     const result = Instants.add(instant, duration)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T12:30:45.123Z')
@@ -196,14 +194,14 @@ describe('Instants.add', () => {
 
 describe('Instants.subtract', () => {
   test('should subtract duration from instant', () => {
-    const instant = Instants.fromString('2024-07-15T16:30:45.123Z')
+    const instant = Instants.from('2024-07-15T16:30:45.123Z')
     const duration = Durations.fromHours(2)
     const result = Instants.subtract(instant, duration)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T14:30:45.123Z')
   })
 
   test('should subtract complex duration', () => {
-    const instant = Instants.fromString('2024-07-15T11:35:45.750Z')
+    const instant = Instants.from('2024-07-15T11:35:45.750Z')
     const duration = Durations.add(Durations.fromHours(1), Durations.fromMinutes(20), Durations.fromSeconds(15), Durations.fromMilliseconds(250))
     const result = Instants.subtract(instant, duration)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T10:15:30.5Z')
@@ -217,7 +215,7 @@ describe('Instants.subtract', () => {
   })
 
   test('should handle negative durations (becomes addition)', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant = Instants.from('2024-07-15T14:30:45.123Z')
     const duration = Durations.fromHours(-2)
     const result = Instants.subtract(instant, duration)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T16:30:45.123Z')
@@ -226,21 +224,21 @@ describe('Instants.subtract', () => {
 
 describe('Instants.until', () => {
   test('should calculate duration between instants', () => {
-    const earlier = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const later = Instants.fromString('2024-07-15T16:30:45.123Z')
+    const earlier = Instants.from('2024-07-15T14:30:45.123Z')
+    const later = Instants.from('2024-07-15T16:30:45.123Z')
     const result = Instants.until(earlier, later)
     expect(Durations.toHours(result)).toBe(2)
   })
 
   test('should handle negative duration for reversed order', () => {
-    const earlier = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const later = Instants.fromString('2024-07-15T16:30:45.123Z')
+    const earlier = Instants.from('2024-07-15T14:30:45.123Z')
+    const later = Instants.from('2024-07-15T16:30:45.123Z')
     const result = Instants.until(later, earlier)
     expect(Durations.toHours(result)).toBe(-2)
   })
 
   test('should return zero duration for same instant', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant = Instants.from('2024-07-15T14:30:45.123Z')
     const result = Instants.until(instant, instant)
     expect(Durations.isZero(result)).toBe(true)
   })
@@ -253,8 +251,8 @@ describe('Instants.until', () => {
   })
 
   test('should calculate complex durations', () => {
-    const start = Instants.fromString('2024-07-15T10:15:30.500Z')
-    const end = Instants.fromString('2024-07-15T11:35:45.750Z')
+    const start = Instants.from('2024-07-15T10:15:30.500Z')
+    const end = Instants.from('2024-07-15T11:35:45.750Z')
     const result = Instants.until(start, end)
     expect(Durations.toMilliseconds(result)).toBe(4815250) // 1h 20m 15.25s in milliseconds
   })
@@ -262,25 +260,25 @@ describe('Instants.until', () => {
 
 describe('Instants.round', () => {
   test('should round to nearest second', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.750Z')
+    const instant = Instants.from('2024-07-15T14:30:45.750Z')
     const result = Instants.round(instant, TimeUnit.Second)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T14:30:46Z')
   })
 
   test('should round to nearest minute', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant = Instants.from('2024-07-15T14:30:45.123Z')
     const result = Instants.round(instant, TimeUnit.Minute)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T14:31:00Z')
   })
 
   test('should round to nearest hour', () => {
-    const instant = Instants.fromString('2024-07-15T14:35:45.123Z')
+    const instant = Instants.from('2024-07-15T14:35:45.123Z')
     const result = Instants.round(instant, TimeUnit.Hour)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T15:00:00Z')
   })
 
   test('should round down when exactly halfway', () => {
-    const instant = Instants.fromString('2024-07-15T14:30:30.000Z')
+    const instant = Instants.from('2024-07-15T14:30:30.000Z')
     const result = Instants.round(instant, TimeUnit.Minute)
     expect(Instants.toLiteral(result)).toBe('2024-07-15T14:31:00Z')
   })
@@ -288,14 +286,14 @@ describe('Instants.round', () => {
 
 describe('Instants.isEqual', () => {
   test('should return true for equal instants', () => {
-    const instant1 = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const instant2 = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant1 = Instants.from('2024-07-15T14:30:45.123Z')
+    const instant2 = Instants.from('2024-07-15T14:30:45.123Z')
     expect(Instants.isEqual(instant1, instant2)).toBe(true)
   })
 
   test('should return false for different instants', () => {
-    const instant1 = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const instant2 = Instants.fromString('2024-07-15T14:30:45.124Z')
+    const instant1 = Instants.from('2024-07-15T14:30:45.123Z')
+    const instant2 = Instants.from('2024-07-15T14:30:45.124Z')
     expect(Instants.isEqual(instant1, instant2)).toBe(false)
   })
 
@@ -308,20 +306,20 @@ describe('Instants.isEqual', () => {
 
 describe('Instants.isBefore', () => {
   test('should return true when first instant is before second', () => {
-    const earlier = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const later = Instants.fromString('2024-07-15T14:30:45.124Z')
+    const earlier = Instants.from('2024-07-15T14:30:45.123Z')
+    const later = Instants.from('2024-07-15T14:30:45.124Z')
     expect(Instants.isBefore(earlier, later)).toBe(true)
   })
 
   test('should return false when first instant is after second', () => {
-    const earlier = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const later = Instants.fromString('2024-07-15T14:30:45.124Z')
+    const earlier = Instants.from('2024-07-15T14:30:45.123Z')
+    const later = Instants.from('2024-07-15T14:30:45.124Z')
     expect(Instants.isBefore(later, earlier)).toBe(false)
   })
 
   test('should return false when instants are equal', () => {
-    const instant1 = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const instant2 = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant1 = Instants.from('2024-07-15T14:30:45.123Z')
+    const instant2 = Instants.from('2024-07-15T14:30:45.123Z')
     expect(Instants.isBefore(instant1, instant2)).toBe(false)
   })
 
@@ -332,69 +330,69 @@ describe('Instants.isBefore', () => {
   })
 
   test('should handle large time differences', () => {
-    const past = Instants.fromString('2020-01-01T00:00:00Z')
-    const future = Instants.fromString('2030-12-31T23:59:59Z')
+    const past = Instants.from('2020-01-01T00:00:00Z')
+    const future = Instants.from('2030-12-31T23:59:59Z')
     expect(Instants.isBefore(past, future)).toBe(true)
   })
 })
 
 describe('Instants.isAfter', () => {
   test('should return true when first instant is after second', () => {
-    const earlier = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const later = Instants.fromString('2024-07-15T14:30:45.124Z')
+    const earlier = Instants.from('2024-07-15T14:30:45.123Z')
+    const later = Instants.from('2024-07-15T14:30:45.124Z')
     expect(Instants.isAfter(later, earlier)).toBe(true)
   })
 
   test('should return false when first instant is before second', () => {
-    const earlier = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const later = Instants.fromString('2024-07-15T14:30:45.124Z')
+    const earlier = Instants.from('2024-07-15T14:30:45.123Z')
+    const later = Instants.from('2024-07-15T14:30:45.124Z')
     expect(Instants.isAfter(earlier, later)).toBe(false)
   })
 
   test('should return false when instants are equal', () => {
-    const instant1 = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const instant2 = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant1 = Instants.from('2024-07-15T14:30:45.123Z')
+    const instant2 = Instants.from('2024-07-15T14:30:45.123Z')
     expect(Instants.isAfter(instant1, instant2)).toBe(false)
   })
 })
 
 describe('Instants.CompareBy', () => {
   test('should return negative number when first is before second', () => {
-    const earlier = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const later = Instants.fromString('2024-07-15T14:30:45.124Z')
+    const earlier = Instants.from('2024-07-15T14:30:45.123Z')
+    const later = Instants.from('2024-07-15T14:30:45.124Z')
     expect(Instants.CompareBy(earlier, later)).toBeLessThan(0)
   })
 
   test('should return positive number when first is after second', () => {
-    const earlier = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const later = Instants.fromString('2024-07-15T14:30:45.124Z')
+    const earlier = Instants.from('2024-07-15T14:30:45.123Z')
+    const later = Instants.from('2024-07-15T14:30:45.124Z')
     expect(Instants.CompareBy(later, earlier)).toBeGreaterThan(0)
   })
 
   test('should return zero when instants are equal', () => {
-    const instant1 = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const instant2 = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant1 = Instants.from('2024-07-15T14:30:45.123Z')
+    const instant2 = Instants.from('2024-07-15T14:30:45.123Z')
     expect(Instants.CompareBy(instant1, instant2)).toBe(0)
   })
 })
 
 describe('Instants.EqualBy', () => {
   test('should return true for equal instants', () => {
-    const instant1 = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const instant2 = Instants.fromString('2024-07-15T14:30:45.123Z')
+    const instant1 = Instants.from('2024-07-15T14:30:45.123Z')
+    const instant2 = Instants.from('2024-07-15T14:30:45.123Z')
     expect(Instants.EqualBy(instant1, instant2)).toBe(true)
   })
 
   test('should return false for different instants', () => {
-    const instant1 = Instants.fromString('2024-07-15T14:30:45.123Z')
-    const instant2 = Instants.fromString('2024-07-15T14:30:45.124Z')
+    const instant1 = Instants.from('2024-07-15T14:30:45.123Z')
+    const instant2 = Instants.from('2024-07-15T14:30:45.124Z')
     expect(Instants.EqualBy(instant1, instant2)).toBe(false)
   })
 })
 
 describe('Instants.format', () => {
   test('should format instant with date and time in US locale', () => {
-    const instant = Instants.fromString('2023-12-25T14:30:45Z')
+    const instant = Instants.from('2023-12-25T14:30:45Z')
     const result = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
       year: 'numeric',
       month: 'numeric',
@@ -409,7 +407,7 @@ describe('Instants.format', () => {
   })
 
   test('should format instant in different timezone', () => {
-    const instant = Instants.fromString('2023-12-25T14:30:45Z')
+    const instant = Instants.from('2023-12-25T14:30:45Z')
     const utcResult = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
       hour: 'numeric',
       minute: '2-digit',
@@ -421,7 +419,7 @@ describe('Instants.format', () => {
   })
 
   test('should work with different locales', () => {
-    const instant = Instants.fromString('2023-12-25T14:30:45Z')
+    const instant = Instants.from('2023-12-25T14:30:45Z')
 
     const usResult = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
       year: 'numeric',
@@ -442,7 +440,7 @@ describe('Instants.format', () => {
   })
 
   test('should format with various date options', () => {
-    const instant = Instants.fromString('2023-12-25T14:30:45Z')
+    const instant = Instants.from('2023-12-25T14:30:45Z')
 
     const shortDate = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
       month: 'short',
@@ -456,7 +454,7 @@ describe('Instants.format', () => {
   })
 
   test('should format time only options', () => {
-    const instant = Instants.fromString('2023-12-25T09:15:30Z')
+    const instant = Instants.from('2023-12-25T09:15:30Z')
 
     const timeOnly = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
       hour: 'numeric',
@@ -469,7 +467,7 @@ describe('Instants.format', () => {
   })
 
   test('should format with weekday options', () => {
-    const instant = Instants.fromString('2023-12-25T12:00:00Z') // Christmas 2023 is a Monday
+    const instant = Instants.from('2023-12-25T12:00:00Z') // Christmas 2023 is a Monday
 
     const withWeekday = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
       weekday: 'long',
@@ -483,7 +481,7 @@ describe('Instants.format', () => {
   })
 
   test('should handle 24-hour format', () => {
-    const instant = Instants.fromString('2023-12-25T23:45:00Z')
+    const instant = Instants.from('2023-12-25T23:45:00Z')
 
     const result = Instants.format(instant, TimeZoneIds.Utc, Locales.AmericanEnglish, {
       hour: '2-digit',

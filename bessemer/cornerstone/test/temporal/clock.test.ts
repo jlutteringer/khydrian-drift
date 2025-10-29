@@ -7,7 +7,7 @@ describe('Clocks.system', () => {
   })
 
   test('should create system clock with specified zone', () => {
-    const clock = Clocks.system(TimeZoneIds.fromString('America/New_York'))
+    const clock = Clocks.system(TimeZoneIds.from('America/New_York'))
     expect(clock.zone).toBe('America/New_York')
   })
 
@@ -23,7 +23,7 @@ describe('Clocks.system', () => {
 })
 
 describe('FixedClock', () => {
-  const fixedInstant = Instants.fromString('2023-10-15T10:30:00Z')
+  const fixedInstant = Instants.from('2023-10-15T10:30:00Z')
 
   test('should create fixed clock with UTC by default', () => {
     const clock = Clocks.fixed(fixedInstant)
@@ -31,7 +31,7 @@ describe('FixedClock', () => {
   })
 
   test('should create fixed clock with specified zone', () => {
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Europe/London'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('Europe/London'))
     expect(clock.zone).toBe('Europe/London')
   })
 
@@ -44,7 +44,7 @@ describe('FixedClock', () => {
 })
 
 describe('OffsetClock', () => {
-  const baseInstant = Instants.fromString('2023-10-15T10:30:00Z')
+  const baseInstant = Instants.from('2023-10-15T10:30:00Z')
   const baseClock = Clocks.fixed(baseInstant)
 
   test('should return original clock when offset is zero', () => {
@@ -71,7 +71,7 @@ describe('OffsetClock', () => {
   })
 
   test('should inherit zone from base clock', () => {
-    const baseClockWithZone = Clocks.fixed(baseInstant, TimeZoneIds.fromString('America/Chicago'))
+    const baseClockWithZone = Clocks.fixed(baseInstant, TimeZoneIds.from('America/Chicago'))
     const offsetClock = Clocks.offset(baseClockWithZone, Durations.fromHours(1))
     expect(offsetClock.zone).toBe('America/Chicago')
   })
@@ -84,7 +84,7 @@ describe('OffsetClock', () => {
 
   test('should return new offset clock when withZone called with different zone', () => {
     const offsetClock = Clocks.offset(baseClock, Durations.fromHours(1))
-    const newClock = offsetClock.withZone(TimeZoneIds.fromString('Europe/Paris'))
+    const newClock = offsetClock.withZone(TimeZoneIds.from('Europe/Paris'))
     expect(newClock).not.toBe(offsetClock)
     expect(newClock.zone).toBe('Europe/Paris')
 

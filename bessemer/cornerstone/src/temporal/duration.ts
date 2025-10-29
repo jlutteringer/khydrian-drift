@@ -25,11 +25,11 @@ export type DurationBuilder = {
 }
 export type DurationLike = Duration | DurationLiteral | DurationBuilder
 
-export function from(value: DurationLike): Duration
-export function from(value: DurationLike | null): Duration | null
-export function from(value: DurationLike | undefined): Duration | undefined
-export function from(value: DurationLike | null | undefined): Duration | null | undefined
-export function from(value: DurationLike | null | undefined): Duration | null | undefined {
+export function from(value: DurationLike | string): Duration
+export function from(value: DurationLike | string | null): Duration | null
+export function from(value: DurationLike | string | undefined): Duration | undefined
+export function from(value: DurationLike | string | null | undefined): Duration | null | undefined
+export function from(value: DurationLike | string | null | undefined): Duration | null | undefined {
   if (isNil(value)) {
     return value
   }
@@ -38,7 +38,7 @@ export function from(value: DurationLike | null | undefined): Duration | null | 
     return value
   }
   if (isString(value)) {
-    return fromString(value)
+    return unpackResult(parseString(value))
   }
 
   return Temporal.Duration.from(value)
@@ -57,10 +57,6 @@ export const parseString = (value: string): Result<Duration, ErrorEvent> => {
 
     return failure(invalidValue(value, { namespace: Namespace, message: e.message }))
   }
-}
-
-export const fromString = (value: string): Duration => {
-  return unpackResult(parseString(value))
 }
 
 export function toLiteral(value: DurationLike): DurationLiteral

@@ -121,19 +121,19 @@ describe('HexCode.parseString', () => {
 
 describe('HexCode.fromString', () => {
   test('should return HexCode for valid hex codes', () => {
-    expect(HexCodes.fromString('#FF0000')).toBe('#FF0000')
-    expect(HexCodes.fromString('#00FF00')).toBe('#00FF00')
-    expect(HexCodes.fromString('#0000FF')).toBe('#0000FF')
-    expect(HexCodes.fromString('#FFfFFF')).toBe('#FFFFFF')
-    expect(HexCodes.fromString('#000000')).toBe('#000000')
-    expect(HexCodes.fromString('#abcdef')).toBe('#ABCDEF')
-    expect(HexCodes.fromString('#FFF')).toBe('#FFFFFF')
+    expect(HexCodes.from('#FF0000')).toBe('#FF0000')
+    expect(HexCodes.from('#00FF00')).toBe('#00FF00')
+    expect(HexCodes.from('#0000FF')).toBe('#0000FF')
+    expect(HexCodes.from('#FFfFFF')).toBe('#FFFFFF')
+    expect(HexCodes.from('#000000')).toBe('#000000')
+    expect(HexCodes.from('#abcdef')).toBe('#ABCDEF')
+    expect(HexCodes.from('#FFF')).toBe('#FFFFFF')
   })
 
   test('should throw for invalid hex codes', () => {
-    expect(() => HexCodes.fromString('FF0000')).toThrow() // Missing #
-    expect(() => HexCodes.fromString('#GGGGGG')).toThrow() // Invalid characters
-    expect(() => HexCodes.fromString('#FFFFFFF')).toThrow() // Too long
+    expect(() => HexCodes.from('FF0000')).toThrow() // Missing #
+    expect(() => HexCodes.from('#GGGGGG')).toThrow() // Invalid characters
+    expect(() => HexCodes.from('#FFFFFFF')).toThrow() // Too long
   })
 })
 

@@ -17,7 +17,7 @@ export const parseString = (value: string): Result<AspectRatio, ErrorEvent> => {
   return success(value as AspectRatio)
 }
 
-export const fromString = (value: string): AspectRatio => {
+export const from = (value: string): AspectRatio => {
   return unpackResult(parseString(value))
 }
 

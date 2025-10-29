@@ -17,7 +17,7 @@ export const parseString = (value: string): Result<LanguageCode, ErrorEvent> => 
   return success(value.toLowerCase() as LanguageCode)
 }
 
-export const fromString = (value: string): LanguageCode => {
+export const from = (value: string): LanguageCode => {
   return unpackResult(parseString(value))
 }
 

@@ -9,7 +9,7 @@ import {
   TypePathType,
 } from '@bessemer/cornerstone/object/type-path-type'
 import {
-  fromString as typePathFromString,
+  from as typePathFromString,
   getValue as typePathGetValue,
   intersect as typePathIntersect,
   matches as typePathMatches,
@@ -27,7 +27,7 @@ export const of = <T extends ObjectPathConcreteType>(value: T): ObjectPath<Infer
   return value as ObjectPath<InferObjectPath<T>>
 }
 
-export const fromString = <T extends string>(path: T): ObjectPath<ParseObjectPath<T>> => {
+export const from = <T extends string>(path: T): ObjectPath<ParseObjectPath<T>> => {
   const typePath = typePathFromString(path)
 
   typePath.forEach((it) => {
@@ -45,7 +45,7 @@ export const Schema = Zod.union([Zod.array(Zod.string()), Zod.string()]).transfo
   if (Array.isArray(it)) {
     return of(it)
   } else {
-    return fromString(it)
+    return from(it)
   }
 })
 

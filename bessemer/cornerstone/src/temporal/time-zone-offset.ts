@@ -148,7 +148,7 @@ export const parseString = (value: string): Result<TimeZoneOffset, ErrorEvent> =
   return success(toMinutes(duration) as TimeZoneOffset)
 }
 
-export const fromString = (value: string): TimeZoneOffset => {
+export const from = (value: string): TimeZoneOffset => {
   return unpackResult(parseString(value))
 }
 

@@ -16,12 +16,12 @@ test('AspectRatios.buildSchema', () => {
 })
 
 test('AspectRatios.fromString', () => {
-  expect(AspectRatios.fromString('16:9')).toBe('16:9')
-  expect(AspectRatios.fromString('4:3')).toBe('4:3')
+  expect(AspectRatios.from('16:9')).toBe('16:9')
+  expect(AspectRatios.from('4:3')).toBe('4:3')
 
-  expect(() => AspectRatios.fromString('16/9')).toThrow()
-  expect(() => AspectRatios.fromString('bad:ratio')).toThrow()
-  expect(() => AspectRatios.fromString('abc')).toThrow()
+  expect(() => AspectRatios.from('16/9')).toThrow()
+  expect(() => AspectRatios.from('bad:ratio')).toThrow()
+  expect(() => AspectRatios.from('abc')).toThrow()
 })
 
 test('AspectRatios.fromDimensions', () => {

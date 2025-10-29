@@ -41,7 +41,7 @@ export const parseString = (value: string): Result<GlobPattern, ErrorEvent> => {
   return success(value as GlobPattern)
 }
 
-export const fromString = (value: string): GlobPattern => {
+export const from = (value: string): GlobPattern => {
   return unpackResult(parseString(value))
 }
 

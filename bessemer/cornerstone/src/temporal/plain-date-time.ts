@@ -26,11 +26,11 @@ export type PlainDateTimeBuilder = PlainDateBuilder & PlainTimeBuilder
 
 export type PlainDateTimeLike = PlainDateTime | PlainDateTimeLiteral | PlainDateTimeBuilder
 
-export function from(value: PlainDateTimeLike): PlainDateTime
-export function from(value: PlainDateTimeLike | null): PlainDateTime | null
-export function from(value: PlainDateTimeLike | undefined): PlainDateTime | undefined
-export function from(value: PlainDateTimeLike | null | undefined): PlainDateTime | null | undefined
-export function from(value: PlainDateTimeLike | null | undefined): PlainDateTime | null | undefined {
+export function from(value: PlainDateTimeLike | string): PlainDateTime
+export function from(value: PlainDateTimeLike | string | null): PlainDateTime | null
+export function from(value: PlainDateTimeLike | string | undefined): PlainDateTime | undefined
+export function from(value: PlainDateTimeLike | string | null | undefined): PlainDateTime | null | undefined
+export function from(value: PlainDateTimeLike | string | null | undefined): PlainDateTime | null | undefined {
   if (isNil(value)) {
     return value
   }
@@ -40,7 +40,7 @@ export function from(value: PlainDateTimeLike | null | undefined): PlainDateTime
   }
 
   if (isString(value)) {
-    return fromString(value)
+    return unpackResult(parseString(value))
   }
 
   return Temporal.PlainDateTime.from(value)
@@ -60,10 +60,6 @@ export const parseString = (value: string): Result<PlainDateTime, ErrorEvent> =>
 
     return failure(invalidValue(value, { namespace: Namespace, message: e.message }))
   }
-}
-
-export const fromString = (value: string): PlainDateTime => {
-  return unpackResult(parseString(value))
 }
 
 export const fromInstant = (instant: InstantLike, zone: TimeZoneId): PlainDateTime => {

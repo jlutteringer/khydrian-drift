@@ -17,9 +17,9 @@ describe('PlainTimes.now', () => {
 
   test('should return current plain time in America/New_York during summer (EDT)', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T18:30:45.123Z')
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('America/New_York'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('America/New_York'))
 
-    const result = PlainTimes.now(TimeZoneIds.fromString('America/New_York'), clock)
+    const result = PlainTimes.now(TimeZoneIds.from('America/New_York'), clock)
 
     // EDT is UTC-4, so 18:30 UTC = 14:30 EDT
     expect(result.hour).toBe(14)
@@ -30,9 +30,9 @@ describe('PlainTimes.now', () => {
 
   test('should return current plain time in America/New_York during winter (EST)', () => {
     const fixedInstant = Temporal.Instant.from('2024-01-15T18:30:45.123Z')
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('America/New_York'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('America/New_York'))
 
-    const result = PlainTimes.now(TimeZoneIds.fromString('America/New_York'), clock)
+    const result = PlainTimes.now(TimeZoneIds.from('America/New_York'), clock)
 
     // EST is UTC-5, so 18:30 UTC = 13:30 EST
     expect(result.hour).toBe(13)
@@ -43,9 +43,9 @@ describe('PlainTimes.now', () => {
 
   test('should return current plain time in Europe/London during summer (BST)', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T11:30:45.123Z')
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Europe/London'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('Europe/London'))
 
-    const result = PlainTimes.now(TimeZoneIds.fromString('Europe/London'), clock)
+    const result = PlainTimes.now(TimeZoneIds.from('Europe/London'), clock)
 
     // BST is UTC+1, so 11:30 UTC = 12:30 BST
     expect(result.hour).toBe(12)
@@ -56,9 +56,9 @@ describe('PlainTimes.now', () => {
 
   test('should return current plain time in Europe/London during winter (GMT)', () => {
     const fixedInstant = Temporal.Instant.from('2024-01-15T11:30:45.123Z')
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Europe/London'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('Europe/London'))
 
-    const result = PlainTimes.now(TimeZoneIds.fromString('Europe/London'), clock)
+    const result = PlainTimes.now(TimeZoneIds.from('Europe/London'), clock)
 
     // GMT is UTC+0, so 11:30 UTC = 11:30 GMT
     expect(result.hour).toBe(11)
@@ -69,9 +69,9 @@ describe('PlainTimes.now', () => {
 
   test('should return current plain time in Asia/Tokyo', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T06:30:45.123Z')
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Asia/Tokyo'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('Asia/Tokyo'))
 
-    const result = PlainTimes.now(TimeZoneIds.fromString('Asia/Tokyo'), clock)
+    const result = PlainTimes.now(TimeZoneIds.from('Asia/Tokyo'), clock)
 
     // JST is always UTC+9, so 06:30 UTC = 15:30 JST
     expect(result.hour).toBe(15)
@@ -82,9 +82,9 @@ describe('PlainTimes.now', () => {
 
   test('should handle timezone with half-hour offset (Asia/Kolkata)', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T06:00:00.500Z')
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Asia/Kolkata'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('Asia/Kolkata'))
 
-    const result = PlainTimes.now(TimeZoneIds.fromString('Asia/Kolkata'), clock)
+    const result = PlainTimes.now(TimeZoneIds.from('Asia/Kolkata'), clock)
 
     // IST is UTC+5:30, so 06:00 UTC = 11:30 IST
     expect(result.hour).toBe(11)
@@ -95,9 +95,9 @@ describe('PlainTimes.now', () => {
 
   test('should handle day wrap-around for positive timezone offset', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T21:30:45.123Z')
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('Asia/Tokyo'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('Asia/Tokyo'))
 
-    const result = PlainTimes.now(TimeZoneIds.fromString('Asia/Tokyo'), clock)
+    const result = PlainTimes.now(TimeZoneIds.from('Asia/Tokyo'), clock)
 
     // JST is UTC+9, so 21:30 UTC = 06:30 JST (next day)
     expect(result.hour).toBe(6)
@@ -108,9 +108,9 @@ describe('PlainTimes.now', () => {
 
   test('should handle day wrap-around for negative timezone offset', () => {
     const fixedInstant = Temporal.Instant.from('2024-07-15T02:30:45.123Z')
-    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.fromString('America/Los_Angeles'))
+    const clock = Clocks.fixed(fixedInstant, TimeZoneIds.from('America/Los_Angeles'))
 
-    const result = PlainTimes.now(TimeZoneIds.fromString('America/Los_Angeles'), clock)
+    const result = PlainTimes.now(TimeZoneIds.from('America/Los_Angeles'), clock)
 
     // PDT is UTC-7, so 02:30 UTC = 19:30 PDT (previous day)
     expect(result.hour).toBe(19)
@@ -305,9 +305,9 @@ describe('PlainTimes.parseString', () => {
   // })
 })
 
-describe('PlainTimes.fromString', () => {
+describe('PlainTimes.from', () => {
   test('should parse valid time string successfully', () => {
-    const result = PlainTimes.fromString('14:30:45.123')
+    const result = PlainTimes.from('14:30:45.123')
 
     expect(result).toBeInstanceOf(Temporal.PlainTime)
     expect(result.hour).toBe(14)
@@ -317,13 +317,13 @@ describe('PlainTimes.fromString', () => {
   })
 
   test('should throw on invalid string', () => {
-    expect(() => PlainTimes.fromString('invalid-time')).toThrow()
+    expect(() => PlainTimes.from('invalid-time')).toThrow()
   })
 })
 
 describe('PlainTimes.add', () => {
   test('should add duration correctly', () => {
-    const time = PlainTimes.fromString('14:30:45.123')
+    const time = PlainTimes.from('14:30:45.123')
     const duration = Durations.fromHours(2)
 
     const result = PlainTimes.add(time, duration)
@@ -335,7 +335,7 @@ describe('PlainTimes.add', () => {
   })
 
   test('should wrap around 24-hour boundary', () => {
-    const time = PlainTimes.fromString('23:30:00')
+    const time = PlainTimes.from('23:30:00')
     const duration = Durations.fromHours(2)
 
     const result = PlainTimes.add(time, duration)
@@ -356,7 +356,7 @@ describe('PlainTimes.add', () => {
   })
 
   test('should add complex duration', () => {
-    const time = PlainTimes.fromString('10:15:30.500')
+    const time = PlainTimes.from('10:15:30.500')
     const duration = Durations.add(Durations.fromHours(1), Durations.fromMinutes(20), Durations.fromSeconds(15), Durations.fromMilliseconds(250))
 
     const result = PlainTimes.add(time, duration)
@@ -370,7 +370,7 @@ describe('PlainTimes.add', () => {
 
 describe('PlainTimes.subtract', () => {
   test('should subtract duration correctly', () => {
-    const time = PlainTimes.fromString('16:45:30.500')
+    const time = PlainTimes.from('16:45:30.500')
     const duration = Durations.fromHours(2)
 
     const result = PlainTimes.subtract(time, duration)
@@ -382,7 +382,7 @@ describe('PlainTimes.subtract', () => {
   })
 
   test('should wrap around 24-hour boundary backwards', () => {
-    const time = PlainTimes.fromString('01:30:00')
+    const time = PlainTimes.from('01:30:00')
     const duration = Durations.fromHours(3)
 
     const result = PlainTimes.subtract(time, duration)
@@ -393,7 +393,7 @@ describe('PlainTimes.subtract', () => {
   })
 
   test('should subtract milliseconds correctly', () => {
-    const time = PlainTimes.fromString('12:30:45.750')
+    const time = PlainTimes.from('12:30:45.750')
     const duration = Durations.fromMilliseconds(250)
 
     const result = PlainTimes.subtract(time, duration)
@@ -407,28 +407,28 @@ describe('PlainTimes.subtract', () => {
 
 describe('PlainTimes.isBefore', () => {
   test('should return true for earlier time', () => {
-    const earlier = PlainTimes.fromString('10:00:00')
-    const later = PlainTimes.fromString('12:00:00')
+    const earlier = PlainTimes.from('10:00:00')
+    const later = PlainTimes.from('12:00:00')
 
     expect(PlainTimes.isBefore(earlier, later)).toBe(true)
   })
 
   test('should return false for later time', () => {
-    const earlier = PlainTimes.fromString('10:00:00')
-    const later = PlainTimes.fromString('12:00:00')
+    const earlier = PlainTimes.from('10:00:00')
+    const later = PlainTimes.from('12:00:00')
 
     expect(PlainTimes.isBefore(later, earlier)).toBe(false)
   })
 
   test('should return false for same time', () => {
-    const time = PlainTimes.fromString('12:30:45')
+    const time = PlainTimes.from('12:30:45')
 
     expect(PlainTimes.isBefore(time, time)).toBe(false)
   })
 
   test('should handle cross-day comparison', () => {
-    const midnight = PlainTimes.fromString('00:00:00')
-    const almostMidnight = PlainTimes.fromString('23:59:59')
+    const midnight = PlainTimes.from('00:00:00')
+    const almostMidnight = PlainTimes.from('23:59:59')
 
     expect(PlainTimes.isBefore(midnight, almostMidnight)).toBe(true)
   })
@@ -436,21 +436,21 @@ describe('PlainTimes.isBefore', () => {
 
 describe('PlainTimes.isAfter', () => {
   test('should return true for later time', () => {
-    const earlier = PlainTimes.fromString('10:00:00')
-    const later = PlainTimes.fromString('12:00:00')
+    const earlier = PlainTimes.from('10:00:00')
+    const later = PlainTimes.from('12:00:00')
 
     expect(PlainTimes.isAfter(later, earlier)).toBe(true)
   })
 
   test('should return false for earlier time', () => {
-    const earlier = PlainTimes.fromString('10:00:00')
-    const later = PlainTimes.fromString('12:00:00')
+    const earlier = PlainTimes.from('10:00:00')
+    const later = PlainTimes.from('12:00:00')
 
     expect(PlainTimes.isAfter(earlier, later)).toBe(false)
   })
 
   test('should return false for same time', () => {
-    const time = PlainTimes.fromString('12:30:45')
+    const time = PlainTimes.from('12:30:45')
 
     expect(PlainTimes.isAfter(time, time)).toBe(false)
   })
@@ -458,43 +458,43 @@ describe('PlainTimes.isAfter', () => {
 
 describe('PlainTimes.toLiteral', () => {
   test('should convert PlainTime to literal string with all components', () => {
-    const time = PlainTimes.fromString('14:30:45.123')
+    const time = PlainTimes.from('14:30:45.123')
     const result = PlainTimes.toLiteral(time)
     expect(result).toBe('14:30:45.123')
   })
 
   test('should convert PlainTime to literal string without milliseconds', () => {
-    const time = PlainTimes.fromString('14:30:45')
+    const time = PlainTimes.from('14:30:45')
     const result = PlainTimes.toLiteral(time)
     expect(result).toBe('14:30:45')
   })
 
   test('should convert PlainTime to literal string without seconds', () => {
-    const time = PlainTimes.fromString('14:30')
+    const time = PlainTimes.from('14:30')
     const result = PlainTimes.toLiteral(time)
     expect(result).toBe('14:30')
   })
 
   test('should convert midnight to literal correctly', () => {
-    const time = PlainTimes.fromString('00:00:00')
+    const time = PlainTimes.from('00:00:00')
     const result = PlainTimes.toLiteral(time)
     expect(result).toBe('00:00')
   })
 
   test('should convert end of day to literal correctly', () => {
-    const time = PlainTimes.fromString('23:59:59.999')
+    const time = PlainTimes.from('23:59:59.999')
     const result = PlainTimes.toLiteral(time)
     expect(result).toBe('23:59:59.999')
   })
 
   test('should maintain proper format for single-digit components', () => {
-    const time = PlainTimes.fromString('09:05:03.001')
+    const time = PlainTimes.from('09:05:03.001')
     const result = PlainTimes.toLiteral(time)
     expect(result).toBe('09:05:03.001')
   })
 
   test('should handle zero milliseconds correctly', () => {
-    const time = PlainTimes.fromString('12:30:45.000')
+    const time = PlainTimes.from('12:30:45.000')
     const result = PlainTimes.toLiteral(time)
     expect(result).toMatch('12:30:45')
   })
@@ -533,7 +533,7 @@ describe('PlainTimes.format', () => {
     const time = PlainTimes.from({ hour: 14, minute: 30 })
 
     const usResult = PlainTimes.format(time, Locales.AmericanEnglish, {})
-    const deResult = PlainTimes.format(time, Locales.fromString('de-DE'), {})
+    const deResult = PlainTimes.format(time, Locales.from('de-DE'), {})
 
     // Just verify they're different (locale-specific formatting)
     expect(usResult).not.toBe(deResult)

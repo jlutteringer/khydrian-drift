@@ -22,7 +22,7 @@ export const parseString = (value: string): Result<TimeZoneId, ErrorEvent> => {
   }
 }
 
-export const fromString = (value: string): TimeZoneId => {
+export const from = (value: string): TimeZoneId => {
   return unpackResult(parseString(value))
 }
 

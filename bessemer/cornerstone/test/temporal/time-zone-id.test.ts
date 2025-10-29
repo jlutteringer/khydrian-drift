@@ -3,29 +3,29 @@ import { TimeZoneIds } from '@bessemer/cornerstone'
 describe('TimeZoneId.fromString', () => {
   test('should normalize valid IANA timezone identifiers', () => {
     {
-      const result = TimeZoneIds.fromString('America/New_York')
+      const result = TimeZoneIds.from('America/New_York')
       expect(result).toBe('America/New_York')
     }
 
     {
-      const result = TimeZoneIds.fromString('america/new_york')
+      const result = TimeZoneIds.from('america/new_york')
       expect(result).toBe('America/New_York')
     }
 
     {
-      const result = TimeZoneIds.fromString('AMERICA/NEW_YORK')
+      const result = TimeZoneIds.from('AMERICA/NEW_YORK')
       expect(result).toBe('America/New_York')
     }
   })
 
   test('should handle UTC timezone', () => {
-    const result = TimeZoneIds.fromString('UTC')
+    const result = TimeZoneIds.from('UTC')
     expect(result).toBe('UTC')
   })
 
   test('should normalize timezone aliases', () => {
     // GMT should normalize to UTC
-    const result = TimeZoneIds.fromString('GMT')
+    const result = TimeZoneIds.from('GMT')
     expect(result).toBe('UTC')
   })
 
@@ -33,8 +33,8 @@ describe('TimeZoneId.fromString', () => {
     const testCases = ['Europe/London', 'Asia/Tokyo', 'Australia/Sydney', 'America/Los_Angeles', 'Europe/Paris', 'Asia/Shanghai']
 
     testCases.forEach((timezone) => {
-      expect(() => TimeZoneIds.fromString(timezone)).not.toThrow()
-      const result = TimeZoneIds.fromString(timezone)
+      expect(() => TimeZoneIds.from(timezone)).not.toThrow()
+      const result = TimeZoneIds.from(timezone)
       expect(typeof result).toBe('string')
       expect(result.length).toBeGreaterThan(0)
     })
@@ -44,7 +44,7 @@ describe('TimeZoneId.fromString', () => {
     const invalidTimezones = ['Invalid/Timezone', 'America/NonExistent', 'Europe/FakeCity', 'Random/String', '']
 
     invalidTimezones.forEach((timezone) => {
-      expect(() => TimeZoneIds.fromString(timezone)).toThrow()
+      expect(() => TimeZoneIds.from(timezone)).toThrow()
     })
   })
 })

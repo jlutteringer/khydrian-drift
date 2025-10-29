@@ -20,7 +20,7 @@ export const parseString = (value: string): Result<CountrySubdivisionCode, Error
   return success(value.toUpperCase() as CountrySubdivisionCode)
 }
 
-export const fromString = (value: string): CountrySubdivisionCode => {
+export const from = (value: string): CountrySubdivisionCode => {
   return unpackResult(parseString(value))
 }
 

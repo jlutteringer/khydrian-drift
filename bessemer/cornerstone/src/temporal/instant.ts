@@ -22,11 +22,11 @@ export const Namespace = createNamespace('instant')
 export type InstantLiteral = NominalType<string, typeof Namespace>
 export type InstantLike = Instant | Date | InstantLiteral
 
-export function from(value: InstantLike): Instant
-export function from(value: InstantLike | null): Instant | null
-export function from(value: InstantLike | undefined): Instant | undefined
-export function from(value: InstantLike | null | undefined): Instant | null | undefined
-export function from(value: InstantLike | null | undefined): Instant | null | undefined {
+export function from(value: InstantLike | string): Instant
+export function from(value: InstantLike | string | null): Instant | null
+export function from(value: InstantLike | string | undefined): Instant | undefined
+export function from(value: InstantLike | string | null | undefined): Instant | null | undefined
+export function from(value: InstantLike | string | null | undefined): Instant | null | undefined {
   if (isNil(value)) {
     return value
   }
@@ -35,7 +35,7 @@ export function from(value: InstantLike | null | undefined): Instant | null | un
     return value
   }
   if (isString(value)) {
-    return fromString(value)
+    return unpackResult(parseString(value))
   }
 
   return Temporal.Instant.fromEpochMilliseconds(value.getTime())
@@ -54,10 +54,6 @@ export const parseString = (value: string): Result<Instant, ErrorEvent> => {
 
     return failure(invalidValue(value, { namespace: Namespace, message: e.message }))
   }
-}
-
-export const fromString = (value: string): Instant => {
-  return unpackResult(parseString(value))
 }
 
 export function toLiteral(value: InstantLike): InstantLiteral

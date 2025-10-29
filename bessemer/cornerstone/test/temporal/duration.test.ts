@@ -15,6 +15,16 @@ describe('Durations.from', () => {
     expect(result.minutes).toBe(30)
     expect(result.seconds).toBe(45)
   })
+
+  test('should parse valid duration string', () => {
+    const result = Durations.from('PT2H30M')
+    expect(result.hours).toBe(2)
+    expect(result.minutes).toBe(30)
+  })
+
+  test('should throw on invalid string', () => {
+    expect(() => Durations.from('invalid-duration')).toThrow()
+  })
 })
 
 describe('Durations.parseString', () => {
@@ -58,18 +68,6 @@ describe('Durations.parseString', () => {
   test('should fail on empty string', () => {
     const result = Durations.parseString('')
     expect(result.isSuccess).toBe(false)
-  })
-})
-
-describe('Durations.fromString', () => {
-  test('should parse valid duration string', () => {
-    const result = Durations.fromString('PT2H30M')
-    expect(result.hours).toBe(2)
-    expect(result.minutes).toBe(30)
-  })
-
-  test('should throw on invalid string', () => {
-    expect(() => Durations.fromString('invalid-duration')).toThrow()
   })
 })
 

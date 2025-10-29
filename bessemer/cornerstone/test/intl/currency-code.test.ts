@@ -18,16 +18,16 @@ test('Currencies.Schema - invalid inputs throw errors', () => {
   expect(() => CurrencyCodes.Schema.parse('U$D')).toThrow()
 })
 
-test('Currencies.fromString - valid inputs', () => {
-  expect(CurrencyCodes.fromString('USD')).toBe('USD')
-  expect(CurrencyCodes.fromString('usd')).toBe('USD')
-  expect(CurrencyCodes.fromString('GbP')).toBe('GBP')
-  expect(CurrencyCodes.fromString('eur')).toBe('EUR')
+test('Currencies.from - valid inputs', () => {
+  expect(CurrencyCodes.from('USD')).toBe('USD')
+  expect(CurrencyCodes.from('usd')).toBe('USD')
+  expect(CurrencyCodes.from('GbP')).toBe('GBP')
+  expect(CurrencyCodes.from('eur')).toBe('EUR')
 })
 
-test('Currencies.fromString - invalid inputs throw errors', () => {
-  expect(() => CurrencyCodes.fromString('US')).toThrow()
-  expect(() => CurrencyCodes.fromString('USDD')).toThrow()
-  expect(() => CurrencyCodes.fromString('123')).toThrow()
-  expect(() => CurrencyCodes.fromString('')).toThrow()
+test('Currencies.from - invalid inputs throw errors', () => {
+  expect(() => CurrencyCodes.from('US')).toThrow()
+  expect(() => CurrencyCodes.from('USDD')).toThrow()
+  expect(() => CurrencyCodes.from('123')).toThrow()
+  expect(() => CurrencyCodes.from('')).toThrow()
 })

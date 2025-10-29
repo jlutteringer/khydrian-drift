@@ -279,45 +279,45 @@ type TestDataConstType = WritableDeep<typeof TestDataConst>
 const TestObjectConst = TestDataConst[0] as WritableDeep<typeof TestDataConst[0]>
 type TestObjectConstType = WritableDeep<typeof TestObjectConst>
 
-describe('TypePaths.fromString', () => {
+describe('TypePaths.from', () => {
   test('should parse empty string', () => {
-    const result = TypePaths.fromString('')
+    const result = TypePaths.from('')
     expectTypeOf(result).toEqualTypeOf<TypePath<[]>>()
     expect(result).toEqual([])
   })
 
   test('should parse single property name', () => {
-    const result = TypePaths.fromString('store')
+    const result = TypePaths.from('store')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'store'>]>>()
     expect(result).toEqual(['store'])
   })
 
   test('should parse single property name index-style', () => {
-    const result = TypePaths.fromString('1')
+    const result = TypePaths.from('1')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'1'>]>>()
     expect(result).toEqual(['1'])
   })
 
   test('should parse property with wildcard', () => {
-    const result = TypePaths.fromString('store.*')
+    const result = TypePaths.from('store.*')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'store'>, WildcardSelectorType]>>()
     expect(result).toEqual(['store', '*'])
   })
 
   test('should parse nested property path', () => {
-    const result = TypePaths.fromString('store.books.category')
+    const result = TypePaths.from('store.books.category')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, NameSelectorType<'category'>]>>()
     expect(result).toEqual(['store', 'books', 'category'])
   })
 
   test('should parse array wildcard access', () => {
-    const result = TypePaths.fromString('store.books[*]')
+    const result = TypePaths.from('store.books[*]')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, WildcardSelectorType]>>()
     expect(result).toEqual(['store', 'books', '*'])
   })
 
   test('should parse array wildcard with property', () => {
-    const result = TypePaths.fromString('store.books[*].category')
+    const result = TypePaths.from('store.books[*].category')
     expectTypeOf(result).toEqualTypeOf<
       TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, WildcardSelectorType, NameSelectorType<'category'>]>
     >()
@@ -325,19 +325,19 @@ describe('TypePaths.fromString', () => {
   })
 
   test('should parse single array index', () => {
-    const result = TypePaths.fromString('store.books[1]')
+    const result = TypePaths.from('store.books[1]')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [IndexSelectorType<1>]]>>()
     expect(result).toEqual(['store', 'books', [1]])
   })
 
   test('should parse name-style index', () => {
-    const result = TypePaths.fromString('store.books.1')
+    const result = TypePaths.from('store.books.1')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, NameSelectorType<'1'>]>>()
     expect(result).toEqual(['store', 'books', '1'])
   })
 
   test('should parse array index with property', () => {
-    const result = TypePaths.fromString('store.books[1].title')
+    const result = TypePaths.from('store.books[1].title')
     expectTypeOf(result).toEqualTypeOf<
       TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [IndexSelectorType<1>], NameSelectorType<'title'>]>
     >()
@@ -345,7 +345,7 @@ describe('TypePaths.fromString', () => {
   })
 
   test('should parse multiple array indices - no whitespace', () => {
-    const result = TypePaths.fromString('store.books[2,3,4]')
+    const result = TypePaths.from('store.books[2,3,4]')
     expectTypeOf(result).toEqualTypeOf<
       TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [IndexSelectorType<2>, IndexSelectorType<3>, IndexSelectorType<4>]]>
     >()
@@ -353,7 +353,7 @@ describe('TypePaths.fromString', () => {
   })
 
   test('should parse multiple array indices - whitespace', () => {
-    const result = TypePaths.fromString('store.books[1, 2, 3]')
+    const result = TypePaths.from('store.books[1, 2, 3]')
     // JOHN we lose typechecking in subsequent arrays - should we even allow whitespace like this in the query language?
     expectTypeOf(result).toEqualTypeOf<
       TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, [IndexSelectorType<1>, IndexSelectorType<number>, IndexSelectorType<number>]]>
@@ -362,7 +362,7 @@ describe('TypePaths.fromString', () => {
   })
 
   test('should parse multiple array indices - more whitespace', () => {
-    const result = TypePaths.fromString('store.books[  1, 2  , 3 ]')
+    const result = TypePaths.from('store.books[  1, 2  , 3 ]')
     // JOHN we lose typechecking in subsequent arrays - should we even allow whitespace like this in the query language?
     expectTypeOf(result).toEqualTypeOf<
       TypePath<
@@ -373,25 +373,25 @@ describe('TypePaths.fromString', () => {
   })
 
   test('should parse array access at root', () => {
-    const result = TypePaths.fromString('[*]')
+    const result = TypePaths.from('[*]')
     expectTypeOf(result).toEqualTypeOf<TypePath<[WildcardSelectorType]>>()
     expect(result).toEqual(['*'])
   })
 
   test('should parse array index at root', () => {
-    const result = TypePaths.fromString('[1]')
+    const result = TypePaths.from('[1]')
     expectTypeOf(result).toEqualTypeOf<TypePath<[[IndexSelectorType<1>]]>>()
     expect(result).toEqual([[1]])
   })
 
   test('should parse array at root with property', () => {
-    const result = TypePaths.fromString('[*].title')
+    const result = TypePaths.from('[*].title')
     expectTypeOf(result).toEqualTypeOf<TypePath<[WildcardSelectorType, NameSelectorType<'title'>]>>()
     expect(result).toEqual(['*', 'title'])
   })
 
   test('should parse complex nested path', () => {
-    const result = TypePaths.fromString('store.books[*].isbn.number')
+    const result = TypePaths.from('store.books[*].isbn.number')
     expectTypeOf(result).toEqualTypeOf<
       TypePath<[NameSelectorType<'store'>, NameSelectorType<'books'>, WildcardSelectorType, NameSelectorType<'isbn'>, NameSelectorType<'number'>]>
     >()
@@ -399,43 +399,43 @@ describe('TypePaths.fromString', () => {
   })
 
   test('should parse property names with underscores', () => {
-    const result = TypePaths.fromString('user_data.profile_info')
+    const result = TypePaths.from('user_data.profile_info')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'user_data'>, NameSelectorType<'profile_info'>]>>()
     expect(result).toEqual(['user_data', 'profile_info'])
   })
 
   test('should parse property names with dollar signs', () => {
-    const result = TypePaths.fromString('$root.$config')
+    const result = TypePaths.from('$root.$config')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'$root'>, NameSelectorType<'$config'>]>>()
     expect(result).toEqual(['$root', '$config'])
   })
 
   test('should parse property names starting with underscore', () => {
-    const result = TypePaths.fromString('_private._internal')
+    const result = TypePaths.from('_private._internal')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'_private'>, NameSelectorType<'_internal'>]>>()
     expect(result).toEqual(['_private', '_internal'])
   })
 
   test('should parse mixed special characters', () => {
-    const result = TypePaths.fromString('_private.$special.user_data')
+    const result = TypePaths.from('_private.$special.user_data')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'_private'>, NameSelectorType<'$special'>, NameSelectorType<'user_data'>]>>()
     expect(result).toEqual(['_private', '$special', 'user_data'])
   })
 
   test('should parse property names with numbers', () => {
-    const result = TypePaths.fromString('user1.data2.field3')
+    const result = TypePaths.from('user1.data2.field3')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'user1'>, NameSelectorType<'data2'>, NameSelectorType<'field3'>]>>()
     expect(result).toEqual(['user1', 'data2', 'field3'])
   })
 
   test('should parse zero array index', () => {
-    const result = TypePaths.fromString('items[0]')
+    const result = TypePaths.from('items[0]')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'items'>, [IndexSelectorType<0>]]>>()
     expect(result).toEqual(['items', [0]])
   })
 
   test('should parse large array indices', () => {
-    const result = TypePaths.fromString('items[999].data[1234]')
+    const result = TypePaths.from('items[999].data[1234]')
     expectTypeOf(result).toEqualTypeOf<
       TypePath<[NameSelectorType<'items'>, [IndexSelectorType<999>], NameSelectorType<'data'>, [IndexSelectorType<1234>]]>
     >()
@@ -443,13 +443,13 @@ describe('TypePaths.fromString', () => {
   })
 
   test('should parse nested array access', () => {
-    const result = TypePaths.fromString('matrix[0][1]')
+    const result = TypePaths.from('matrix[0][1]')
     expectTypeOf(result).toEqualTypeOf<TypePath<[NameSelectorType<'matrix'>, [IndexSelectorType<0>], [IndexSelectorType<1>]]>>()
     expect(result).toEqual(['matrix', [0], [1]])
   })
 
   test('should parse deeply nested path with arrays', () => {
-    const result = TypePaths.fromString('data.items[0].tags[*].name')
+    const result = TypePaths.from('data.items[0].tags[*].name')
     expectTypeOf(result).toEqualTypeOf<
       TypePath<
         [
@@ -467,12 +467,12 @@ describe('TypePaths.fromString', () => {
 
   test('should handle very long property names', () => {
     const longName = 'a'.repeat(100)
-    const result = TypePaths.fromString(`${longName}.${longName}`)
+    const result = TypePaths.from(`${longName}.${longName}`)
     expect(result).toEqual([longName, longName])
   })
 
   test('should parse complex real-world example', () => {
-    const result = TypePaths.fromString('api.responses[0].data.users[*].profile.settings.preferences[1,3,5]')
+    const result = TypePaths.from('api.responses[0].data.users[*].profile.settings.preferences[1,3,5]')
     expectTypeOf(result).toEqualTypeOf<
       TypePath<
         [
@@ -493,35 +493,35 @@ describe('TypePaths.fromString', () => {
   })
 
   test('should throw for invalid syntax - consecutive dots', () => {
-    expect(() => TypePaths.fromString('store..books')).toThrow()
+    expect(() => TypePaths.from('store..books')).toThrow()
   })
 
   test('should throw for invalid syntax - starting with dot', () => {
-    expect(() => TypePaths.fromString('.store')).toThrow()
+    expect(() => TypePaths.from('.store')).toThrow()
   })
 
   test('should throw for invalid syntax - ending with dot', () => {
-    expect(() => TypePaths.fromString('store.')).toThrow()
+    expect(() => TypePaths.from('store.')).toThrow()
   })
 
   test('should throw for invalid syntax - unmatched brackets', () => {
-    expect(() => TypePaths.fromString('store.books[')).toThrow()
+    expect(() => TypePaths.from('store.books[')).toThrow()
   })
 
   test('should throw for invalid syntax - empty brackets', () => {
-    expect(() => TypePaths.fromString('store.books[]')).toThrow()
+    expect(() => TypePaths.from('store.books[]')).toThrow()
   })
 
   test('should throw for invalid syntax - starting with number', () => {
-    expect(() => TypePaths.fromString('123invalid')).toThrow()
+    expect(() => TypePaths.from('123invalid')).toThrow()
   })
 
   test('should throw for invalid syntax - invalid characters', () => {
-    expect(() => TypePaths.fromString('store.books@invalid')).toThrow()
+    expect(() => TypePaths.from('store.books@invalid')).toThrow()
   })
 
   test('should throw on mixed wildcard and indices in array', () => {
-    expect(() => TypePaths.fromString('items[*, 1, 2]')).toThrow()
+    expect(() => TypePaths.from('items[*, 1, 2]')).toThrow()
   })
 })
 
@@ -529,7 +529,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = ''
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -558,7 +558,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -572,7 +572,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(Object.values(TestObject.store.books))
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -601,7 +601,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books[*]'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(Object.values(TestObject.store.books))
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -615,7 +615,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books.*'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(Object.values(TestObject.store.books))
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -629,7 +629,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'employees[*]'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.employees)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -643,7 +643,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'employees[1]'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.employees[1])
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -657,7 +657,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books[1]'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.books[1])
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -686,7 +686,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books[1].category'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.books[1]?.category)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -715,7 +715,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books[*].category'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.books.map((it) => it.category))
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -729,7 +729,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books.*.category'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.books.map((it) => it.category))
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -743,7 +743,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books.category'
     test(path, () => {
-      expect(() => TypePaths.getValue(TypePaths.fromString(path), TestObject)).toThrow()
+      expect(() => TypePaths.getValue(TypePaths.from(path), TestObject)).toThrow()
 
       // JOHN we shoudn't resolve a type in the unsupported implicit wildcard case, but we do
       // type Type = TypePathParse<typeof path, TestObjectType>
@@ -757,7 +757,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books[*].publisher.name'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.books.map((it) => it.publisher?.name))
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -771,7 +771,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.books[1].publisher.name'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.books[1]?.publisher?.name)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -785,7 +785,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.advertisement'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.advertisement)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -799,7 +799,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.advertisement.value'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.advertisement?.value)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -814,7 +814,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.additionalAdvertisement'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.additionalAdvertisement)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -828,7 +828,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = 'store.additionalAdvertisement.value'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestObject)
+      const result = TypePaths.getValue(TypePaths.from(path), TestObject)
       expect(result).toEqual(TestObject.store.additionalAdvertisement?.value)
 
       type Type = TypePathParse<typeof path, TestObjectType>
@@ -842,7 +842,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = ''
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData)
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -856,7 +856,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '*'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData)
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -870,7 +870,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[*]'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData)
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -884,7 +884,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[*].name'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData.map((it) => it.name))
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -898,7 +898,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[1]'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData[1])
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -912,7 +912,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[*].store.bicycle'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData.map((it) => it.store.bicycle))
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -926,7 +926,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[1].store.bicycle'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData[1]?.store.bicycle)
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -940,7 +940,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[*].store.additionalAdvertisement'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData.map((it) => it.store.additionalAdvertisement))
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -954,7 +954,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[*].store.additionalAdvertisement.value'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData.map((it) => it.store.additionalAdvertisement?.value))
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -968,7 +968,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[0].store.additionalAdvertisement'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData[0]?.store.additionalAdvertisement)
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -982,7 +982,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[0].store.additionalAdvertisement.value'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData[0]?.store.additionalAdvertisement?.value)
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -996,7 +996,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[*].store.books'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData.map((it) => it.store.books))
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -1010,7 +1010,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[*].store.books[*]'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData.flatMap((it) => it.store.books))
 
       // JOHN
@@ -1025,7 +1025,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[*].store.books[*].author'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData.flatMap((it) => it.store.books.map((it) => it.author)))
 
       // JOHN
@@ -1040,7 +1040,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '[0].store.books[0].author'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData[0]?.store.books[0]?.author)
 
       type Type = TypePathParse<typeof path, TestDataType>
@@ -1054,7 +1054,7 @@ describe('TypePaths.getValue', () => {
   {
     const path = '0.store.books.0.author'
     test(path, () => {
-      const result = TypePaths.getValue(TypePaths.fromString(path), TestData)
+      const result = TypePaths.getValue(TypePaths.from(path), TestData)
       expect(result).toEqual(TestData[0]?.store.books[0]?.author)
 
       // JOHN
@@ -1105,305 +1105,305 @@ describe('TypePaths.getValue', () => {
 
 describe('TypePaths.intersect', () => {
   test('should intersect matching simple property path', () => {
-    const objectPath = TypePaths.fromString('store.books')
-    const typePath = TypePaths.fromString('store.books')
+    const objectPath = TypePaths.from('store.books')
+    const typePath = TypePaths.from('store.books')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', 'books'])
   })
 
   test('should intersect when ObjectPath is longer than TypePath', () => {
-    const objectPath = TypePaths.fromString('store.books.category')
-    const typePath = TypePaths.fromString('store.books')
+    const objectPath = TypePaths.from('store.books.category')
+    const typePath = TypePaths.from('store.books')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', 'books'])
   })
 
   test('should throw when TypePath is longer than ObjectPath', () => {
-    const objectPath = TypePaths.fromString('store.books')
-    const typePath = TypePaths.fromString('store.books.category')
+    const objectPath = TypePaths.from('store.books')
+    const typePath = TypePaths.from('store.books.category')
     expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
   })
 
   test('should handle empty paths', () => {
-    const objectPath = TypePaths.fromString('')
-    const typePath = TypePaths.fromString('')
+    const objectPath = TypePaths.from('')
+    const typePath = TypePaths.from('')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual([])
   })
 
   test('should handle wildcard selector in TypePath', () => {
-    const objectPath = TypePaths.fromString('store.books')
-    const typePath = TypePaths.fromString('store.*')
+    const objectPath = TypePaths.from('store.books')
+    const typePath = TypePaths.from('store.*')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', 'books'])
   })
 
   test('should handle array index matching TypePath array selector', () => {
-    const objectPath = TypePaths.fromString('store.books[1]')
-    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    const objectPath = TypePaths.from('store.books[1]')
+    const typePath = TypePaths.from('store.books[0,1,2]')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', 'books', [1]])
   })
 
   test('should throw when array index does not match TypePath array selector', () => {
-    const objectPath = TypePaths.fromString('store.books[5]')
-    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    const objectPath = TypePaths.from('store.books[5]')
+    const typePath = TypePaths.from('store.books[0,1,2]')
     expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
   })
 
   test('should handle name-style index matching TypePath array selector', () => {
-    const objectPath = TypePaths.fromString('store.books.1')
-    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    const objectPath = TypePaths.from('store.books.1')
+    const typePath = TypePaths.from('store.books[0,1,2]')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', 'books', '1'])
   })
 
   test('should throw when name-style index does not match TypePath array selector', () => {
-    const objectPath = TypePaths.fromString('store.books.5')
-    const typePath = TypePaths.fromString('store.books[0,1,2]')
+    const objectPath = TypePaths.from('store.books.5')
+    const typePath = TypePaths.from('store.books[0,1,2]')
     expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
   })
 
   test('should handle array selector in ObjectPath matching string selector in TypePath', () => {
-    const objectPath = TypePaths.fromString('store[1]')
-    const typePath = TypePaths.fromString('store.1')
+    const objectPath = TypePaths.from('store[1]')
+    const typePath = TypePaths.from('store.1')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', [1]])
   })
 
   test('should throw when array selector in ObjectPath does not match string selector in TypePath', () => {
-    const objectPath = TypePaths.fromString('store[2]')
-    const typePath = TypePaths.fromString('store.1')
+    const objectPath = TypePaths.from('store[2]')
+    const typePath = TypePaths.from('store.1')
     expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
   })
 
   test('should handle string selector matching in both paths', () => {
-    const objectPath = TypePaths.fromString('store.books.category')
-    const typePath = TypePaths.fromString('store.books.category')
+    const objectPath = TypePaths.from('store.books.category')
+    const typePath = TypePaths.from('store.books.category')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', 'books', 'category'])
   })
 
   test('should throw when string selectors do not match', () => {
-    const objectPath = TypePaths.fromString('store.books.title')
-    const typePath = TypePaths.fromString('store.books.category')
+    const objectPath = TypePaths.from('store.books.title')
+    const typePath = TypePaths.from('store.books.category')
     expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
   })
 
   test('should handle complex path with mixed selectors and wildcards', () => {
-    const objectPath = TypePaths.fromString('store.books[2].title')
-    const typePath = TypePaths.fromString('store.books.*')
+    const objectPath = TypePaths.from('store.books[2].title')
+    const typePath = TypePaths.from('store.books.*')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', 'books', [2]])
   })
 
   test('should handle wildcard array selector in TypePath', () => {
-    const objectPath = TypePaths.fromString('store.books[2]')
-    const typePath = TypePaths.fromString('store.books[*]')
+    const objectPath = TypePaths.from('store.books[2]')
+    const typePath = TypePaths.from('store.books[*]')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['store', 'books', [2]])
   })
 
   test('should return early when TypePath is shorter than ObjectPath', () => {
-    const objectPath = TypePaths.fromString('a.b.c.d.e')
-    const typePath = TypePaths.fromString('a.b')
+    const objectPath = TypePaths.from('a.b.c.d.e')
+    const typePath = TypePaths.from('a.b')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual(['a', 'b'])
   })
 
   test('should handle root array access', () => {
-    const objectPath = TypePaths.fromString('[0]')
-    const typePath = TypePaths.fromString('[*]')
+    const objectPath = TypePaths.from('[0]')
+    const typePath = TypePaths.from('[*]')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual([[0]])
   })
 
   test('should handle root array access with specific index', () => {
-    const objectPath = TypePaths.fromString('[1]')
-    const typePath = TypePaths.fromString('[0,1,2]')
+    const objectPath = TypePaths.from('[1]')
+    const typePath = TypePaths.from('[0,1,2]')
     const result = TypePaths.intersect(objectPath, typePath)
     expect(result).toEqual([[1]])
   })
 
   test('should throw when root array access does not match', () => {
-    const objectPath = TypePaths.fromString('[5]')
-    const typePath = TypePaths.fromString('[0,1,2]')
+    const objectPath = TypePaths.from('[5]')
+    const typePath = TypePaths.from('[0,1,2]')
     expect(() => TypePaths.intersect(objectPath, typePath)).toThrow()
   })
 })
 
 describe('TypePaths.matches', () => {
   test('should match identical paths', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const matchingPath = TypePaths.fromString('store.books')
+    const targetPath = TypePaths.from('store.books')
+    const matchingPath = TypePaths.from('store.books')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match with wildcard selector', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const matchingPath = TypePaths.fromString('store.*')
+    const targetPath = TypePaths.from('store.books')
+    const matchingPath = TypePaths.from('store.*')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match array index with wildcard', () => {
-    const targetPath = TypePaths.fromString('store.books[1]')
-    const matchingPath = TypePaths.fromString('store.books[*]')
+    const targetPath = TypePaths.from('store.books[1]')
+    const matchingPath = TypePaths.from('store.books[*]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match multiple array indices with wildcard', () => {
-    const targetPath = TypePaths.fromString('store.books[1,2,3]')
-    const matchingPath = TypePaths.fromString('store.books[*]')
+    const targetPath = TypePaths.from('store.books[1,2,3]')
+    const matchingPath = TypePaths.from('store.books[*]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match when target has single index and matching has multiple indices containing that index', () => {
-    const targetPath = TypePaths.fromString('store.books[1]')
-    const matchingPath = TypePaths.fromString('store.books[0,1,2]')
+    const targetPath = TypePaths.from('store.books[1]')
+    const matchingPath = TypePaths.from('store.books[0,1,2]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match when both have multiple indices and target is subset of matching', () => {
-    const targetPath = TypePaths.fromString('store.books[1,2]')
-    const matchingPath = TypePaths.fromString('store.books[0,1,2,3]')
+    const targetPath = TypePaths.from('store.books[1,2]')
+    const matchingPath = TypePaths.from('store.books[0,1,2,3]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match name selector with array index when they represent same value', () => {
-    const targetPath = TypePaths.fromString('store.books.1')
-    const matchingPath = TypePaths.fromString('store.books[1]')
+    const targetPath = TypePaths.from('store.books.1')
+    const matchingPath = TypePaths.from('store.books[1]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match array index with name selector when they represent same value', () => {
-    const targetPath = TypePaths.fromString('store.books[1]')
-    const matchingPath = TypePaths.fromString('store.books.1')
+    const targetPath = TypePaths.from('store.books[1]')
+    const matchingPath = TypePaths.from('store.books.1')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match shorter matching path (prefix match)', () => {
-    const targetPath = TypePaths.fromString('store.books.category')
-    const matchingPath = TypePaths.fromString('store.books')
+    const targetPath = TypePaths.from('store.books.category')
+    const matchingPath = TypePaths.from('store.books')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match complex nested path with wildcards', () => {
-    const targetPath = TypePaths.fromString('store.books[1].isbn.number')
-    const matchingPath = TypePaths.fromString('store.books[*].isbn.*')
+    const targetPath = TypePaths.from('store.books[1].isbn.number')
+    const matchingPath = TypePaths.from('store.books[*].isbn.*')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should NOT match when target has wildcard but matching has specific selector', () => {
-    const targetPath = TypePaths.fromString('store.*')
-    const matchingPath = TypePaths.fromString('store.books')
+    const targetPath = TypePaths.from('store.*')
+    const matchingPath = TypePaths.from('store.books')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
   })
 
   test('should NOT match when target single index not in matching multiple indices', () => {
-    const targetPath = TypePaths.fromString('store.books[5]')
-    const matchingPath = TypePaths.fromString('store.books[0,1,2]')
+    const targetPath = TypePaths.from('store.books[5]')
+    const matchingPath = TypePaths.from('store.books[0,1,2]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
   })
 
   test('should NOT match when target multiple indices not subset of matching', () => {
-    const targetPath = TypePaths.fromString('store.books[1,2,5]')
-    const matchingPath = TypePaths.fromString('store.books[0,1,2,3]')
+    const targetPath = TypePaths.from('store.books[1,2,5]')
+    const matchingPath = TypePaths.from('store.books[0,1,2,3]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
   })
 
   test('should NOT match when name selector and array index represent different values', () => {
-    const targetPath = TypePaths.fromString('store.books.2')
-    const matchingPath = TypePaths.fromString('store.books[1]')
+    const targetPath = TypePaths.from('store.books.2')
+    const matchingPath = TypePaths.from('store.books[1]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
   })
 
   test('should NOT match when target array has multiple indices but matching expects single', () => {
-    const targetPath = TypePaths.fromString('store.books[1,2]')
-    const matchingPath = TypePaths.fromString('store.books.1')
+    const targetPath = TypePaths.from('store.books[1,2]')
+    const matchingPath = TypePaths.from('store.books.1')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
   })
 
   test('should NOT match when matching path is longer than target', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const matchingPath = TypePaths.fromString('store.books.category')
+    const targetPath = TypePaths.from('store.books')
+    const matchingPath = TypePaths.from('store.books.category')
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
   })
 
   test('should NOT match different property names', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const matchingPath = TypePaths.fromString('store.magazines')
+    const targetPath = TypePaths.from('store.books')
+    const matchingPath = TypePaths.from('store.magazines')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(false)
   })
 
   test('should match empty paths', () => {
-    const targetPath = TypePaths.fromString('')
-    const matchingPath = TypePaths.fromString('')
+    const targetPath = TypePaths.from('')
+    const matchingPath = TypePaths.from('')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match target with empty matching path', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const matchingPath = TypePaths.fromString('')
+    const targetPath = TypePaths.from('store.books')
+    const matchingPath = TypePaths.from('')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match root wildcard with any single selector', () => {
-    const targetPath = TypePaths.fromString('store')
-    const matchingPath = TypePaths.fromString('*')
+    const targetPath = TypePaths.from('store')
+    const matchingPath = TypePaths.from('*')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match root array access with wildcard', () => {
-    const targetPath = TypePaths.fromString('[1]')
-    const matchingPath = TypePaths.fromString('[*]')
+    const targetPath = TypePaths.from('[1]')
+    const matchingPath = TypePaths.from('[*]')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should match complex matrix access', () => {
-    const targetPath = TypePaths.fromString('matrix[0][1].category')
-    const matchingPath = TypePaths.fromString('matrix[*][*].category')
+    const targetPath = TypePaths.from('matrix[0][1].category')
+    const matchingPath = TypePaths.from('matrix[*][*].category')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should handle mixed array and property access', () => {
-    const targetPath = TypePaths.fromString('store.books[1].publisher.credits[0].name')
-    const matchingPath = TypePaths.fromString('store.books[*].publisher.*')
+    const targetPath = TypePaths.from('store.books[1].publisher.credits[0].name')
+    const matchingPath = TypePaths.from('store.books[*].publisher.*')
 
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 
   test('should type narrow correctly on successful match', () => {
-    const targetPath = TypePaths.fromString('store.books[1].category')
-    const matchingPath = TypePaths.fromString('store.books[*].category')
+    const targetPath = TypePaths.from('store.books[1].category')
+    const matchingPath = TypePaths.from('store.books[*].category')
     expect(TypePaths.matches(targetPath, matchingPath)).toBe(true)
   })
 })
 
 describe('TypePaths.intersect', () => {
   test('should intersect identical paths', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const intersectingPath = TypePaths.fromString('store.books')
+    const targetPath = TypePaths.from('store.books')
+    const intersectingPath = TypePaths.from('store.books')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1411,8 +1411,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect with wildcard in intersecting path', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const intersectingPath = TypePaths.fromString('store.*')
+    const targetPath = TypePaths.from('store.books')
+    const intersectingPath = TypePaths.from('store.*')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1420,8 +1420,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect with wildcard in target path', () => {
-    const targetPath = TypePaths.fromString('store.*')
-    const intersectingPath = TypePaths.fromString('store.*')
+    const targetPath = TypePaths.from('store.*')
+    const intersectingPath = TypePaths.from('store.*')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1429,8 +1429,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect array indices where target is subset of intersecting', () => {
-    const targetPath = TypePaths.fromString('store.books[1]')
-    const intersectingPath = TypePaths.fromString('store.books[0,1,2]')
+    const targetPath = TypePaths.from('store.books[1]')
+    const intersectingPath = TypePaths.from('store.books[0,1,2]')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1438,8 +1438,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect multiple array indices keeping only matching ones', () => {
-    const targetPath = TypePaths.fromString('store.books[1,2,3]')
-    const intersectingPath = TypePaths.fromString('store.books[2,3,4]')
+    const targetPath = TypePaths.from('store.books[1,2,3]')
+    const intersectingPath = TypePaths.from('store.books[2,3,4]')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1447,8 +1447,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect with wildcard array selector', () => {
-    const targetPath = TypePaths.fromString('store.books[1,2]')
-    const intersectingPath = TypePaths.fromString('store.books[*]')
+    const targetPath = TypePaths.from('store.books[1,2]')
+    const intersectingPath = TypePaths.from('store.books[*]')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1456,8 +1456,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect name selector with array index when they match', () => {
-    const targetPath = TypePaths.fromString('store.books.1')
-    const intersectingPath = TypePaths.fromString('store.books[1]')
+    const targetPath = TypePaths.from('store.books.1')
+    const intersectingPath = TypePaths.from('store.books[1]')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1465,8 +1465,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect array index with name selector when they match', () => {
-    const targetPath = TypePaths.fromString('store.books[1]')
-    const intersectingPath = TypePaths.fromString('store.books.1')
+    const targetPath = TypePaths.from('store.books[1]')
+    const intersectingPath = TypePaths.from('store.books.1')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1474,8 +1474,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect shorter intersecting path (prefix)', () => {
-    const targetPath = TypePaths.fromString('store.books.category')
-    const intersectingPath = TypePaths.fromString('store.books')
+    const targetPath = TypePaths.from('store.books.category')
+    const intersectingPath = TypePaths.from('store.books')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1483,8 +1483,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect complex nested path with wildcards', () => {
-    const targetPath = TypePaths.fromString('store.books[1].isbn.number')
-    const intersectingPath = TypePaths.fromString('store.books[*].isbn.*')
+    const targetPath = TypePaths.from('store.books[1].isbn.number')
+    const intersectingPath = TypePaths.from('store.books[*].isbn.*')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1492,8 +1492,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect with both paths having wildcards', () => {
-    const targetPath = TypePaths.fromString('store.*.isbn.*')
-    const intersectingPath = TypePaths.fromString('store.*.*')
+    const targetPath = TypePaths.from('store.*.isbn.*')
+    const intersectingPath = TypePaths.from('store.*.*')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1501,8 +1501,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect empty paths', () => {
-    const targetPath = TypePaths.fromString('')
-    const intersectingPath = TypePaths.fromString('')
+    const targetPath = TypePaths.from('')
+    const intersectingPath = TypePaths.from('')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1510,8 +1510,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect with empty intersecting path', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const intersectingPath = TypePaths.fromString('')
+    const targetPath = TypePaths.from('store.books')
+    const intersectingPath = TypePaths.from('')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1519,8 +1519,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect root wildcard paths', () => {
-    const targetPath = TypePaths.fromString('store')
-    const intersectingPath = TypePaths.fromString('*')
+    const targetPath = TypePaths.from('store')
+    const intersectingPath = TypePaths.from('*')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1528,8 +1528,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect root array access', () => {
-    const targetPath = TypePaths.fromString('[1,2,3]')
-    const intersectingPath = TypePaths.fromString('[2,3,4]')
+    const targetPath = TypePaths.from('[1,2,3]')
+    const intersectingPath = TypePaths.from('[2,3,4]')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1537,8 +1537,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect matrix access patterns', () => {
-    const targetPath = TypePaths.fromString('matrix[0,1][1,2]')
-    const intersectingPath = TypePaths.fromString('matrix[1,2][*]')
+    const targetPath = TypePaths.from('matrix[0,1][1,2]')
+    const intersectingPath = TypePaths.from('matrix[1,2][*]')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1546,57 +1546,57 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should throw when target single index not in intersecting indices', () => {
-    const targetPath = TypePaths.fromString('store.books[5]')
-    const intersectingPath = TypePaths.fromString('store.books[1,2,3]')
+    const targetPath = TypePaths.from('store.books[5]')
+    const intersectingPath = TypePaths.from('store.books[1,2,3]')
 
     expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
   })
 
   test('should throw when no array indices overlap', () => {
-    const targetPath = TypePaths.fromString('store.books[1,2]')
-    const intersectingPath = TypePaths.fromString('store.books[3,4]')
+    const targetPath = TypePaths.from('store.books[1,2]')
+    const intersectingPath = TypePaths.from('store.books[3,4]')
 
     expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
   })
 
   test('should throw when name selector and array index represent different values', () => {
-    const targetPath = TypePaths.fromString('store.books.2')
-    const intersectingPath = TypePaths.fromString('store.books[1]')
+    const targetPath = TypePaths.from('store.books.2')
+    const intersectingPath = TypePaths.from('store.books[1]')
 
     expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
   })
 
   test('should throw when array index and name selector represent different values', () => {
-    const targetPath = TypePaths.fromString('store.books[2]')
-    const intersectingPath = TypePaths.fromString('store.books.1')
+    const targetPath = TypePaths.from('store.books[2]')
+    const intersectingPath = TypePaths.from('store.books.1')
 
     expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
   })
 
   test('should throw when target has multiple indices but intersecting expects single', () => {
-    const targetPath = TypePaths.fromString('store.books[1,2]')
-    const intersectingPath = TypePaths.fromString('store.books.1')
+    const targetPath = TypePaths.from('store.books[1,2]')
+    const intersectingPath = TypePaths.from('store.books.1')
 
     expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
   })
 
   test('should throw when intersecting path is longer than target', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const intersectingPath = TypePaths.fromString('store.books.category')
+    const targetPath = TypePaths.from('store.books')
+    const intersectingPath = TypePaths.from('store.books.category')
 
     expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
   })
 
   test('should throw when property names differ', () => {
-    const targetPath = TypePaths.fromString('store.books')
-    const intersectingPath = TypePaths.fromString('store.magazines')
+    const targetPath = TypePaths.from('store.books')
+    const intersectingPath = TypePaths.from('store.magazines')
 
     expect(() => TypePaths.intersect(targetPath, intersectingPath)).toThrow()
   })
 
   test('should intersect complex real-world scenario', () => {
-    const targetPath = TypePaths.fromString('store.books[0,1,2].publisher.credits[*].name')
-    const intersectingPath = TypePaths.fromString('store.books[1,2,3].publisher.*')
+    const targetPath = TypePaths.from('store.books[0,1,2].publisher.credits[*].name')
+    const intersectingPath = TypePaths.from('store.books[1,2,3].publisher.*')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1604,8 +1604,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should intersect with mixed wildcard and specific selectors', () => {
-    const targetPath = TypePaths.fromString('data.users.items[1,2,3].properties.name')
-    const intersectingPath = TypePaths.fromString('data.*.items[2,3,4].properties.*')
+    const targetPath = TypePaths.from('data.users.items[1,2,3].properties.name')
+    const intersectingPath = TypePaths.from('data.*.items[2,3,4].properties.*')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 
@@ -1613,8 +1613,8 @@ describe('TypePaths.intersect', () => {
   })
 
   test('should handle deeply nested intersections', () => {
-    const targetPath = TypePaths.fromString('a.b.c.d.e[1].f')
-    const intersectingPath = TypePaths.fromString('a.b.*.d.e[*].f')
+    const targetPath = TypePaths.from('a.b.c.d.e[1].f')
+    const intersectingPath = TypePaths.from('a.b.*.d.e[*].f')
 
     const result = TypePaths.intersect(targetPath, intersectingPath)
 

@@ -102,7 +102,7 @@ describe('Glob.fromString', () => {
     const validPatterns = ['*.js', 'src/**/*.ts', '*.{js,ts}', '[a-z]*.txt']
 
     validPatterns.forEach((pattern) => {
-      const result = Globs.fromString(pattern)
+      const result = Globs.from(pattern)
       expect(result).toBe(pattern)
     })
   })
@@ -111,14 +111,14 @@ describe('Glob.fromString', () => {
     const invalidPatterns = ['file@name.txt', '[abc', '{js,ts']
 
     invalidPatterns.forEach((pattern) => {
-      expect(() => Globs.fromString(pattern)).toThrow()
+      expect(() => Globs.from(pattern)).toThrow()
     })
   })
 })
 
 describe('Glob.match', () => {
   test('should match simple wildcard patterns', () => {
-    const pattern = Globs.fromString('*.js')
+    const pattern = Globs.from('*.js')
 
     expect(Globs.match('file.js', pattern)).toBe(true)
     expect(Globs.match('script.js', pattern)).toBe(true)
@@ -127,7 +127,7 @@ describe('Glob.match', () => {
   })
 
   test('should match double-star patterns', () => {
-    const pattern = Globs.fromString('src/**/*.ts')
+    const pattern = Globs.from('src/**/*.ts')
 
     expect(Globs.match('src/index.ts', pattern)).toBe(true)
     expect(Globs.match('src/utils/helper.ts', pattern)).toBe(true)
@@ -137,7 +137,7 @@ describe('Glob.match', () => {
   })
 
   test('should match brace expansion patterns', () => {
-    const pattern = Globs.fromString('*.{js,ts}')
+    const pattern = Globs.from('*.{js,ts}')
 
     expect(Globs.match('file.js', pattern)).toBe(true)
     expect(Globs.match('file.ts', pattern)).toBe(true)
@@ -146,7 +146,7 @@ describe('Glob.match', () => {
   })
 
   test('should match character class patterns', () => {
-    const pattern = Globs.fromString('[a-c]*.txt')
+    const pattern = Globs.from('[a-c]*.txt')
 
     expect(Globs.match('afile.txt', pattern)).toBe(true)
     expect(Globs.match('bfile.txt', pattern)).toBe(true)
@@ -156,7 +156,7 @@ describe('Glob.match', () => {
   })
 
   test('should handle negation patterns', () => {
-    const pattern = Globs.fromString('!*.log')
+    const pattern = Globs.from('!*.log')
 
     expect(Globs.match('file.txt', pattern)).toBe(true)
     expect(Globs.match('script.js', pattern)).toBe(true)
@@ -165,14 +165,14 @@ describe('Glob.match', () => {
   })
 
   test('should be case-sensitive', () => {
-    const pattern = Globs.fromString('*.JS')
+    const pattern = Globs.from('*.JS')
 
     expect(Globs.match('file.JS', pattern)).toBe(true)
     expect(Globs.match('file.js', pattern)).toBe(false)
   })
 
   test('should handle complex nested patterns', () => {
-    const pattern = Globs.fromString('src/**/*.{[jt]s,json}')
+    const pattern = Globs.from('src/**/*.{[jt]s,json}')
 
     expect(Globs.match('src/index.js', pattern)).toBe(true)
     expect(Globs.match('src/types.ts', pattern)).toBe(true)
@@ -185,7 +185,7 @@ describe('Glob.match', () => {
 
 describe('Glob.anyMatch', () => {
   test('should return true if any pattern matches', () => {
-    const patterns = [Globs.fromString('*.js'), Globs.fromString('*.ts'), Globs.fromString('*.json')]
+    const patterns = [Globs.from('*.js'), Globs.from('*.ts'), Globs.from('*.json')]
 
     expect(Globs.anyMatch('file.js', patterns)).toBe(true)
     expect(Globs.anyMatch('file.ts', patterns)).toBe(true)
@@ -194,7 +194,7 @@ describe('Glob.anyMatch', () => {
   })
 
   test('should return false if no patterns match', () => {
-    const patterns = [Globs.fromString('*.js'), Globs.fromString('*.ts')]
+    const patterns = [Globs.from('*.js'), Globs.from('*.ts')]
 
     expect(Globs.anyMatch('style.css', patterns)).toBe(false)
     expect(Globs.anyMatch('image.png', patterns)).toBe(false)
@@ -207,7 +207,7 @@ describe('Glob.anyMatch', () => {
   })
 
   test('should handle complex pattern combinations', () => {
-    const patterns = [Globs.fromString('src/**/*.{js,ts}'), Globs.fromString('test/**/*.spec.*'), Globs.fromString('*.config.json')]
+    const patterns = [Globs.from('src/**/*.{js,ts}'), Globs.from('test/**/*.spec.*'), Globs.from('*.config.json')]
 
     expect(Globs.anyMatch('src/index.js', patterns)).toBe(true)
     expect(Globs.anyMatch('src/utils/helper.ts', patterns)).toBe(true)
@@ -218,8 +218,8 @@ describe('Glob.anyMatch', () => {
 
   test('should match on first matching pattern', () => {
     const patterns = [
-      Globs.fromString('*.js'), // This should match first
-      Globs.fromString('file.*'), // This would also match but shouldn't be checked
+      Globs.from('*.js'), // This should match first
+      Globs.from('file.*'), // This would also match but shouldn't be checked
     ]
 
     expect(Globs.anyMatch('file.js', patterns)).toBe(true)

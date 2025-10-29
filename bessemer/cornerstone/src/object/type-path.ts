@@ -27,7 +27,7 @@ export const of = <T extends TypePathConcreteType>(value: T): TypePath<InferType
 const TypePathRegex =
   /^(?:[a-zA-Z_$][a-zA-Z0-9_$]*|\*|\d+|\[\s*(?:\*|\d+(?:\s*,\s*\d+)*)\s*])(?:\.(?:[a-zA-Z_$][a-zA-Z0-9_$]*|\*|\d+)|\[\s*(?:\*|\d+(?:\s*,\s*\d+)*)\s*])*$|^$/
 
-export const fromString = <T extends string>(path: T): TypePath<ParseTypePath<T>> => {
+export const from = <T extends string>(path: T): TypePath<ParseTypePath<T>> => {
   assert(TypePathRegex.test(path), () => `Unable to parse TypePath from string: ${path}`)
 
   if (path === '') {
@@ -100,7 +100,7 @@ export const Schema = Zod.union([Zod.array(Zod.string()), Zod.string()]).transfo
   if (Array.isArray(it)) {
     return of(it)
   } else {
-    return fromString(it)
+    return from(it)
   }
 })
 

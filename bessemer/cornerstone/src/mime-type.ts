@@ -16,7 +16,7 @@ export const parseString = (value: string): Result<MimeLiteral, ErrorEvent> => {
   return success(value as MimeLiteral)
 }
 
-export const fromString = (value: string): MimeLiteral => {
+export const from = (value: string): MimeLiteral => {
   return unpackResult(parseString(value))
 }
 
