@@ -55,7 +55,7 @@ export const fetchContentByKey = async <Type extends ContentType>(
   }
 
   const response = await fetch(
-    Urls.buildString({
+    Urls.toLiteral({
       location: {
         path: `/api/codex/key/${key}`,
         parameters: {
@@ -83,7 +83,7 @@ export const fetchContentBySector = async <Type extends ContentType>(
   options?: FetchContentOptions<Type>
 ): Promise<Array<ContentData<Type>>> => {
   const response = await fetch(
-    Urls.buildString({
+    Urls.toLiteral({
       location: {
         path: `/api/codex/sector/${sector}`,
         parameters: {

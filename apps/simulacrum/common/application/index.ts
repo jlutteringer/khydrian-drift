@@ -39,7 +39,7 @@ export const ApplicationModule: BessemerModule<ApplicationContext, ApplicationOp
       return tags
     }
 
-    const url = Urls.parse(urlString)
+    const url = Urls.from(urlString)
     if (url.location.path === '/subscription') {
       return [...tags, Tags.tag('Tenant', 'subscription')]
     }

@@ -12,7 +12,7 @@ import { CacheConfiguration } from '@bessemer/cornerstone/cache'
 import * as Caches from '@bessemer/framework/cache'
 import { CacheContext } from '@bessemer/framework/cache'
 import { DEPRECATEDDeepPartial } from '@bessemer/cornerstone/types'
-import { Ulid } from '@bessemer/cornerstone/ulid'
+import { Ulid } from '@bessemer/cornerstone/uuid/ulid'
 
 export { Bessemer, Environments, Contexts, AdvisoryLocks, Caches }
 

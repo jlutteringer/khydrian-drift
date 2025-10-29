@@ -19,7 +19,7 @@ export const NavbarSearch = () => {
     const searchQuery = data.query.trim()
 
     if (searchQuery) {
-      router.push(Urls.buildString({ location: { path: '/search', parameters: { q: searchQuery } } }))
+      router.push(Urls.toLiteral({ location: { path: '/search', parameters: { q: searchQuery } } }))
     }
   }
 

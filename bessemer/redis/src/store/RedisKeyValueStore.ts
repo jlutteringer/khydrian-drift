@@ -1,5 +1,5 @@
 import { AbstractRemoteKeyValueStore } from '@bessemer/cornerstone/store'
-import { Arrays, Durations, Eithers, Entries, Objects, ResourceKeys, Strings } from '@bessemer/cornerstone'
+import { Arrays, Durations, Eithers, Entries, Objects, ResourceKeys } from '@bessemer/cornerstone'
 import { ResourceKey, ResourceNamespace } from '@bessemer/cornerstone/resource-key'
 import { RecordEntry } from '@bessemer/cornerstone/entry'
 import { Duration } from '@bessemer/cornerstone/temporal/duration'
@@ -72,7 +72,7 @@ export class RedisKeyValueStore<T> extends AbstractRemoteKeyValueStore<T> {
 
   evictAll = async (patterns: Arrayable<GlobPattern>): Promise<void> => {
     const results = Arrays.toArray(patterns).map((pattern) => {
-      const keyPattern = Strings.replace(this.namespaceKey(pattern), "'", "\\'")
+      const keyPattern = this.namespaceKey(pattern).replaceAll("'", "\\'")
       return this.client.eval(`for _,k in ipairs(redis.call('keys','${keyPattern}')) do redis.call('del',k) end`, 0)
     })
 

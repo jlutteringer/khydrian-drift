@@ -8,6 +8,7 @@ import { ApplicationContent } from '@simulacrum/common/application/content'
 
 const contentProvider = Content.staticProvider<ApplicationContext>(ApplicationContent, [TextContentNormalizer])
 
+// JOHN
 export const ApplicationProperties: PropertyRecord<ApplicationOptions> = Properties.properties({
   logger: {
     level: 'trace',
@@ -24,4 +25,4 @@ export const ApplicationProperties: PropertyRecord<ApplicationOptions> = Propert
   // redis: {
   //   connectionUrl: 'localhost:6379',
   // },
-})
+} as any)

@@ -9,7 +9,7 @@ export const GET = Routes.route(
   async (context: CoreApplicationContext, request: NextRequest, { params }: { params: Promise<{ sectorKey: string }> }) => {
     const sectorKey = (await params).sectorKey
 
-    const url = Urls.parse(request.url)
+    const url = Urls.from(request.url)
     const type = Urls.getParameter(url, 'type')
     const tags = Urls.getJsonParameter<Array<Tag>>(url, 'tags')
     const content = await Codex.fetchContentBySector(sectorKey, context, { type, tags })
