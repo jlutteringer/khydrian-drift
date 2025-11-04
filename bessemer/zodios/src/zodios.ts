@@ -13,7 +13,7 @@ import {
   ZodiosRequestOptions,
   ZodiosRequestOptionsByPath,
   ZodiosResponseByPath,
-} from './zodios.types'
+} from './types'
 import { omit, replacePathParams } from './utils'
 import { formDataPlugin, formURLPlugin, headerPlugin, PluginId, ZodiosPlugins, zodValidationPlugin } from './plugins'
 import { Narrow, PickRequired, ReadonlyDeep, RequiredKeys, UndefinedIfNever } from './utils.types'

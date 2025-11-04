@@ -4,6 +4,8 @@
     "paths": {
       "@bessemer/cornerstone": ["./bessemer/cornerstone/src"],
       "@bessemer/cornerstone/*": ["./bessemer/cornerstone/src/*"],
+      "@bessemer/zodios": ["./bessemer/zodios/src"],
+      "@bessemer/zodios/*": ["./bessemer/zodios/src/*"],
       "@bessemer/react": ["./bessemer/react/src"],
       "@bessemer/react/*": ["./bessemer/react/src/*"],
       "@bessemer/mui": ["./bessemer/mui/src"],

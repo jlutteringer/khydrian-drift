@@ -1,3 +1,7 @@
+import * as OpenApi from '@bessemer/zodios/openapi'
+
+export { OpenApi }
+
 export { Zodios } from './zodios'
 export type { ApiOf } from './zodios'
 export type { ZodiosInstance, ZodiosClass, ZodiosConstructor } from './zodios'
@@ -41,7 +45,7 @@ export type {
   ZodiosRequestOptionsByPath,
   ZodiosRequestOptionsByAlias,
   ZodiosPlugin,
-} from './zodios.types'
+} from './types'
 export { type PluginId, zodValidationPlugin, formDataPlugin, formURLPlugin, headerPlugin } from './plugins'
 
 export { makeApi, makeCrudApi, apiBuilder, parametersBuilder, makeParameters, makeEndpoint, makeErrors, checkApi, prefixApi, mergeApis } from './api'

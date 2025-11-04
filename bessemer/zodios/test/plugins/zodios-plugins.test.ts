@@ -1,4 +1,4 @@
-import { ZodiosPlugin } from '../../src/zodios.types'
+import { ZodiosPlugin } from '@bessemer/zodios/types'
 import { ZodiosPlugins } from '../../src/plugins/zodios-plugins'
 
 describe('ZodiosPlugins', () => {

@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@bessemer/cornerstone": "workspace:*",
-    "@zodios/core": "10.9.6",
+    "@bessemer/zodios": "workspace:*",
     "axios": "1.9.0"
   }
 }

@@ -8,7 +8,7 @@ import {
   ZodiosMatchingErrorsByAlias,
   ZodiosMatchingErrorsByPath,
   ZodiosPathsByMethod,
-} from './zodios.types'
+} from './types'
 
 function isDefinedError(error: unknown, findEndpointErrors: (error: AxiosError) => ZodiosEndpointError[] | undefined): boolean {
   if (error instanceof AxiosError || (error && typeof error === 'object' && 'isAxiosError' in error)) {

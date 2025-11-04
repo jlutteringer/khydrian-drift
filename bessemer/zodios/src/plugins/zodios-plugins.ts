@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios'
 import { ReadonlyDeep } from '../utils.types'
-import { AnyZodiosRequestOptions, Method, ZodiosEndpointDefinitions, ZodiosPlugin } from '../zodios.types'
+import { AnyZodiosRequestOptions, Method, ZodiosEndpointDefinitions, ZodiosPlugin } from '../types'
 
 export type PluginId = {
   key: string

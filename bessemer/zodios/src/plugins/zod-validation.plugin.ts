@@ -1,5 +1,5 @@
 import { ZodiosError } from '../zodios-error'
-import type { ZodiosOptions, ZodiosPlugin } from '../zodios.types'
+import type { ZodiosOptions, ZodiosPlugin } from '../types'
 import { findEndpoint } from '../utils'
 
 type Options = Required<Pick<ZodiosOptions, 'validate' | 'transform' | 'sendDefaults'>>

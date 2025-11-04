@@ -1,4 +1,4 @@
-import type { ZodiosPlugin } from '../zodios.types'
+import type { ZodiosPlugin } from '../types'
 
 export function headerPlugin(key: string, value: string): ZodiosPlugin {
   return {

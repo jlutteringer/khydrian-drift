@@ -1,7 +1,7 @@
 {
   "name": "@bessemer/cornerstone",
   "type": "module",
-  "version": "0.5.98",
+  "version": "0.5.99",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,

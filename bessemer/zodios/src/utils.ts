@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios'
 import { ReadonlyDeep } from './utils.types'
-import { AnyZodiosRequestOptions, ZodiosEndpointDefinition, ZodiosEndpointDefinitions } from './zodios.types'
+import { AnyZodiosRequestOptions, ZodiosEndpointDefinition, ZodiosEndpointDefinitions } from './types'
 
 /**
  * omit properties from an object

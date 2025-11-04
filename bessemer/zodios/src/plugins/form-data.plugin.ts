@@ -1,6 +1,6 @@
 import { getFormDataStream } from './form-data.utils'
 import { ZodiosError } from '../zodios-error'
-import type { ZodiosPlugin } from '../zodios.types'
+import type { ZodiosPlugin } from '../types'
 
 const plugin: ZodiosPlugin = {
   name: 'form-data',

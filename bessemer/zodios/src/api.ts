@@ -1,7 +1,7 @@
 // disable type checking for this file as we need to defer type checking when using these utility types
 // indeed typescript seems to have a bug, where it tries to infer the type of an undecidable generic type
 // but when using the functions, types are inferred correctly
-import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions, ZodiosEndpointError, ZodiosEndpointParameter } from './zodios.types'
+import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions, ZodiosEndpointError, ZodiosEndpointParameter } from './types'
 import Zod from 'zod'
 import { capitalize } from './utils'
 import { Narrow, TupleFlat, UnionToTuple } from './utils.types'

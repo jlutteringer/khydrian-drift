@@ -2,7 +2,7 @@ import type { AxiosResponse } from 'axios'
 import { z } from 'zod'
 import { apiBuilder } from '../../src/api'
 import { ReadonlyDeep } from '../../src/utils.types'
-import { AnyZodiosRequestOptions } from '../../src/zodios.types'
+import { AnyZodiosRequestOptions } from '@bessemer/zodios/types'
 import { zodValidationPlugin } from '../../src/plugins/zod-validation.plugin'
 
 describe('zodValidationPlugin', () => {
