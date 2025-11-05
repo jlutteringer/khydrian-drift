@@ -27,4 +27,8 @@ export const from = (value: string): HexCode => {
   return unpackResult(parseString(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parseString)
+export const Schema = structuredTransform(Zod.string(), parseString).meta({
+  type: 'string',
+  format: Namespace,
+  pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+})

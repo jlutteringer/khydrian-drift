@@ -59,7 +59,7 @@ function findPathParam(endpoint: ZodiosEndpointDefinition, paramName: string) {
 }
 
 function makeJsonSchema(schema: Zod.ZodType): OpenAPIV3.SchemaObject {
-  return Zod.toJSONSchema(schema) as OpenAPIV3.SchemaObject
+  return Zod.toJSONSchema(schema, { unrepresentable: 'any' }) as OpenAPIV3.SchemaObject
 }
 
 /**
@@ -176,7 +176,7 @@ function makeOpenApi(options: {
 
       const operation: OpenAPIV3.OperationObject = {
         operationId: endpoint.alias,
-        summary: endpoint.description,
+        summary: endpoint.alias,
         description: endpoint.description,
         // JOHN
         // tags: tagsFromPathFn(endpoint.path),

@@ -9,7 +9,7 @@ export const Namespace = createNamespace('currency-code')
 export type CurrencyCode = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<CurrencyCode, ErrorEvent> => {
-  if (!/^[A-Z]{3}$/i.test(value)) {
+  if (!/^[A-Za-z]{3}$/.test(value)) {
     return failure(invalidValue(value, { namespace: Namespace, message: `Currency Code must be exactly 3 letters.` }))
   }
 
@@ -20,7 +20,11 @@ export const from = (value: string): CurrencyCode => {
   return unpackResult(parseString(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parseString)
+export const Schema = structuredTransform(Zod.string(), parseString).meta({
+  type: 'string',
+  format: Namespace,
+  pattern: '^[A-Za-z]{3}$',
+})
 
 export const USD = 'USD' as CurrencyCode
 export const EUR = 'EUR' as CurrencyCode

@@ -21,7 +21,11 @@ export const from = (value: string): AspectRatio => {
   return unpackResult(parseString(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parseString)
+export const Schema = structuredTransform(Zod.string(), parseString).meta({
+  type: 'string',
+  format: Namespace,
+  pattern: '^[1-9]\\d*:[1-9]\\d*$',
+})
 
 export const fromDimensions = (width: number, height: number): AspectRatio => {
   const factor = greatestCommonFactor(width, height)

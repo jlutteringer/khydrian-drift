@@ -11,7 +11,7 @@ export const Namespace = createNamespace('uuid-v4')
 export type UuidV4 = NominalType<string, typeof Namespace>
 
 export const parse = (value: string): Result<UuidV4, ErrorEvent> => {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) {
+  if (!/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value)) {
     return failure(invalidValue(value, { namespace: Namespace, message: `[${Namespace}]: Invalid UuidV4 format: [${value}]` }))
   }
 
@@ -22,7 +22,11 @@ export const from = (value: string): UuidV4 => {
   return unpackResult(parse(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parse)
+export const Schema = structuredTransform(Zod.string(), parse).meta({
+  type: 'string',
+  format: 'uuid',
+  pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
+})
 
 export const generate = (): UuidV4 => {
   if (isNil(crypto.randomUUID)) {

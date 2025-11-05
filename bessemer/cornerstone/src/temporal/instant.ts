@@ -80,8 +80,15 @@ export function toDate(value: InstantLike | null | undefined): Date | null | und
   return new Date(from(value).epochMilliseconds)
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), (it) => toLiteral(it)))
-export const SchemaInstance = structuredTransform(Zod.string(), parseString)
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), (it) => toLiteral(it))).meta({
+  type: 'string',
+  format: 'date-time',
+})
+
+export const SchemaInstance = structuredTransform(Zod.string(), parseString).meta({
+  type: 'string',
+  format: 'date-time',
+})
 
 export const isInstant = _isInstant
 

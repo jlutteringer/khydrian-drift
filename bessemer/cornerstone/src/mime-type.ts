@@ -5,7 +5,7 @@ import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = createNamespace('mime-literal')
+export const Namespace = createNamespace('mime-type')
 export type MimeLiteral = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<MimeLiteral, ErrorEvent> => {
@@ -20,7 +20,11 @@ export const from = (value: string): MimeLiteral => {
   return unpackResult(parseString(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parseString)
+export const Schema = structuredTransform(Zod.string(), parseString).meta({
+  type: 'string',
+  format: Namespace,
+  pattern: '^[\\w-]+\\/[\\w.+-]+$',
+})
 
 // Images
 export const Jpeg = 'image/jpeg' as MimeLiteral

@@ -72,7 +72,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
           },
         },
         "security": undefined,
-        "summary": "Create a user",
+        "summary": "createUser",
       },
     },
     "/users/{id}": {
@@ -103,7 +103,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
           },
         },
         "security": undefined,
-        "summary": "Delete a user",
+        "summary": "deleteUser",
       },
       "get": {
         "description": "Get a user by id",
@@ -152,7 +152,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
           },
         },
         "security": undefined,
-        "summary": "Get a user by id",
+        "summary": "getUser",
       },
       "put": {
         "description": "Update a user",
@@ -230,7 +230,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
           },
         },
         "security": undefined,
-        "summary": "Update a user",
+        "summary": "updateUser",
       },
     },
     "/users?filter={filter}#fragment": {
@@ -361,7 +361,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
           },
         },
         "security": undefined,
-        "summary": "Get all users",
+        "summary": "getUsers",
       },
     },
   },
@@ -455,7 +455,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             "auth": [],
           },
         ],
-        "summary": "Create a user",
+        "summary": "createUser",
       },
     },
     "/users/{id}": {
@@ -490,7 +490,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             "auth": [],
           },
         ],
-        "summary": "Delete a user",
+        "summary": "deleteUser",
       },
       "get": {
         "description": "Get a user by id",
@@ -543,7 +543,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             "auth": [],
           },
         ],
-        "summary": "Get a user by id",
+        "summary": "getUser",
       },
       "put": {
         "description": "Update a user",
@@ -625,7 +625,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             "auth": [],
           },
         ],
-        "summary": "Update a user",
+        "summary": "updateUser",
       },
     },
     "/users?filter={filter}#fragment": {
@@ -760,7 +760,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             "auth": [],
           },
         ],
-        "summary": "Get all users",
+        "summary": "getUsers",
       },
     },
   },

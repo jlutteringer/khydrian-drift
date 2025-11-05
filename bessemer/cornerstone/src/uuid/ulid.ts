@@ -10,7 +10,7 @@ export const Namespace = createNamespace('ulid')
 export type Ulid = NominalType<string, typeof Namespace>
 
 export const parse = (value: string): Result<Ulid, ErrorEvent> => {
-  if (!/^[0-9A-HJKMNP-TV-Z]{26}$/i.test(value)) {
+  if (!/^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$/.test(value)) {
     return failure(invalidValue(value, { namespace: Namespace, message: `[${Namespace}]: Invalid Ulid format: [${value}]` }))
   }
 
@@ -21,7 +21,11 @@ export const from = (value: string): Ulid => {
   return unpackResult(parse(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parse)
+export const Schema = structuredTransform(Zod.string(), parse).meta({
+  type: 'string',
+  format: Namespace,
+  pattern: '^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$',
+})
 
 export const generate = (): Ulid => {
   return ulid() as Ulid

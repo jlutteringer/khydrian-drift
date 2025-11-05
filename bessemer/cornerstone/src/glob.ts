@@ -6,7 +6,7 @@ import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/er
 import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 
-export const Namespace = createNamespace('glob-pattern')
+export const Namespace = createNamespace('glob')
 export type GlobPattern = NominalType<string, typeof Namespace>
 
 export const parseString = (value: string): Result<GlobPattern, ErrorEvent> => {
@@ -45,7 +45,11 @@ export const from = (value: string): GlobPattern => {
   return unpackResult(parseString(value))
 }
 
-export const Schema = structuredTransform(Zod.string(), parseString)
+export const Schema = structuredTransform(Zod.string(), parseString).meta({
+  type: 'string',
+  format: Namespace,
+  pattern: '^[a-zA-Z0-9\\-_.\\/\\\\*?\\[\\]{}!,|]+$',
+})
 
 export const match = (str: string, pattern: GlobPattern): boolean => {
   return minimatch(str, pattern)
