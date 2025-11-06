@@ -5,18 +5,17 @@ import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions } from '@bessemer/z
 const pathRegExp = /:([a-zA-Z_][a-zA-Z0-9_]*)/g
 const expludedParamTypes = ['Body', 'Path']
 
-// JOHN
-// function pathWithoutParams(path: string) {
-//   return path.indexOf('?') > -1 ? path.split('?')[0] : path.indexOf('#') > -1 ? path.split('#')[0] : path
-// }
+function pathWithoutParams(path: string) {
+  return path.indexOf('?') > -1 ? path.split('?')[0]! : path.indexOf('#') > -1 ? path.split('#')[0]! : path
+}
 
-// function tagsFromPath(path: string): string[] | undefined {
-//   const resources = pathWithoutParams(path)
-//     .replace(pathRegExp, '')
-//     .split('/')
-//     .filter((part) => part !== '')
-//   return resources ? [resources[resources.length - 1]] : undefined
-// }
+function tagsFromPath(path: string): string[] | undefined {
+  const resources = pathWithoutParams(path)
+    .replace(pathRegExp, '')
+    .split('/')
+    .filter((part) => part !== '')
+  return resources ? [resources[0]!] : undefined
+}
 
 export function bearerAuthScheme(description?: string): OpenAPIV3.SecuritySchemeObject {
   return {
@@ -178,8 +177,7 @@ function makeOpenApi(options: {
         operationId: endpoint.alias,
         summary: endpoint.alias,
         description: endpoint.description,
-        // JOHN
-        // tags: tagsFromPathFn(endpoint.path),
+        tags: tagsFromPath(endpoint.path),
         security: 'scheme' in api && api.scheme ? [{ [api.scheme]: api.securityRequirement ?? ([] as string[]) }] : undefined,
         requestBody: body
           ? {

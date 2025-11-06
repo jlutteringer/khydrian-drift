@@ -1,7 +1,7 @@
 {
   "name": "@bessemer/cornerstone",
   "type": "module",
-  "version": "0.5.101",
+  "version": "0.5.102",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
@@ -30,7 +30,7 @@
     "pino": "9.6.0",
     "type-fest": "4.32.0",
     "ulid": "2.3.0",
-    "zod": "4.0.15"
+    "zod": "4.1.12"
   },
   "devDependencies": {
     "expect-type": "1.2.2",
