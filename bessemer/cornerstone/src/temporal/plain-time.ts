@@ -3,7 +3,7 @@ import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
-import { failure, mapResult, Result, success } from '@bessemer/cornerstone/result'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { isError } from '@bessemer/cornerstone/error/error'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
@@ -90,7 +90,7 @@ export function toLiteral(likeValue: PlainTimeLike | null | undefined): PlainTim
   return value.toString() as PlainTimeLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), (it) => toLiteral(it)))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map(toLiteral))
 export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isPlainTime = (value: unknown): value is PlainTime => {

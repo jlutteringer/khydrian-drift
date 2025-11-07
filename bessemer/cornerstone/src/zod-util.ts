@@ -1,7 +1,7 @@
 import Zod, { ZodType } from 'zod'
 import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { parse as jsonParse } from '@bessemer/cornerstone/json'
-import { failure, getValueOrThrow, Result, success } from '@bessemer/cornerstone/result'
+import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { $RefinementCtx } from 'zod/v4/core'
 import * as Assertions from '@bessemer/cornerstone/assertion'
@@ -13,10 +13,6 @@ export const parse = <T extends ZodType>(type: T, data: unknown): Result<Zod.inf
   } else {
     return failure(result.error)
   }
-}
-
-export const parseOrThrow = <T extends ZodType>(type: T, data: unknown): Zod.infer<T> => {
-  return getValueOrThrow(parse(type, data))
 }
 
 export const parseJson = <T extends ZodType>(type: T, data: string): Result<Zod.infer<T>> => {

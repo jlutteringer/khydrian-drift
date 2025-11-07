@@ -1,36 +1,88 @@
-import * as Eithers from '@bessemer/cornerstone/either'
-import { Left, Right } from '@bessemer/cornerstone/either'
+import { buildGenerator, Left, LeftImpl, Right, RightImpl } from '@bessemer/cornerstone/either'
 import { Throwable } from '@bessemer/cornerstone/types'
 import { isPromise } from '@bessemer/cornerstone/promise'
 
-export type Success<T> = Right<T> & {
+export type Success<SuccessType> = Omit<Right<SuccessType>, 'map' | 'mapLeft'> & {
   isSuccess: true
+  getOrThrow: () => SuccessType
+  map: <T>(mapper: (element: SuccessType) => T) => Success<T>
+  mapLeft: () => Success<SuccessType>
+  [Symbol.iterator](): Generator<Result<SuccessType, never>, SuccessType>
 }
 
-export type Failure<N = Throwable> = Left<N> & {
+export type Failure<FailureType = unknown> = Omit<Left<FailureType>, 'map' | 'mapLeft'> & {
   isSuccess: false
+  getOrThrow: () => never
+  map: () => Failure<FailureType>
+  mapLeft: <T>(mapper: (element: FailureType) => T) => Failure<T>
+  [Symbol.iterator](): Generator<Result<never, FailureType>, never>
 }
 
-export type Result<T, N = Throwable> = Success<T> | Failure<N>
+export type Result<SuccessType, FailureType = unknown> = Failure<FailureType> | Success<SuccessType>
+
+class SuccessImpl<SuccessType> extends RightImpl<SuccessType> implements Success<SuccessType> {
+  public readonly isSuccess = true
+
+  constructor(value: SuccessType) {
+    super(value)
+  }
+
+  getOrThrow(): SuccessType {
+    return this.value
+  }
+
+  override map = <T>(mapper: (element: SuccessType) => T): Success<T> => {
+    return success(mapper(this.value))
+  }
+
+  override mapLeft = (): Success<SuccessType> => {
+    return this
+  };
+
+  override [Symbol.iterator](): Generator<Result<SuccessType, never>, SuccessType> {
+    return function* (this: Success<SuccessType>) {
+      return this.value
+    }.call(this)
+  }
+}
+
+class FailureImpl<FailureType> extends LeftImpl<FailureType> implements Failure<FailureType> {
+  public readonly isSuccess = false
+
+  constructor(value: FailureType) {
+    super(value)
+  }
+
+  getOrThrow(): never {
+    throw this.value
+  }
+
+  override map = (): Failure<FailureType> => {
+    return this
+  }
+
+  override mapLeft = <T>(mapper: (element: FailureType) => T): Failure<T> => {
+    return failure(mapper(this.value))
+  };
+
+  override [Symbol.iterator](): Generator<Result<never, FailureType>, never> {
+    return function* (this: Failure<FailureType>) {
+      yield this as any
+      throw new Error('Illegal State')
+    }.call(this)
+  }
+}
 
 export type AsyncResult<T, N = Throwable> = Promise<Result<T, N>>
 
 export const success = <T>(value: T): Success<T> => {
-  return { ...Eithers.right(value), isSuccess: true }
+  return new SuccessImpl<T>(value)
 }
 
 export function failure(): Failure<never>
 export function failure<N>(failure: N): Failure<N>
 export function failure(failure?: unknown): Failure {
-  return { ...Eithers.left(failure ?? null), isSuccess: false }
-}
-
-export const getValueOrThrow = <T>(result: Result<T>): T => {
-  if (result.isSuccess) {
-    return result.value
-  } else {
-    throw result.value
-  }
+  return new FailureImpl<unknown>(failure)
 }
 
 export function tryValue<SOURCE_VALUE>(resolver: () => Promise<SOURCE_VALUE>): AsyncResult<SOURCE_VALUE>
@@ -63,16 +115,20 @@ export function tryResult<SOURCE_VALUE>(resolver: () => Result<SOURCE_VALUE> | A
   }
 }
 
-export function mapResult<SourceType, TargetType, ErrorType>(
-  result: Result<SourceType, ErrorType>,
-  valueMapper: (element: SourceType) => TargetType
-): Result<TargetType, ErrorType> {
-  if (result.isSuccess) {
-    return {
-      ...result,
-      value: valueMapper(result.value),
-    }
-  } else {
-    return result
-  }
+const generator = buildGenerator((it) => success(it) as Result<any, any>)
+
+export function gen<TGen extends () => Generator<Result<any, any>>>(
+  generatorFn: TGen
+): TGen extends () => Generator<Result<any, infer L>, infer R> ? Result<R, L> : never
+export function gen<TGen extends () => AsyncGenerator<Result<any, any>>>(
+  generatorFn: TGen
+): Promise<TGen extends () => AsyncGenerator<Result<any, infer L>, infer R> ? Result<R, L> : never>
+export function gen<TGen extends () => Generator<Result<any, any>> | AsyncGenerator<Result<any, any>>>(
+  generatorFn: TGen
+): TGen extends () => Generator<Result<any, infer L>, infer R>
+  ? Result<R, L>
+  : TGen extends () => AsyncGenerator<Result<any, infer L>, infer R>
+  ? Promise<Result<R, L>>
+  : never {
+  return generator(generatorFn)
 }

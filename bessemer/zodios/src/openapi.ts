@@ -14,6 +14,7 @@ function tagsFromPath(path: string): string[] | undefined {
     .replace(pathRegExp, '')
     .split('/')
     .filter((part) => part !== '')
+
   return resources ? [resources[0]!] : undefined
 }
 

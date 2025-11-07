@@ -1,7 +1,7 @@
 import { Dictionary, NominalType } from '@bessemer/cornerstone/types'
 import * as Uris from '@bessemer/cornerstone/net/uri'
 import { Uri, UriBuilder, UriComponent, UriLiteral, UriLocation } from '@bessemer/cornerstone/net/uri'
-import { mapResult, Result, success } from '@bessemer/cornerstone/result'
+import { Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import * as Strings from '@bessemer/cornerstone/string'
 import * as Arrays from '@bessemer/cornerstone/array'
@@ -90,7 +90,7 @@ export function toLiteral(likeValue: UrlLike | null | undefined): UrlLiteral | n
   return format(value) as UrlLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => mapResult(parseString(it), (it) => toLiteral(it)))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map(toLiteral))
 // JOHN need a schema for the object version...
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
