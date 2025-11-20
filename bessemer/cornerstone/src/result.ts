@@ -1,11 +1,12 @@
 import { buildGenerator, Left, LeftImpl, Right, RightImpl } from '@bessemer/cornerstone/either'
 import { Throwable } from '@bessemer/cornerstone/types'
 import { isPromise } from '@bessemer/cornerstone/promise'
+import { executeAsync } from '@bessemer/cornerstone/internal'
 
 export type Success<SuccessType> = Omit<Right<SuccessType>, 'map' | 'mapLeft'> & {
   isSuccess: true
   getOrThrow: () => SuccessType
-  map: <T>(mapper: (element: SuccessType) => T) => Success<T>
+  map: <T>(mapper: (element: SuccessType) => T) => T extends Promise<infer U> ? Promise<Success<U>> : Success<T>
   mapLeft: () => Success<SuccessType>
   [Symbol.iterator](): Generator<Result<SuccessType, never>, SuccessType>
 }
@@ -14,7 +15,7 @@ export type Failure<FailureType = unknown> = Omit<Left<FailureType>, 'map' | 'ma
   isSuccess: false
   getOrThrow: () => never
   map: () => Failure<FailureType>
-  mapLeft: <T>(mapper: (element: FailureType) => T) => Failure<T>
+  mapLeft: <T>(mapper: (element: FailureType) => T) => T extends Promise<infer U> ? Promise<Failure<U>> : Failure<T>
   [Symbol.iterator](): Generator<Result<never, FailureType>, never>
 }
 
@@ -31,8 +32,13 @@ class SuccessImpl<SuccessType> extends RightImpl<SuccessType> implements Success
     return this.value
   }
 
-  override map = <T>(mapper: (element: SuccessType) => T): Success<T> => {
-    return success(mapper(this.value))
+  override map = <T>(mapper: (element: SuccessType) => T): T extends Promise<infer U> ? Promise<Success<U>> : Success<T> => {
+    const mappedValue = mapper(this.value)
+    if (isPromise(mappedValue)) {
+      return executeAsync(async () => success(await mappedValue)) as any
+    } else {
+      return success(mappedValue) as any
+    }
   }
 
   override mapLeft = (): Success<SuccessType> => {
@@ -61,8 +67,13 @@ class FailureImpl<FailureType> extends LeftImpl<FailureType> implements Failure<
     return this
   }
 
-  override mapLeft = <T>(mapper: (element: FailureType) => T): Failure<T> => {
-    return failure(mapper(this.value))
+  override mapLeft = <T>(mapper: (element: FailureType) => T): T extends Promise<infer U> ? Promise<Failure<U>> : Failure<T> => {
+    const mappedValue = mapper(this.value)
+    if (isPromise(mappedValue)) {
+      return executeAsync(async () => failure(await mappedValue)) as any
+    } else {
+      return failure(mappedValue) as any
+    }
   };
 
   override [Symbol.iterator](): Generator<Result<never, FailureType>, never> {

@@ -60,6 +60,7 @@ describe('Result.map', () => {
   test('should transform the success value', () => {
     const result = Results.success(5)
     const mapped = result.map((x) => x * 2)
+    const mapped2 = result.map(async (x) => x * 2)
 
     expect(mapped.isSuccess).toBe(true)
     expect(mapped.value).toBe(10)

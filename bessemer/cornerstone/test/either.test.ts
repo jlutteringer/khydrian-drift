@@ -3,7 +3,13 @@ import { Either } from '@bessemer/cornerstone/either'
 import { Result } from '@bessemer/cornerstone/result'
 
 describe('Eithers.gen', () => {
-  test('toodo', () => {
+  test('toodo', async () => {
+    const test1 = Eithers.right(5).map((it) => it + 2)
+    console.log('test1', test1)
+
+    const test2 = await Eithers.right(5).map(async (it) => it + 2)
+    console.log('test2', test2)
+
     const blah = Eithers.right(5) as Either<number, string>
     const foo = blah.map((it) => `${it}`)
     const syncExample = Eithers.gen(function* () {

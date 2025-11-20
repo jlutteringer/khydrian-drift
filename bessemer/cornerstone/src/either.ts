@@ -1,4 +1,5 @@
 import { isPromise } from '@bessemer/cornerstone/promise'
+import { executeAsync } from '@bessemer/cornerstone/internal'
 
 export enum EitherType {
   Left = 'Left',
@@ -10,7 +11,7 @@ export type Right<RightType> = {
   value: RightType
   isRight: true
   isLeft: false
-  map: <T>(mapper: (element: RightType) => T) => Right<T>
+  map: <T>(mapper: (element: RightType) => T) => T extends Promise<infer U> ? Promise<Right<U>> : Right<T>
   mapLeft: () => Right<RightType>
   [Symbol.iterator](): Generator<Either<RightType, never>, RightType>
 }
@@ -21,7 +22,7 @@ export type Left<LeftType> = {
   isRight: false
   isLeft: true
   map: () => Left<LeftType>
-  mapLeft: <T>(mapper: (element: LeftType) => T) => Left<T>
+  mapLeft: <T>(mapper: (element: LeftType) => T) => T extends Promise<infer U> ? Promise<Left<U>> : Left<T>
   [Symbol.iterator](): Generator<Either<never, LeftType>, never>
 }
 
@@ -34,8 +35,13 @@ export class RightImpl<RightType> implements Right<RightType> {
 
   constructor(public readonly value: RightType) {}
 
-  map = <T>(mapper: (element: RightType) => T): Right<T> => {
-    return right(mapper(this.value))
+  map = <T>(mapper: (element: RightType) => T): T extends Promise<infer U> ? Promise<Right<U>> : Right<T> => {
+    const mappedValue = mapper(this.value)
+    if (isPromise(mappedValue)) {
+      return executeAsync(async () => right(await mappedValue)) as any
+    } else {
+      return right(mappedValue) as any
+    }
   }
 
   mapLeft = (): Right<RightType> => {
@@ -60,8 +66,13 @@ export class LeftImpl<LeftType> implements Left<LeftType> {
     return this
   }
 
-  mapLeft = <T>(mapper: (element: LeftType) => T): Left<T> => {
-    return left(mapper(this.value))
+  mapLeft = <T>(mapper: (element: LeftType) => T): T extends Promise<infer U> ? Promise<Left<U>> : Left<T> => {
+    const mappedValue = mapper(this.value)
+    if (isPromise(mappedValue)) {
+      return executeAsync(async () => left(await mappedValue)) as any
+    } else {
+      return left(mappedValue) as any
+    }
   };
 
   [Symbol.iterator](): Generator<Either<never, LeftType>, never> {
