@@ -64,7 +64,7 @@ export const refineResult = <InputType>(
           code: 'custom',
           message: cause.message,
           input: value,
-          error,
+          context: error.context,
           cause,
         })
       })

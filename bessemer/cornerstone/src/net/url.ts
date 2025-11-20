@@ -90,7 +90,7 @@ export function toLiteral(likeValue: UrlLike | null | undefined): UrlLiteral | n
   return format(value) as UrlLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map(toLiteral))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map((it) => toLiteral(it)))
 // JOHN need a schema for the object version...
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 

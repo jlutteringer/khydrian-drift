@@ -79,7 +79,7 @@ export function toLiteral(likeValue: PlainDateLike | null | undefined): PlainDat
   return value.toString() as PlainDateLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map(toLiteral))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map((it) => toLiteral(it)))
 export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isPlainDateTime = (value: unknown): value is PlainDate => {

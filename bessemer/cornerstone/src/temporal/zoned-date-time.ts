@@ -81,7 +81,7 @@ export function toLiteral(likeValue: ZonedDateTimeLike | null | undefined): Zone
   return value.toString() as ZonedDateTimeLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map(toLiteral))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map((it) => toLiteral(it)))
 export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isPlainDateTime = (value: unknown): value is ZonedDateTime => {

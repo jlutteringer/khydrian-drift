@@ -131,7 +131,7 @@ export const parseString = (value: string): Result<Uri, ErrorEvent> => {
     return Results.failure(
       ErrorEvents.invalidValue(value, {
         namespace: Namespace,
-        message: `[${Namespace}]: Unable to parse Uri from uri string: [${value}]`,
+        message: `[${Namespace}]: Unable to parse Uri from string: [${value}]`,
         causes: schemeResult.value.causes,
       })
     )
@@ -144,7 +144,7 @@ export const parseString = (value: string): Result<Uri, ErrorEvent> => {
     return Results.failure(
       ErrorEvents.invalidValue(value, {
         namespace: Namespace,
-        message: `[${Namespace}]: Unable to parse Uri from uri string: [${value}]`,
+        message: `[${Namespace}]: Unable to parse Uri from string: [${value}]`,
         causes: authorityPartResult.value.causes,
       })
     )
@@ -249,7 +249,7 @@ export function toLiteral(likeValue: UriLike | null | undefined): UriLiteral | n
   return format(value) as UriLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map(toLiteral))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map((it) => toLiteral(it)))
 // JOHN need a schema for the object version...
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
