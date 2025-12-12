@@ -1,5 +1,6 @@
 import * as Results from '@bessemer/cornerstone/result'
 import { Failure, Result, Success } from '@bessemer/cornerstone/result'
+import { expectTypeOf } from 'expect-type'
 
 describe('Results.success', () => {
   test('should create a Success instance', () => {
@@ -84,12 +85,17 @@ describe('Result.map', () => {
     expect(mapped.value).toBe(error)
     expect(mapped).toBe(result)
   })
+
+  test('should work with no return', () => {
+    const result = (Results.success(5) as Result<number>).map((_) => {})
+    expectTypeOf(result).toEqualTypeOf<Result<void>>()
+  })
 })
 
 describe('Result.mapLeft', () => {
   test('should not transform and return same success', () => {
     const result = Results.success(42) as Result<number, Error>
-    const mapped = result.mapLeft((x: any) => x.toString())
+    const mapped = result.mapLeft((x) => x.toString())
 
     expect(mapped.isSuccess).toBe(true)
     expect(mapped.value).toBe(42)
