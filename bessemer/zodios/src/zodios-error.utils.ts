@@ -1,16 +1,16 @@
 import { AxiosError } from 'axios'
-import { findEndpointErrorsByAlias, findEndpointErrorsByPath } from './utils'
+import { findEndpointErrorsByAlias, findEndpointErrorsByPath } from '@bessemer/zodios/utils'
 import {
   Aliases,
-  Method,
   ZodiosEndpointDefinitions,
   ZodiosEndpointError,
   ZodiosMatchingErrorsByAlias,
-  ZodiosMatchingErrorsByPath,
+  ZodiosParsedErrorByPath,
   ZodiosPathsByMethod,
-} from './types'
+} from '@bessemer/zodios/types'
+import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
 
-function isDefinedError(error: unknown, findEndpointErrors: (error: AxiosError) => ZodiosEndpointError[] | undefined): boolean {
+const isDefinedError = (error: unknown, findEndpointErrors: (error: AxiosError) => ZodiosEndpointError[] | undefined): boolean => {
   if (error instanceof AxiosError || (error && typeof error === 'object' && 'isAxiosError' in error)) {
     const err = error as AxiosError
     if (err.response) {
@@ -31,12 +31,12 @@ function isDefinedError(error: unknown, findEndpointErrors: (error: AxiosError) 
  * @param error - the error to check
  * @returns - if true, the error type is narrowed to the matching endpoint errors
  */
-export function isErrorFromPath<Api extends ZodiosEndpointDefinitions, M extends Method, Path extends string>(
+export const isErrorFromPath = <Api extends ZodiosEndpointDefinitions, M extends HttpMethod, Path extends string>(
   api: Api,
   method: M,
   path: Path extends ZodiosPathsByMethod<Api, M> ? Path : ZodiosPathsByMethod<Api, M>,
   error: unknown
-): error is ZodiosMatchingErrorsByPath<Api, M, Path extends ZodiosPathsByMethod<Api, M> ? Path : never> {
+): error is ZodiosParsedErrorByPath<Api, M, Path extends ZodiosPathsByMethod<Api, M> ? Path : never> => {
   return isDefinedError(error, (err) => findEndpointErrorsByPath(api, method, path, err))
 }
 
@@ -47,10 +47,10 @@ export function isErrorFromPath<Api extends ZodiosEndpointDefinitions, M extends
  * @param error - the error to check
  * @returns - if true, the error type is narrowed to the matching endpoint errors
  */
-export function isErrorFromAlias<Api extends ZodiosEndpointDefinitions, Alias extends string>(
+export const isErrorFromAlias = <Api extends ZodiosEndpointDefinitions, Alias extends string>(
   api: Api,
   alias: Alias extends Aliases<Api> ? Alias : Aliases<Api>,
   error: unknown
-): error is ZodiosMatchingErrorsByAlias<Api, Alias> {
+): error is ZodiosMatchingErrorsByAlias<Api, Alias> => {
   return isDefinedError(error, (err) => findEndpointErrorsByAlias(api, alias, err))
 }

@@ -1,8 +1,14 @@
 import { isPresent } from '@bessemer/cornerstone/object'
 import { Throwable } from '@bessemer/cornerstone/types'
+import { LazyValue } from '@bessemer/cornerstone/lazy'
+import { assert } from '@bessemer/cornerstone/assertion'
 
 export const isError = (value: unknown): value is Error => {
   return value instanceof Error
+}
+
+export function assertError(value: unknown, message: LazyValue<string> = () => 'Errors.assertError failed validation'): asserts value is Error {
+  return assert(isError(value), message)
 }
 
 export const getCausalChain = (error: Error): Array<Error> => {

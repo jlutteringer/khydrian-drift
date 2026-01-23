@@ -1,15 +1,16 @@
-import type { ZodiosPlugin } from '../types'
+import type { ZodiosPlugin } from '@bessemer/zodios/types'
+import { Results } from '@bessemer/cornerstone'
 
-export function headerPlugin(key: string, value: string): ZodiosPlugin {
+export const headerPlugin = (key: string, value: string): ZodiosPlugin => {
   return {
-    request: async (_, config) => {
-      return {
+    processRequest: async (_, config) => {
+      return Results.success({
         ...config,
         headers: {
           ...config.headers,
           [key]: value,
         },
-      }
+      })
     },
   }
 }

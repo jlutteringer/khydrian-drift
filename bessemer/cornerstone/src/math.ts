@@ -136,10 +136,18 @@ export const greatestCommonFactor = (first: number, second: number): number => {
 }
 
 export const sum = (...numbers: Array<number>): number => {
+  return sumAll(numbers)
+}
+
+export const sumAll = (numbers: Array<number>): number => {
   return numbers.reduce((first, second) => first + second, 0)
 }
 
 export const subtract = (...numbers: Array<number>): number => {
+  return subtractAll(numbers)
+}
+
+export const subtractAll = (numbers: Array<number>): number => {
   if (numbers.length === 0) {
     return 0
   }

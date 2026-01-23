@@ -1,6 +1,9 @@
-import { AxiosResponse } from 'axios'
-import { ReadonlyDeep } from '../utils.types'
-import { AnyZodiosRequestOptions, Method, ZodiosEndpointDefinitions, ZodiosPlugin } from '../types'
+import { AnyZodiosRequestOptions, ZodiosEndpointDefinitions, ZodiosPlugin } from '@bessemer/zodios/types'
+import { AsyncResult, Result } from '@bessemer/cornerstone/result'
+import { Objects, Results } from '@bessemer/cornerstone'
+import { ZodiosValidationError } from '@bessemer/zodios'
+import { ZodiosError } from '@bessemer/zodios/zodios-error'
+import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
 
 export type PluginId = {
   key: string
@@ -12,14 +15,14 @@ export type PluginId = {
  */
 export class ZodiosPlugins {
   public readonly key: string
-  private plugins: Array<ZodiosPlugin | undefined> = []
+  private plugins: Array<ZodiosPlugin> = []
 
   /**
    * Constructor
    * @param method - http method of the endpoint where the plugins are registered
    * @param path - path of the endpoint where the plugins are registered
    */
-  constructor(method: Method | 'any', path: string) {
+  constructor(method: HttpMethod | 'any', path: string) {
     this.key = `${method}-${path}`
   }
 
@@ -46,71 +49,50 @@ export class ZodiosPlugins {
         return { key: this.key, value: id }
       }
     }
+
     this.plugins.push(plugin)
     return { key: this.key, value: this.plugins.length - 1 }
   }
 
-  /**
-   * unregister a plugin
-   * @param plugin - plugin to unregister
-   */
-  eject(plugin: PluginId | string) {
-    if (typeof plugin === 'string') {
-      const id = this.indexOf(plugin)
-      if (id === -1) {
-        throw new Error(`Plugin with name '${plugin}' not found`)
-      }
-      this.plugins[id] = undefined
-    } else {
-      if (plugin.key !== this.key) {
-        throw new Error(`Plugin with key '${plugin.key}' is not registered for endpoint '${this.key}'`)
-      }
-      this.plugins[plugin.value] = undefined
-    }
-  }
-
-  /**
-   * Intercept the request config by applying all plugins
-   * before using it to send a request to the server
-   * @param config - request config
-   * @returns the modified config
-   */
-  async interceptRequest(api: ZodiosEndpointDefinitions, config: ReadonlyDeep<AnyZodiosRequestOptions>) {
-    let pluginConfig = config
+  async interceptRequest(
+    api: ZodiosEndpointDefinitions,
+    initialRequest: AnyZodiosRequestOptions
+  ): AsyncResult<AnyZodiosRequestOptions, ZodiosValidationError> {
+    let request = initialRequest
     for (const plugin of this.plugins) {
-      if (plugin?.request) {
-        pluginConfig = await plugin.request(api, pluginConfig)
+      if (Objects.isPresent(plugin.processRequest)) {
+        const result = await plugin.processRequest(api, request)
+
+        if (!result.isSuccess) {
+          return result
+        }
+
+        request = result.value
       }
     }
-    return pluginConfig
+
+    return Results.success(request)
   }
 
-  /**
-   * Intercept the response from server by applying all plugins
-   * @param api - endpoint descriptions
-   * @param config - request config
-   * @param response - response from the server
-   * @returns the modified response
-   */
-  async interceptResponse(api: ZodiosEndpointDefinitions, config: ReadonlyDeep<AnyZodiosRequestOptions>, response: Promise<AxiosResponse>) {
-    let pluginResponse = response
+  async interceptResponse<T>(
+    api: ZodiosEndpointDefinitions,
+    request: AnyZodiosRequestOptions,
+    response: Result<T, ZodiosError>
+  ): AsyncResult<T, ZodiosError> {
+    let pluginResponse: Result<T, ZodiosError> = response
+
     for (let index = this.plugins.length - 1; index >= 0; index--) {
       const plugin = this.plugins[index]
-      if (plugin) {
-        pluginResponse = pluginResponse.then(
-          plugin?.response ? (res) => plugin.response!(api, config, res) : undefined,
-          plugin?.error ? (err) => plugin.error!(api, config, err) : undefined
-        )
+
+      if (Objects.isPresent(plugin)) {
+        pluginResponse = (await plugin.processResponse?.(api, request, pluginResponse)) ?? pluginResponse
       }
     }
+
     return pluginResponse
   }
 
-  /**
-   * Get the number of plugins registered
-   * @returns the number of plugins registered
-   */
   count() {
-    return this.plugins.reduce((count, plugin) => (plugin ? count + 1 : count), 0)
+    return this.plugins.length
   }
 }

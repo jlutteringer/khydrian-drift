@@ -71,3 +71,63 @@ export const refineResult = <InputType>(
     }
   }
 }
+
+export const unwrap = (schema: ZodType): ZodType => {
+  const def = schema._zod.def
+
+  if ('inner' in def && def.inner) {
+    return unwrap(def.inner as ZodType)
+  }
+  if (def.type === 'pipe' && 'in' in def) {
+    return unwrap((def as any).in as ZodType)
+  }
+
+  return schema
+}
+
+export enum ZodTypeKind {
+  String = 'string',
+  Number = 'number',
+  Int = 'int',
+  Boolean = 'boolean',
+  Bigint = 'bigint',
+  Symbol = 'symbol',
+  Null = 'null',
+  Undefined = 'undefined',
+  Void = 'void',
+  Never = 'never',
+  Any = 'any',
+  Unknown = 'unknown',
+  Date = 'date',
+  Object = 'object',
+  Record = 'record',
+  File = 'file',
+  Array = 'array',
+  Tuple = 'tuple',
+  Union = 'union',
+  Intersection = 'intersection',
+  Map = 'map',
+  Set = 'set',
+  Enum = 'enum',
+  Literal = 'literal',
+  Nullable = 'nullable',
+  Optional = 'optional',
+  Nonoptional = 'nonoptional',
+  Success = 'success',
+  Transform = 'transform',
+  Default = 'default',
+  Prefault = 'prefault',
+  Catch = 'catch',
+  Nan = 'nan',
+  Pipe = 'pipe',
+  Readonly = 'readonly',
+  TemplateLiteral = 'template_literal',
+  Promise = 'promise',
+  Lazy = 'lazy',
+  Function = 'function',
+  Custom = 'custom',
+}
+
+export const isType = (schema: ZodType, type: ZodTypeKind): boolean => {
+  return unwrap(schema).type === type
+}

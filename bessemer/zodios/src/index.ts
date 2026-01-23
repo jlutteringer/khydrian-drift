@@ -5,7 +5,7 @@ export { OpenApi }
 export { Zodios } from './zodios'
 export type { ApiOf } from './zodios'
 export type { ZodiosInstance, ZodiosClass, ZodiosConstructor } from './zodios'
-export { ZodiosError } from './zodios-error'
+export { ZodiosValidationError } from './zodios-error'
 export { isErrorFromPath, isErrorFromAlias } from './zodios-error.utils'
 export type {
   AnyZodiosMethodOptions,
@@ -16,7 +16,6 @@ export type {
   ZodiosHeaderParamsForEndpoint,
   ZodiosHeaderParamsByPath,
   ZodiosHeaderParamsByAlias,
-  Method,
   ZodiosPathParams,
   ZodiosPathParamsForEndpoint,
   ZodiosPathParamsByPath,
@@ -31,7 +30,7 @@ export type {
   ZodiosEndpointDefinitionByPath,
   ZodiosEndpointDefinitionByAlias,
   ZodiosErrorForEndpoint,
-  ZodiosErrorByPath,
+  ZodiosErrorResponseByPath,
   ZodiosErrorByAlias,
   ZodiosEndpointDefinition,
   ZodiosEndpointDefinitions,
@@ -46,6 +45,5 @@ export type {
   ZodiosRequestOptionsByAlias,
   ZodiosPlugin,
 } from './types'
-export { type PluginId, zodValidationPlugin, formDataPlugin, formURLPlugin, headerPlugin } from './plugins'
 
 export { makeApi, makeCrudApi, apiBuilder, parametersBuilder, makeParameters, makeEndpoint, makeErrors, checkApi, prefixApi, mergeApis } from './api'

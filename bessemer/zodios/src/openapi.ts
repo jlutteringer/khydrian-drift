@@ -5,11 +5,11 @@ import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions } from '@bessemer/z
 const pathRegExp = /:([a-zA-Z_][a-zA-Z0-9_]*)/g
 const expludedParamTypes = ['Body', 'Path']
 
-function pathWithoutParams(path: string) {
+const pathWithoutParams = (path: string) => {
   return path.indexOf('?') > -1 ? path.split('?')[0]! : path.indexOf('#') > -1 ? path.split('#')[0]! : path
 }
 
-function tagsFromPath(path: string): string[] | undefined {
+const tagsFromPath = (path: string): string[] | undefined => {
   const resources = pathWithoutParams(path)
     .replace(pathRegExp, '')
     .split('/')
@@ -18,7 +18,7 @@ function tagsFromPath(path: string): string[] | undefined {
   return resources ? [resources[0]!] : undefined
 }
 
-export function bearerAuthScheme(description?: string): OpenAPIV3.SecuritySchemeObject {
+export const bearerAuthScheme = (description?: string): OpenAPIV3.SecuritySchemeObject => {
   return {
     type: 'http',
     scheme: 'bearer',
@@ -27,7 +27,7 @@ export function bearerAuthScheme(description?: string): OpenAPIV3.SecurityScheme
   }
 }
 
-export function basicAuthScheme(description?: string): OpenAPIV3.SecuritySchemeObject {
+export const basicAuthScheme = (description?: string): OpenAPIV3.SecuritySchemeObject => {
   return {
     type: 'http',
     scheme: 'basic',
@@ -35,10 +35,10 @@ export function basicAuthScheme(description?: string): OpenAPIV3.SecuritySchemeO
   }
 }
 
-export function apiKeyAuthScheme(
+export const apiKeyAuthScheme = (
   options: Omit<OpenAPIV3.ApiKeySecurityScheme, 'type' | 'description'>,
   description?: string
-): OpenAPIV3.SecuritySchemeObject {
+): OpenAPIV3.SecuritySchemeObject => {
   return {
     type: 'apiKey',
     description,
@@ -46,7 +46,7 @@ export function apiKeyAuthScheme(
   }
 }
 
-export function oauth2Scheme(flows: OpenAPIV3.OAuth2SecurityScheme['flows'], description?: string): OpenAPIV3.SecuritySchemeObject {
+export const oauth2Scheme = (flows: OpenAPIV3.OAuth2SecurityScheme['flows'], description?: string): OpenAPIV3.SecuritySchemeObject => {
   return {
     type: 'oauth2',
     description,
@@ -54,11 +54,11 @@ export function oauth2Scheme(flows: OpenAPIV3.OAuth2SecurityScheme['flows'], des
   }
 }
 
-function findPathParam(endpoint: ZodiosEndpointDefinition, paramName: string) {
+const findPathParam = (endpoint: ZodiosEndpointDefinition, paramName: string) => {
   return endpoint.parameters?.find((param) => param.type === 'Path' && param.name === paramName)
 }
 
-function makeJsonSchema(schema: Zod.ZodType): OpenAPIV3.SchemaObject {
+const makeJsonSchema = (schema: Zod.ZodType): OpenAPIV3.SchemaObject => {
   return Zod.toJSONSchema(schema, { unrepresentable: 'any' }) as OpenAPIV3.SchemaObject
 }
 
@@ -68,7 +68,7 @@ function makeJsonSchema(schema: Zod.ZodType): OpenAPIV3.SchemaObject {
  * @param options  - the parameters to create the document
  * @returns - the openapi V3 document
  */
-function makeOpenApi(options: {
+const makeOpenApi = (options: {
   apis: Array<
     | {
         definitions: ZodiosEndpointDefinitions
@@ -83,7 +83,7 @@ function makeOpenApi(options: {
   servers?: OpenAPIV3.ServerObject[]
   securitySchemes?: Record<string, OpenAPIV3.SecuritySchemeObject>
   tagsFromPathFn?: (path: string) => string[]
-}) {
+}) => {
   // JOHN
   // const { tagsFromPathFn = tagsFromPath } = options
   const openApi: OpenAPIV3.Document = {
@@ -228,49 +228,53 @@ export class OpenApiBuilder {
    * @param name - the name of the security scheme
    * @param securityScheme - the security scheme object
    */
-  addSecurityScheme(name: string, securityScheme: OpenAPIV3.SecuritySchemeObject) {
+  addSecurityScheme = (name: string, securityScheme: OpenAPIV3.SecuritySchemeObject) => {
     this.options.securitySchemes ??= {}
     this.options.securitySchemes[name] = securityScheme
     return this
   }
+
   /**
    * add an api with public endpoints
    * @param definitions - the endpoint definitions
    * @returns
    */
-  addPublicApi(definitions: ZodiosEndpointDefinitions) {
+  addPublicApi = (definitions: ZodiosEndpointDefinitions) => {
     this.apis.push({ definitions })
     return this
   }
+
   /**
    * add an api protected by a security scheme
    * @param scheme - the name of the security scheme to use
    * @param definitions - the endpoints API
    * @param securityRequirement - optional security requirement to use for this API (oauth2 scopes for example)
    */
-  addProtectedApi(scheme: string, definitions: ZodiosEndpointDefinitions, securityRequirement?: string[]) {
+  addProtectedApi = (scheme: string, definitions: ZodiosEndpointDefinitions, securityRequirement?: string[]) => {
     this.apis.push({ scheme, definitions, securityRequirement })
     return this
   }
+
   /**
    * add a server to the openapi document
    * @param server - the server to add
    */
-  addServer(server: OpenAPIV3.ServerObject) {
+  addServer = (server: OpenAPIV3.ServerObject) => {
     this.options.servers ??= []
     this.options.servers.push(server)
     return this
   }
+
   /**
    * ovveride the default tagsFromPathFn
    * @param tagsFromPathFn - a function that takes a path and returns the tags to use for this path
    */
-  setCustomTagsFn(tagsFromPathFn: (path: string) => string[]) {
+  setCustomTagsFn = (tagsFromPathFn: (path: string) => string[]) => {
     this.options.tagsFromPathFn = tagsFromPathFn
     return this
   }
 
-  build() {
+  build = () => {
     return makeOpenApi({
       apis: this.apis,
       ...this.options,
@@ -283,6 +287,6 @@ export class OpenApiBuilder {
  * @param info - the info object to add to the document
  * @returns - the openapi V3 builder
  */
-export function openApiBuilder(info: OpenAPIV3.InfoObject) {
+export const openApiBuilder = (info: OpenAPIV3.InfoObject) => {
   return new OpenApiBuilder(info)
 }

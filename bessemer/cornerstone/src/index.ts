@@ -69,6 +69,7 @@ import * as ResourceKeys from '@bessemer/cornerstone/resource-key'
 import * as HexCodes from '@bessemer/cornerstone/hex-code'
 import * as IpV6Addresses from '@bessemer/cornerstone/net/ipv6-address'
 import * as IpV4Addresses from '@bessemer/cornerstone/net/ipv4-address'
+import * as HttpMethods from '@bessemer/cornerstone/net/http-method'
 
 export {
   Objects,
@@ -141,4 +142,5 @@ export {
   HexCodes,
   IpV6Addresses,
   IpV4Addresses,
+  HttpMethods,
 }

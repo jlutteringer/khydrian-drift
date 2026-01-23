@@ -203,6 +203,10 @@ export const isNumber = (value: string): boolean => {
   return !isNaN(num) && isFinite(num)
 }
 
+export const capitalize = <T extends string>(str: T): Capitalize<T> => {
+  return (str.charAt(0).toUpperCase() + str.slice(1)) as Capitalize<T>
+}
+
 export namespace Schema {
   const Text = Zod.string().trim().min(1)
 

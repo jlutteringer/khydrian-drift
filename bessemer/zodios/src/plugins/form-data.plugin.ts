@@ -1,23 +1,29 @@
-import { getFormDataStream } from './form-data.utils'
-import { ZodiosError } from '../zodios-error'
-import type { ZodiosPlugin } from '../types'
+import { ZodiosValidationError } from '@bessemer/zodios/zodios-error'
+import type { ZodiosPlugin } from '@bessemer/zodios/types'
+import { Results } from '@bessemer/cornerstone'
 
 const plugin: ZodiosPlugin = {
   name: 'form-data',
-  request: async (_, config) => {
+  processRequest: async (_, config) => {
     if (typeof config.data !== 'object' || Array.isArray(config.data)) {
-      throw new ZodiosError('Zodios: multipart/form-data body must be an object', config)
+      return Results.failure(new ZodiosValidationError('Zodios: multipart/form-data body must be an object', config))
     }
-    const result = getFormDataStream(config.data as any)
-    return {
+
+    const data = getFormDataStream(config.data as any)
+
+    return Results.success({
       ...config,
-      data: result.data,
-      headers: {
-        ...config.headers,
-        ...result.headers,
-      },
-    }
+      data,
+    })
   },
+}
+
+const getFormDataStream = (data: Record<string, string | Blob>): FormData => {
+  const formData = new FormData()
+  for (const key in data) {
+    formData.append(key, data[key]!)
+  }
+  return formData
 }
 
 /**
@@ -50,6 +56,6 @@ const plugin: ZodiosPlugin = {
  * ```
  * @returns form-data plugin
  */
-export function formDataPlugin(): ZodiosPlugin {
+export const formDataPlugin = (): ZodiosPlugin => {
   return plugin
 }

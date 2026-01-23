@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
+import { AxiosError } from 'axios'
 import type {
   FilterArrayByKey,
   FilterArrayByValue,
@@ -14,14 +14,24 @@ import type {
   Simplify,
   UndefinedIfNever,
   UndefinedToOptional,
-} from './utils.types'
+} from '@bessemer/zodios/utils.types'
 import z from 'zod'
+import { AsyncResult, Result } from '@bessemer/cornerstone/result'
+import { ZodiosError, ZodiosValidationError } from '@bessemer/zodios/zodios-error'
+import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
+import { FetchOptions } from '@bessemer/cornerstone/net/fetch'
 
-type AxiosRequestConfig = Parameters<typeof axios.request>[0]
+export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata'
 
+export type AxiosRequestConfig<D = any> = Omit<FetchOptions, 'body'> & {
+  url?: string
+  params?: Record<string, unknown>
+  queries?: Record<string, unknown>
+  body?: D
+}
+
+export type FetchFunction = typeof fetch
 export type MutationMethod = 'post' | 'put' | 'patch' | 'delete'
-
-export type Method = 'get' | 'head' | 'options' | MutationMethod
 
 export type RequestFormat =
   | 'json' // default
@@ -30,11 +40,11 @@ export type RequestFormat =
   | 'binary' // for binary data / file uploads
   | 'text' // for text data
 
-type EndpointDefinitionsByMethod<Api extends ZodiosEndpointDefinition[], M extends Method> = FilterArrayByValue<Api, { method: M }>
+type EndpointDefinitionsByMethod<Api extends ZodiosEndpointDefinition[], M extends HttpMethod> = FilterArrayByValue<Api, { method: M }>
 
 export type ZodiosEndpointDefinitionByPath<
   Api extends ZodiosEndpointDefinition[],
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>
 > = FilterArrayByValue<Api, { method: M; path: Path }>
 
@@ -43,30 +53,50 @@ export type ZodiosEndpointDefinitionByAlias<Api extends Array<ZodiosEndpointDefi
   { alias: Alias }
 >
 
-export type ZodiosPathsByMethod<Api extends Array<ZodiosEndpointDefinition>, M extends Method> = EndpointDefinitionsByMethod<Api, M>[number]['path']
+export type ZodiosPathsByMethod<Api extends Array<ZodiosEndpointDefinition>, M extends HttpMethod> = EndpointDefinitionsByMethod<
+  Api,
+  M
+>[number]['path']
 
 export type Aliases<Api extends Array<ZodiosEndpointDefinition>> = FilterArrayByKey<Api, 'alias'>[number]['alias']
 
 export type ZodiosResponseForEndpoint<Endpoint extends ZodiosEndpointDefinition, Frontend extends boolean = true> = Frontend extends true
-  ? z.output<Endpoint['response']>
-  : z.input<Endpoint['response']>
+  ? Result<z.output<Endpoint['response']>, ZodiosValidationError>
+  : Result<z.input<Endpoint['response']>, ZodiosValidationError>
+
+export type ZodiosParsedPayloadByPath<
+  Api extends Array<ZodiosEndpointDefinition>,
+  M extends HttpMethod,
+  Path extends ZodiosPathsByMethod<Api, M>
+> = z.output<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['response']>
+
+export type ZodiosParsedErrorByPath<
+  Api extends Array<ZodiosEndpointDefinition>,
+  M extends HttpMethod,
+  Path extends ZodiosPathsByMethod<Api, M>
+> = ErrorsToAxios<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors']>[number]
+
+export type ZodiosErrorByPath<Api extends Array<ZodiosEndpointDefinition>, M extends HttpMethod, Path extends ZodiosPathsByMethod<Api, M>> =
+  | ZodiosParsedErrorByPath<Api, M, Path>
+  | ZodiosValidationError
+  | AxiosError
 
 export type ZodiosResponseByPath<
   Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>,
   Frontend extends boolean = true
 > = Frontend extends true
-  ? z.output<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['response']>
-  : z.input<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['response']>
+  ? Result<z.output<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['response']>, ZodiosErrorByPath<Api, M, Path>>
+  : Result<z.input<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['response']>, ZodiosErrorByPath<Api, M, Path>>
 
 export type ZodiosResponseByAlias<
   Api extends Array<ZodiosEndpointDefinition>,
   Alias extends string,
   Frontend extends boolean = true
 > = Frontend extends true
-  ? z.output<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['response']>
-  : z.input<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['response']>
+  ? Result<z.output<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['response']>, ZodiosMatchingErrorsByAlias<Api, Alias> | ZodiosValidationError>
+  : Result<z.input<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['response']>, ZodiosMatchingErrorsByAlias<Api, Alias> | ZodiosValidationError>
 
 export type ZodiosDefaultErrorForEndpoint<Endpoint extends ZodiosEndpointDefinition> = FilterArrayByValue<
   Endpoint['errors'],
@@ -77,7 +107,7 @@ export type ZodiosDefaultErrorForEndpoint<Endpoint extends ZodiosEndpointDefinit
 
 type ZodiosDefaultErrorByPath<
   Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>
 > = FilterArrayByValue<
   ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors'],
@@ -123,9 +153,9 @@ export type ZodiosErrorForEndpoint<
       >
     >
 
-export type ZodiosErrorByPath<
+export type ZodiosErrorResponseByPath<
   Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>,
   Status extends number,
   Frontend extends boolean = true
@@ -180,12 +210,6 @@ export type ErrorsToAxios<T, Acc extends Array<unknown> = []> = T extends [infer
     : Acc
   : Acc
 
-export type ZodiosMatchingErrorsByPath<
-  Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
-  Path extends ZodiosPathsByMethod<Api, M>
-> = ErrorsToAxios<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors']>[number]
-
 export type ZodiosMatchingErrorsByAlias<Api extends Array<ZodiosEndpointDefinition>, Alias extends string> = ErrorsToAxios<
   ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['errors']
 >[number]
@@ -224,10 +248,11 @@ export type BodySchemaForEndpoint<Endpoint extends ZodiosEndpointDefinition> = F
   { type: 'Body' }
 >[number]['schema']
 
-export type BodySchema<Api extends Array<ZodiosEndpointDefinition>, M extends Method, Path extends ZodiosPathsByMethod<Api, M>> = FilterArrayByValue<
-  ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['parameters'],
-  { type: 'Body' }
->[number]['schema']
+export type BodySchema<
+  Api extends Array<ZodiosEndpointDefinition>,
+  M extends HttpMethod,
+  Path extends ZodiosPathsByMethod<Api, M>
+> = FilterArrayByValue<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['parameters'], { type: 'Body' }>[number]['schema']
 
 export type ZodiosBodyForEndpoint<Endpoint extends ZodiosEndpointDefinition, Frontend extends boolean = true> = Frontend extends true
   ? z.input<BodySchemaForEndpoint<Endpoint>>
@@ -235,7 +260,7 @@ export type ZodiosBodyForEndpoint<Endpoint extends ZodiosEndpointDefinition, Fro
 
 export type ZodiosBodyByPath<
   Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>,
   Frontend extends boolean = true
 > = Frontend extends true ? z.input<BodySchema<Api, M, Path>> : z.output<BodySchema<Api, M, Path>>
@@ -257,7 +282,7 @@ export type ZodiosQueryParamsForEndpoint<Endpoint extends ZodiosEndpointDefiniti
 
 export type ZodiosQueryParamsByPath<
   Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>,
   Frontend extends boolean = true
 > = NeverIfEmpty<
@@ -302,7 +327,7 @@ export type ZodiosPathParamsForEndpoint<
  */
 export type ZodiosPathParamsByPath<
   Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>,
   Frontend extends boolean = true,
   PathParameters = UndefinedToOptional<
@@ -350,7 +375,7 @@ export type ZodiosHeaderParamsForEndpoint<Endpoint extends ZodiosEndpointDefinit
 
 export type ZodiosHeaderParamsByPath<
   Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>,
   Frontend extends boolean = true
 > = NeverIfEmpty<
@@ -403,12 +428,12 @@ export type AnyZodiosMethodOptions = Merge<
   Omit<AxiosRequestConfig, 'params' | 'headers' | 'url' | 'method'>
 >
 
-export type AnyZodiosRequestOptions = Merge<{ method: Method; url: string }, AnyZodiosMethodOptions>
+export type AnyZodiosRequestOptions = Merge<{ method: HttpMethod; url: string }, AnyZodiosMethodOptions>
 
 /**
  * @deprecated - use ZodiosRequestOptionsByPath instead
  */
-export type ZodiosMethodOptions<Api extends Array<ZodiosEndpointDefinition>, M extends Method, Path extends ZodiosPathsByMethod<Api, M>> = Merge<
+export type ZodiosMethodOptions<Api extends Array<ZodiosEndpointDefinition>, M extends HttpMethod, Path extends ZodiosPathsByMethod<Api, M>> = Merge<
   SetPropsOptionalIfChildrenAreOptional<
     PickDefined<{
       params: ZodiosPathParamsByPath<Api, M, Path>
@@ -424,7 +449,7 @@ export type ZodiosMethodOptions<Api extends Array<ZodiosEndpointDefinition>, M e
  */
 export type ZodiosRequestOptionsByPath<
   Api extends Array<ZodiosEndpointDefinition>,
-  M extends Method,
+  M extends HttpMethod,
   Path extends ZodiosPathsByMethod<Api, M>
 > = Merge<
   SetPropsOptionalIfChildrenAreOptional<
@@ -437,7 +462,7 @@ export type ZodiosRequestOptionsByPath<
   Omit<AxiosRequestConfig, 'params' | 'baseURL' | 'data' | 'method' | 'url'>
 >
 
-export type ZodiosRequestOptions<Api extends Array<ZodiosEndpointDefinition>, M extends Method, Path extends ZodiosPathsByMethod<Api, M>> = Merge<
+export type ZodiosRequestOptions<Api extends Array<ZodiosEndpointDefinition>, M extends HttpMethod, Path extends ZodiosPathsByMethod<Api, M>> = Merge<
   {
     method: M
     url: Path
@@ -446,31 +471,9 @@ export type ZodiosRequestOptions<Api extends Array<ZodiosEndpointDefinition>, M 
   ZodiosRequestOptionsByPath<Api, M, Path>
 >
 
-/**
- * Zodios options
- */
 export type ZodiosOptions = {
-  /**
-   * Should zodios validate parameters and response? Default: true
-   */
-  validate?: boolean | 'request' | 'response' | 'all' | 'none'
-  /**
-   * Should zodios transform the request and response ? Default: true
-   */
-  transform?: boolean | 'request' | 'response'
-  /**
-   * Should zod schema default values be used on parameters? Default: false
-   * you usually want your backend to handle default values
-   */
+  fetch?: FetchFunction
   sendDefaults?: boolean
-  /**
-   * Override the default axios instance. Default: zodios will create it's own axios instance
-   */
-  axiosInstance?: AxiosInstance
-  /**
-   * default config for axios requests
-   */
-  axiosConfig?: AxiosRequestConfig
 }
 
 export type ZodiosEndpointParameter<T = unknown> = {
@@ -520,7 +523,7 @@ export interface ZodiosEndpointDefinition<R = unknown> {
   /**
    * http method : get, post, put, patch, delete
    */
-  method: Method
+  method: HttpMethod
   /**
    * path of the endpoint
    * @example
@@ -585,13 +588,15 @@ export type ZodiosPlugin = {
    * naming a plugin allows to remove it or replace it later
    */
   name?: string
+
   /**
    * request interceptor to modify or inspect the request before it is sent
    * @param api - the api description
    * @param request - the request config
    * @returns possibly a new request config
    */
-  request?: (api: ZodiosEndpointDefinitions, config: ReadonlyDeep<AnyZodiosRequestOptions>) => Promise<ReadonlyDeep<AnyZodiosRequestOptions>>
+  processRequest?: (api: ZodiosEndpointDefinitions, request: AnyZodiosRequestOptions) => AsyncResult<AnyZodiosRequestOptions, ZodiosValidationError>
+
   /**
    * response interceptor to modify or inspect the response before it is returned
    * @param api - the api description
@@ -599,14 +604,9 @@ export type ZodiosPlugin = {
    * @param response - the response
    * @returns possibly a new response
    */
-  response?: (api: ZodiosEndpointDefinitions, config: ReadonlyDeep<AnyZodiosRequestOptions>, response: AxiosResponse) => Promise<AxiosResponse>
-  /**
-   * error interceptor for response errors
-   * there is no error interceptor for request errors
-   * @param api - the api description
-   * @param config - the config for the request
-   * @param error - the error that occured
-   * @returns possibly a new response or a new error
-   */
-  error?: (api: ZodiosEndpointDefinitions, config: ReadonlyDeep<AnyZodiosRequestOptions>, error: Error) => Promise<AxiosResponse>
+  processResponse?: <T>(
+    api: ZodiosEndpointDefinitions,
+    request: AnyZodiosRequestOptions,
+    response: Result<T, ZodiosError>
+  ) => AsyncResult<T, ZodiosError>
 }

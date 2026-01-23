@@ -1,14 +1,14 @@
-import { ReadonlyDeep } from './utils.types'
-import { AnyZodiosRequestOptions } from './types'
+import { ReadonlyDeep } from '@bessemer/zodios/utils.types'
+import { AnyZodiosRequestOptions } from '@bessemer/zodios/types'
+import { AxiosError } from 'axios'
 
-/**
- * Custom Zodios Error with additional information
- * @param message - the error message
- * @param data - the parameter or response object that caused the error
- * @param config - the config object from zodios
- * @param cause - the error cause
- */
-export class ZodiosError extends Error {
+export class ZodiosFetchError extends Error {
+  constructor(public override readonly cause: Error) {
+    super()
+  }
+}
+
+export class ZodiosValidationError extends Error {
   constructor(
     message: string,
     public readonly config?: ReadonlyDeep<AnyZodiosRequestOptions>,
@@ -18,3 +18,7 @@ export class ZodiosError extends Error {
     super(message)
   }
 }
+
+export class ZodiosStructuredError extends Error {}
+
+export type ZodiosError = ZodiosStructuredError | ZodiosValidationError | AxiosError

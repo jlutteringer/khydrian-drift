@@ -1,21 +1,22 @@
-import { ZodiosError } from '../zodios-error'
-import type { ZodiosPlugin } from '../types'
+import { ZodiosValidationError } from '@bessemer/zodios/zodios-error'
+import type { ZodiosPlugin } from '@bessemer/zodios/types'
+import { Results } from '@bessemer/cornerstone'
 
 const plugin: ZodiosPlugin = {
   name: 'form-url',
-  request: async (_, config) => {
+  processRequest: async (_, config) => {
     if (typeof config.data !== 'object' || Array.isArray(config.data)) {
-      throw new ZodiosError('Zodios: application/x-www-form-urlencoded body must be an object', config)
+      return Results.failure(new ZodiosValidationError('Zodios: application/x-www-form-urlencoded body must be an object', config))
     }
 
-    return {
+    return Results.success({
       ...config,
       data: new URLSearchParams(config.data as any).toString(),
       headers: {
         ...config.headers,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-    }
+    })
   },
 }
 
@@ -50,6 +51,6 @@ const plugin: ZodiosPlugin = {
  * ```
  * @returns form-url plugin
  */
-export function formURLPlugin(): ZodiosPlugin {
+export const formURLPlugin = (): ZodiosPlugin => {
   return plugin
 }

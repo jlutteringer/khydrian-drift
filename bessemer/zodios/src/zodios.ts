@@ -1,105 +1,57 @@
-import type { AxiosInstance } from 'axios'
-import axios from 'axios'
 import {
   Aliases,
   AnyZodiosRequestOptions,
-  Method,
+  FetchFunction,
   ZodiosAliases,
   ZodiosBodyByPath,
   ZodiosEndpointDefinitions,
   ZodiosOptions,
+  ZodiosParsedErrorByPath,
+  ZodiosParsedPayloadByPath,
   ZodiosPathsByMethod,
   ZodiosPlugin,
   ZodiosRequestOptions,
   ZodiosRequestOptionsByPath,
   ZodiosResponseByPath,
-} from './types'
-import { omit, replacePathParams } from './utils'
-import { formDataPlugin, formURLPlugin, headerPlugin, PluginId, ZodiosPlugins, zodValidationPlugin } from './plugins'
-import { Narrow, PickRequired, ReadonlyDeep, RequiredKeys, UndefinedIfNever } from './utils.types'
-import { checkApi } from './api'
+} from '@bessemer/zodios/types'
+import { findEndpoint, findEndpointErrorsByPath, replacePathParams } from './utils'
+import { Narrow, PickRequired, ReadonlyDeep, RequiredKeys, UndefinedIfNever } from '@bessemer/zodios/utils.types'
+import { checkApi } from '@bessemer/zodios/api'
+import { PluginId, ZodiosPlugins } from '@bessemer/zodios/plugins/zodios-plugins'
+import { headerPlugin } from '@bessemer/zodios/plugins/header.plugin'
+import { formDataPlugin } from '@bessemer/zodios/plugins/form-data.plugin'
+import { formURLPlugin } from '@bessemer/zodios/plugins/form-url.plugin'
+import { Entries, Errors, Objects, Results, Urls } from '@bessemer/cornerstone'
+import { AsyncResult, Result } from '@bessemer/cornerstone/result'
+import { ZodiosFetchError, ZodiosValidationError } from '@bessemer/zodios/zodios-error'
+import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
+import { AxiosError } from 'axios'
+import { FetchResponse } from '@bessemer/cornerstone/net/fetch'
 
-/**
- * zodios api client based on axios
- */
 export class ZodiosClass<Api extends ZodiosEndpointDefinitions> {
-  private axiosInstance: AxiosInstance
-  public readonly options: PickRequired<ZodiosOptions, 'validate' | 'transform' | 'sendDefaults'>
+  private fetch: FetchFunction
+  public readonly options: PickRequired<ZodiosOptions, 'sendDefaults'>
   public readonly api: Api
   private endpointPlugins: Map<string, ZodiosPlugins> = new Map()
 
-  /**
-   * constructor
-   * @param baseURL - the base url to use - if omited will use the browser domain
-   * @param api - the description of all the api endpoints
-   * @param options - the options to setup the client API
-   * @example
-   *   const apiClient = new Zodios("https://jsonplaceholder.typicode.com", [
-   *     {
-   *       method: "get",
-   *       path: "/users",
-   *       description: "Get all users",
-   *       parameters: [
-   *         {
-   *           name: "q",
-   *           type: "Query",
-   *           schema: z.string(),
-   *         },
-   *         {
-   *           name: "page",
-   *           type: "Query",
-   *           schema: z.string().optional(),
-   *         },
-   *       ],
-   *       response: z.array(z.object({ id: z.number(), name: z.string() })),
-   *     }
-   *   ]);
-   */
-  constructor(api: Narrow<Api>, options?: ZodiosOptions)
-  constructor(baseUrl: string, api: Narrow<Api>, options?: ZodiosOptions)
-  constructor(arg1?: Api | string, arg2?: Api | ZodiosOptions, arg3?: ZodiosOptions) {
-    let options: ZodiosOptions
-    if (!arg1) {
-      if (Array.isArray(arg2)) {
-        throw new Error('Zodios: missing base url')
-      }
-      throw new Error('Zodios: missing api description')
-    }
-    let baseURL: string | undefined
-    if (typeof arg1 === 'string' && Array.isArray(arg2)) {
-      baseURL = arg1
-      this.api = arg2
-      options = arg3 || {}
-    } else if (Array.isArray(arg1) && !Array.isArray(arg2)) {
-      this.api = arg1
-      options = arg2 || {}
-    } else {
-      throw new Error('Zodios: api must be an array')
-    }
+  constructor(api: Api, options?: ZodiosOptions) {
+    checkApi(api)
 
-    checkApi(this.api)
+    this.api = api
 
     this.options = {
-      validate: true,
-      transform: true,
       sendDefaults: false,
       ...options,
     }
 
-    if (this.options.axiosInstance) {
-      this.axiosInstance = this.options.axiosInstance
+    if (this.options.fetch) {
+      this.fetch = this.options.fetch
     } else {
-      this.axiosInstance = axios.create({
-        ...this.options.axiosConfig,
-      })
+      this.fetch = fetch
     }
-    if (baseURL) this.axiosInstance.defaults.baseURL = baseURL
 
     this.injectAliasEndpoints()
     this.initPlugins()
-    if ([true, 'all', 'request', 'response'].includes(this.options.validate)) {
-      this.use(zodValidationPlugin(this.options))
-    }
   }
 
   private initPlugins() {
@@ -137,32 +89,13 @@ export class ZodiosClass<Api extends ZodiosEndpointDefinitions> {
     return undefined
   }
 
-  private findEnpointPlugins(method: Method, path: string) {
+  private findEnpointPlugins(method: HttpMethod, path: string) {
     return this.endpointPlugins.get(`${method}-${path}`)
   }
 
-  /**
-   * get the base url of the api
-   */
-  get baseURL() {
-    return this.axiosInstance.defaults.baseURL
-  }
-
-  /**
-   * get the underlying axios instance
-   */
-  get axios() {
-    return this.axiosInstance
-  }
-
-  /**
-   * register a plugin to intercept the requests or responses
-   * @param plugin - the plugin to use
-   * @returns an id to allow you to unregister the plugin
-   */
   use(plugin: ZodiosPlugin): PluginId
   use<Alias extends Aliases<Api>>(alias: Alias, plugin: ZodiosPlugin): PluginId
-  use<M extends Method, Path extends ZodiosPathsByMethod<Api, M>>(method: M, path: Path, plugin: ZodiosPlugin): PluginId
+  use<M extends HttpMethod, Path extends ZodiosPathsByMethod<Api, M>>(method: M, path: Path, plugin: ZodiosPlugin): PluginId
   use(...args: unknown[]) {
     if (typeof args[0] === 'object') {
       const plugins = this.getAnyEndpointPlugins()!
@@ -172,26 +105,11 @@ export class ZodiosClass<Api extends ZodiosEndpointDefinitions> {
       if (!plugins) throw new Error(`Zodios: no alias '${args[0]}' found to register plugin`)
       return plugins.use(args[1] as ZodiosPlugin)
     } else if (typeof args[0] === 'string' && typeof args[1] === 'string' && typeof args[2] === 'object') {
-      const plugins = this.findEnpointPlugins(args[0] as Method, args[1])
+      const plugins = this.findEnpointPlugins(args[0] as HttpMethod, args[1])
       if (!plugins) throw new Error(`Zodios: no endpoint '${args[0]} ${args[1]}' found to register plugin`)
       return plugins.use(args[2] as ZodiosPlugin)
     }
     throw new Error('Zodios: invalid plugin registration')
-  }
-
-  /**
-   * unregister a plugin
-   * if the plugin name is provided instead of the registration plugin id,
-   * it will unregister the plugin with that name only for non endpoint plugins
-   * @param plugin - id of the plugin to remove
-   */
-  eject(plugin: PluginId | string): void {
-    if (typeof plugin === 'string') {
-      const plugins = this.getAnyEndpointPlugins()!
-      plugins.eject(plugin)
-      return
-    }
-    this.endpointPlugins.get(plugin.key)?.eject(plugin)
   }
 
   private injectAliasEndpoints() {
@@ -217,41 +135,78 @@ export class ZodiosClass<Api extends ZodiosEndpointDefinitions> {
     })
   }
 
-  /**
-   * make a request to the api
-   * @param config - the config to setup zodios options and parameters
-   * @returns response validated with zod schema provided in the api description
-   */
-  async request<M extends Method, Path extends string>(
-    config: Path extends ZodiosPathsByMethod<Api, M>
+  async request<M extends HttpMethod, Path extends string>(
+    initialRequest: Path extends ZodiosPathsByMethod<Api, M>
       ? ReadonlyDeep<ZodiosRequestOptions<Api, M, Path>>
       : ReadonlyDeep<ZodiosRequestOptions<Api, M, ZodiosPathsByMethod<Api, M>>>
   ): Promise<ZodiosResponseByPath<Api, M, Path extends ZodiosPathsByMethod<Api, M> ? Path : never>> {
-    let conf = config as unknown as ReadonlyDeep<AnyZodiosRequestOptions>
+    let request = initialRequest as unknown as AnyZodiosRequestOptions
     const anyPlugin = this.getAnyEndpointPlugins()!
-    const endpointPlugin = this.findEnpointPlugins(conf.method, conf.url)
-    conf = await anyPlugin.interceptRequest(this.api, conf)
-    if (endpointPlugin) {
-      conf = await endpointPlugin.interceptRequest(this.api, conf)
+    const endpointPlugin = this.findEnpointPlugins(request.method, request.url)
+
+    const validatedRequest = await validateRequest(this.api, request)
+    if (!validatedRequest.isSuccess) {
+      return validatedRequest
     }
-    let response = this.axiosInstance.request({
-      ...omit(conf as AnyZodiosRequestOptions, ['params', 'queries']),
-      url: replacePathParams(conf),
-      params: conf.queries,
-    })
-    if (endpointPlugin) {
-      response = endpointPlugin.interceptResponse(this.api, conf, response)
+    request = validatedRequest.value
+
+    const anyPluginResult = await anyPlugin.interceptRequest(this.api, request)
+    if (!anyPluginResult.isSuccess) {
+      return anyPluginResult
     }
-    response = anyPlugin.interceptResponse(this.api, conf, response)
-    return (await response).data
+    request = anyPluginResult.value
+
+    if (Objects.isPresent(endpointPlugin)) {
+      const endpointPluginResult = await endpointPlugin.interceptRequest(this.api, request)
+      if (!endpointPluginResult.isSuccess) {
+        return endpointPluginResult
+      }
+
+      request = endpointPluginResult.value
+    }
+
+    let response: Result<ZodiosParsedPayloadByPath<Api, M, Path>, ZodiosParsedErrorByPath<Api, M, Path> | AxiosError | ZodiosValidationError>
+    try {
+      const { url, params, queries, body, ...fetchOptions } = request
+
+      // JOHN how to handle arrays of params? and does just calling toString on the value here present a robust solution...
+      const stringParams = Object.fromEntries(Object.entries(params ?? {}).map(([key, value]) => Entries.of(key, `${value}`)))
+      const urlLiteral = Urls.toLiteral(Urls.merge(Urls.from(replacePathParams(url, params)), { location: { parameters: stringParams } }))
+
+      const fetchResponse = await this.fetch(replacePathParams(urlLiteral, params), {
+        ...fetchOptions,
+        body: JSON.stringify(request.body),
+        headers: request.headers,
+      })
+
+      if (fetchResponse.ok) {
+        response = await validateSuccessResponse(this.api, request, fetchResponse)
+      } else {
+        const validatedError = await validateErrorResponse(this.api, request, fetchResponse)
+        if (validatedError.isSuccess) {
+          if (Objects.isNil(validatedError.value)) {
+            response = Results.failure(e)
+          } else {
+            response = Results.failure(validatedError.value)
+          }
+        } else {
+          response = Results.failure(e)
+        }
+      }
+    } catch (e) {
+      Errors.assertError(e)
+      response = Results.failure(new ZodiosFetchError(e))
+    }
+
+    // JOHN
+    // if (Objects.isPresent(endpointPlugin)) {
+    //   response = await endpointPlugin.interceptResponse(this.api, request, response)
+    // }
+    //
+    // response = await anyPlugin.interceptResponse(this.api, request, response)
+    return response
   }
 
-  /**
-   * make a get request to the api
-   * @param path - the path to api endpoint
-   * @param config - the config to setup axios options and parameters
-   * @returns response validated with zod schema provided in the api description
-   */
   async get<Path extends ZodiosPathsByMethod<Api, 'get'>, TConfig extends ZodiosRequestOptionsByPath<Api, 'get', Path>>(
     path: Path,
     ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
@@ -263,13 +218,6 @@ export class ZodiosClass<Api extends ZodiosEndpointDefinitions> {
     } as any)
   }
 
-  /**
-   * make a post request to the api
-   * @param path - the path to api endpoint
-   * @param data - the data to send
-   * @param config - the config to setup axios options and parameters
-   * @returns response validated with zod schema provided in the api description
-   */
   async post<Path extends ZodiosPathsByMethod<Api, 'post'>, TConfig extends ZodiosRequestOptionsByPath<Api, 'post', Path>>(
     path: Path,
     data: ReadonlyDeep<UndefinedIfNever<ZodiosBodyByPath<Api, 'post', Path>>>,
@@ -283,13 +231,6 @@ export class ZodiosClass<Api extends ZodiosEndpointDefinitions> {
     } as any)
   }
 
-  /**
-   * make a put request to the api
-   * @param path - the path to api endpoint
-   * @param data - the data to send
-   * @param config - the config to setup axios options and parameters
-   * @returns response validated with zod schema provided in the api description
-   */
   async put<Path extends ZodiosPathsByMethod<Api, 'put'>, TConfig extends ZodiosRequestOptionsByPath<Api, 'put', Path>>(
     path: Path,
     data: ReadonlyDeep<UndefinedIfNever<ZodiosBodyByPath<Api, 'put', Path>>>,
@@ -303,13 +244,6 @@ export class ZodiosClass<Api extends ZodiosEndpointDefinitions> {
     } as any)
   }
 
-  /**
-   * make a patch request to the api
-   * @param path - the path to api endpoint
-   * @param data - the data to send
-   * @param config - the config to setup axios options and parameters
-   * @returns response validated with zod schema provided in the api description
-   */
   async patch<Path extends ZodiosPathsByMethod<Api, 'patch'>, TConfig extends ZodiosRequestOptionsByPath<Api, 'patch', Path>>(
     path: Path,
     data: ReadonlyDeep<UndefinedIfNever<ZodiosBodyByPath<Api, 'patch', Path>>>,
@@ -323,12 +257,6 @@ export class ZodiosClass<Api extends ZodiosEndpointDefinitions> {
     } as any)
   }
 
-  /**
-   * make a delete request to the api
-   * @param path - the path to api endpoint
-   * @param config - the config to setup axios options and parameters
-   * @returns response validated with zod schema provided in the api description
-   */
   async delete<Path extends ZodiosPathsByMethod<Api, 'delete'>, TConfig extends ZodiosRequestOptionsByPath<Api, 'delete', Path>>(
     path: Path,
     data: ReadonlyDeep<UndefinedIfNever<ZodiosBodyByPath<Api, 'delete', Path>>>,
@@ -352,8 +280,118 @@ export type ZodiosConstructor = {
 
 export const Zodios = ZodiosClass as ZodiosConstructor
 
-/**
- * Get the Api description type from zodios
- * @param Z - zodios type
- */
 export type ApiOf<Z> = Z extends ZodiosInstance<infer Api> ? Api : never
+
+const validateRequest = async (
+  api: ZodiosEndpointDefinitions,
+  request: AnyZodiosRequestOptions
+): AsyncResult<AnyZodiosRequestOptions, ZodiosValidationError> => {
+  const endpoint = findEndpoint(api, request.method, request.url)
+  if (Objects.isNil(endpoint)) {
+    throw new Error(`No endpoint found for ${request.method} ${request.url}`)
+  }
+
+  const { parameters } = endpoint
+  if (Objects.isNil(parameters)) {
+    return Results.success(request)
+  }
+
+  const conf = {
+    ...request,
+    queries: {
+      ...request.queries,
+    },
+    headers: {
+      ...request.headers,
+    },
+    params: {
+      ...request.params,
+    },
+  }
+
+  const paramsOf = {
+    Query: (name: string) => conf.queries?.[name],
+    Body: (_: string) => conf.body,
+    Header: (name: string) => conf.headers?.[name],
+    Path: (name: string) => conf.params?.[name],
+  }
+
+  const setParamsOf = {
+    Query: (name: string, value: any) => (conf.queries![name] = value),
+    Body: (_: string, value: any) => (conf.body = value),
+    Header: (name: string, value: any) => (conf.headers![name] = value),
+    Path: (name: string, value: any) => (conf.params![name] = value),
+  }
+
+  for (const parameter of parameters) {
+    const { name, schema, type } = parameter
+    const value = paramsOf[type](name)
+
+    const parsed = await schema.safeParseAsync(value)
+    if (!parsed.success) {
+      return Results.failure(new ZodiosValidationError(`Zodios: Invalid ${type} parameter '${name}'`, request, value, parsed.error))
+    }
+
+    setParamsOf[type](name, parsed.data)
+  }
+
+  return Results.success(conf)
+}
+
+const validateSuccessResponse = async <Api extends ZodiosEndpointDefinitions, M extends HttpMethod, Path extends string>(
+  api: Api,
+  request: AnyZodiosRequestOptions,
+  response: FetchResponse
+): AsyncResult<ZodiosParsedPayloadByPath<Api, M, Path>, ZodiosValidationError> => {
+  const endpoint = findEndpoint(api, request.method, request.url)
+  if (Objects.isNil(endpoint)) {
+    throw new Error(`No endpoint found for ${request.method} ${request.url}`)
+  }
+
+  // JOHN probably cant just assume json
+  const data = await response.json()
+  const parseResult = await endpoint.response.safeParseAsync(data)
+  if (!parseResult.success) {
+    return Results.failure(
+      new ZodiosValidationError(
+        `Zodios: Invalid response from endpoint '${endpoint.method} ${endpoint.path}'\nstatus: ${response.status} ${response.statusText}\ncause:\n${
+          parseResult.error.message
+        }\nreceived:\n${JSON.stringify(data, null, 2)}`,
+        request,
+        data,
+        parseResult.error
+      )
+    )
+  }
+
+  return Results.success(parseResult.data as ZodiosParsedPayloadByPath<Api, M, Path>)
+}
+
+const validateErrorResponse = async <Api extends ZodiosEndpointDefinitions, M extends HttpMethod, Path extends string>(
+  api: Api,
+  request: AnyZodiosRequestOptions,
+  response: FetchResponse
+): AsyncResult<ZodiosParsedErrorByPath<Api, M, Path> | null, ZodiosValidationError> => {
+  const endpoint = findEndpoint(api, request.method, request.url)
+  if (Objects.isNil(endpoint)) {
+    throw new Error(`No endpoint found for ${request.method} ${request.url}`)
+  }
+
+  const endpointErrors = findEndpointErrorsByPath(api, request.method, request.url, response)
+  if (Objects.isNil(endpointErrors)) {
+    return Results.success(null)
+  }
+
+  // JOHN probably cant just assume json
+  const body = await response.json()
+  for (const endpointError of endpointErrors) {
+    const parseResult = endpointError.schema.safeParse(body)
+
+    if (parseResult.success) {
+      return Results.success(parseResult.data as ZodiosParsedErrorByPath<Api, M, Path>)
+    }
+  }
+
+  // JOHN
+  return Results.failure(new ZodiosValidationError(`Zodios: Invalid error response from endpoint`, request, body))
+}

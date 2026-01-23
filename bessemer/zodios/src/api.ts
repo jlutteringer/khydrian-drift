@@ -1,10 +1,7 @@
-// disable type checking for this file as we need to defer type checking when using these utility types
-// indeed typescript seems to have a bug, where it tries to infer the type of an undecidable generic type
-// but when using the functions, types are inferred correctly
-import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions, ZodiosEndpointError, ZodiosEndpointParameter } from './types'
+import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions, ZodiosEndpointError, ZodiosEndpointParameter } from '@bessemer/zodios/types'
 import Zod from 'zod'
-import { capitalize } from './utils'
-import { Narrow, TupleFlat, UnionToTuple } from './utils.types'
+import { Narrow, TupleFlat, UnionToTuple } from '@bessemer/zodios/utils.types'
+import { Strings } from '@bessemer/cornerstone'
 
 /**
  * check api for non unique paths
@@ -12,7 +9,7 @@ import { Narrow, TupleFlat, UnionToTuple } from './utils.types'
  * @return - nothing
  * @throws - error if api has non unique paths
  */
-export function checkApi<T extends ZodiosEndpointDefinitions>(api: T) {
+export const checkApi = <T extends ZodiosEndpointDefinitions>(api: T) => {
   // check if no duplicate path
   const paths = new Set<string>()
   for (let endpoint of api) {
@@ -51,7 +48,7 @@ export function checkApi<T extends ZodiosEndpointDefinitions>(api: T) {
  * @param api - api definitions
  * @returns the api definitions
  */
-export function makeApi<Api extends ZodiosEndpointDefinitions>(api: Narrow<Api>): Api {
+export const makeApi = <Api extends ZodiosEndpointDefinitions>(api: Narrow<Api>): Api => {
   checkApi(api)
   return api as Api
 }
@@ -63,13 +60,13 @@ export function makeApi<Api extends ZodiosEndpointDefinitions>(api: Narrow<Api>)
  * @param params - api parameter definitions
  * @returns the api parameter definitions
  */
-export function makeParameters<ParameterDescriptions extends ZodiosEndpointParameter[]>(
+export const makeParameters = <ParameterDescriptions extends ZodiosEndpointParameter[]>(
   params: Narrow<ParameterDescriptions>
-): ParameterDescriptions {
+): ParameterDescriptions => {
   return params as ParameterDescriptions
 }
 
-export function parametersBuilder() {
+export const parametersBuilder = () => {
   return new ParametersBuilder<[]>([])
 }
 
@@ -153,7 +150,7 @@ class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
  * @param errors - api error definitions
  * @returns the error definitions
  */
-export function makeErrors<ErrorDescription extends ZodiosEndpointError[]>(errors: Narrow<ErrorDescription>): ErrorDescription {
+export const makeErrors = <ErrorDescription extends ZodiosEndpointError[]>(errors: Narrow<ErrorDescription>): ErrorDescription => {
   return errors as ErrorDescription
 }
 
@@ -164,9 +161,10 @@ export function makeErrors<ErrorDescription extends ZodiosEndpointError[]>(error
  * @param endpoint - api endpoint definition
  * @returns the endpoint definition
  */
-export function makeEndpoint<T extends ZodiosEndpointDefinition<any>>(endpoint: Narrow<T>): T {
+export const makeEndpoint = <T extends ZodiosEndpointDefinition<any>>(endpoint: Narrow<T>): T => {
   return endpoint as T
 }
+
 export class Builder<T extends ZodiosEndpointDefinitions> {
   constructor(private api: T) {}
   addEndpoint<E extends ZodiosEndpointDefinition>(endpoint: Narrow<E>): Builder<[...T, E]> {
@@ -202,9 +200,9 @@ export function apiBuilder(endpoint?: any) {
  * @param schema - the schema of the resource
  * @returns - the api definitions
  */
-export function makeCrudApi<T extends string, S extends Zod.ZodObject<Zod.ZodRawShape>>(resource: T, schema: S) {
+export const makeCrudApi = <T extends string, S extends Zod.ZodObject<Zod.ZodRawShape>>(resource: T, schema: S) => {
   type Schema = Zod.input<S>
-  const capitalizedResource = capitalize(resource)
+  const capitalizedResource = Strings.capitalize(resource)
   return makeApi([
     {
       method: 'get',
@@ -319,7 +317,7 @@ type MergeApis<
   >
 > = TupleFlat<MergedPathApis>
 
-function cleanPath(path: string) {
+const cleanPath = (path: string) => {
   return path.endsWith('/') ? path.slice(0, -1) : path
 }
 
@@ -329,7 +327,7 @@ function cleanPath(path: string) {
  * @param api - the api to prefix
  * @returns the prefixed api
  */
-export function prefixApi<Prefix extends string, Api extends ZodiosEndpointDefinition[]>(prefix: Prefix, api: Api) {
+export const prefixApi = <Prefix extends string, Api extends ZodiosEndpointDefinition[]>(prefix: Prefix, api: Api) => {
   return api.map((endpoint) => ({
     ...endpoint,
     path: cleanPath(`${prefix}${endpoint.path}`),
@@ -349,6 +347,6 @@ export function prefixApi<Prefix extends string, Api extends ZodiosEndpointDefin
  * });
  * ```
  */
-export function mergeApis<Apis extends Record<string, ZodiosEndpointDefinition[]>>(apis: Apis): MergeApis<Apis> {
+export const mergeApis = <Apis extends Record<string, ZodiosEndpointDefinition[]>>(apis: Apis): MergeApis<Apis> => {
   return Object.keys(apis).flatMap((key) => prefixApi(key, apis[key]!)) as any
 }

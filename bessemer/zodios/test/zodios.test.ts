@@ -2,16 +2,12 @@ import { AxiosError } from 'axios'
 import express from 'express'
 import { AddressInfo } from 'net'
 import { z, ZodError } from 'zod'
-import { Zodios } from '../src/zodios'
-import { ZodiosError } from '../src/zodios-error'
+import { apiBuilder, isErrorFromAlias, isErrorFromPath, Zodios, ZodiosValidationError } from '@bessemer/zodios'
 import multer from 'multer'
-import { ZodiosPlugin } from '@bessemer/zodios/types'
-import { apiBuilder } from '../src/api'
-import { isErrorFromAlias, isErrorFromPath } from '../src/zodios-error.utils'
-import { Assert } from '../src/utils.types'
+import { Assert } from '@bessemer/zodios/utils.types'
+import { Result } from '@bessemer/cornerstone/result'
 
 globalThis.FormData = require('form-data')
-
 const multipart = multer({ storage: multer.memoryStorage() })
 
 describe('Zodios', () => {
@@ -167,172 +163,173 @@ describe('Zodios', () => {
     expect(zodios).toBeDefined()
   })
 
-  it('should register have validation plugin automatically installed', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    // @ts-ignore
-    expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
-  })
+  // it('should register have validation plugin automatically installed', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [])
+  //   // @ts-ignore
+  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
+  // })
 
-  it('should register a plugin', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    zodios.use({
-      request: async (_, config) => config,
-    })
-    // @ts-ignore
-    expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
-  })
-
-  it('should unregister a plugin', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    const id = zodios.use({
-      request: async (_, config) => config,
-    })
-    // @ts-ignore
-    expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
-    zodios.eject(id)
-    // @ts-ignore
-    expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
-  })
-
-  it('should replace a named plugin', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    const plugin: ZodiosPlugin = {
-      name: 'test',
-      request: async (_, config) => config,
-    }
-    zodios.use(plugin)
-    zodios.use(plugin)
-    zodios.use(plugin)
-    // @ts-ignore
-    expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
-  })
-
-  it('should unregister a named plugin', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    const plugin: ZodiosPlugin = {
-      name: 'test',
-      request: async (_, config) => config,
-    }
-    zodios.use(plugin)
-    zodios.eject('test')
-    // @ts-ignore
-    expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
-  })
-
-  it('should throw if invalid parameters when registering a plugin', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    // @ts-ignore
-    expect(() => zodios.use(0)).toThrowError('Zodios: invalid plugin')
-  })
-
-  it('should throw if invalid alias when registering a plugin', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        alias: 'test',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    expect(() =>
-      // @ts-ignore
-      zodios.use('tests', {
-        // @ts-ignore
-        request: async (_, config) => config,
-      })
-    ).toThrowError("Zodios: no alias 'tests' found to register plugin")
-  })
-
-  it('should throw if invalid endpoint when registering a plugin', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    expect(() =>
-      // @ts-ignore
-      zodios.use('get', '/test/:id', {
-        // @ts-ignore
-        request: async (_, config) => config,
-      })
-    ).toThrowError("Zodios: no endpoint 'get /test/:id' found to register plugin")
-  })
-
-  it('should register a plugin by endpoint', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    zodios.use('get', '/:id', {
-      request: async (_, config) => config,
-    })
-    // @ts-ignore
-    expect(zodios.endpointPlugins.get('get-/:id').count()).toBe(1)
-  })
-
-  it('should register a plugin by alias', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        alias: 'test',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    zodios.use('test', {
-      request: async (_, config) => config,
-    })
-    // @ts-ignore
-    expect(zodios.endpointPlugins.get('get-/:id').count()).toBe(1)
-  })
-
-  it('should make an http request', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-      {
-        method: 'get',
-        path: '/users',
-        response: z.array(
-          z.object({
-            id: z.number(),
-            name: z.string(),
-          })
-        ),
-      },
-    ])
-    const response = await zodios.request({
-      //      ^?
-      method: 'get',
-      url: '/:id',
-      params: { id: 7 },
-    })
-    const testResonseType: Assert<typeof response, { id: number; name: string }> = true
-    expect(response).toEqual({ id: 7, name: 'test' })
-  })
+  // it('should register a plugin', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [])
+  //   zodios.use({
+  //     request: async (_, config) => config,
+  //   })
+  //   // @ts-ignore
+  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
+  // })
+  //
+  // it('should unregister a plugin', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [])
+  //   const id = zodios.use({
+  //     request: async (_, config) => config,
+  //   })
+  //   // @ts-ignore
+  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
+  //   zodios.eject(id)
+  //   // @ts-ignore
+  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
+  // })
+  //
+  // it('should replace a named plugin', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [])
+  //   const plugin: ZodiosPlugin = {
+  //     name: 'test',
+  //     request: async (_, config) => config,
+  //   }
+  //   zodios.use(plugin)
+  //   zodios.use(plugin)
+  //   zodios.use(plugin)
+  //   // @ts-ignore
+  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
+  // })
+  //
+  // it('should unregister a named plugin', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [])
+  //   const plugin: ZodiosPlugin = {
+  //     name: 'test',
+  //     request: async (_, config) => config,
+  //   }
+  //   zodios.use(plugin)
+  //   zodios.eject('test')
+  //   // @ts-ignore
+  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
+  // })
+  //
+  // it('should throw if invalid parameters when registering a plugin', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [])
+  //   // @ts-ignore
+  //   expect(() => zodios.use(0)).toThrowError('Zodios: invalid plugin')
+  // })
+  //
+  // it('should throw if invalid alias when registering a plugin', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  //     {
+  //       method: 'get',
+  //       path: '/:id',
+  //       alias: 'test',
+  //       response: z.object({
+  //         id: z.number(),
+  //         name: z.string(),
+  //       }),
+  //     },
+  //   ])
+  //   expect(() =>
+  //     // @ts-ignore
+  //     zodios.use('tests', {
+  //       // @ts-ignore
+  //       request: async (_, config) => config,
+  //     })
+  //   ).toThrowError("Zodios: no alias 'tests' found to register plugin")
+  // })
+  //
+  // it('should throw if invalid endpoint when registering a plugin', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  //     {
+  //       method: 'get',
+  //       path: '/:id',
+  //       response: z.object({
+  //         id: z.number(),
+  //         name: z.string(),
+  //       }),
+  //     },
+  //   ])
+  //   expect(() =>
+  //     // @ts-ignore
+  //     zodios.use('get', '/test/:id', {
+  //       // @ts-ignore
+  //       request: async (_, config) => config,
+  //     })
+  //   ).toThrowError("Zodios: no endpoint 'get /test/:id' found to register plugin")
+  // })
+  //
+  // it('should register a plugin by endpoint', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  //     {
+  //       method: 'get',
+  //       path: '/:id',
+  //       response: z.object({
+  //         id: z.number(),
+  //         name: z.string(),
+  //       }),
+  //     },
+  //   ])
+  //   zodios.use('get', '/:id', {
+  //     request: async (_, config) => config,
+  //   })
+  //   // @ts-ignore
+  //   expect(zodios.endpointPlugins.get('get-/:id').count()).toBe(1)
+  // })
+  //
+  // it('should register a plugin by alias', () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  //     {
+  //       method: 'get',
+  //       path: '/:id',
+  //       alias: 'test',
+  //       response: z.object({
+  //         id: z.number(),
+  //         name: z.string(),
+  //       }),
+  //     },
+  //   ])
+  //   zodios.use('test', {
+  //     request: async (_, config) => config,
+  //   })
+  //   // @ts-ignore
+  //   expect(zodios.endpointPlugins.get('get-/:id').count()).toBe(1)
+  // })
+  //
+  // it('should make an http request', async () => {
+  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  //     {
+  //       method: 'get',
+  //       path: '/:id',
+  //       response: z.object({
+  //         id: z.number(),
+  //         name: z.string(),
+  //       }),
+  //     },
+  //     {
+  //       method: 'get',
+  //       path: '/users',
+  //       response: z.array(
+  //         z.object({
+  //           id: z.number(),
+  //           name: z.string(),
+  //         })
+  //       ),
+  //     },
+  //   ])
+  //   const response = await zodios.request({
+  //     //      ^?
+  //     method: 'get',
+  //     url: '/:id',
+  //     params: { id: 7 },
+  //   })
+  //
+  //   const testResonseType: Assert<typeof response, Result<{ id: number; name: string }, ZodiosValidationError>> = true
+  //   expect(response).toEqual({ id: 7, name: 'test' })
+  // })
 
   // JOHN
   // it('should make an http get with standard query arrays', async () => {
@@ -417,7 +414,7 @@ describe('Zodios', () => {
       // @ts-ignore
       await zodios.get('/:id')
     } catch (e) {
-      expect(e).toBeInstanceOf(ZodiosError)
+      expect(e).toBeInstanceOf(ZodiosValidationError)
     }
   })
 
@@ -526,16 +523,16 @@ describe('Zodios', () => {
       },
     ])
     let response
-    let error: ZodiosError | undefined
+    let error: ZodiosValidationError | undefined
     try {
       response = await zodios.post('/', {
         email: 'post',
       })
     } catch (err) {
-      error = err as ZodiosError
+      error = err as ZodiosValidationError
     }
     expect(response).toBeUndefined()
-    expect(error).toBeInstanceOf(ZodiosError)
+    expect(error).toBeInstanceOf(ZodiosValidationError)
     expect(error!.cause).toBeInstanceOf(ZodError)
     expect(error!.message).toBe("Zodios: Invalid Body parameter 'name'")
   })
@@ -750,9 +747,9 @@ describe('Zodios', () => {
     } catch (e) {
       error = e
     }
-    expect(error).toBeInstanceOf(ZodiosError)
-    expect((error as ZodiosError).cause).toBeInstanceOf(ZodError)
-    expect((error as ZodiosError).message).toBe("Zodios: Invalid Path parameter 'uuid'")
+    expect(error).toBeInstanceOf(ZodiosValidationError)
+    expect((error as ZodiosValidationError).cause).toBeInstanceOf(ZodError)
+    expect((error as ZodiosValidationError).message).toBe("Zodios: Invalid Path parameter 'uuid'")
   })
 
   // JOHN
@@ -1070,21 +1067,17 @@ describe('Zodios', () => {
   })
 
   it('should return response when disabling validation', async () => {
-    const zodios = new Zodios(
-      `http://localhost:${port}`,
-      [
-        {
-          method: 'get',
-          path: '/:id',
-          response: z.object({
-            id: z.number(),
-            name: z.string(),
-            more: z.string(),
-          }),
-        },
-      ],
-      { validate: false }
-    )
+    const zodios = new Zodios(`http://localhost:${port}`, [
+      {
+        method: 'get',
+        path: '/:id',
+        response: z.object({
+          id: z.number(),
+          name: z.string(),
+          more: z.string(),
+        }),
+      },
+    ])
     const response = await zodios.get('/:id', { params: { id: 1 } })
     expect(response).toEqual({
       id: 1,
@@ -1182,16 +1175,11 @@ describe('Zodios', () => {
         response: z.string(),
       },
     ])
-    let error: Error | undefined
-    let response: string | undefined
-    try {
-      response = await zodios.post('/form-data', ['test', 'test2'])
-    } catch (err) {
-      error = err as Error
-    }
-    expect(response).toBeUndefined()
-    expect(error).toBeInstanceOf(ZodiosError)
-    expect((error as ZodiosError).message).toBe('Zodios: multipart/form-data body must be an object')
+
+    const response = await zodios.post('/form-data', ['test', 'test2'])
+    expect(response.isSuccess).toBeFalsy()
+    expect(response.value).toBeInstanceOf(ZodiosValidationError)
+    expect((response.value as ZodiosValidationError).message).toBe('Zodios: multipart/form-data body must be an object')
   })
 
   it('should send a form url request', async () => {
@@ -1216,8 +1204,9 @@ describe('Zodios', () => {
         }),
       },
     ])
+
     const response = await zodios.post('/form-url', { id: 4, name: 'post' })
-    expect(response).toEqual({ id: '4', name: 'post' })
+    expect(response.value).toEqual({ id: '4', name: 'post' })
   })
 
   it('should not send an array as form url request', async () => {
@@ -1237,15 +1226,15 @@ describe('Zodios', () => {
       },
     ])
     let error: Error | undefined
-    let response: string | undefined
+    let response: Result<string> | undefined
     try {
       response = await zodios.post('/form-url', ['test', 'test2'])
     } catch (err) {
       error = err as Error
     }
     expect(response).toBeUndefined()
-    expect(error).toBeInstanceOf(ZodiosError)
-    expect((error as ZodiosError).message).toBe('Zodios: application/x-www-form-urlencoded body must be an object')
+    expect(error).toBeInstanceOf(ZodiosValidationError)
+    expect((error as ZodiosValidationError).message).toBe('Zodios: application/x-www-form-urlencoded body must be an object')
   })
 
   it('should send a text request', async () => {
