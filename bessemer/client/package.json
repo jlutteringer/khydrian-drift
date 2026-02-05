@@ -23,6 +23,6 @@
   },
   "dependencies": {
     "@bessemer/cornerstone": "workspace:*",
-    "@bessemer/zodios": "workspace:*"
+    "@bessemer/zotch": "workspace:*"
   }
 }

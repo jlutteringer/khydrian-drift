@@ -22,7 +22,7 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@bessemer/zodios": "workspace:*",
+    "@bessemer/zotch": "workspace:*",
     "express": "5.2.1"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import Zod from 'zod'
-import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions } from '@bessemer/zodios/types'
+import { ZotchEndpointDefinition, ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
 
 const pathRegExp = /:([a-zA-Z_][a-zA-Z0-9_]*)/g
 const expludedParamTypes = ['Body', 'Path']
@@ -54,7 +54,7 @@ export const oauth2Scheme = (flows: OpenAPIV3.OAuth2SecurityScheme['flows'], des
   }
 }
 
-const findPathParam = (endpoint: ZodiosEndpointDefinition, paramName: string) => {
+const findPathParam = (endpoint: ZotchEndpointDefinition, paramName: string) => {
   return endpoint.parameters?.find((param) => param.type === 'Path' && param.name === paramName)
 }
 
@@ -71,12 +71,12 @@ const makeJsonSchema = (schema: Zod.ZodType): OpenAPIV3.SchemaObject => {
 const makeOpenApi = (options: {
   apis: Array<
     | {
-        definitions: ZodiosEndpointDefinitions
+        definitions: ZotchEndpointDefinitions
       }
     | {
         scheme: string
         securityRequirement?: string[]
-        definitions: ZodiosEndpointDefinitions
+        definitions: ZotchEndpointDefinitions
       }
   >
   info?: OpenAPIV3.InfoObject
@@ -205,12 +205,12 @@ const makeOpenApi = (options: {
 export class OpenApiBuilder {
   apis: Array<
     | {
-        definitions: ZodiosEndpointDefinitions
+        definitions: ZotchEndpointDefinitions
       }
     | {
         scheme: string
         securityRequirement?: string[]
-        definitions: ZodiosEndpointDefinitions
+        definitions: ZotchEndpointDefinitions
       }
   > = []
   options: {
@@ -239,7 +239,7 @@ export class OpenApiBuilder {
    * @param definitions - the endpoint definitions
    * @returns
    */
-  addPublicApi = (definitions: ZodiosEndpointDefinitions) => {
+  addPublicApi = (definitions: ZotchEndpointDefinitions) => {
     this.apis.push({ definitions })
     return this
   }
@@ -250,7 +250,7 @@ export class OpenApiBuilder {
    * @param definitions - the endpoints API
    * @param securityRequirement - optional security requirement to use for this API (oauth2 scopes for example)
    */
-  addProtectedApi = (scheme: string, definitions: ZodiosEndpointDefinitions, securityRequirement?: string[]) => {
+  addProtectedApi = (scheme: string, definitions: ZotchEndpointDefinitions, securityRequirement?: string[]) => {
     this.apis.push({ scheme, definitions, securityRequirement })
     return this
   }

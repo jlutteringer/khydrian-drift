@@ -2,9 +2,8 @@ import { AxiosError } from 'axios'
 import express from 'express'
 import { AddressInfo } from 'net'
 import { z, ZodError } from 'zod'
-import { apiBuilder, isErrorFromAlias, isErrorFromPath, Zodios, ZodiosValidationError } from '@bessemer/zodios'
+import { apiBuilder, Zodios, ZodiosValidationError } from '@bessemer/zodios'
 import multer from 'multer'
-import { Assert } from '@bessemer/zodios/utils.types'
 import { Result } from '@bessemer/cornerstone/result'
 
 globalThis.FormData = require('form-data')
@@ -98,10 +97,6 @@ describe('Zodios', () => {
     expect(() => new Zodios({})).toThrowError('Zodios: api must be an array')
   })
 
-  it('should return the underlying axios instance', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    expect(zodios.axios).toBeDefined()
-  })
   it('should create a new instance of Zodios', () => {
     const zodios = new Zodios(`http://localhost:${port}`, [])
     expect(zodios).toBeDefined()
@@ -142,11 +137,6 @@ describe('Zodios', () => {
           },
         ])
     ).toThrowError("Zodios: Duplicate path 'get /:id'")
-  })
-
-  it('should get base url', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    expect(zodios.baseURL).toBe(`http://localhost:${port}`)
   })
 
   it('should create a new instance whithout base URL', () => {
@@ -872,37 +862,6 @@ describe('Zodios', () => {
     }
     expect(error).toBeInstanceOf(AxiosError)
     expect((error as AxiosError).response?.status).toBe(502)
-    if (isErrorFromPath(zodios.api, 'get', '/error502', error)) {
-      expect(error.response.status).toBe(502)
-      if (error.response.status === 502) {
-        const data = error.response.data
-        const test: Assert<typeof data, { error: { message: string; _502: true } }> = true
-      }
-      expect(error.response?.data).toEqual({
-        error: { message: 'bad gateway' },
-      })
-    }
-    if (isErrorFromAlias(zodios.api, 'getError502', error)) {
-      expect(error.response.status).toBe(502)
-      if (error.response.status === 502) {
-        const data = error.response.data
-        //     ^?
-        const test: Assert<typeof data, { error: { message: string; _502: true } }> = true
-      } else if (error.response.status === 401) {
-        const data = error.response.data
-        //     ^?
-        const test: Assert<typeof data, { error: { message: string; _401: true } }> = true
-      } else {
-        const testStatus = error.response.status
-        //        ^?
-        const data = error.response.data
-        //     ^?
-        const test: Assert<typeof data, { error: { message: string; _default: true } }> = true
-      }
-      expect(error.response?.data).toEqual({
-        error: { message: 'bad gateway' },
-      })
-    }
   })
 
   it('should match error with params', async () => {
@@ -943,12 +902,6 @@ describe('Zodios', () => {
     } catch (e) {
       error = e
     }
-
-    expect(isErrorFromAlias(zodios.api, 'getError401', error)).toBe(true)
-    expect(isErrorFromAlias(zodios.api, 'getError404', error)).toBe(false)
-
-    expect(isErrorFromPath(zodios.api, 'get', '/error/:id/error401', error)).toBe(true)
-    expect(isErrorFromPath(zodios.api, 'get', '/error/:id/error404', error)).toBe(false)
   })
 
   it('should match error with empty params', async () => {
@@ -989,12 +942,6 @@ describe('Zodios', () => {
     } catch (e) {
       error = e
     }
-
-    expect(isErrorFromAlias(zodios.api, 'getError401', error)).toBe(true)
-    expect(isErrorFromAlias(zodios.api, 'getError404', error)).toBe(false)
-
-    expect(isErrorFromPath(zodios.api, 'get', '/error/:id/error401', error)).toBe(true)
-    expect(isErrorFromPath(zodios.api, 'get', '/error/:id/error404', error)).toBe(false)
   })
 
   it('should match error with optional params at the end', async () => {
@@ -1036,12 +983,6 @@ describe('Zodios', () => {
     } catch (e) {
       error = e
     }
-
-    expect(isErrorFromAlias(zodios.api, 'getError401', error)).toBe(true)
-    expect(isErrorFromAlias(zodios.api, 'getError404', error)).toBe(false)
-
-    expect(isErrorFromPath(zodios.api, 'get', '/error/:id/error401/:message', error)).toBe(true)
-    expect(isErrorFromPath(zodios.api, 'get', '/error/:id/error404/:message', error)).toBe(false)
   })
 
   it('should match Unexpected error', async () => {
@@ -1062,8 +1003,6 @@ describe('Zodios', () => {
 
     expect(error).toBeInstanceOf(AxiosError)
     expect((error as AxiosError).response?.status).toBe(502)
-    expect(isErrorFromPath(zodios.api, 'get', '/error502', error)).toBe(false)
-    expect(isErrorFromAlias(zodios.api, 'getError502', error)).toBe(false)
   })
 
   it('should return response when disabling validation', async () => {

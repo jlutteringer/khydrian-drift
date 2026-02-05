@@ -1,9 +1,8 @@
-import { AnyZodiosRequestOptions, ZodiosEndpointDefinitions, ZodiosPlugin } from '@bessemer/zodios/types'
+import { ZotchPlugin, ZotchRequest, ZotchRequestContext, ZotchResponseContext } from '@bessemer/zotch/zotch-types'
 import { AsyncResult, Result } from '@bessemer/cornerstone/result'
 import { Objects, Results } from '@bessemer/cornerstone'
-import { ZodiosValidationError } from '@bessemer/zodios'
-import { ZodiosError } from '@bessemer/zodios/zodios-error'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
+import { ZotchError, ZotchRequestInvalidError } from '@bessemer/zotch/zotch-error'
 
 export type PluginId = {
   key: string
@@ -11,11 +10,11 @@ export type PluginId = {
 }
 
 /**
- * A list of plugins that can be used by the Zodios client.
+ * A list of plugins that can be used by the Zotch client.
  */
-export class ZodiosPlugins {
+export class ZotchPlugins {
   public readonly key: string
-  private plugins: Array<ZodiosPlugin> = []
+  private plugins: Array<ZotchPlugin> = []
 
   /**
    * Constructor
@@ -41,7 +40,7 @@ export class ZodiosPlugins {
    * @param plugin - plugin to register
    * @returns unique id of the plugin
    */
-  use(plugin: ZodiosPlugin): PluginId {
+  use(plugin: ZotchPlugin): PluginId {
     if (plugin.name) {
       const id = this.indexOf(plugin.name)
       if (id !== -1) {
@@ -54,38 +53,30 @@ export class ZodiosPlugins {
     return { key: this.key, value: this.plugins.length - 1 }
   }
 
-  async interceptRequest(
-    api: ZodiosEndpointDefinitions,
-    initialRequest: AnyZodiosRequestOptions
-  ): AsyncResult<AnyZodiosRequestOptions, ZodiosValidationError> {
-    let request = initialRequest
+  async interceptRequest(context: ZotchRequestContext): AsyncResult<ZotchRequest, ZotchRequestInvalidError> {
     for (const plugin of this.plugins) {
       if (Objects.isPresent(plugin.processRequest)) {
-        const result = await plugin.processRequest(api, request)
+        const result = await plugin.processRequest(context)
 
         if (!result.isSuccess) {
           return result
         }
 
-        request = result.value
+        context.request = result.value
       }
     }
 
-    return Results.success(request)
+    return Results.success(context.request)
   }
 
-  async interceptResponse<T>(
-    api: ZodiosEndpointDefinitions,
-    request: AnyZodiosRequestOptions,
-    response: Result<T, ZodiosError>
-  ): AsyncResult<T, ZodiosError> {
-    let pluginResponse: Result<T, ZodiosError> = response
+  async interceptResponse<T>(response: Result<T, ZotchError>, context: ZotchResponseContext): AsyncResult<T, ZotchError> {
+    let pluginResponse: Result<T, ZotchError> = response
 
     for (let index = this.plugins.length - 1; index >= 0; index--) {
       const plugin = this.plugins[index]
 
       if (Objects.isPresent(plugin)) {
-        pluginResponse = (await plugin.processResponse?.(api, request, pluginResponse)) ?? pluginResponse
+        pluginResponse = (await plugin.processResponse?.(pluginResponse, context)) ?? pluginResponse
       }
     }
 

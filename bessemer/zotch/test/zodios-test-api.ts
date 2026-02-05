@@ -1,5 +1,4 @@
 import Zod from 'zod'
-import { makeApi } from '@bessemer/zodios'
 import {
   CreateRequestSchema,
   RequestSchema,
@@ -9,6 +8,7 @@ import {
   WithNoteSchema,
   WithOptionalNoteSchema,
 } from './zod-test-schema'
+import { Zotch } from '@bessemer/zotch'
 
 export const ContextHeadersSchema = [
   {
@@ -43,15 +43,15 @@ export const AccountContextHeadersSchema = [
 
 export const UnauthorizedErrorSchema = {
   status: 401,
-  schema: Zod.unknown(),
+  schema: Zod.number(),
 } as const
 
 export const NotFoundErrorSchema = {
   status: 404,
-  schema: Zod.unknown(),
+  schema: Zod.string(),
 } as const
 
-export const RequestApi = makeApi([
+export const RequestApi = Zotch.makeApi([
   {
     alias: 'fetchRequestById',
     method: 'get',

@@ -520,7 +520,7 @@ __metadata:
   resolution: "@bessemer/client@workspace:bessemer/client"
   dependencies:
     "@bessemer/cornerstone": "workspace:*"
-    "@bessemer/zodios": "workspace:*"
+    "@bessemer/zotch": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -635,7 +635,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@bessemer/zodios-express@workspace:bessemer/zodios-express"
   dependencies:
-    "@bessemer/zodios": "workspace:*"
+    "@bessemer/zotch": "workspace:*"
     "@types/express": "npm:5.0.6"
     "@types/supertest": "npm:6.0.3"
     express: "npm:5.2.1"
@@ -643,9 +643,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@bessemer/zodios@workspace:*, @bessemer/zodios@workspace:bessemer/zodios":
+"@bessemer/zotch@workspace:*, @bessemer/zotch@workspace:bessemer/zotch":
   version: 0.0.0-use.local
-  resolution: "@bessemer/zodios@workspace:bessemer/zodios"
+  resolution: "@bessemer/zotch@workspace:bessemer/zotch"
   dependencies:
     "@bessemer/cornerstone": "workspace:*"
     "@types/multer": "npm:2.0.0"

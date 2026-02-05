@@ -1,4 +1,4 @@
-import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions } from '@bessemer/zodios/types'
+import { ZodiosEndpointError, ZotchEndpointDefinition, ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
 import { Objects } from '@bessemer/cornerstone'
 import { FetchResponse } from '@bessemer/cornerstone/net/fetch'
 
@@ -42,36 +42,36 @@ export const replacePathParams = (url: string, params: Record<string, unknown> |
   return result
 }
 
-export const findEndpoint = (api: ZodiosEndpointDefinitions, method: string, path: string) => {
+export const findEndpoint = (api: ZotchEndpointDefinitions, method: string, path: string) => {
   return api.find((e) => e.method === method && e.path === path)
 }
 
-export const findEndpointByAlias = (api: ZodiosEndpointDefinitions, alias: string) => {
+export const findEndpointByAlias = (api: ZotchEndpointDefinitions, alias: string) => {
   return api.find((e) => e.alias === alias)
 }
 
-export const findEndpointErrors = (endpoint: ZodiosEndpointDefinition, err: FetchResponse) => {
+export const findEndpointErrors = (endpoint: ZotchEndpointDefinition, err: FetchResponse): ZodiosEndpointError[] => {
   const matchingErrors = endpoint.errors?.filter((error) => error.status === err.status)
   if (matchingErrors && matchingErrors.length > 0) {
     return matchingErrors
   }
 
-  return endpoint.errors?.filter((error) => error.status === 'default')
+  return []
 }
 
-export const findEndpointErrorsByPath = (api: ZodiosEndpointDefinitions, method: string, path: string, err: FetchResponse) => {
+export const findEndpointErrorsByPath = (api: ZotchEndpointDefinitions, method: string, path: string, err: FetchResponse): ZodiosEndpointError[] => {
   const endpoint = findEndpoint(api, method, path)
   if (Objects.isNil(endpoint)) {
-    return undefined
+    return []
   }
 
   return findEndpointErrors(endpoint, err)
 }
 
-export const findEndpointErrorsByAlias = (api: ZodiosEndpointDefinitions, alias: string, err: FetchResponse) => {
+export const findEndpointErrorsByAlias = (api: ZotchEndpointDefinitions, alias: string, err: FetchResponse): ZodiosEndpointError[] => {
   const endpoint = findEndpointByAlias(api, alias)
   if (Objects.isNil(endpoint)) {
-    return undefined
+    return []
   }
 
   return findEndpointErrors(endpoint, err)

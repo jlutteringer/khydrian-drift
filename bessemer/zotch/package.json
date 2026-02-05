@@ -1,5 +1,5 @@
 {
-  "name": "@bessemer/zodios",
+  "name": "@bessemer/zotch",
   "type": "module",
   "version": "0.5.109",
   "module": "./dist/index.js",

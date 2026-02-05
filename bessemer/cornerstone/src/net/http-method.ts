@@ -13,7 +13,7 @@ export const HttpMethod = {
   Options: 'options',
   Trace: 'trace',
   Connect: 'connect',
-}
+} as const
 export type HttpMethod = ValueOf<typeof HttpMethod>
 
 export const parseString = (value: string): Result<HttpMethod, ErrorEvent> => {

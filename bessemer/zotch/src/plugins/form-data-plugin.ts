@@ -1,18 +1,24 @@
-import { ZodiosValidationError } from '@bessemer/zodios/zodios-error'
-import type { ZodiosPlugin } from '@bessemer/zodios/types'
-import { Results } from '@bessemer/cornerstone'
+import { ZotchPlugin, ZotchRequest } from '@bessemer/zotch/zotch-types'
+import { Objects, Results } from '@bessemer/cornerstone'
+import { ZotchErrorType, ZotchRequestInvalidError } from '@bessemer/zotch/zotch-error'
+import { AsyncResult } from '@bessemer/cornerstone/result'
 
-const plugin: ZodiosPlugin = {
+const plugin: ZotchPlugin = {
   name: 'form-data',
-  processRequest: async (_, config) => {
-    if (typeof config.data !== 'object' || Array.isArray(config.data)) {
-      return Results.failure(new ZodiosValidationError('Zodios: multipart/form-data body must be an object', config))
+  processRequest: async (context): AsyncResult<ZotchRequest, ZotchRequestInvalidError> => {
+    if (!Objects.isObject(context.request.body)) {
+      return Results.failure({
+        type: ZotchErrorType.RequestInvalid,
+        ...context,
+        message: 'Zotch: multipart/form-data body must be an object',
+        value: context.request.body,
+      })
     }
 
-    const data = getFormDataStream(config.data as any)
+    const data = getFormDataStream(context.request.body as any)
 
     return Results.success({
-      ...config,
+      ...context.request,
       data,
     })
   },
@@ -56,6 +62,6 @@ const getFormDataStream = (data: Record<string, string | Blob>): FormData => {
  * ```
  * @returns form-data plugin
  */
-export const formDataPlugin = (): ZodiosPlugin => {
+export const formDataPlugin = (): ZotchPlugin => {
   return plugin
 }

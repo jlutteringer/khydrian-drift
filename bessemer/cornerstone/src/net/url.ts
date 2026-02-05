@@ -1,6 +1,6 @@
 import { Dictionary, NominalType } from '@bessemer/cornerstone/types'
 import * as Uris from '@bessemer/cornerstone/net/uri'
-import { Uri, UriBuilder, UriComponent, UriLiteral, UriLocation } from '@bessemer/cornerstone/net/uri'
+import { Uri, UriBuilder, UriComponent, UriLiteral, UriLocation, UriParseMode } from '@bessemer/cornerstone/net/uri'
 import { Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import * as Strings from '@bessemer/cornerstone/string'
@@ -47,8 +47,8 @@ export type UrlBuilder = UriBuilder & {
 
 export type UrlLike = Url | Uri | UriLiteral | UrlLiteral | UrlBuilder
 
-export const parseString = (value: string): Result<Url, ErrorEvent> => {
-  const result = Uris.parseString(value)
+export const parseString = (value: string, mode: UriParseMode = UriParseMode.Strict): Result<Url, ErrorEvent> => {
+  const result = Uris.parseString(value, mode)
   if (!result.isSuccess) {
     return result
   }
@@ -158,8 +158,11 @@ const convertUrlBuilderToUriBuilder = (builder: UrlBuilder): UriBuilder => {
     return builder
   }
 
-  const relative = builder.location.relative ?? false
+  if (Strings.isString(builder.location)) {
+    return builder
+  }
 
+  const relative = builder.location.relative ?? false
   let path = builder.location.path
   if (Objects.isPresent(builder.location.pathSegments)) {
     path = formatPathSegments(builder.location.pathSegments, Objects.isPresent(builder.host), relative)

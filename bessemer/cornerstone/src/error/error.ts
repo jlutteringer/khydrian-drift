@@ -4,7 +4,15 @@ import { LazyValue } from '@bessemer/cornerstone/lazy'
 import { assert } from '@bessemer/cornerstone/assertion'
 
 export const isError = (value: unknown): value is Error => {
-  return value instanceof Error
+  return (
+    value instanceof Error ||
+    (typeof value === 'object' &&
+      value !== null &&
+      'name' in value &&
+      'message' in value &&
+      (typeof (value as any).name === 'string' || typeof (value as any).name === 'undefined') &&
+      typeof (value as any).message === 'string')
+  )
 }
 
 export function assertError(value: unknown, message: LazyValue<string> = () => 'Errors.assertError failed validation'): asserts value is Error {

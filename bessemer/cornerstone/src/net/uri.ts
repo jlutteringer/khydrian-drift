@@ -115,7 +115,7 @@ export type UriLike = Uri | UriLiteral | UriBuilder
  *
  * @category parsing
  */
-export const parseString = (value: string): Result<Uri, ErrorEvent> => {
+export const parseString = (value: string, mode: UriParseMode = UriParseMode.Strict): Result<Uri, ErrorEvent> => {
   // JOHN we want to improve the syntax burden of handling a series of Result objects like this
   if (Strings.isBlank(value)) {
     return Results.failure(
@@ -139,7 +139,7 @@ export const parseString = (value: string): Result<Uri, ErrorEvent> => {
 
   const [scheme, rest1] = schemeResult.value
 
-  const authorityPartResult = parseAuthorityPart(rest1)
+  const authorityPartResult = parseAuthorityPart(rest1, mode)
   if (!authorityPartResult.isSuccess) {
     return Results.failure(
       ErrorEvents.invalidValue(value, {
@@ -166,6 +166,14 @@ export const parseString = (value: string): Result<Uri, ErrorEvent> => {
     href: formatInternal(structure),
   })
 }
+
+export const UriParseMode = {
+  // Normal href-style url parsing
+  Strict: 'strict',
+  // Will parse 'www.google.com' as a hostname rather than a path, but loses support for relative urls
+  Permissive: 'permissive',
+} as const
+export type UriParseMode = ValueOf<typeof UriParseMode>
 
 /**
  * Converts various URI-like inputs into a Uri object. Handles Uri instances,
@@ -371,9 +379,13 @@ const parseScheme = (scheme: UriComponent): Result<UriScheme, ErrorEvent> => {
 }
 
 const parseAuthorityPart = (
-  initialUrl: UriComponent
+  initialUrl: UriComponent,
+  mode: UriParseMode
 ): Result<[{ host: UriHost | null; authentication: UriAuthentication | null }, UriComponent], ErrorEvent> => {
-  if (!initialUrl.startsWith('//')) {
+  if (mode === UriParseMode.Strict && !initialUrl.startsWith('//')) {
+    return success([{ host: null, authentication: null }, initialUrl])
+  }
+  if (mode === UriParseMode.Permissive && initialUrl.startsWith('/')) {
     return success([{ host: null, authentication: null }, initialUrl])
   }
 

@@ -1,19 +1,24 @@
-import { ZodiosValidationError } from '@bessemer/zodios/zodios-error'
-import type { ZodiosPlugin } from '@bessemer/zodios/types'
-import { Results } from '@bessemer/cornerstone'
+import type { ZotchPlugin } from '@bessemer/zotch/zotch-types'
+import { Objects, Results } from '@bessemer/cornerstone'
+import { ZotchErrorType } from '@bessemer/zotch/zotch-error'
 
-const plugin: ZodiosPlugin = {
+const plugin: ZotchPlugin = {
   name: 'form-url',
-  processRequest: async (_, config) => {
-    if (typeof config.data !== 'object' || Array.isArray(config.data)) {
-      return Results.failure(new ZodiosValidationError('Zodios: application/x-www-form-urlencoded body must be an object', config))
+  processRequest: async (context) => {
+    if (!Objects.isObject(context.request.body)) {
+      return Results.failure({
+        type: ZotchErrorType.RequestInvalid,
+        ...context,
+        message: 'Zotch: application/x-www-form-urlencoded body must be an object',
+        value: context.request.body,
+      })
     }
 
     return Results.success({
-      ...config,
-      data: new URLSearchParams(config.data as any).toString(),
+      ...context.request,
+      data: new URLSearchParams(context.request.body as any).toString(),
       headers: {
-        ...config.headers,
+        ...context.request.headers,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     })
@@ -51,6 +56,6 @@ const plugin: ZodiosPlugin = {
  * ```
  * @returns form-url plugin
  */
-export const formURLPlugin = (): ZodiosPlugin => {
+export const formUrlPlugin = (): ZotchPlugin => {
   return plugin
 }

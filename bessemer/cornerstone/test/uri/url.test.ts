@@ -1,5 +1,6 @@
 import { Urls } from '@bessemer/cornerstone'
 import { UrlLiteral } from '@bessemer/cornerstone/net/url'
+import { UriParseMode } from '@bessemer/cornerstone/net/uri'
 
 describe('Urls.from', () => {
   test('should build URL with scheme and host object', () => {
@@ -166,6 +167,14 @@ describe('Urls.from', () => {
       format: 'json',
       year: '2024',
     })
+  })
+
+  test('should build URL with only location', () => {
+    const result = Urls.from({
+      location: 'api/reference',
+    })
+
+    expect(result.href).toBe('api/reference')
   })
 
   test('should build URL with fragment', () => {
@@ -347,6 +356,30 @@ describe('Urls.from', () => {
     expect(Urls.from('https://www.google.com/')).toEqual(
       Urls.from({
         scheme: 'https',
+        host: 'www.google.com',
+      })
+    )
+  })
+
+  test('should parse protocol-relative URL with host only', () => {
+    expect(Urls.from('//www.google.com')).toEqual(
+      Urls.from({
+        host: 'www.google.com',
+      })
+    )
+  })
+
+  test('should parse misleading relative url as path', () => {
+    expect(Urls.from('www.google.com')).toEqual(
+      Urls.from({
+        location: 'www.google.com',
+      })
+    )
+  })
+
+  test('should parse misleading url as host with permissive parsing', () => {
+    expect(Urls.parseString('www.google.com', UriParseMode.Permissive).value).toEqual(
+      Urls.from({
         host: 'www.google.com',
       })
     )

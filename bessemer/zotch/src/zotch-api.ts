@@ -1,6 +1,6 @@
-import { ZodiosEndpointDefinition, ZodiosEndpointDefinitions, ZodiosEndpointError, ZodiosEndpointParameter } from '@bessemer/zodios/types'
+import { ZodiosEndpointError, ZodiosEndpointParameter, ZotchEndpointDefinition, ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
 import Zod from 'zod'
-import { Narrow, TupleFlat, UnionToTuple } from '@bessemer/zodios/utils.types'
+import { Narrow, TupleFlat, UnionToTuple } from '@bessemer/zotch/zotch-type-utils'
 import { Strings } from '@bessemer/cornerstone'
 
 /**
@@ -9,7 +9,7 @@ import { Strings } from '@bessemer/cornerstone'
  * @return - nothing
  * @throws - error if api has non unique paths
  */
-export const checkApi = <T extends ZodiosEndpointDefinitions>(api: T) => {
+export const validateEndpointDefinitions = <T extends ZotchEndpointDefinitions>(api: T) => {
   // check if no duplicate path
   const paths = new Set<string>()
   for (let endpoint of api) {
@@ -48,8 +48,8 @@ export const checkApi = <T extends ZodiosEndpointDefinitions>(api: T) => {
  * @param api - api definitions
  * @returns the api definitions
  */
-export const makeApi = <Api extends ZodiosEndpointDefinitions>(api: Narrow<Api>): Api => {
-  checkApi(api)
+export const makeApi = <Api extends ZotchEndpointDefinitions>(api: Narrow<Api>): Api => {
+  validateEndpointDefinitions(api)
   return api as Api
 }
 
@@ -143,31 +143,18 @@ class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
   }
 }
 
-/**
- * Simple helper to split your error definitions into multiple files
- * Mandatory to be used when declaring errors appart from your endpoint definitions
- * to enable type inferrence and autocompletion
- * @param errors - api error definitions
- * @returns the error definitions
- */
 export const makeErrors = <ErrorDescription extends ZodiosEndpointError[]>(errors: Narrow<ErrorDescription>): ErrorDescription => {
   return errors as ErrorDescription
 }
 
-/**
- * Simple helper to split your error definitions into multiple files
- * Mandatory to be used when declaring errors appart from your endpoint definitions
- * to enable type inferrence and autocompletion
- * @param endpoint - api endpoint definition
- * @returns the endpoint definition
- */
-export const makeEndpoint = <T extends ZodiosEndpointDefinition<any>>(endpoint: Narrow<T>): T => {
+export const makeEndpoint = <T extends ZotchEndpointDefinition<any>>(endpoint: Narrow<T>): T => {
   return endpoint as T
 }
 
-export class Builder<T extends ZodiosEndpointDefinitions> {
+export class Builder<T extends ZotchEndpointDefinitions> {
   constructor(private api: T) {}
-  addEndpoint<E extends ZodiosEndpointDefinition>(endpoint: Narrow<E>): Builder<[...T, E]> {
+
+  addEndpoint<E extends ZotchEndpointDefinition>(endpoint: Narrow<E>): Builder<[...T, E]> {
     if (this.api.length === 0) {
       this.api = [endpoint] as T
       return this as any
@@ -175,8 +162,9 @@ export class Builder<T extends ZodiosEndpointDefinitions> {
     this.api = [...this.api, endpoint] as any
     return this as any
   }
+
   build(): T {
-    checkApi(this.api!)
+    validateEndpointDefinitions(this.api!)
     return this.api!
   }
 }
@@ -188,9 +176,12 @@ export class Builder<T extends ZodiosEndpointDefinitions> {
  * @returns - a builder to build your api definitions
  */
 export function apiBuilder(): Builder<[]>
-export function apiBuilder<T extends ZodiosEndpointDefinition<any>>(endpoint: Narrow<T>): Builder<[T]>
+export function apiBuilder<T extends ZotchEndpointDefinition<any>>(endpoint: Narrow<T>): Builder<[T]>
 export function apiBuilder(endpoint?: any) {
-  if (!endpoint) return new Builder([])
+  if (!endpoint) {
+    return new Builder([])
+  }
+
   return new Builder([endpoint])
 }
 
@@ -203,16 +194,8 @@ export function apiBuilder(endpoint?: any) {
 export const makeCrudApi = <T extends string, S extends Zod.ZodObject<Zod.ZodRawShape>>(resource: T, schema: S) => {
   type Schema = Zod.input<S>
   const capitalizedResource = Strings.capitalize(resource)
+
   return makeApi([
-    {
-      method: 'get',
-      // @ts-expect-error
-      path: `/${resource}s`,
-      // @ts-expect-error
-      alias: `get${capitalizedResource}s`,
-      description: `Get all ${resource}s`,
-      response: Zod.array(schema),
-    },
     {
       method: 'get',
       // @ts-expect-error
@@ -309,7 +292,7 @@ type MapApiPath<Path extends string, Api, Acc extends unknown[] = []> = Api exte
   : Acc
 
 type MergeApis<
-  Apis extends Record<string, ZodiosEndpointDefinition[]>,
+  Apis extends Record<string, ZotchEndpointDefinition[]>,
   MergedPathApis = UnionToTuple<
     {
       [K in keyof Apis]: K extends string ? MapApiPath<K, Apis[K]> : never
@@ -327,7 +310,7 @@ const cleanPath = (path: string) => {
  * @param api - the api to prefix
  * @returns the prefixed api
  */
-export const prefixApi = <Prefix extends string, Api extends ZodiosEndpointDefinition[]>(prefix: Prefix, api: Api) => {
+export const prefixApi = <Prefix extends string, Api extends ZotchEndpointDefinition[]>(prefix: Prefix, api: Api): MapApiPath<Prefix, Api> => {
   return api.map((endpoint) => ({
     ...endpoint,
     path: cleanPath(`${prefix}${endpoint.path}`),
@@ -347,6 +330,6 @@ export const prefixApi = <Prefix extends string, Api extends ZodiosEndpointDefin
  * });
  * ```
  */
-export const mergeApis = <Apis extends Record<string, ZodiosEndpointDefinition[]>>(apis: Apis): MergeApis<Apis> => {
+export const mergeApis = <Apis extends Record<string, ZotchEndpointDefinition[]>>(apis: Apis): MergeApis<Apis> => {
   return Object.keys(apis).flatMap((key) => prefixApi(key, apis[key]!)) as any
 }

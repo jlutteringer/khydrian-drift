@@ -1,12 +1,12 @@
-import Zod, { ZodType } from 'zod'
+import Zod, { ZodError, ZodType } from 'zod'
 import { ResourceKey } from '@bessemer/cornerstone/resource-key'
 import { parse as jsonParse } from '@bessemer/cornerstone/json'
-import { failure, Result, success } from '@bessemer/cornerstone/result'
+import { AsyncResult, failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { $RefinementCtx } from 'zod/v4/core'
 import * as Assertions from '@bessemer/cornerstone/assertion'
 
-export const parse = <T extends ZodType>(type: T, data: unknown): Result<Zod.infer<T>> => {
+export const parse = <T extends ZodType>(type: T, data: unknown): Result<Zod.infer<T>, ZodError<Zod.infer<T>>> => {
   const result = type.safeParse(data)
   if (result.success) {
     return success(result.data)
@@ -15,13 +15,31 @@ export const parse = <T extends ZodType>(type: T, data: unknown): Result<Zod.inf
   }
 }
 
-export const parseJson = <T extends ZodType>(type: T, data: string): Result<Zod.infer<T>> => {
+export const parseAsync = async <T extends ZodType>(type: T, data: unknown): AsyncResult<Zod.infer<T>, ZodError<Zod.infer<T>>> => {
+  const result = await type.safeParseAsync(data)
+  if (result.success) {
+    return success(result.data)
+  } else {
+    return failure(result.error)
+  }
+}
+
+export const parseJson = <T extends ZodType>(type: T, data: string): Result<Zod.infer<T>, SyntaxError | ZodError<Zod.infer<T>>> => {
   const result = jsonParse(data)
   if (!result.isSuccess) {
     return result
   }
 
   return parse(type, result.value)
+}
+
+export const parseJsonAsync = async <T extends ZodType>(type: T, data: string): AsyncResult<Zod.infer<T>, SyntaxError | ZodError<Zod.infer<T>>> => {
+  const result = jsonParse(data)
+  if (!result.isSuccess) {
+    return result
+  }
+
+  return parseAsync(type, result.value)
 }
 
 export const parseJsonOrThrow = <T extends ZodType>(type: T, data: string): Zod.infer<T> => {
