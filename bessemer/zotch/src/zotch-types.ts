@@ -85,10 +85,16 @@ export type ZotchResponseByPath<
   ? ZotchResultByPath<Api, M, Path>
   : Result<z.input<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['response']>, ZotchError<ZotchErrorTypeByPath<Api, M, Path>>>
 
-export type ZodiosErrorTypeByAlias<Api extends Array<ZotchEndpointDefinition>, Alias extends string> = {
-  status: NonNullable<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['errors']>[number]['status']
-  value: z.output<NonNullable<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['errors']>[number]['schema']>
-}
+export type ZodiosErrorTypeByAlias<Api extends Array<ZotchEndpointDefinition>, Alias extends string> = NonNullable<
+  ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['errors']
+>[number] extends infer E
+  ? E extends ZodiosEndpointError
+    ? {
+        status: E['status']
+        value: z.output<E['schema']>
+      }
+    : never
+  : never
 
 export type ZodiosResponseByAlias<
   Api extends Array<ZotchEndpointDefinition>,
@@ -484,39 +490,15 @@ export type ZodiosEndpointErrors = Array<ZodiosEndpointError>
  * Zodios enpoint definition that should be used to create a new instance of Zodios
  */
 export interface ZotchEndpointDefinition<R = unknown> {
-  /**
-   * http method : get, post, put, patch, delete
-   */
+  alias: string
   method: HttpMethod
-  /**
-   * path of the endpoint
-   * @example
-   * ```text
-   * /posts/:postId/comments/:commentId
-   * ```
-   */
   path: string
-  /**
-   * optional alias to call the endpoint easily
-   * @example
-   * ```text
-   * getPostComments
-   * ```
-   */
-  alias?: string
-  /**
-   * optional description of the endpoint
-   */
   description?: string
   /**
    * optional request format of the endpoint: json, form-data, form-url, binary, text
    */
   requestFormat?: RequestFormat
-  /**
-   * optionally mark the endpoint as immutable to allow zodios to cache the response with react-query
-   * use it to mark a 'post' endpoint as immutable
-   */
-  immutable?: boolean
+
   /**
    * optional parameters of the endpoint
    */
@@ -535,9 +517,7 @@ export interface ZotchEndpointDefinition<R = unknown> {
    * optional response description of the endpoint
    */
   responseDescription?: string
-  /**
-   * optional errors of the endpoint - only usefull when using @zodios/express
-   */
+
   errors?: Array<ZodiosEndpointError>
 }
 

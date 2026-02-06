@@ -48,7 +48,7 @@ export const UnauthorizedErrorSchema = {
 
 export const NotFoundErrorSchema = {
   status: 404,
-  schema: Zod.string(),
+  schema: Zod.unknown(),
 } as const
 
 export const RequestApi = Zotch.makeApi([

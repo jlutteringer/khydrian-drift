@@ -2,6 +2,7 @@ import { buildGenerator, Left, LeftImpl, Right, RightImpl } from '@bessemer/corn
 import { Throwable } from '@bessemer/cornerstone/types'
 import { isPromise } from '@bessemer/cornerstone/promise'
 import { executeAsync } from '@bessemer/cornerstone/internal'
+import { assert } from '@bessemer/cornerstone/assertion'
 
 export type Success<SuccessType> = Omit<Right<SuccessType>, 'map' | 'mapLeft'> & {
   isSuccess: true
@@ -142,4 +143,12 @@ export function gen<TGen extends () => Generator<Result<any, any>> | AsyncGenera
   ? Promise<Result<R, L>>
   : never {
   return generator(generatorFn)
+}
+
+export function assertSuccess<SuccessType, FailureType>(result: Result<SuccessType, FailureType>): asserts result is Success<SuccessType> {
+  assert(result.isSuccess)
+}
+
+export function assertFailure<SuccessType, FailureType>(result: Result<SuccessType, FailureType>): asserts result is Failure<FailureType> {
+  assert(!result.isSuccess)
 }

@@ -1,5 +1,6 @@
 import Zod, { ZodType } from 'zod'
 import { Instants, Strings } from '@bessemer/cornerstone'
+import { Alias } from '@bessemer/cornerstone/types'
 
 const TextSchema = Zod.string()
   .trim()
@@ -100,14 +101,20 @@ export const RequestSchema = Zod.object({
   isProposal: Zod.boolean(),
   public: Zod.boolean(),
   items: Zod.array(RequestItemSchema),
-  metadata: Zod.record(Zod.string(), Zod.any()).default({}),
+  metadata: Zod.record(Zod.string(), Zod.any()),
   createdAt: Instants.SchemaLiteral,
   updatedAt: Instants.SchemaLiteral,
 })
-export type RequestDto = Zod.infer<typeof RequestSchema>
+export type RequestDto = Alias<Zod.infer<typeof RequestSchema>>
 
 export const CreateRequestSchema = RequestSchema.omit({ id: true, status: true, items: true, createdAt: true, updatedAt: true }).extend({
-  status: Zod.union([Zod.literal(RequestStatus.Cart), Zod.literal(RequestStatus.Open), Zod.literal(RequestStatus.Quote)]),
+  status: Zod.union([Zod.literal(RequestStatus.Cart), Zod.literal(RequestStatus.Open), Zod.literal(RequestStatus.Quote)]).default(
+    RequestStatus.Quote
+  ),
+  quoteNumber: RequestSchema.shape.quoteNumber.default(null),
+  isProposal: RequestSchema.shape.isProposal.default(false),
+  public: RequestSchema.shape.public.default(false),
+  metadata: RequestSchema.shape.metadata.default({}),
   items: Zod.array(CreateRequestItemSchema).default([]),
 })
 export type CreateRequestDto = Zod.output<typeof CreateRequestSchema>
