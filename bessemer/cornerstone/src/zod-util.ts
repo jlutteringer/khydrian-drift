@@ -4,7 +4,15 @@ import { parse as jsonParse } from '@bessemer/cornerstone/json'
 import { AsyncResult, failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { $RefinementCtx } from 'zod/v4/core'
-import * as Assertions from '@bessemer/cornerstone/assertion'
+import { assert } from '@bessemer/cornerstone/assertion'
+
+export const defaults = <T extends ZodType>(data: Zod.input<T>, schema: T): Zod.output<T> => {
+  return schema.parse(data)
+}
+
+export const defaultsAsync = async <T extends ZodType>(data: Zod.input<T>, schema: T): Promise<Zod.output<T>> => {
+  return schema.parseAsync(data)
+}
 
 export const parse = <T extends ZodType>(type: T, data: unknown): Result<Zod.infer<T>, ZodError<Zod.infer<T>>> => {
   const result = type.safeParse(data)
@@ -44,7 +52,7 @@ export const parseJsonAsync = async <T extends ZodType>(type: T, data: string): 
 
 export const parseJsonOrThrow = <T extends ZodType>(type: T, data: string): Zod.infer<T> => {
   const result = parseJson(type, data)
-  Assertions.assert(result.isSuccess)
+  assert(result.isSuccess)
   return result.value
 }
 

@@ -94,6 +94,22 @@ export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => p
 // JOHN need a schema for the object version...
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
+export const empty = (): Url => {
+  const result = Uris.empty()
+
+  return {
+    ...result,
+    _type: Namespace,
+    href: result.href as UrlLiteral,
+    location: {
+      ...result.location,
+      relative: true,
+      pathSegments: [],
+      parameters: {},
+    },
+  }
+}
+
 export const isUrl = (value: unknown): value is Url => {
   if (!Objects.isObject(value)) {
     return false
@@ -103,31 +119,32 @@ export const isUrl = (value: unknown): value is Url => {
   return uriValue._type === Namespace
 }
 
-export const merge = (element: UrlLike, builder: UrlBuilder): Url => {
-  const url = from(element)
+export const merge = (first: UrlLike, second: UrlLike): Url => {
+  const firstUrl = from(first)
+  const secondUrl = from(second)
 
-  let location: UrlBuilderLocationPart | null | undefined
-  if (Strings.isString(builder.location) || Objects.isNull(builder.location)) {
-    location = builder.location
+  let location: UrlBuilderLocationPart | null | undefined = null
+  if (Objects.isNull(secondUrl.location)) {
+    location = secondUrl.location
   } else {
-    const usePathSegments = !Objects.isUndefined(builder.location?.pathSegments)
-    const useParameters = !Objects.isUndefined(builder.location?.parameters)
+    const usePathSegments = !Objects.isUndefined(secondUrl.location?.pathSegments)
+    const useParameters = !Objects.isUndefined(secondUrl.location?.parameters)
 
     location = {
       ...(usePathSegments
-        ? { pathSegments: builder.location?.pathSegments }
-        : { path: Objects.isUndefined(builder.location?.path) ? url.location.path : builder.location.path }),
+        ? { pathSegments: secondUrl.location?.pathSegments }
+        : { path: Objects.isUndefined(secondUrl.location?.path) ? firstUrl.location.path : secondUrl.location.path }),
       ...(useParameters
-        ? { parameters: builder.location?.parameters }
-        : { query: Objects.isUndefined(builder.location?.query) ? url.location.query : builder.location.query }),
-      fragment: Objects.isUndefined(builder.location?.fragment) ? url.location.fragment : builder.location.fragment,
+        ? { parameters: secondUrl.location?.parameters }
+        : { query: Objects.isUndefined(secondUrl.location?.query) ? firstUrl.location.query : secondUrl.location.query }),
+      fragment: Objects.isUndefined(secondUrl.location?.fragment) ? firstUrl.location.fragment : secondUrl.location.fragment,
     }
   }
 
   const uriBuilder: UriBuilder = {
-    scheme: Objects.isUndefined(builder.scheme) ? url.scheme : builder.scheme,
-    host: Objects.isUndefined(builder.host) ? url.host : builder.host,
-    authentication: Objects.isUndefined(builder.authentication) ? url.authentication : builder.authentication,
+    scheme: Objects.isUndefined(secondUrl.scheme) ? firstUrl.scheme : secondUrl.scheme,
+    host: Objects.isUndefined(secondUrl.host) ? firstUrl.host : secondUrl.host,
+    authentication: Objects.isUndefined(secondUrl.authentication) ? firstUrl.authentication : secondUrl.authentication,
     location,
   }
 

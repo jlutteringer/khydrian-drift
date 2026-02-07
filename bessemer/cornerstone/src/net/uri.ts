@@ -118,12 +118,7 @@ export type UriLike = Uri | UriLiteral | UriBuilder
 export const parseString = (value: string, mode: UriParseMode = UriParseMode.Strict): Result<Uri, ErrorEvent> => {
   // JOHN we want to improve the syntax burden of handling a series of Result objects like this
   if (Strings.isBlank(value)) {
-    return Results.failure(
-      ErrorEvents.required({
-        namespace: Namespace,
-        message: `[${Namespace}]: Unable to parse Uri from empty string.`,
-      })
-    )
+    return Results.success(empty())
   }
 
   const schemeResult = parseSchemePart(value)
@@ -261,6 +256,21 @@ export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => p
 // JOHN need a schema for the object version...
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
+export const empty = (): Uri => {
+  return {
+    _type: Namespace,
+    href: '' as UriLiteral,
+    scheme: null,
+    authentication: null,
+    host: null,
+    location: {
+      path: null,
+      query: null,
+      fragment: null,
+    },
+  }
+}
+
 /**
  * Tests if the provided value is a Uri.
  *
@@ -290,7 +300,7 @@ export const isUri = (value: unknown): value is Uri => {
 }
 
 /**
- * Merges an existing URI with partial changes to create a new URI instance.
+ * Updates an existing URI with partial changes to create a new URI instance.
  * Allows selective updates without replacing the entire URI.
  *
  * **Example**
@@ -307,7 +317,7 @@ export const isUri = (value: unknown): value is Uri => {
  * })
  *
  * // Change just the host and add query parameter
- * const updatedUri = Uris.merge(baseUri, {
+ * const updatedUri = Uris.update(baseUri, {
  *   host: { value: 'api.production.com' }, // Port preserved from original
  *   location: {
  *     parameters: { version: '2.0' } // Merges with existing parameters
@@ -321,7 +331,7 @@ export const isUri = (value: unknown): value is Uri => {
  *
  * @category transformation
  */
-export const merge = (element: UriLike, builder: UriBuilder): Uri => {
+export const update = (element: UriLike, builder: UriBuilder): Uri => {
   const uri = from(element)
 
   let location: UriBuilderLocation | null | undefined
@@ -339,6 +349,35 @@ export const merge = (element: UriLike, builder: UriBuilder): Uri => {
   }
 
   return from(uriBuilder)
+}
+
+export const merge = (...uris: UriLike[]): Uri => {
+  if (uris.length === 0) {
+    return empty()
+  }
+  if (uris.length === 1) {
+    return from(uris[0]!)
+  }
+
+  return uris.reduce<Uri>((aggregate, next) => {
+    const nextUri = from(next)
+
+    const uriBuilder: UriBuilder = {
+      scheme: nextUri.scheme ?? undefined,
+      host: nextUri.host ?? undefined,
+      authentication: nextUri.authentication ?? undefined,
+      location: {
+        ...aggregate.location,
+        ...{
+          path: nextUri.location.path ?? undefined,
+          query: nextUri.location.query ?? undefined,
+          fragment: nextUri.location.fragment ?? undefined,
+        },
+      },
+    }
+
+    return update(aggregate, uriBuilder)
+  }, from(uris[0]!))
 }
 
 const parseSchemePart = (url: UriComponent): Result<[UriScheme | null, UriComponent], ErrorEvent> => {

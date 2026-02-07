@@ -1,151 +1,177 @@
-import { isPromise } from '@bessemer/cornerstone/promise'
-import { executeAsync } from '@bessemer/cornerstone/internal'
+import { isObject } from '@bessemer/cornerstone/object'
+import { assert } from '@bessemer/cornerstone/assertion'
+import * as Promises from '@bessemer/cornerstone/promise'
+import { Promisable } from 'type-fest'
+
+const TypeToken = '__Either.type'
 
 export enum EitherType {
   Left = 'Left',
   Right = 'Right',
 }
 
+export type Left<LeftType> = LeftType
 export type Right<RightType> = {
-  type: EitherType.Right
+  [TypeToken]: EitherType.Right
   value: RightType
-  isRight: true
-  isLeft: false
-  map: <T>(mapper: (element: RightType) => T) => T extends Promise<infer U> ? Promise<Right<U>> : Right<T>
-  mapLeft: () => Right<RightType>
-  [Symbol.iterator](): Generator<Either<RightType, never>, RightType>
+}
+export type Either<LeftType, RightType> = Left<LeftType> | Right<RightType>
+
+export const left = <LeftType>(value: LeftType): Left<LeftType> => value
+export const right = <RightType>(value: RightType): Right<RightType> => {
+  return { [TypeToken]: EitherType.Right, value }
 }
 
-export type Left<LeftType> = {
-  type: EitherType.Left
-  value: LeftType
-  isRight: false
-  isLeft: true
-  map: () => Left<LeftType>
-  mapLeft: <T>(mapper: (element: LeftType) => T) => T extends Promise<infer U> ? Promise<Left<U>> : Left<T>
-  [Symbol.iterator](): Generator<Either<never, LeftType>, never>
+export const isLeft = <LeftType, RightType>(value: Either<LeftType, RightType>): value is Left<LeftType> => {
+  return !isRight(value)
+}
+export const isRight = <LeftType, RightType>(value: Either<LeftType, RightType>): value is Right<RightType> => {
+  return isObject(value) && value[TypeToken] === EitherType.Right
 }
 
-export type Either<RightType, LeftType> = Left<LeftType> | Right<RightType>
-
-export class RightImpl<RightType> implements Right<RightType> {
-  public readonly type: EitherType.Right = EitherType.Right
-  public readonly isRight = true
-  public readonly isLeft = false
-
-  constructor(public readonly value: RightType) {}
-
-  map = <T>(mapper: (element: RightType) => T): T extends Promise<infer U> ? Promise<Right<U>> : Right<T> => {
-    const mappedValue = mapper(this.value)
-    if (isPromise(mappedValue)) {
-      return executeAsync(async () => right(await mappedValue)) as any
-    } else {
-      return right(mappedValue) as any
-    }
-  }
-
-  mapLeft = (): Right<RightType> => {
-    return this
-  };
-
-  [Symbol.iterator](): Generator<Either<RightType, never>, RightType> {
-    return function* (this: Right<RightType>) {
-      return this.value
-    }.call(this)
-  }
+export function assertLeft<LeftType, RightType>(value: Either<LeftType, RightType>): asserts value is Left<LeftType> {
+  assert(isLeft(value))
+}
+export function assertRight<LeftType, RightType>(value: Either<LeftType, RightType>): asserts value is Right<RightType> {
+  assert(isRight(value))
 }
 
-export class LeftImpl<LeftType> implements Left<LeftType> {
-  public readonly type = EitherType.Left
-  public readonly isRight = false
-  public readonly isLeft = true
-
-  constructor(public readonly value: LeftType) {}
-
-  map = (): Left<LeftType> => {
-    return this
+export function map<LeftType, RightType, MappedType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: LeftType) => Promise<MappedType>
+): Promise<Either<MappedType, RightType>>
+export function map<LeftType, RightType, MappedType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: LeftType) => MappedType
+): Either<MappedType, RightType>
+export function map<LeftType, RightType, MappedType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: LeftType) => MappedType
+): Promisable<Either<MappedType, RightType>> {
+  if (isRight(value)) {
+    return value
   }
 
-  mapLeft = <T>(mapper: (element: LeftType) => T): T extends Promise<infer U> ? Promise<Left<U>> : Left<T> => {
-    const mappedValue = mapper(this.value)
-    if (isPromise(mappedValue)) {
-      return executeAsync(async () => left(await mappedValue)) as any
-    } else {
-      return left(mappedValue) as any
-    }
-  };
-
-  [Symbol.iterator](): Generator<Either<never, LeftType>, never> {
-    return function* (this: Left<LeftType>) {
-      yield this as any
-      throw new Error('Illegal State')
-    }.call(this)
-  }
+  return Promises.map(mapper(value), left)
 }
 
-export const left = <LeftType>(value: LeftType): Left<LeftType> => new LeftImpl(value)
-export const right = <RightType>(value: RightType): Right<RightType> => new RightImpl(value)
+export function flatMap<LeftType, RightType, MappedLeftType, MappedRightType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: LeftType) => Promise<Either<MappedLeftType, MappedRightType>>
+): Promise<Either<MappedLeftType, RightType | MappedRightType>>
+export function flatMap<LeftType, RightType, MappedLeftType, MappedRightType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: LeftType) => Either<MappedLeftType, MappedRightType>
+): Either<MappedLeftType, RightType | MappedRightType>
+export function flatMap<LeftType, RightType, MappedLeftType, MappedRightType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: LeftType) => Either<MappedLeftType, MappedRightType>
+): Promisable<Either<MappedLeftType, RightType | MappedRightType>> {
+  if (isRight(value)) {
+    return value
+  }
 
-export const split = <RightType, LeftType>(array: Array<Either<RightType, LeftType>>): [Array<LeftType>, Array<RightType>] => {
-  const lefts = array.filter((it) => it.isLeft).map((it) => it.value)
-  const rights = array.filter((it) => it.isRight).map((it) => it.value)
+  return mapper(value)
+}
+
+export function mapRight<LeftType, RightType, MappedType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: RightType) => Promise<MappedType>
+): Promise<Either<LeftType, MappedType>>
+export function mapRight<LeftType, RightType, MappedType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: RightType) => MappedType
+): Either<LeftType, MappedType>
+export function mapRight<LeftType, RightType, MappedType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: RightType) => MappedType
+): Promisable<Either<LeftType, MappedType>> {
+  if (isLeft(value)) {
+    return value
+  }
+
+  return Promises.map(mapper(value.value), right)
+}
+
+export function flatMapRight<LeftType, RightType, MappedLeftType, MappedRightType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: RightType) => Promise<Either<MappedLeftType, MappedRightType>>
+): Promise<Either<LeftType | MappedLeftType, MappedRightType>>
+export function flatMapRight<LeftType, RightType, MappedLeftType, MappedRightType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: RightType) => Either<MappedLeftType, MappedRightType>
+): Either<LeftType | MappedLeftType, MappedRightType>
+export function flatMapRight<LeftType, RightType, MappedLeftType, MappedRightType>(
+  value: Either<LeftType, RightType>,
+  mapper: (value: RightType) => Either<MappedLeftType, MappedRightType>
+): Promisable<Either<LeftType | MappedLeftType, MappedRightType>> {
+  if (isLeft(value)) {
+    return value
+  }
+
+  return mapper(value.value)
+}
+
+export const split = <LeftType, RightType>(array: Array<Either<LeftType, RightType>>): [Array<LeftType>, Array<RightType>] => {
+  const lefts = array.filter((it) => isLeft(it)).map((it) => it)
+  const rights = array.filter((it) => isRight(it)).map((it) => it.value)
   return [lefts, rights]
 }
 
-export const buildGenerator = <EitherType extends Either<any, any>, TGen extends () => Generator<EitherType> | AsyncGenerator<EitherType>>(
-  lift: (val: any) => EitherType
-): ((
-  generatorFn: TGen
-) => TGen extends () => Generator<EitherType, infer R>
-  ? EitherType
-  : TGen extends () => AsyncGenerator<EitherType, infer R>
-  ? Promise<EitherType>
-  : never) => {
-  return (generatorFn) => {
-    const generator = generatorFn()
-    const firstNext = generator.next()
-    if (isPromise(firstNext)) {
-      return (async () => {
-        let current = await firstNext
-        while (!current.done) {
-          const result = current.value
-          if (result.isLeft) {
-            return result
-          }
-          current = await generator.next(result.value)
-        }
-        return lift(current.value)
-      })() as any
-    } else {
-      let current = firstNext
-      while (!current.done) {
-        const result = current.value
-        if (result.isLeft) {
-          return result
-        }
-
-        current = generator.next(result.value) as IteratorResult<EitherType>
-      }
-
-      return lift(current.value)
-    }
-  }
-}
-
-const generator = buildGenerator((it) => right(it) as Either<any, any>)
-
-export function gen<TGen extends () => Generator<Either<any, any>>>(
-  generatorFn: TGen
-): TGen extends () => Generator<Either<any, infer L>, infer R> ? Either<R, L> : never
-export function gen<TGen extends () => AsyncGenerator<Either<any, any>>>(
-  generatorFn: TGen
-): Promise<TGen extends () => AsyncGenerator<Either<any, infer L>, infer R> ? Either<R, L> : never>
-export function gen<TGen extends () => Generator<Either<any, any>> | AsyncGenerator<Either<any, any>>>(
-  generatorFn: TGen
-): TGen extends () => Generator<Either<any, infer L>, infer R>
-  ? Either<R, L>
-  : TGen extends () => AsyncGenerator<Either<any, infer L>, infer R>
-  ? Promise<Either<R, L>>
-  : never {
-  return generator(generatorFn)
-}
+// export const buildGenerator = <EitherType extends Either<any, any>, TGen extends () => Generator<EitherType> | AsyncGenerator<EitherType>>(
+//   lift: (val: any) => EitherType
+// ): ((
+//   generatorFn: TGen
+// ) => TGen extends () => Generator<EitherType, infer R>
+//   ? EitherType
+//   : TGen extends () => AsyncGenerator<EitherType, infer R>
+//   ? Promise<EitherType>
+//   : never) => {
+//   return (generatorFn) => {
+//     const generator = generatorFn()
+//     const firstNext = generator.next()
+//     if (isPromise(firstNext)) {
+//       return (async () => {
+//         let current = await firstNext
+//         while (!current.done) {
+//           const result = current.value
+//           if (result.isLeft) {
+//             return result
+//           }
+//           current = await generator.next(result.value)
+//         }
+//         return lift(current.value)
+//       })() as any
+//     } else {
+//       let current = firstNext
+//       while (!current.done) {
+//         const result = current.value
+//         if (result.isLeft) {
+//           return result
+//         }
+//
+//         current = generator.next(result.value) as IteratorResult<EitherType>
+//       }
+//
+//       return lift(current.value)
+//     }
+//   }
+// }
+//
+// const generator = buildGenerator((it) => right(it) as Either<any, any>)
+//
+// export function gen<TGen extends () => Generator<Either<any, any>>>(
+//   generatorFn: TGen
+// ): TGen extends () => Generator<Either<any, infer L>, infer R> ? Either<R, L> : never
+// export function gen<TGen extends () => AsyncGenerator<Either<any, any>>>(
+//   generatorFn: TGen
+// ): Promise<TGen extends () => AsyncGenerator<Either<any, infer L>, infer R> ? Either<R, L> : never>
+// export function gen<TGen extends () => Generator<Either<any, any>> | AsyncGenerator<Either<any, any>>>(
+//   generatorFn: TGen
+// ): TGen extends () => Generator<Either<any, infer L>, infer R>
+//   ? Either<R, L>
+//   : TGen extends () => AsyncGenerator<Either<any, infer L>, infer R>
+//   ? Promise<Either<R, L>>
+//   : never {
+//   return generator(generatorFn)
+// }

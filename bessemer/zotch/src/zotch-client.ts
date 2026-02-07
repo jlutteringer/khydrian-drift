@@ -5,7 +5,6 @@ import {
   ZotchEndpointDefinition,
   ZotchEndpointDefinitions,
   ZotchErrorTypeByPath,
-  ZotchOptions,
   ZotchPathsByMethod,
   ZotchPayloadTypeByPath,
   ZotchPlugin,
@@ -17,7 +16,7 @@ import {
   ZotchResultByPath,
 } from '@bessemer/zotch/zotch-types'
 import { findEndpoint, findEndpointErrors, replacePathParams } from './zotch-utils'
-import { PickRequired, ReadonlyDeep, RequiredKeys, UndefinedIfNever } from '@bessemer/zotch/zotch-type-utils'
+import { ReadonlyDeep, RequiredKeys, UndefinedIfNever } from '@bessemer/zotch/zotch-type-utils'
 import { PluginId, ZotchPlugins } from '@bessemer/zotch/plugins/zotch-plugins'
 import { headerPlugin } from '@bessemer/zotch/plugins/header-plugin'
 import { formDataPlugin } from '@bessemer/zotch/plugins/form-data-plugin'
@@ -30,27 +29,25 @@ import Zod from 'zod'
 import { formUrlPlugin } from '@bessemer/zotch/plugins/form-url-plugin'
 import { validateEndpointDefinitions } from '@bessemer/zotch/zotch-api'
 
+const ZotchClientPropsSchema = Zod.object({
+  baseUrl: Zod.string().optional(),
+  fetch: Zod.custom<FetchFunction>().default(fetch),
+  sendDefaults: Zod.boolean().optional(),
+})
+
+export type ZotchClientProps = Zod.input<typeof ZotchClientPropsSchema>
+export type ZotchClientPropsDto = Zod.output<typeof ZotchClientPropsSchema>
+
 export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
-  private fetch: FetchFunction
-  public readonly options: PickRequired<ZotchOptions, 'sendDefaults'>
+  public readonly props: ZotchClientPropsDto
   public readonly api: Api
   private endpointPlugins: Map<string, ZotchPlugins> = new Map()
 
-  constructor(api: Api, options?: ZotchOptions) {
+  constructor(api: Api, props?: ZotchClientProps) {
     validateEndpointDefinitions(api)
 
     this.api = api
-
-    this.options = {
-      sendDefaults: false,
-      ...options,
-    }
-
-    if (this.options.fetch) {
-      this.fetch = this.options.fetch
-    } else {
-      this.fetch = fetch
-    }
+    this.props = ZodUtil.defaults(props ?? {}, ZotchClientPropsSchema)
 
     this.injectAliasEndpoints()
     this.initPlugins()
@@ -176,21 +173,26 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
 
     let response: ZotchResultByPath<Api, M, Path>
 
-    const { url, params, queries, body, ...fetchOptions } = request
+    const { baseUrl, url, params, queries, body, ...fetchOptions } = request
+
+    const base = Urls.from(request.baseUrl ?? this.props.baseUrl ?? '')
 
     // JOHN how to handle arrays of params? and does just calling toString on the value here present a robust solution...
     const queryParams = Object.fromEntries(Object.entries(queries ?? {}).map(([key, value]) => Entries.of(key, `${value}`)))
+
+    Urls.merge(Urls.from(replacePathParams(url, params)), { location: { parameters: queryParams } })
+
     const urlLiteral = Urls.toLiteral(Urls.merge(Urls.from(replacePathParams(url, params)), { location: { parameters: queryParams } }))
 
     const fetchPayload: FetchPayload = {
       ...fetchOptions,
-      url: replacePathParams(urlLiteral, params),
+      url: urlLiteral,
       body: JSON.stringify(request.body),
       headers: request.headers,
     }
 
     try {
-      const fetchResponse = await this.fetch(fetchPayload.url, fetchPayload)
+      const fetchResponse = await this.props.fetch(fetchPayload.url, fetchPayload)
 
       const responseContext: ZotchResponseContext = {
         endpoint,

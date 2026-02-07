@@ -2,9 +2,9 @@ import { AxiosError } from 'axios'
 import express from 'express'
 import { AddressInfo } from 'net'
 import { z, ZodError } from 'zod'
-import { apiBuilder, Zodios, ZodiosValidationError } from '@bessemer/zodios'
 import multer from 'multer'
 import { Result } from '@bessemer/cornerstone/result'
+import { Zotch } from '@bessemer/zotch'
 
 globalThis.FormData = require('form-data')
 const multipart = multer({ storage: multer.memoryStorage() })
@@ -78,13 +78,9 @@ describe('Zodios', () => {
     server.close()
   })
 
-  it('should be defined', () => {
-    expect(Zodios).toBeDefined()
-  })
-
   it('should throw if baseUrl is not provided', () => {
     // @ts-ignore
-    expect(() => new Zodios(undefined, [])).toThrowError('Zodios: missing base url')
+    expect(() => Zotch.client(undefined, [])).toThrowError('Zodios: missing base url')
   })
 
   it('should throw if api is not provided', () => {

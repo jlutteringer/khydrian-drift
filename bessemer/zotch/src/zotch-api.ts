@@ -1,18 +1,12 @@
-import {
-  ZodiosEndpointError,
-  ZodiosEndpointParameter,
-  ZotchEndpointDefinition,
-  ZotchEndpointDefinitions,
-  ZotchOptions,
-} from '@bessemer/zotch/zotch-types'
+import { ZodiosEndpointError, ZodiosEndpointParameter, ZotchEndpointDefinition, ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
 import Zod from 'zod'
 import { Narrow, TupleFlat, UnionToTuple } from '@bessemer/zotch/zotch-type-utils'
 import { Assertions, Strings } from '@bessemer/cornerstone'
 import { ZotchError, ZotchErrorType, ZotchStructuredError, ZotchStructuredErrorProps } from '@bessemer/zotch/zotch-error'
-import { ZotchClient, ZotchClientClass } from '@bessemer/zotch/zotch-client'
+import { ZotchClient, ZotchClientClass, ZotchClientProps } from '@bessemer/zotch/zotch-client'
 
-export const client = <Api extends ZotchEndpointDefinitions>(api: Narrow<Api>, options?: ZotchOptions): ZotchClient<Api> => {
-  return new ZotchClientClass(api, options) as any as ZotchClient<Api>
+export const client = <Api extends ZotchEndpointDefinitions>(api: Narrow<Api>, props?: ZotchClientProps): ZotchClient<Api> => {
+  return new ZotchClientClass(api, props) as any as ZotchClient<Api>
 }
 
 /**

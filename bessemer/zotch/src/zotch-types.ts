@@ -17,11 +17,10 @@ import z from 'zod'
 import { AsyncResult, Result } from '@bessemer/cornerstone/result'
 import { ZotchError, ZotchRequestInvalidError } from '@bessemer/zotch/zotch-error'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
-import { FetchFunction, FetchPayload, FetchRequest, FetchResponse } from '@bessemer/cornerstone/net/fetch'
-
-export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata'
+import { FetchPayload, FetchRequest, FetchResponse } from '@bessemer/cornerstone/net/fetch'
 
 export type ZotchRequest<D = any> = Omit<FetchRequest, 'body' | 'method' | 'headers'> & {
+  baseUrl?: string
   url: string
   method: HttpMethod
   params?: Record<string, unknown>
@@ -29,6 +28,8 @@ export type ZotchRequest<D = any> = Omit<FetchRequest, 'body' | 'method' | 'head
   headers?: Record<string, string>
   body?: D
 }
+
+export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata'
 
 export type MutationMethod = 'post' | 'put' | 'patch' | 'delete'
 
@@ -400,20 +401,6 @@ export type ZotchAliases<Api extends Array<ZotchEndpointDefinition>> = {
 }
 
 /**
- * @deprecated - use ZodiosRequestOptionsByPath instead
- */
-export type ZodiosMethodOptions<Api extends Array<ZotchEndpointDefinition>, M extends HttpMethod, Path extends ZotchPathsByMethod<Api, M>> = Merge<
-  SetPropsOptionalIfChildrenAreOptional<
-    PickDefined<{
-      params: ZodiosPathParamsByPath<Api, M, Path>
-      queries: ZodiosQueryParamsByPath<Api, M, Path>
-      headers: ZodiosHeaderParamsByPath<Api, M, Path>
-    }>
-  >,
-  Omit<ZotchRequest, 'params' | 'baseURL' | 'data' | 'method' | 'url'>
->
-
-/**
  * Get the request options for a given endpoint
  */
 export type ZotchRequestOptionsByPath<
@@ -439,11 +426,6 @@ export type ZotchRequestOptions<Api extends Array<ZotchEndpointDefinition>, M ex
   },
   ZotchRequestOptionsByPath<Api, M, Path>
 >
-
-export type ZotchOptions = {
-  fetch?: FetchFunction
-  sendDefaults?: boolean
-}
 
 export type ZodiosEndpointParameter<T = unknown> = {
   /**

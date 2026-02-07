@@ -202,6 +202,8 @@ describe('Uris.from', () => {
   })
 
   test('should parse telnet URI with host object and path', () => {
+    Uris.from('')
+
     expect(Uris.from('telnet://192.0.2.16:80/')).toEqual(
       Uris.from({
         scheme: 'telnet',
@@ -608,7 +610,7 @@ describe('Uris.merge', () => {
       location: { path: '/api' },
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       scheme: 'https',
     })
 
@@ -627,7 +629,7 @@ describe('Uris.merge', () => {
       location: { path: '/api' },
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       host: 'api.example.com:8080',
     })
 
@@ -649,7 +651,7 @@ describe('Uris.merge', () => {
       host: 'example.com',
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       authentication: {
         principal: 'user',
         password: 'pass',
@@ -675,7 +677,7 @@ describe('Uris.merge', () => {
       location: { query: 'param=value' },
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       location: { path: '/new-path' },
     })
 
@@ -697,7 +699,7 @@ describe('Uris.merge', () => {
       host: 'example.com',
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       location: {
         path: '/api/v1',
         query: 'format=json',
@@ -725,7 +727,7 @@ describe('Uris.merge', () => {
       location: { path: '/old-path' },
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       scheme: 'https',
       host: 'new.example.com',
       location: { path: '/new-path' },
@@ -746,7 +748,7 @@ describe('Uris.merge', () => {
       host: 'example.com',
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       scheme: 'https',
       authentication: 'admin:secret',
       location: {
@@ -781,7 +783,7 @@ describe('Uris.merge', () => {
       },
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       authentication: {
         principal: 'user',
         password: null,
@@ -801,7 +803,7 @@ describe('Uris.merge', () => {
       },
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       location: {
         fragment: 'docs',
       },
@@ -827,7 +829,7 @@ describe('Uris.merge', () => {
       location: { path: '/test' },
     })
 
-    const result = Uris.merge(baseUri, {})
+    const result = Uris.update(baseUri, {})
 
     expect(result).toEqual(baseUri)
   })
@@ -1165,7 +1167,7 @@ describe('Uris.format', () => {
 
 describe('Uris.merge', () => {
   test('should merge scheme into existing URI', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         host: 'example.com',
         location: { path: '/api' },
@@ -1181,7 +1183,7 @@ describe('Uris.merge', () => {
   })
 
   test('should merge host into existing URI', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'https',
         location: { path: '/api' },
@@ -1202,7 +1204,7 @@ describe('Uris.merge', () => {
       host: 'example.com',
     })
 
-    const result = Uris.merge(baseUri, {
+    const result = Uris.update(baseUri, {
       authentication: {
         principal: 'user',
         password: 'pass',
@@ -1216,7 +1218,7 @@ describe('Uris.merge', () => {
   })
 
   test('should merge location path into existing URI', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'https',
         host: 'example.com',
@@ -1234,7 +1236,7 @@ describe('Uris.merge', () => {
   })
 
   test('should merge location query into existing URI', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'https',
         host: 'example.com',
@@ -1252,7 +1254,7 @@ describe('Uris.merge', () => {
   })
 
   test('should merge location fragment into existing URI', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'https',
         host: 'example.com',
@@ -1270,7 +1272,7 @@ describe('Uris.merge', () => {
   })
 
   test('should override existing scheme', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'http',
         host: 'example.com',
@@ -1285,7 +1287,7 @@ describe('Uris.merge', () => {
   })
 
   test('should merge multiple components at once', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         host: 'example.com',
         location: { path: '/api' },
@@ -1305,7 +1307,7 @@ describe('Uris.merge', () => {
   })
 
   test('should handle merging with empty builder', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'https',
         host: 'example.com',
@@ -1320,7 +1322,7 @@ describe('Uris.merge', () => {
   })
 
   test('should handle merging host object properties', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'https',
         host: { value: 'example.com', port: 8080 },
@@ -1336,7 +1338,7 @@ describe('Uris.merge', () => {
   })
 
   test('should handle merging authentication object properties', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'https',
         host: 'example.com',
@@ -1354,7 +1356,7 @@ describe('Uris.merge', () => {
   })
 
   test('should remove components when merged with null', () => {
-    const result = Uris.merge(
+    const result = Uris.update(
       {
         scheme: 'https',
         host: 'example.com',
@@ -1385,7 +1387,7 @@ describe('Uris.merge', () => {
       },
     })
 
-    const result = Uris.merge(baseUrl, {
+    const result = Uris.update(baseUrl, {
       authentication: {
         principal: 'newuser',
       },
