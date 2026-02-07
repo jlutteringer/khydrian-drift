@@ -1,4 +1,4 @@
-import { Durations } from '@bessemer/cornerstone'
+import { Durations, Results } from '@bessemer/cornerstone'
 import { Temporal } from '@js-temporal/polyfill'
 import { TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 
@@ -31,43 +31,37 @@ describe('Durations.parseString', () => {
   test('should parse valid ISO 8601 duration string', () => {
     const result = Durations.parseString('PT2H30M45S')
 
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.hours).toBe(2)
-      expect(result.value.minutes).toBe(30)
-      expect(result.value.seconds).toBe(45)
-    }
+    Results.assertSuccess(result)
+    expect(result.hours).toBe(2)
+    expect(result.minutes).toBe(30)
+    expect(result.seconds).toBe(45)
   })
 
   test('should parse duration with milliseconds', () => {
     const result = Durations.parseString('PT1H30M45.123S')
 
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.hours).toBe(1)
-      expect(result.value.minutes).toBe(30)
-      expect(result.value.seconds).toBe(45)
-      expect(result.value.milliseconds).toBe(123)
-    }
+    Results.assertSuccess(result)
+    expect(result.hours).toBe(1)
+    expect(result.minutes).toBe(30)
+    expect(result.seconds).toBe(45)
+    expect(result.milliseconds).toBe(123)
   })
 
   test('should parse zero duration', () => {
     const result = Durations.parseString('PT0S')
 
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.seconds).toBe(0)
-    }
+    Results.assertSuccess(result)
+    expect(result.seconds).toBe(0)
   })
 
   test('should fail on invalid duration string', () => {
     const result = Durations.parseString('invalid-duration')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should fail on empty string', () => {
     const result = Durations.parseString('')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 })
 

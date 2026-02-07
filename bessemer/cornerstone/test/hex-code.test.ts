@@ -1,66 +1,46 @@
-import { HexCodes } from '@bessemer/cornerstone'
+import { HexCodes, Results } from '@bessemer/cornerstone'
 
 describe('HexCode.parseString', () => {
   test('should accept valid hex codes', () => {
     const result1 = HexCodes.parseString('#FFF')
-    expect(result1.isSuccess).toBe(true)
-    if (result1.isSuccess) {
-      expect(result1.value).toBe('#FFFFFF')
-    }
+    Results.assertSuccess(result1)
+    expect(result1).toBe('#FFFFFF')
 
     const result2 = HexCodes.parseString('#000000')
-    expect(result2.isSuccess).toBe(true)
-    if (result2.isSuccess) {
-      expect(result2.value).toBe('#000000')
-    }
+    Results.assertSuccess(result2)
+    expect(result2).toBe('#000000')
 
     const result3 = HexCodes.parseString('#FFFFFF')
-    expect(result3.isSuccess).toBe(true)
-    if (result3.isSuccess) {
-      expect(result3.value).toBe('#FFFFFF')
-    }
+    Results.assertSuccess(result3)
+    expect(result3).toBe('#FFFFFF')
 
     const result4 = HexCodes.parseString('#FF0000')
-    expect(result4.isSuccess).toBe(true)
-    if (result4.isSuccess) {
-      expect(result4.value).toBe('#FF0000')
-    }
+    Results.assertSuccess(result4)
+    expect(result4).toBe('#FF0000')
 
     const result5 = HexCodes.parseString('#00FF00')
-    expect(result5.isSuccess).toBe(true)
-    if (result5.isSuccess) {
-      expect(result5.value).toBe('#00FF00')
-    }
+    Results.assertSuccess(result5)
+    expect(result5).toBe('#00FF00')
 
     const result6 = HexCodes.parseString('#0000FF')
-    expect(result6.isSuccess).toBe(true)
-    if (result6.isSuccess) {
-      expect(result6.value).toBe('#0000FF')
-    }
+    Results.assertSuccess(result6)
+    expect(result6).toBe('#0000FF')
 
     const result7 = HexCodes.parseString('#123456')
-    expect(result7.isSuccess).toBe(true)
-    if (result7.isSuccess) {
-      expect(result7.value).toBe('#123456')
-    }
+    Results.assertSuccess(result7)
+    expect(result7).toBe('#123456')
 
     const result8 = HexCodes.parseString('#ABCDEF')
-    expect(result8.isSuccess).toBe(true)
-    if (result8.isSuccess) {
-      expect(result8.value).toBe('#ABCDEF')
-    }
+    Results.assertSuccess(result8)
+    expect(result8).toBe('#ABCDEF')
 
     const result9 = HexCodes.parseString('#abcdef')
-    expect(result9.isSuccess).toBe(true)
-    if (result9.isSuccess) {
-      expect(result9.value).toBe('#ABCDEF')
-    }
+    Results.assertSuccess(result9)
+    expect(result9).toBe('#ABCDEF')
 
     const result10 = HexCodes.parseString('#fFaAbB')
-    expect(result10.isSuccess).toBe(true)
-    if (result10.isSuccess) {
-      expect(result10.value).toBe('#FFAABB')
-    }
+    Results.assertSuccess(result10)
+    expect(result10).toBe('#FFAABB')
   })
 
   test('should reject hex codes without # prefix', () => {
@@ -68,7 +48,7 @@ describe('HexCode.parseString', () => {
 
     invalidHexCodes.forEach((hexCode) => {
       const result = HexCodes.parseString(hexCode)
-      expect(result.isSuccess).toBe(false)
+      expect(Results.isSuccess(result)).toBe(false)
     })
   })
 
@@ -77,7 +57,7 @@ describe('HexCode.parseString', () => {
 
     wrongLengthCodes.forEach((hexCode) => {
       const result = HexCodes.parseString(hexCode)
-      expect(result.isSuccess).toBe(false)
+      expect(Results.isSuccess(result)).toBe(false)
     })
   })
 
@@ -86,7 +66,7 @@ describe('HexCode.parseString', () => {
 
     invalidCharacters.forEach((hexCode) => {
       const result = HexCodes.parseString(hexCode)
-      expect(result.isSuccess).toBe(false)
+      expect(Results.isSuccess(result)).toBe(false)
     })
   })
 
@@ -97,25 +77,23 @@ describe('HexCode.parseString', () => {
 
     mixedCaseCodes.forEach((hexCode, index) => {
       const result = HexCodes.parseString(hexCode)
-      expect(result.isSuccess).toBe(true)
-      if (result.isSuccess) {
-        expect(result.value).toBe(expectedUppercase[index])
-      }
+      Results.assertSuccess(result)
+      expect(result).toBe(expectedUppercase[index])
     })
   })
 
   test('should handle edge cases', () => {
     // Empty string
     const emptyResult = HexCodes.parseString('')
-    expect(emptyResult.isSuccess).toBe(false)
+    Results.assertFailure(emptyResult)
 
     // Only #
     const hashOnlyResult = HexCodes.parseString('#')
-    expect(hashOnlyResult.isSuccess).toBe(false)
+    Results.assertFailure(hashOnlyResult)
 
     // Multiple # symbols
     const multipleHashResult = HexCodes.parseString('##FFFFFF')
-    expect(multipleHashResult.isSuccess).toBe(false)
+    Results.assertFailure(multipleHashResult)
   })
 })
 
@@ -226,10 +204,8 @@ describe('HexCode edge cases and validation', () => {
 
     boundaryValues.forEach((hexCode) => {
       const result = HexCodes.parseString(hexCode)
-      expect(result.isSuccess).toBe(true)
-      if (result.isSuccess) {
-        expect(result.value).toBe(hexCode)
-      }
+      Results.assertSuccess(result)
+      expect(result).toBe(hexCode)
     })
   })
 
@@ -246,7 +222,7 @@ describe('HexCode edge cases and validation', () => {
 
     invalidInputs.forEach((input) => {
       const result = HexCodes.parseString(input)
-      expect(result.isSuccess).toBe(false)
+      Results.assertFailure(result)
     })
   })
 })

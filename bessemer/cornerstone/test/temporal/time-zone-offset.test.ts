@@ -1,4 +1,4 @@
-import { Durations, Instants, TimeZoneIds, TimeZoneOffsets } from '@bessemer/cornerstone'
+import { Durations, Instants, Results, TimeZoneIds, TimeZoneOffsets } from '@bessemer/cornerstone'
 
 describe('TimeZoneOffset.fromDuration', () => {
   test('should create TimeZoneOffset for valid values', () => {
@@ -31,155 +31,133 @@ describe('TimeZoneOffset.fromDuration', () => {
 describe('TimeZoneOffset.parseString', () => {
   test('should parse Z as UTC (0 offset)', () => {
     const result = TimeZoneOffsets.parseString('Z')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(0)
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(0)
   })
 
   test('should parse +h format', () => {
     const result = TimeZoneOffsets.parseString('+5')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: 5 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: 5 }))
   })
 
   test('should parse -h format', () => {
     const result = TimeZoneOffsets.parseString('-3')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: -3 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: -3 }))
   })
 
   test('should parse +hh format', () => {
     const result = TimeZoneOffsets.parseString('+05')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: 5 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: 5 }))
   })
 
   test('should parse -hh format', () => {
     const result = TimeZoneOffsets.parseString('-08')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: -8 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: -8 }))
   })
 
   test('should parse +hh:mm format', () => {
     const result = TimeZoneOffsets.parseString('+05:30')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: 5, minutes: 30 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: 5, minutes: 30 }))
   })
 
   test('should parse -hh:mm format', () => {
     const result = TimeZoneOffsets.parseString('-08:45')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: -8, minutes: -45 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: -8, minutes: -45 }))
   })
 
   test('should parse +hhmm format', () => {
     const result = TimeZoneOffsets.parseString('+0530')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: 5, minutes: 30 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: 5, minutes: 30 }))
   })
 
   test('should parse -hhmm format', () => {
     const result = TimeZoneOffsets.parseString('-0845')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: -8, minutes: -45 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: -8, minutes: -45 }))
   })
 
   test('should not parse +hh:mm:ss format', () => {
     const result = TimeZoneOffsets.parseString('+05:30:15')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should not parse -hh:mm:ss format', () => {
     const result = TimeZoneOffsets.parseString('-08:45:30')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should not parse +hhmmss format', () => {
     const result = TimeZoneOffsets.parseString('+053015')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should not parse -hhmmss format', () => {
     const result = TimeZoneOffsets.parseString('-084530')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should parse maximum positive offset (+18:00)', () => {
     const result = TimeZoneOffsets.parseString('+18:00')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: 18 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: 18 }))
   })
 
   test('should parse maximum negative offset (-18:00)', () => {
     const result = TimeZoneOffsets.parseString('-18:00')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe(TimeZoneOffsets.fromDuration({ hours: -18 }))
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe(TimeZoneOffsets.fromDuration({ hours: -18 }))
   })
 
   test('should reject offset exceeding +18:00', () => {
     const result = TimeZoneOffsets.parseString('+19:00')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should reject offset below -18:00', () => {
     const result = TimeZoneOffsets.parseString('-19:00')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should reject invalid format without sign', () => {
     const result = TimeZoneOffsets.parseString('0500')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should reject invalid minutes (>= 60)', () => {
     const result = TimeZoneOffsets.parseString('+05:60')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should reject invalid seconds (>= 60)', () => {
     const result = TimeZoneOffsets.parseString('+05:30:60')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should reject non-numeric hours', () => {
     const result = TimeZoneOffsets.parseString('+aa')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should reject non-numeric minutes', () => {
     const result = TimeZoneOffsets.parseString('+05:aa')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should reject invalid colon format', () => {
     const result = TimeZoneOffsets.parseString('+05:')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should reject wrong length format', () => {
     const result = TimeZoneOffsets.parseString('+123')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should handle common positive offsets', () => {
@@ -192,10 +170,8 @@ describe('TimeZoneOffset.parseString', () => {
 
     testCases.forEach(({ input, expected }) => {
       const result = TimeZoneOffsets.parseString(input)
-      expect(result.isSuccess).toBe(true)
-      if (result.isSuccess) {
-        expect(result.value).toBe(TimeZoneOffsets.fromDuration(expected))
-      }
+      Results.assertSuccess(result)
+      expect(result).toBe(TimeZoneOffsets.fromDuration(expected))
     })
   })
 
@@ -208,10 +184,8 @@ describe('TimeZoneOffset.parseString', () => {
 
     testCases.forEach(({ input, expected }) => {
       const result = TimeZoneOffsets.parseString(input)
-      expect(result.isSuccess).toBe(true)
-      if (result.isSuccess) {
-        expect(result.value).toBe(TimeZoneOffsets.fromDuration(expected))
-      }
+      Results.assertSuccess(result)
+      expect(result).toBe(TimeZoneOffsets.fromDuration(expected))
     })
   })
 })

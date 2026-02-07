@@ -1,5 +1,5 @@
 import { ExpressionMapper } from '@bessemer/cornerstone/expression/expression-mapper'
-import { Arrays, Eithers, Entries, Objects, Ulids } from '@bessemer/cornerstone'
+import { Arrays, Eithers, Entries, Objects, Results, Ulids } from '@bessemer/cornerstone'
 import { BasicType, Dictionary } from '@bessemer/cornerstone/types'
 import {
   AndExpression,
@@ -35,10 +35,11 @@ const resolveContainsExpression = (
   const collection = expression.collection
 
   const parsedValue = getValue(collection)
-  if (!parsedValue.isSuccess) {
+  if (Results.isFailure(parsedValue)) {
     throw new Error(`SqlExpressionParser - Unable to resolve ContainsExpression with non-value collection: ${JSON.stringify(collection)}`)
   }
-  const value = parsedValue.value as Array<BasicType | null>
+
+  const value = parsedValue as Array<BasicType | null>
   if (Arrays.isEmpty(value)) {
     return invert ? '(1 = 1)' : '(1 = 0)'
   }
@@ -118,8 +119,8 @@ DefaultSqlExpressionParser.register(EqualsExpression, (expression, map) => {
   const equalsExpressions = rest
     .map((it) => {
       const parsedValue = getValue(it)
-      if (parsedValue.isSuccess) {
-        if (parsedValue.value === null) {
+      if (Results.isSuccess(parsedValue)) {
+        if (parsedValue === null) {
           return `(${mappedFirst} IS NULL)`
         } else {
           return `(${mappedFirst} = ${map(it)})`

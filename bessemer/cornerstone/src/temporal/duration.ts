@@ -5,6 +5,7 @@ import { NominalType } from '@bessemer/cornerstone/types'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
+import * as Results from '@bessemer/cornerstone/result'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { isError } from '@bessemer/cornerstone/error/error'
@@ -71,7 +72,7 @@ export function toLiteral(value: DurationLike | null | undefined): DurationLiter
   return from(value).toString() as DurationLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map((it) => toLiteral(it)))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => Results.map(parseString(it), (it) => toLiteral(it)))
 export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
 export const isDuration = (value: unknown): value is Duration => {

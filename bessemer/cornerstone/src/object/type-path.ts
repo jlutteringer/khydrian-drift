@@ -15,7 +15,8 @@ import {
 import { isNil, isObject } from '@bessemer/cornerstone/object'
 import { isNumber } from '@bessemer/cornerstone/math'
 import { contains, containsAll, isEmpty, only } from '@bessemer/cornerstone/array'
-import { failure, Result, success } from '@bessemer/cornerstone/result'
+import * as Results from '@bessemer/cornerstone/result'
+import { Result } from '@bessemer/cornerstone/result'
 
 // JOHN this probably should be brought into the structured transform regime
 export type TypePath<T extends TypePathType = TypePathType> = TaggedType<TypePathConcreteType, ['TypePath', T]>
@@ -247,7 +248,7 @@ export const matches = <MatchingPath extends TypePathType>(
 
 export const intersectAny = (targetPath: TypePath, intersectingPath: TypePath): Result<TypePath> => {
   if (targetPath.length < intersectingPath.length) {
-    return failure(new Error(`TypePath: ${intersectingPath} can't intersect target TypePath: ${targetPath}`))
+    return Results.failure(new Error(`TypePath: ${intersectingPath} can't intersect target TypePath: ${targetPath}`))
   }
 
   let index = 0
@@ -258,22 +259,22 @@ export const intersectAny = (targetPath: TypePath, intersectingPath: TypePath): 
       new Error(`Path mismatch when intersecting. targetPath: ${targetPathSelector} does not match intersectingPath: ${intersectingPathSelector}`)
 
     if (isNil(intersectingPathSelector)) {
-      return success(of(result))
+      return Results.success(of(result))
     } else if (isWildcardSelector(intersectingPathSelector)) {
       result.push(targetPathSelector)
     } else if (isWildcardSelector(targetPathSelector)) {
-      return failure(makeError())
+      return Results.failure(makeError())
     } else if (Array.isArray(intersectingPathSelector)) {
       if (Array.isArray(targetPathSelector)) {
         const filteredTargetPaths = targetPathSelector.filter((it) => contains(intersectingPathSelector, it))
         if (isEmpty(filteredTargetPaths)) {
-          return failure(makeError())
+          return Results.failure(makeError())
         }
 
         result.push(filteredTargetPaths)
       } else {
         if (!contains(intersectingPathSelector, Number(targetPathSelector))) {
-          return failure(makeError())
+          return Results.failure(makeError())
         }
 
         result.push(targetPathSelector)
@@ -281,18 +282,18 @@ export const intersectAny = (targetPath: TypePath, intersectingPath: TypePath): 
     } else {
       if (Array.isArray(targetPathSelector)) {
         if (targetPathSelector.length !== 1) {
-          return failure(makeError())
+          return Results.failure(makeError())
         }
 
         const targetPathSelectorIndex = only(targetPathSelector)
         if (targetPathSelectorIndex !== Number(intersectingPathSelector)) {
-          return failure(makeError())
+          return Results.failure(makeError())
         }
 
         result.push(targetPathSelector)
       } else {
         if (targetPathSelector !== intersectingPathSelector) {
-          return failure(makeError())
+          return Results.failure(makeError())
         }
 
         result.push(targetPathSelector)
@@ -302,7 +303,7 @@ export const intersectAny = (targetPath: TypePath, intersectingPath: TypePath): 
     index++
   }
 
-  return success(of(result))
+  return Results.success(of(result))
 }
 
 // JOHN this needs to do a type resolution step...
@@ -311,9 +312,6 @@ export const intersect = <TargetPath extends TypePathType, IntersectingPath exte
   intersectingPath: TypePath<IntersectingPath>
 ): TypePath => {
   const result = intersectAny(targetPath, intersectingPath)
-  if (!result.isSuccess) {
-    throw result.value
-  }
-
-  return result.value
+  Results.assertSuccess(result)
+  return result
 }

@@ -1,60 +1,46 @@
-import { Globs } from '@bessemer/cornerstone'
+import { Globs, Results } from '@bessemer/cornerstone'
 
 describe('Glob.parseString', () => {
   test('should accept simple patterns', () => {
     const result = Globs.parseString('*.js')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('*.js')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('*.js')
   })
 
   test('should accept patterns with forward slashes', () => {
     const result = Globs.parseString('src/**/*.ts')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('src/**/*.ts')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('src/**/*.ts')
   })
 
   test('should accept patterns with backslashes', () => {
     const result = Globs.parseString('src\\**\\*.ts')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('src\\**\\*.ts')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('src\\**\\*.ts')
   })
 
   test('should accept patterns with brackets', () => {
     const result = Globs.parseString('*.{js,ts}')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('*.{js,ts}')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('*.{js,ts}')
   })
 
   test('should accept patterns with character classes', () => {
     const result = Globs.parseString('[a-z]*.txt')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('[a-z]*.txt')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('[a-z]*.txt')
   })
 
   test('should accept patterns with negation', () => {
     const result = Globs.parseString('!node_modules')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('!node_modules')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('!node_modules')
   })
 
   test('should accept patterns with pipes', () => {
     const result = Globs.parseString('src/**/*.{js|ts}')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('src/**/*.{js|ts}')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('src/**/*.{js|ts}')
   })
 
   test('should reject patterns with invalid characters', () => {
@@ -62,7 +48,7 @@ describe('Glob.parseString', () => {
 
     invalidPatterns.forEach((pattern) => {
       const result = Globs.parseString(pattern)
-      expect(result.isSuccess).toBe(false)
+      Results.assertFailure(result)
     })
   })
 
@@ -71,7 +57,7 @@ describe('Glob.parseString', () => {
 
     unbalancedBrackets.forEach((pattern) => {
       const result = Globs.parseString(pattern)
-      expect(result.isSuccess).toBe(false)
+      Results.assertFailure(result)
     })
   })
 
@@ -80,7 +66,7 @@ describe('Glob.parseString', () => {
 
     unbalancedBraces.forEach((pattern) => {
       const result = Globs.parseString(pattern)
-      expect(result.isSuccess).toBe(false)
+      Results.assertFailure(result)
     })
   })
 
@@ -89,10 +75,8 @@ describe('Glob.parseString', () => {
 
     validNested.forEach((pattern) => {
       const result = Globs.parseString(pattern)
-      expect(result.isSuccess).toBe(true)
-      if (result.isSuccess) {
-        expect(result.value).toBe(pattern)
-      }
+      Results.assertSuccess(result)
+      expect(result).toBe(pattern)
     })
   })
 })

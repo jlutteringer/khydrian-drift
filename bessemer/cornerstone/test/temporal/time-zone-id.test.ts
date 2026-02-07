@@ -1,4 +1,4 @@
-import { TimeZoneIds } from '@bessemer/cornerstone'
+import { Results, TimeZoneIds } from '@bessemer/cornerstone'
 
 describe('TimeZoneId.fromString', () => {
   test('should normalize valid IANA timezone identifiers', () => {
@@ -52,26 +52,20 @@ describe('TimeZoneId.fromString', () => {
 describe('TimeZoneId.parseString', () => {
   test('should return success for valid timezone identifiers', () => {
     const result = TimeZoneIds.parseString('America/New_York')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('America/New_York')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('America/New_York')
   })
 
   test('should return success for UTC', () => {
     const result = TimeZoneIds.parseString('UTC')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('UTC')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('UTC')
   })
 
   test('should normalize GMT to UTC', () => {
     const result = TimeZoneIds.parseString('GMT')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value).toBe('UTC')
-    }
+    Results.assertSuccess(result)
+    expect(result).toBe('UTC')
   })
 
   test('should return failure for invalid timezone identifiers', () => {
@@ -79,7 +73,7 @@ describe('TimeZoneId.parseString', () => {
 
     invalidTimezones.forEach((timezone) => {
       const result = TimeZoneIds.parseString(timezone)
-      expect(result.isSuccess).toBe(false)
+      expect(Results.isSuccess(result)).toBe(false)
     })
   })
 
@@ -97,11 +91,9 @@ describe('TimeZoneId.parseString', () => {
 
     validTimezones.forEach((timezone) => {
       const result = TimeZoneIds.parseString(timezone)
-      expect(result.isSuccess).toBe(true)
-      if (result.isSuccess) {
-        expect(typeof result.value).toBe('string')
-        expect(result.value.length).toBeGreaterThan(0)
-      }
+      Results.assertSuccess(result)
+      expect(typeof result).toBe('string')
+      expect(result.length).toBeGreaterThan(0)
     })
   })
 })

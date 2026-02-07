@@ -290,9 +290,9 @@ export const clear = (array: Array<unknown>): void => {
   filterInPlace(array, () => false)
 }
 
-export const bisect = <T, RightType, LeftType>(
+export const bisect = <T, LeftType, RightType>(
   array: Array<T>,
-  bisector: (element: T, index: number) => Either<RightType, LeftType>
+  bisector: (element: T, index: number) => Either<LeftType, RightType>
 ): [Array<LeftType>, Array<RightType>] => {
   return split(array.map(bisector))
 }

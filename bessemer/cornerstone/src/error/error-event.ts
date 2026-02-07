@@ -5,6 +5,7 @@ import { evaluate, LazyValue } from '@bessemer/cornerstone/lazy'
 import { findInCausalChain as errorsFindInCausalChain, isError } from '@bessemer/cornerstone/error/error'
 import { isPromise } from '@bessemer/cornerstone/promise'
 import { createNamespace } from '@bessemer/cornerstone/resource-key'
+import * as Results from '@bessemer/cornerstone/result'
 import { Result } from '@bessemer/cornerstone/result'
 import * as ErrorCauses from '@bessemer/cornerstone/error/error-cause'
 import { ErrorCause, ErrorCauseAugment, ErrorCauseBuilder } from '@bessemer/cornerstone/error/error-cause'
@@ -181,9 +182,9 @@ export function assert(value: boolean, builder: LazyValue<ErrorEventBuilder>): a
 }
 
 export const unpackResult = <T>(result: Result<T, ErrorEvent>): T => {
-  if (!result.isSuccess) {
+  if (Results.isFailure(result)) {
     throw new ErrorEventException(result.value)
   }
 
-  return result.value
+  return result
 }

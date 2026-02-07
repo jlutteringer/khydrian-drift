@@ -1,9 +1,9 @@
 import { isPromise } from '@bessemer/cornerstone/promise'
 import * as Eithers from '@bessemer/cornerstone/either'
-import { Right } from '@bessemer/cornerstone/either'
+import { Left, Right } from '@bessemer/cornerstone/either'
 import { assert } from '@bessemer/cornerstone/assertion'
 
-export type Success<SuccessType> = SuccessType
+export type Success<SuccessType> = Left<SuccessType>
 export type Failure<FailureType = unknown> = Right<FailureType>
 export type Result<SuccessType, FailureType = unknown> = Success<SuccessType> | Failure<FailureType>
 export type AsyncResult<SuccessType, FailureType = unknown> = Promise<Result<SuccessType, FailureType>>

@@ -5,7 +5,7 @@ import * as Objects from '@bessemer/cornerstone/object'
 import * as Arrays from '@bessemer/cornerstone/array'
 import * as ResourceKeys from '@bessemer/cornerstone/resource-key'
 import * as Results from '@bessemer/cornerstone/result'
-import { Result, success } from '@bessemer/cornerstone/result'
+import { Result } from '@bessemer/cornerstone/result'
 import * as ErrorEvents from '@bessemer/cornerstone/error/error-event'
 import { ErrorEvent } from '@bessemer/cornerstone/error/error-event'
 import { structuredTransform } from '@bessemer/cornerstone/zod-util'
@@ -122,7 +122,7 @@ export const parseString = (value: string, mode: UriParseMode = UriParseMode.Str
   }
 
   const schemeResult = parseSchemePart(value)
-  if (!schemeResult.isSuccess) {
+  if (Results.isFailure(schemeResult)) {
     return Results.failure(
       ErrorEvents.invalidValue(value, {
         namespace: Namespace,
@@ -132,10 +132,10 @@ export const parseString = (value: string, mode: UriParseMode = UriParseMode.Str
     )
   }
 
-  const [scheme, rest1] = schemeResult.value
+  const [scheme, rest1] = schemeResult
 
   const authorityPartResult = parseAuthorityPart(rest1, mode)
-  if (!authorityPartResult.isSuccess) {
+  if (Results.isFailure(authorityPartResult)) {
     return Results.failure(
       ErrorEvents.invalidValue(value, {
         namespace: Namespace,
@@ -144,7 +144,7 @@ export const parseString = (value: string, mode: UriParseMode = UriParseMode.Str
       })
     )
   }
-  const [authority, rest2] = authorityPartResult.value
+  const [authority, rest2] = authorityPartResult
 
   const location = parseLocation(rest2)
 
@@ -252,7 +252,7 @@ export function toLiteral(likeValue: UriLike | null | undefined): UriLiteral | n
   return format(value) as UriLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map((it) => toLiteral(it)))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => Results.map(parseString(it), (it) => toLiteral(it)))
 // JOHN need a schema for the object version...
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
@@ -394,11 +394,11 @@ const parseSchemePart = (url: UriComponent): Result<[UriScheme | null, UriCompon
     return Results.success([null, ':' + schemeMatch.rest])
   } else {
     const schemeResult = parseScheme(schemeMatch.selection)
-    if (!schemeResult.isSuccess) {
+    if (Results.isFailure(schemeResult)) {
       return schemeResult
     }
 
-    return Results.success([schemeResult.value, schemeMatch.rest])
+    return Results.success([schemeResult, schemeMatch.rest])
   }
 }
 
@@ -422,27 +422,27 @@ const parseAuthorityPart = (
   mode: UriParseMode
 ): Result<[{ host: UriHost | null; authentication: UriAuthentication | null }, UriComponent], ErrorEvent> => {
   if (mode === UriParseMode.Strict && !initialUrl.startsWith('//')) {
-    return success([{ host: null, authentication: null }, initialUrl])
+    return Results.success([{ host: null, authentication: null }, initialUrl])
   }
   if (mode === UriParseMode.Permissive && initialUrl.startsWith('/')) {
-    return success([{ host: null, authentication: null }, initialUrl])
+    return Results.success([{ host: null, authentication: null }, initialUrl])
   }
 
   const url = Strings.removeStart(initialUrl, '//')
 
   const authenticationPartResult = parseAuthenticationPart(url)
-  if (!authenticationPartResult.isSuccess) {
+  if (Results.isFailure(authenticationPartResult)) {
     return authenticationPartResult
   }
-  const [authentication, rest1] = authenticationPartResult.value
+  const [authentication, rest1] = authenticationPartResult
 
   const hostPartResult = parseHostPart(rest1)
-  if (!hostPartResult.isSuccess) {
+  if (Results.isFailure(hostPartResult)) {
     return hostPartResult
   }
-  const [host, rest2] = hostPartResult.value
+  const [host, rest2] = hostPartResult
 
-  return success([{ host, authentication }, rest2])
+  return Results.success([{ host, authentication }, rest2])
 }
 
 const parseAuthenticationPart = (url: UriComponent): Result<[UriAuthentication | null, UriComponent], ErrorEvent> => {
@@ -465,11 +465,11 @@ const parseAuthenticationPart = (url: UriComponent): Result<[UriAuthentication |
   const { rest } = Strings.splitFirst(url, '@')
 
   const authenticationParseResult = parseAuthentication(authentication)
-  if (!authenticationParseResult.isSuccess) {
+  if (Results.isFailure(authenticationParseResult)) {
     return authenticationParseResult
   }
 
-  return Results.success([authenticationParseResult.value, rest])
+  return Results.success([authenticationParseResult, rest])
 }
 
 const parseAuthentication = (authentication: UriComponent): Result<UriAuthentication, ErrorEvent> => {
@@ -558,11 +558,11 @@ const parseHostPart = (url: UriComponent): Result<[UriHost | null, UriComponent]
   }
 
   const parseHostResult = parseHost(host)
-  if (!parseHostResult.isSuccess) {
+  if (Results.isFailure(parseHostResult)) {
     return parseHostResult
   }
 
-  return Results.success([parseHostResult.value, rest])
+  return Results.success([parseHostResult, rest])
 }
 
 const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
@@ -572,7 +572,7 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
 
     if (Objects.isPresent(ipMatch.selection)) {
       const ipV6Result = IpV6Addresses.parseString(ipMatch.selection)
-      if (!ipV6Result.isSuccess) {
+      if (Results.isFailure(ipV6Result)) {
         return ipV6Result
       }
 
@@ -594,7 +594,7 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
   // We have no :, which means no port, so treat the rest as the hostname
   if (Objects.isNil(hostMatch.selection)) {
     const hostNameResult = UriHostNames.parseString(hostMatch.rest)
-    if (!hostNameResult.isSuccess) {
+    if (Results.isFailure(hostNameResult)) {
       return Results.failure(
         ErrorEvents.invalidValue(host, {
           namespace: Namespace,
@@ -604,7 +604,7 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
       )
     }
 
-    return Results.success({ value: hostNameResult.value, port: null })
+    return Results.success({ value: hostNameResult, port: null })
   }
 
   // The host started with a :, this is odd
@@ -624,7 +624,7 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
 
   // Otherwise, we have both, so return the complete authentication object and the rest
   const hostNameResult = UriHostNames.parseString(hostName)
-  if (!hostNameResult.isSuccess) {
+  if (Results.isFailure(hostNameResult)) {
     return Results.failure(
       ErrorEvents.invalidValue(host, {
         namespace: Namespace,
@@ -634,7 +634,7 @@ const parseHost = (host: UriComponent): Result<UriHost, ErrorEvent> => {
     )
   }
 
-  return Results.success({ value: hostNameResult.value, port: Number(hostMatch.rest) })
+  return Results.success({ value: hostNameResult, port: Number(hostMatch.rest) })
 }
 
 const parseLocation = (url: UriComponent): UriLocation => {

@@ -1,4 +1,4 @@
-import { Clocks, Durations, Instants, Locales, TimeZoneIds } from '@bessemer/cornerstone'
+import { Clocks, Durations, Instants, Locales, Results, TimeZoneIds } from '@bessemer/cornerstone'
 import { Temporal } from '@js-temporal/polyfill'
 import { TimeUnit } from '@bessemer/cornerstone/temporal/chrono'
 
@@ -35,41 +35,35 @@ describe('Instants.from', () => {
 describe('Instants.parseString', () => {
   test('should parse valid ISO 8601 instant string', () => {
     const result = Instants.parseString('2024-07-15T14:30:45.123Z')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.epochMilliseconds).toBe(1721053845123)
-    }
+    Results.assertSuccess(result)
+    expect(result.epochMilliseconds).toBe(1721053845123)
   })
 
   test('should parse instant string without milliseconds', () => {
     const result = Instants.parseString('2024-07-15T14:30:45Z')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.epochMilliseconds).toBe(1721053845000)
-    }
+    Results.assertSuccess(result)
+    expect(result.epochMilliseconds).toBe(1721053845000)
   })
 
   test('should parse instant with timezone offset', () => {
     const result = Instants.parseString('2024-07-15T10:30:45-04:00')
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.epochMilliseconds).toBe(1721053845000) // Same as UTC equivalent
-    }
+    Results.assertSuccess(result)
+    expect(result.epochMilliseconds).toBe(1721053845000) // Same as UTC equivalent
   })
 
   test('should fail on invalid instant format', () => {
     const result = Instants.parseString('invalid-instant')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should fail on empty string', () => {
     const result = Instants.parseString('')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should fail on date-only string', () => {
     const result = Instants.parseString('2024-07-15')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 })
 

@@ -378,7 +378,7 @@ describe('Urls.from', () => {
   })
 
   test('should parse misleading url as host with permissive parsing', () => {
-    expect(Urls.parseString('www.google.com', UriParseMode.Permissive).value).toEqual(
+    expect(Urls.parseString('www.google.com', UriParseMode.Permissive)).toEqual(
       Urls.from({
         host: 'www.google.com',
       })

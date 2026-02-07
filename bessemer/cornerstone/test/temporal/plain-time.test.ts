@@ -1,4 +1,4 @@
-import { Clocks, Durations, Locales, PlainTimes, TimeZoneIds } from '@bessemer/cornerstone'
+import { Clocks, Durations, Locales, PlainTimes, Results, TimeZoneIds } from '@bessemer/cornerstone'
 import { Temporal } from '@js-temporal/polyfill'
 import { PlainTimeLiteral } from '@bessemer/cornerstone/temporal/plain-time'
 
@@ -224,78 +224,68 @@ describe('PlainTimes.parseString', () => {
   test('should parse valid time string with all components', () => {
     const result = PlainTimes.parseString('14:30:45.123')
 
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.hour).toBe(14)
-      expect(result.value.minute).toBe(30)
-      expect(result.value.second).toBe(45)
-      expect(result.value.millisecond).toBe(123)
-    }
+    Results.assertSuccess(result)
+    expect(result.hour).toBe(14)
+    expect(result.minute).toBe(30)
+    expect(result.second).toBe(45)
+    expect(result.millisecond).toBe(123)
   })
 
   test('should parse time string without milliseconds', () => {
     const result = PlainTimes.parseString('14:30:45')
 
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.hour).toBe(14)
-      expect(result.value.minute).toBe(30)
-      expect(result.value.second).toBe(45)
-      expect(result.value.millisecond).toBe(0)
-    }
+    Results.assertSuccess(result)
+    expect(result.hour).toBe(14)
+    expect(result.minute).toBe(30)
+    expect(result.second).toBe(45)
+    expect(result.millisecond).toBe(0)
   })
 
   test('should parse time string without seconds', () => {
     const result = PlainTimes.parseString('14:30')
 
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.hour).toBe(14)
-      expect(result.value.minute).toBe(30)
-      expect(result.value.second).toBe(0)
-      expect(result.value.millisecond).toBe(0)
-    }
+    Results.assertSuccess(result)
+    expect(result.hour).toBe(14)
+    expect(result.minute).toBe(30)
+    expect(result.second).toBe(0)
+    expect(result.millisecond).toBe(0)
   })
 
   test('should parse midnight correctly', () => {
     const result = PlainTimes.parseString('00:00:00')
 
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.hour).toBe(0)
-      expect(result.value.minute).toBe(0)
-      expect(result.value.second).toBe(0)
-      expect(result.value.millisecond).toBe(0)
-    }
+    Results.assertSuccess(result)
+    expect(result.hour).toBe(0)
+    expect(result.minute).toBe(0)
+    expect(result.second).toBe(0)
+    expect(result.millisecond).toBe(0)
   })
 
   test('should parse end of day correctly', () => {
     const result = PlainTimes.parseString('23:59:59.999')
 
-    expect(result.isSuccess).toBe(true)
-    if (result.isSuccess) {
-      expect(result.value.hour).toBe(23)
-      expect(result.value.minute).toBe(59)
-      expect(result.value.second).toBe(59)
-      expect(result.value.millisecond).toBe(999)
-    }
+    Results.assertSuccess(result)
+    expect(result.hour).toBe(23)
+    expect(result.minute).toBe(59)
+    expect(result.second).toBe(59)
+    expect(result.millisecond).toBe(999)
   })
 
   test('should fail on invalid time format', () => {
     const result = PlainTimes.parseString('invalid-time')
 
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should fail on invalid hour', () => {
     const result = PlainTimes.parseString('24:00:00')
 
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   test('should fail on invalid minute', () => {
     const result = PlainTimes.parseString('12:60:00')
-    expect(result.isSuccess).toBe(false)
+    Results.assertFailure(result)
   })
 
   // FUTURE for some reason this parses successfully and sets the time to 59 seconds... I suspect this is a bug in the polyfill

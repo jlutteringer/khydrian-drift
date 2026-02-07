@@ -1,7 +1,8 @@
 import { Dictionary, NominalType } from '@bessemer/cornerstone/types'
 import * as Uris from '@bessemer/cornerstone/net/uri'
 import { Uri, UriBuilder, UriComponent, UriLiteral, UriLocation, UriParseMode } from '@bessemer/cornerstone/net/uri'
-import { Result, success } from '@bessemer/cornerstone/result'
+import * as Results from '@bessemer/cornerstone/result'
+import { Result } from '@bessemer/cornerstone/result'
 import { ErrorEvent, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import * as Strings from '@bessemer/cornerstone/string'
 import * as Arrays from '@bessemer/cornerstone/array'
@@ -48,12 +49,7 @@ export type UrlBuilder = UriBuilder & {
 export type UrlLike = Url | Uri | UriLiteral | UrlLiteral | UrlBuilder
 
 export const parseString = (value: string, mode: UriParseMode = UriParseMode.Strict): Result<Url, ErrorEvent> => {
-  const result = Uris.parseString(value, mode)
-  if (!result.isSuccess) {
-    return result
-  }
-
-  return success(fromUri(result.value))
+  return Results.map(Uris.parseString(value, mode), (it) => Results.success(fromUri(it)))
 }
 
 export function from(value: UrlLike | string): Url
@@ -90,7 +86,7 @@ export function toLiteral(likeValue: UrlLike | null | undefined): UrlLiteral | n
   return format(value) as UrlLiteral
 }
 
-export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => parseString(it).map((it) => toLiteral(it)))
+export const SchemaLiteral = structuredTransform(Zod.string(), (it: string) => Results.map(parseString(it), (it) => toLiteral(it)))
 // JOHN need a schema for the object version...
 // export const SchemaInstance = structuredTransform(Zod.string(), parseString)
 
