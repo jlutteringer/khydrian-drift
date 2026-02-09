@@ -151,38 +151,38 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
     Assertions.assertPresent(endpoint, () => `No endpoint found for ${request.method} ${request.url}`)
 
     const validatedRequest = await validateRequest(endpoint, request)
-    if (!validatedRequest.isSuccess) {
+    if (Results.isFailure(validatedRequest)) {
       return validatedRequest
     }
-    request = validatedRequest.value
+    request = validatedRequest
 
     const anyPluginResult = await anyPlugin.interceptRequest({ endpoint, request })
-    if (!anyPluginResult.isSuccess) {
+    if (Results.isFailure(anyPluginResult)) {
       return anyPluginResult
     }
-    request = anyPluginResult.value
+    request = anyPluginResult
 
     if (Objects.isPresent(endpointPlugin)) {
       const endpointPluginResult = await endpointPlugin.interceptRequest({ endpoint, request })
-      if (!endpointPluginResult.isSuccess) {
+      if (Results.isFailure(endpointPluginResult)) {
         return endpointPluginResult
       }
 
-      request = endpointPluginResult.value
+      request = endpointPluginResult
     }
 
     let response: ZotchResultByPath<Api, M, Path>
 
     const { baseUrl, url, params, queries, body, ...fetchOptions } = request
 
-    const base = Urls.from(request.baseUrl ?? this.props.baseUrl ?? '')
-
     // JOHN how to handle arrays of params? and does just calling toString on the value here present a robust solution...
     const queryParams = Object.fromEntries(Object.entries(queries ?? {}).map(([key, value]) => Entries.of(key, `${value}`)))
 
-    Urls.merge(Urls.from(replacePathParams(url, params)), { location: { parameters: queryParams } })
-
-    const urlLiteral = Urls.toLiteral(Urls.merge(Urls.from(replacePathParams(url, params)), { location: { parameters: queryParams } }))
+    const urlLiteral = Urls.toLiteral(
+      Urls.merge(Urls.from(request.baseUrl ?? this.props.baseUrl ?? ''), Urls.from(replacePathParams(url, params)), {
+        location: { parameters: queryParams },
+      })
+    )
 
     const fetchPayload: FetchPayload = {
       ...fetchOptions,
@@ -205,8 +205,8 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
         response = await validateSuccessResponse(responseContext)
       } else {
         const validatedError = await validateErrorResponse(responseContext)
-        if (validatedError.isSuccess) {
-          if (Objects.isNil(validatedError.value)) {
+        if (Results.isSuccess(validatedError)) {
+          if (Objects.isNil(validatedError)) {
             response = Results.failure({
               type: ZotchErrorType.Unstructured,
               ...responseContext,
@@ -215,7 +215,7 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
             response = Results.failure({
               type: ZotchErrorType.Structured,
               ...responseContext,
-              ...validatedError.value,
+              ...validatedError,
             })
           }
         } else {
@@ -371,7 +371,7 @@ const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, M e
   const { endpoint, response } = context
   const body = await response.text()
   const jsonResult = Json.parse(body)
-  if (!jsonResult.isSuccess) {
+  if (Results.isFailure(jsonResult)) {
     return Results.failure({
       type: ZotchErrorType.ResponseInvalid,
       ...context,
@@ -381,20 +381,20 @@ const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, M e
     })
   }
 
-  const parseResult = await ZodUtil.parseAsync(endpoint.response, jsonResult.value)
-  if (!parseResult.isSuccess) {
+  const parseResult = await ZodUtil.parseAsync(endpoint.response, jsonResult)
+  if (Results.isFailure(parseResult)) {
     return Results.failure({
       type: ZotchErrorType.ResponseInvalid,
       ...context,
       message: `Zotch: Invalid response from endpoint '${endpoint.method} ${endpoint.path}'\nstatus: ${response.status} ${
         response.statusText
-      }\ncause:\n${parseResult.value.message}\nreceived:\n${JSON.stringify(jsonResult.value, null, 2)}`,
-      value: jsonResult.value,
+      }\ncause:\n${parseResult.value.message}\nreceived:\n${JSON.stringify(jsonResult, null, 2)}`,
+      value: jsonResult,
       cause: parseResult.value,
     })
   }
 
-  return Results.success(parseResult.value as ZotchPayloadTypeByPath<Api, M, Path>)
+  return Results.success(parseResult as ZotchPayloadTypeByPath<Api, M, Path>)
 }
 
 const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, M extends HttpMethod, Path extends string>(
@@ -411,7 +411,7 @@ const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, M ext
 
   if (!Strings.isEmpty(body)) {
     const jsonResult = Json.parse(body)
-    if (!jsonResult.isSuccess) {
+    if (Results.isFailure(jsonResult)) {
       return Results.failure({
         type: ZotchErrorType.ResponseInvalid,
         ...context,
@@ -421,13 +421,13 @@ const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, M ext
       })
     }
 
-    jsonValue = jsonResult.value
+    jsonValue = jsonResult
   }
 
   const endpointErrorUnion = Zod.union(endpointErrors.map((it) => it.schema))
   const parseResult = await ZodUtil.parseAsync(endpointErrorUnion, body)
 
-  if (!parseResult.isSuccess) {
+  if (Results.isFailure(parseResult)) {
     return Results.failure({
       type: ZotchErrorType.ResponseInvalid,
       ...context,
@@ -439,5 +439,5 @@ const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, M ext
     })
   }
 
-  return Results.success({ status: response.status, value: parseResult.value } as ZotchErrorTypeByPath<Api, M, Path>)
+  return Results.success({ status: response.status, value: parseResult } as ZotchErrorTypeByPath<Api, M, Path>)
 }

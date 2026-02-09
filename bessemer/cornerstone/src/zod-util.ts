@@ -66,11 +66,13 @@ export const key = (): ZodType<ResourceKey> => {
 
 export type StructuredTransformer<InputType, OutputType> = (value: InputType) => Result<OutputType, ErrorEvent>
 
-export const structuredTransform = <InputType, OutputType, SchemaType extends ZodType<InputType, InputType>>(
+export const structuredTransform = <InputType, OutputType, SchemaType extends ZodType<InputType, InputType> = ZodType<InputType, InputType>>(
   schema: SchemaType,
   transformer: StructuredTransformer<InputType, OutputType>
 ) => {
-  return schema.superRefine(refineResult(transformer)).transform((it) => {
+  const refinedResultTransformer = refineResult(transformer)
+
+  return schema.superRefine(refinedResultTransformer).transform((it) => {
     const result = transformer(it)
     return unpackResult(result)
   })

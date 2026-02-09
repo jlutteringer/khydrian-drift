@@ -3,7 +3,6 @@ import { createNamespace } from '@bessemer/cornerstone/resource-key'
 import { NominalType } from '@bessemer/cornerstone/types'
 import { Comparator } from '@bessemer/cornerstone/comparator'
 import { fromComparator } from '@bessemer/cornerstone/equalitor'
-import * as Results from '@bessemer/cornerstone/result'
 import { failure, Result, success } from '@bessemer/cornerstone/result'
 import { ErrorEvent, invalidValue, unpackResult } from '@bessemer/cornerstone/error/error-event'
 import { isError } from '@bessemer/cornerstone/error/error'
@@ -17,6 +16,7 @@ import { isNil } from '@bessemer/cornerstone/object'
 import { Locale } from '@bessemer/cornerstone/intl/locale'
 import { DateTimeFormatOptions, format as formatPlainDateTime, fromInstant } from '@bessemer/cornerstone/temporal/plain-date-time'
 import { TimeZoneId } from '@bessemer/cornerstone/temporal/time-zone-id'
+import { Results } from '@bessemer/cornerstone'
 
 export type Instant = Temporal.Instant
 export const Namespace = createNamespace('instant')

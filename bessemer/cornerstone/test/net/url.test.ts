@@ -821,8 +821,8 @@ describe('Urls.format', () => {
   })
 })
 
-describe('Urls.merge', () => {
-  test('should merge scheme into existing URL', () => {
+describe('Urls.update', () => {
+  test('should update scheme into existing URL', () => {
     const baseUrl = Urls.from({
       scheme: 'http',
       host: 'example.com',
@@ -831,7 +831,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       scheme: 'https',
     })
 
@@ -840,13 +840,13 @@ describe('Urls.merge', () => {
     expect(result.location.pathSegments).toEqual(['api'])
   })
 
-  test('should merge host into existing URL', () => {
+  test('should update host into existing URL', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'old.example.com',
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       host: {
         value: 'new.example.com',
         port: 8080,
@@ -858,13 +858,13 @@ describe('Urls.merge', () => {
     expect(result.host?.port).toBe(8080)
   })
 
-  test('should merge authentication into existing URL', () => {
+  test('should update authentication into existing URL', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'api.example.com',
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       authentication: {
         principal: 'user',
         password: 'password',
@@ -877,7 +877,7 @@ describe('Urls.merge', () => {
     expect(result.authentication?.password).toBe('password')
   })
 
-  test('should merge path into existing URL', () => {
+  test('should update path into existing URL', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'example.com',
@@ -886,7 +886,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       location: {
         path: '/new/path/segment',
       },
@@ -898,7 +898,7 @@ describe('Urls.merge', () => {
     expect(result.location.pathSegments).toEqual(['new', 'path', 'segment'])
   })
 
-  test('should merge pathSegments into existing URL', () => {
+  test('should update pathSegments into existing URL', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'api.example.com',
@@ -908,7 +908,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       location: {
         pathSegments: ['v2', 'users'],
       },
@@ -921,7 +921,7 @@ describe('Urls.merge', () => {
     expect(result.location.parameters).toEqual({ format: 'json' })
   })
 
-  test('should merge replace parameters', () => {
+  test('should update replace parameters', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'search.example.com',
@@ -934,7 +934,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       location: {
         parameters: {
           q: 'new query',
@@ -952,7 +952,7 @@ describe('Urls.merge', () => {
     })
   })
 
-  test('should merge fragment into existing URL', () => {
+  test('should update fragment into existing URL', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'docs.example.com',
@@ -962,7 +962,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       location: {
         fragment: 'new-section',
       },
@@ -974,7 +974,7 @@ describe('Urls.merge', () => {
     expect(result.location.fragment).toBe('new-section')
   })
 
-  test('should merge multiple components simultaneously', () => {
+  test('should update multiple components simultaneously', () => {
     const baseUrl = Urls.from({
       scheme: 'http',
       host: 'old.example.com',
@@ -984,7 +984,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       scheme: 'https',
       host: {
         value: 'new.example.com',
@@ -1016,8 +1016,8 @@ describe('Urls.merge', () => {
     expect(result.location.fragment).toBe('docs')
   })
 
-  test('should merge with URL string as base', () => {
-    const result = Urls.merge('https://example.com/path' as UrlLiteral, {
+  test('should update with URL string as base', () => {
+    const result = Urls.update('https://example.com/path' as UrlLiteral, {
       location: {
         parameters: {
           q: 'search',
@@ -1031,7 +1031,7 @@ describe('Urls.merge', () => {
     expect(result.location.parameters).toEqual({ q: 'search' })
   })
 
-  test('should merge with relative URL', () => {
+  test('should update with relative URL', () => {
     const baseUrl = Urls.from({
       location: {
         pathSegments: ['docs'],
@@ -1039,7 +1039,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       location: {
         parameters: {
           tab: 'overview',
@@ -1054,7 +1054,7 @@ describe('Urls.merge', () => {
     expect(result.location.parameters).toEqual({ tab: 'overview' })
   })
 
-  test('should merge empty builder (no changes)', () => {
+  test('should update empty builder (no changes)', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'example.com',
@@ -1064,7 +1064,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {})
+    const result = Urls.update(baseUrl, {})
 
     expect(result.scheme).toBe('https')
     expect(result.host?.value).toBe('example.com')
@@ -1072,7 +1072,7 @@ describe('Urls.merge', () => {
     expect(result.location.parameters).toEqual({ version: '1' })
   })
 
-  test('should merge with null values to clear components', () => {
+  test('should update with null values to clear components', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'example.com',
@@ -1087,7 +1087,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       authentication: null,
       location: {
         fragment: null,
@@ -1102,7 +1102,7 @@ describe('Urls.merge', () => {
     expect(result.location.fragment).toBeNull()
   })
 
-  test('should deep merge nested query parameters', () => {
+  test('should deep update nested query parameters', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'api.example.com',
@@ -1115,7 +1115,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       location: {
         parameters: {
           filters: ['published'],
@@ -1130,8 +1130,8 @@ describe('Urls.merge', () => {
     })
   })
 
-  test('should merge with UrlBuilder as base', () => {
-    const result = Urls.merge(
+  test('should update with UrlBuilder as base', () => {
+    const result = Urls.update(
       {
         scheme: 'http',
         host: 'localhost',
@@ -1164,7 +1164,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       location: {
         pathSegments: ['modified'],
       },
@@ -1175,7 +1175,7 @@ describe('Urls.merge', () => {
     expect(result).not.toBe(baseUrl)
   })
 
-  test('should merge complex nested location properties', () => {
+  test('should update complex nested location properties', () => {
     const baseUrl = Urls.from({
       scheme: 'https',
       host: 'complex.example.com',
@@ -1189,7 +1189,7 @@ describe('Urls.merge', () => {
       },
     })
 
-    const result = Urls.merge(baseUrl, {
+    const result = Urls.update(baseUrl, {
       location: {
         pathSegments: ['api', 'v2', 'advanced'],
         parameters: {
@@ -1208,5 +1208,18 @@ describe('Urls.merge', () => {
       limit: '50',
     })
     expect(result.location.fragment).toBe('section2')
+  })
+
+  test('should be able to make relative', () => {
+    const baseUrl = Urls.from({
+      host: 'example.com',
+      location: '/absolute/path',
+    })
+
+    const result = Urls.update(baseUrl, {
+      location: '/absolute/path',
+    })
+
+    expect(result.location.path).toEqual('absolute/path')
   })
 })

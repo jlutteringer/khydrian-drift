@@ -27,9 +27,11 @@ test('ZotchClient.fetchRequestById - success', async () => {
   const apiKey = Uuid4.generate()
 
   const zotch = Zotch.client(RequestApi, {
+    baseUrl: '/api/v1/?version=latest',
     fetch: async (url, request) => {
-      expect(url).toContain(`/requests/${requestId}`)
+      expect(url).toContain(`/api/v1/requests/${requestId}`)
       expect(url).toContain('cache=true')
+      expect(url).toContain('version=latest')
 
       const headers = new Headers(request?.headers)
       expect(headers.get('X-Api-Key')).toBe(apiKey)
@@ -48,8 +50,8 @@ test('ZotchClient.fetchRequestById - success', async () => {
       headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
     })
 
-    expect(response.isSuccess).toBe(true)
-    expect(response.value).toEqual(emptyRequest)
+    Results.assertSuccess(response)
+    expect(response).toEqual(emptyRequest)
   }
 
   {
@@ -59,8 +61,8 @@ test('ZotchClient.fetchRequestById - success', async () => {
     })
 
     expectTypeOf(response).toExtend<Result<RequestDto, ZotchError<{ status: 404; value: unknown } | { status: 401; value: number }>>>()
-    expect(response.isSuccess).toBe(true)
-    expect(response.value).toEqual(emptyRequest)
+    Results.assertSuccess(response)
+    expect(response).toEqual(emptyRequest)
   }
 })
 
@@ -261,7 +263,7 @@ test('ZotchClient.createQuote - success', async () => {
 
     console.log('Response:', response)
 
-    expect(response.isSuccess).toBe(true)
-    expect(response.value).toEqual(emptyRequest)
+    Results.assertSuccess(response)
+    expect(response).toEqual(emptyRequest)
   }
 })

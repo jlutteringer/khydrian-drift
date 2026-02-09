@@ -338,7 +338,11 @@ export const update = (element: UriLike, builder: UriBuilder): Uri => {
   if (Strings.isString(builder.location) || Objects.isNull(builder.location)) {
     location = builder.location
   } else {
-    location = { ...uri.location, ...(builder.location ?? {}) }
+    location = {
+      path: Objects.isUndefined(builder.location?.path) ? uri.location.path : builder.location?.path,
+      query: Objects.isUndefined(builder.location?.query) ? uri.location.query : builder.location?.query,
+      fragment: Objects.isUndefined(builder.location?.fragment) ? uri.location.fragment : builder.location?.fragment,
+    }
   }
 
   const uriBuilder: UriBuilder = {
@@ -351,7 +355,7 @@ export const update = (element: UriLike, builder: UriBuilder): Uri => {
   return from(uriBuilder)
 }
 
-export const merge = (...uris: UriLike[]): Uri => {
+export const merge = (...uris: Array<UriLike>): Uri => {
   if (uris.length === 0) {
     return empty()
   }
@@ -362,21 +366,19 @@ export const merge = (...uris: UriLike[]): Uri => {
   return uris.reduce<Uri>((aggregate, next) => {
     const nextUri = from(next)
 
-    const uriBuilder: UriBuilder = {
+    const builder: UriBuilder = {
       scheme: nextUri.scheme ?? undefined,
       host: nextUri.host ?? undefined,
       authentication: nextUri.authentication ?? undefined,
       location: {
-        ...aggregate.location,
-        ...{
-          path: nextUri.location.path ?? undefined,
-          query: nextUri.location.query ?? undefined,
-          fragment: nextUri.location.fragment ?? undefined,
-        },
+        path: nextUri.location.path ?? undefined,
+        query: nextUri.location.query ?? undefined,
+        fragment: nextUri.location.fragment ?? undefined,
       },
     }
 
-    return update(aggregate, uriBuilder)
+    const uri = update(aggregate, builder)
+    return uri
   }, from(uris[0]!))
 }
 

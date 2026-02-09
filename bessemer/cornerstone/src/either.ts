@@ -10,14 +10,18 @@ export enum EitherType {
   Right = 'Right',
 }
 
-export type Left<LeftType> = LeftType
+declare const __types: unique symbol
+export type NominalTyping2<NominalType> = { [__types]: NominalType }
+export type NominalType2<ConcreteType, NominalType> = ConcreteType & NominalTyping2<NominalType>
+
+export type Left<LeftType> = NominalType2<LeftType, 'Left'>
 export type Right<RightType> = {
   [TypeToken]: EitherType.Right
   value: RightType
 }
 export type Either<LeftType, RightType> = Left<LeftType> | Right<RightType>
 
-export const left = <LeftType>(value: LeftType): Left<LeftType> => value
+export const left = <LeftType>(value: LeftType): Left<LeftType> => value as Left<LeftType>
 export const right = <RightType>(value: RightType): Right<RightType> => {
   return { [TypeToken]: EitherType.Right, value }
 }
@@ -26,7 +30,7 @@ export const isLeft = <LeftType, RightType>(value: Either<LeftType, RightType>):
   return !isRight(value)
 }
 export const isRight = <LeftType, RightType>(value: Either<LeftType, RightType>): value is Right<RightType> => {
-  return isObject(value) && value[TypeToken] === EitherType.Right
+  return isObject(value) && (value as any)[TypeToken] === EitherType.Right
 }
 
 export function assertLeft<LeftType, RightType>(value: Either<LeftType, RightType>): asserts value is Left<LeftType> {

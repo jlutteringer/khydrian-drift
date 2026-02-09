@@ -55,7 +55,7 @@ export const RequestApi = Zotch.makeApi([
   {
     alias: 'fetchRequestById',
     method: 'get',
-    path: '/requests/:requestId',
+    path: 'requests/:requestId',
     response: RequestSchema,
     parameters: [
       ...ContextHeadersSchema,

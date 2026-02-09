@@ -115,36 +115,62 @@ export const isUrl = (value: unknown): value is Url => {
   return uriValue._type === Namespace
 }
 
-export const merge = (first: UrlLike, second: UrlLike): Url => {
-  const firstUrl = from(first)
-  const secondUrl = from(second)
+export const update = (element: UrlLike, builder: UrlBuilder): Url => {
+  const url = from(element)
 
-  let location: UrlBuilderLocationPart | null | undefined = null
-  if (Objects.isNull(secondUrl.location)) {
-    location = secondUrl.location
+  let location: UrlBuilderLocationPart | null | undefined
+  if (Strings.isString(builder.location) || Objects.isNull(builder.location)) {
+    location = builder.location
   } else {
-    const usePathSegments = !Objects.isUndefined(secondUrl.location?.pathSegments)
-    const useParameters = !Objects.isUndefined(secondUrl.location?.parameters)
+    const usePathSegments = !Objects.isUndefined(builder.location?.pathSegments)
+    const useParameters = !Objects.isUndefined(builder.location?.parameters)
 
     location = {
       ...(usePathSegments
-        ? { pathSegments: secondUrl.location?.pathSegments }
-        : { path: Objects.isUndefined(secondUrl.location?.path) ? firstUrl.location.path : secondUrl.location.path }),
+        ? { pathSegments: builder.location?.pathSegments }
+        : { path: Objects.isUndefined(builder.location?.path) ? url.location.path : builder.location.path }),
       ...(useParameters
-        ? { parameters: secondUrl.location?.parameters }
-        : { query: Objects.isUndefined(secondUrl.location?.query) ? firstUrl.location.query : secondUrl.location.query }),
-      fragment: Objects.isUndefined(secondUrl.location?.fragment) ? firstUrl.location.fragment : secondUrl.location.fragment,
+        ? { parameters: builder.location?.parameters }
+        : { query: Objects.isUndefined(builder.location?.query) ? url.location.query : builder.location.query }),
+      fragment: Objects.isUndefined(builder.location?.fragment) ? url.location.fragment : builder.location.fragment,
     }
   }
 
   const uriBuilder: UriBuilder = {
-    scheme: Objects.isUndefined(secondUrl.scheme) ? firstUrl.scheme : secondUrl.scheme,
-    host: Objects.isUndefined(secondUrl.host) ? firstUrl.host : secondUrl.host,
-    authentication: Objects.isUndefined(secondUrl.authentication) ? firstUrl.authentication : secondUrl.authentication,
+    scheme: Objects.isUndefined(builder.scheme) ? url.scheme : builder.scheme,
+    host: Objects.isUndefined(builder.host) ? url.host : builder.host,
+    authentication: Objects.isUndefined(builder.authentication) ? url.authentication : builder.authentication,
     location,
   }
 
   return from(uriBuilder)
+}
+
+export const merge = (...urls: UrlLike[]): Url => {
+  if (urls.length === 0) {
+    return empty()
+  }
+  if (urls.length === 1) {
+    return from(urls[0]!)
+  }
+
+  return urls.reduce<Url>((aggregate, next) => {
+    const nextUri = from(next)
+
+    const builder: UrlBuilder = {
+      scheme: nextUri.scheme ?? undefined,
+      host: nextUri.host ?? undefined,
+      authentication: nextUri.authentication ?? undefined,
+      location: {
+        path: nextUri.location.path ?? undefined,
+        query: nextUri.location.query ?? undefined,
+        fragment: nextUri.location.fragment ?? undefined,
+      },
+    }
+
+    const uri = update(aggregate, builder)
+    return uri
+  }, from(urls[0]!))
 }
 
 export const format = Uris.format

@@ -58,11 +58,11 @@ export class ZotchPlugins {
       if (Objects.isPresent(plugin.processRequest)) {
         const result = await plugin.processRequest(context)
 
-        if (!result.isSuccess) {
+        if (Results.isFailure(result)) {
           return result
         }
 
-        context.request = result.value
+        context.request = result
       }
     }
 
