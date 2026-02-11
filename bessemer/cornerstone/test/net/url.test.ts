@@ -17,7 +17,7 @@ describe('Urls.from', () => {
     expect(result.host?.port).toBe(8080)
     expect(result.location.path).toBe(null)
     expect(result.location.pathSegments).toEqual([])
-    expect(result.location.relative).toBe(false)
+    expect(result.relative).toBe(false)
   })
 
   test('should build URL with scheme and host string', () => {
@@ -81,20 +81,20 @@ describe('Urls.from', () => {
 
     expect(result.location.pathSegments).toEqual(['v1', 'users', '123'])
     expect(result.location.path).toBe('/v1/users/123')
-    expect(result.location.relative).toBe(false)
+    expect(result.relative).toBe(false)
   })
 
   test('should build URL with relative path segments', () => {
     const result = Urls.from({
       location: {
         pathSegments: ['docs', 'guide'],
-        relative: true,
       },
+      relative: true,
     })
 
     expect(result.location.pathSegments).toEqual(['docs', 'guide'])
     expect(result.location.path).toBe('docs/guide')
-    expect(result.location.relative).toBe(true)
+    expect(result.relative).toBe(true)
   })
 
   test('should build URL with path string', () => {
@@ -108,7 +108,7 @@ describe('Urls.from', () => {
 
     expect(result.location.path).toBe('/guide/getting-started')
     expect(result.location.pathSegments).toEqual(['guide', 'getting-started'])
-    expect(result.location.relative).toBe(false)
+    expect(result.relative).toBe(false)
   })
 
   test('should build URL with query parameters object', () => {
@@ -230,8 +230,8 @@ describe('Urls.from', () => {
     const result = Urls.from({
       location: {
         pathSegments: ['assets', 'images', 'logo.png'],
-        relative: true,
       },
+      relative: true,
     })
 
     expect(result.scheme).toBeNull()
@@ -239,7 +239,7 @@ describe('Urls.from', () => {
     expect(result.authentication).toBeNull()
     expect(result.location.pathSegments).toEqual(['assets', 'images', 'logo.png'])
     expect(result.location.path).toBe('assets/images/logo.png')
-    expect(result.location.relative).toBe(true)
+    expect(result.relative).toBe(true)
   })
 
   test('should build URL with IPv6 host', () => {
@@ -283,7 +283,7 @@ describe('Urls.from', () => {
 
     expect(result.location.pathSegments).toEqual([])
     expect(result.location.path).toBe(null)
-    expect(result.location.relative).toBe(false)
+    expect(result.relative).toBe(false)
   })
 
   test('should return existing URL instance unchanged', () => {
@@ -337,8 +337,8 @@ describe('Urls.from', () => {
         host: 'example.com',
         location: {
           pathSegments: ['path'],
-          relative: true,
         },
+        relative: true,
       })
     }).toThrow()
   })
@@ -539,6 +539,44 @@ describe('Urls.from', () => {
       })
     )
   })
+
+  test('should be able to build relative', () => {
+    {
+      const result = Urls.from({
+        relative: true,
+      })
+      expect(result).toEqual(Urls.empty())
+    }
+    {
+      const result = Urls.from({
+        location: {
+          path: '/relative/path',
+        },
+        relative: true,
+      })
+      expect(result.href).toEqual('relative/path')
+    }
+    {
+      const result = Urls.from({
+        location: {
+          path: 'relative/path',
+        },
+        relative: true,
+      })
+      expect(result.href).toEqual('relative/path')
+    }
+    {
+      expect(() =>
+        Urls.from({
+          host: 'example.com',
+          location: {
+            path: '/relative/path',
+          },
+          relative: true,
+        })
+      ).toThrow()
+    }
+  })
 })
 
 describe('Urls.format', () => {
@@ -587,8 +625,8 @@ describe('Urls.format', () => {
     const url = Urls.from({
       location: {
         pathSegments: ['docs', 'guide'],
-        relative: true,
       },
+      relative: true,
     })
     const result = Urls.format(url)
 
@@ -609,8 +647,8 @@ describe('Urls.format', () => {
     const url = Urls.from({
       location: {
         pathSegments: [],
-        relative: true,
       },
+      relative: true,
     })
     const result = Urls.format(url)
 
@@ -741,8 +779,8 @@ describe('Urls.format', () => {
     const url = Urls.from({
       location: {
         pathSegments: ['assets', 'images', 'logo.png'],
-        relative: true,
       },
+      relative: true,
     })
     const result = Urls.format(url)
 
@@ -1035,8 +1073,8 @@ describe('Urls.update', () => {
     const baseUrl = Urls.from({
       location: {
         pathSegments: ['docs'],
-        relative: true,
       },
+      relative: true,
     })
 
     const result = Urls.update(baseUrl, {
@@ -1050,7 +1088,7 @@ describe('Urls.update', () => {
     expect(result.scheme).toBeNull()
     expect(result.host).toBeNull()
     expect(result.location.pathSegments).toEqual(['docs'])
-    expect(result.location.relative).toBe(true)
+    expect(result.relative).toBe(true)
     expect(result.location.parameters).toEqual({ tab: 'overview' })
   })
 
@@ -1210,16 +1248,381 @@ describe('Urls.update', () => {
     expect(result.location.fragment).toBe('section2')
   })
 
-  test('should be able to make relative', () => {
-    const baseUrl = Urls.from({
+  test('should be able to update relative', () => {
+    const baseUrl = Urls.from('//example.com/absolute/path?query=1')
+
+    {
+      const result = Urls.update(baseUrl, {
+        relative: true,
+      })
+      expect(result.href).toEqual('absolute/path?query=1')
+    }
+    {
+      const result = Urls.update(baseUrl, {
+        location: {
+          pathSegments: ['relative', 'path'],
+        },
+        relative: true,
+      })
+      expect(result.href).toEqual('relative/path?query=1')
+    }
+    {
+      const result = Urls.update(baseUrl, {
+        location: {
+          path: 'relative/path',
+        },
+        relative: true,
+      })
+      expect(result.href).toEqual('relative/path?query=1')
+    }
+    {
+      const result = Urls.update(baseUrl, {
+        location: {
+          path: 'relative/path',
+        },
+      })
+      expect(result.href).toEqual('//example.com/relative/path?query=1')
+    }
+    {
+      const result = Urls.update(baseUrl, {
+        location: {
+          path: '/relative/path',
+        },
+        relative: true,
+      })
+      expect(result.href).toEqual('relative/path?query=1')
+    }
+  })
+})
+
+describe('Urls.navigate', () => {
+  test('should navigate to absolute URL from base', () => {
+    const base = Urls.from('https://example.com/path/to/page')
+    const result = Urls.navigate(base, 'https://other.com/new/path' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('other.com')
+    expect(result.location.pathSegments).toEqual(['new', 'path'])
+  })
+
+  test('should navigate to relative path from base', () => {
+    const base = Urls.from('https://example.com/docs/guide')
+    const result = Urls.navigate(base, 'api/reference' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['docs', 'guide', 'api', 'reference'])
+    expect(result.location.path).toBe('/docs/guide/api/reference')
+  })
+
+  test('should navigate to absolute path from base', () => {
+    const base = Urls.from('https://example.com/docs/guide')
+    const result = Urls.navigate(base, '/api/reference' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['api', 'reference'])
+    expect(result.location.path).toBe('/api/reference')
+  })
+
+  test('should navigate with query parameters', () => {
+    const base = Urls.from('https://example.com/docs')
+    const result = Urls.navigate(base, '/api?version=v2' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['api'])
+    expect(result.location.parameters).toEqual({ version: 'v2' })
+  })
+
+  test('should navigate with fragment', () => {
+    const base = Urls.from('https://example.com/docs')
+    const result = Urls.navigate(base, '/api#introduction' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['api'])
+    expect(result.location.fragment).toBe('introduction')
+  })
+
+  test('should replace query and fragment on navigation', () => {
+    const base = Urls.from('https://example.com/docs?old=query#old-section')
+    const result = Urls.navigate(base, 'guide?new=param#new-section' as UrlLiteral)
+
+    expect(result.location.pathSegments).toEqual(['docs', 'guide'])
+    expect(result.location.parameters).toEqual({ new: 'param' })
+    expect(result.location.fragment).toBe('new-section')
+  })
+
+  test('should navigate from root to relative path', () => {
+    const base = Urls.from('https://example.com/')
+    const result = Urls.navigate(base, 'docs/guide' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['docs', 'guide'])
+    expect(result.location.path).toBe('/docs/guide')
+  })
+
+  test('should navigate with nested relative paths', () => {
+    const base = Urls.from('https://example.com/docs/api')
+    const result = Urls.navigate(base, 'v2/users/123' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['docs', 'api', 'v2', 'users', '123'])
+    expect(result.location.path).toBe('/docs/api/v2/users/123')
+  })
+
+  test('should navigate to protocol-relative URL', () => {
+    const base = Urls.from('https://example.com/path')
+    const result = Urls.navigate(base, '//cdn.other.com/assets/app.js' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('cdn.other.com')
+    expect(result.location.pathSegments).toEqual(['assets', 'app.js'])
+  })
+
+  test('should navigate to different scheme', () => {
+    const base = Urls.from('https://example.com/secure')
+    const result = Urls.navigate(base, 'http://example.com/public' as UrlLiteral)
+
+    expect(result.scheme).toBe('http')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['public'])
+  })
+
+  test('should clear authentication when navigating to different host', () => {
+    const base = Urls.from('https://user:pass@example.com/private')
+    const result = Urls.navigate(base, 'https://other.com/public' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('other.com')
+    expect(result.authentication).toBeNull()
+    expect(result.location.pathSegments).toEqual(['public'])
+  })
+
+  test('should preserve authentication when navigating on same host', () => {
+    const base = Urls.from('https://user:pass@example.com/private')
+    const result = Urls.navigate(base, '/other-private' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.authentication?.principal).toBe('user')
+    expect(result.authentication?.password).toBe('pass')
+    expect(result.location.pathSegments).toEqual(['other-private'])
+  })
+
+  test('should handle navigation with UrlBuilder as next', () => {
+    const base = Urls.from('https://example.com/docs')
+    const result = Urls.navigate(base, {
+      location: {
+        pathSegments: ['api', 'reference'],
+      },
+      relative: true,
+    })
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['docs', 'api', 'reference'])
+  })
+
+  test('should handle navigation with UrlBuilder as base', () => {
+    const result = Urls.navigate(
+      {
+        scheme: 'https',
+        host: 'example.com',
+        location: { pathSegments: ['docs'] },
+      },
+      'guide' as UrlLiteral
+    )
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['docs', 'guide'])
+  })
+
+  test('should navigate from URL with port', () => {
+    const base = Urls.from('http://localhost:8080/app')
+    const result = Urls.navigate(base, 'api/users' as UrlLiteral)
+
+    expect(result.scheme).toBe('http')
+    expect(result.host?.value).toBe('localhost')
+    expect(result.host?.port).toBe(8080)
+    expect(result.location.pathSegments).toEqual(['app', 'api', 'users'])
+  })
+
+  test('should navigate to URL with different port', () => {
+    const base = Urls.from('http://localhost:8080/app')
+    const result = Urls.navigate(base, 'http://localhost:9000/other' as UrlLiteral)
+
+    expect(result.scheme).toBe('http')
+    expect(result.host?.value).toBe('localhost')
+    expect(result.host?.port).toBe(9000)
+    expect(result.location.pathSegments).toEqual(['other'])
+  })
+
+  test('should navigate from IPv6 host', () => {
+    const base = Urls.from('http://[2001:db8::1]:8080/api')
+    const result = Urls.navigate(base, 'v2/users' as UrlLiteral)
+
+    expect(result.scheme).toBe('http')
+    expect(result.host?.value).toBe('[2001:db8::1]')
+    expect(result.host?.port).toBe(8080)
+    expect(result.location.pathSegments).toEqual(['api', 'v2', 'users'])
+  })
+
+  test('should navigate with encoded path segments', () => {
+    const base = Urls.from('https://example.com/folder')
+    const result = Urls.navigate(base, {
+      location: {
+        pathSegments: ['file name', 'with spaces'],
+      },
+      relative: true,
+    })
+
+    expect(result.location.pathSegments).toEqual(['folder', 'file name', 'with spaces'])
+    expect(result.location.path).toBe('/folder/file%20name/with%20spaces')
+  })
+
+  test('should navigate to fragment only', () => {
+    const base = Urls.from('https://example.com/docs/guide?tab=api')
+    const result = Urls.navigate(base, '#section-2' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['docs', 'guide'])
+    expect(result.location.parameters).toEqual({ tab: 'api' })
+    expect(result.location.fragment).toBe('section-2')
+  })
+
+  test('should navigate to query only', () => {
+    const base = Urls.from('https://example.com/search')
+    const result = Urls.navigate(base, '?q=typescript' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['search'])
+    expect(result.location.parameters).toEqual({ q: 'typescript' })
+  })
+
+  test('should navigate from base with no path', () => {
+    const base = Urls.from('https://example.com')
+    const result = Urls.navigate(base, 'docs/guide' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['docs', 'guide'])
+    expect(result.location.path).toBe('/docs/guide')
+  })
+
+  test('should navigate with empty relative path', () => {
+    const base = Urls.from('https://example.com/docs/guide')
+    const result = Urls.navigate(base, '' as UrlLiteral)
+
+    expect(result.scheme).toBe('https')
+    expect(result.host?.value).toBe('example.com')
+    expect(result.location.pathSegments).toEqual(['docs', 'guide'])
+  })
+
+  test('should simulate browser navigation: relative link from page', () => {
+    const base = Urls.from('https://example.com/products/electronics/laptops')
+    const result = Urls.navigate(base, 'accessories' as UrlLiteral)
+
+    expect(result.href).toBe('https://example.com/products/electronics/laptops/accessories')
+  })
+
+  test('should simulate browser navigation: absolute link from page', () => {
+    const base = Urls.from('https://example.com/products/electronics/laptops')
+    const result = Urls.navigate(base, '/about' as UrlLiteral)
+
+    expect(result.href).toBe('https://example.com/about')
+  })
+
+  test('should simulate browser navigation: external link', () => {
+    const base = Urls.from('https://example.com/page')
+    const result = Urls.navigate(base, 'https://external.com/resource' as UrlLiteral)
+
+    expect(result.href).toBe('https://external.com/resource')
+  })
+
+  test('should simulate browser navigation: query string update', () => {
+    const base = Urls.from('https://example.com/search?q=javascript')
+    const result = Urls.navigate(base, '?q=typescript&sort=date' as UrlLiteral)
+
+    expect(result.href).toBe('https://example.com/search?q=typescript&sort=date')
+  })
+
+  test('should simulate browser navigation: hash/fragment change', () => {
+    const base = Urls.from('https://example.com/docs#intro')
+    const result = Urls.navigate(base, '#advanced' as UrlLiteral)
+
+    expect(result.href).toBe('https://example.com/docs#advanced')
+  })
+
+  test('should handle complex multi-step navigation', () => {
+    let current = Urls.from('https://example.com/')
+
+    current = Urls.navigate(current, 'docs' as UrlLiteral)
+    expect(current.href).toBe('https://example.com/docs')
+
+    current = Urls.navigate(current, 'api' as UrlLiteral)
+    expect(current.href).toBe('https://example.com/docs/api')
+
+    current = Urls.navigate(current, '/guide' as UrlLiteral)
+    expect(current.href).toBe('https://example.com/guide')
+
+    current = Urls.navigate(current, 'v2/reference' as UrlLiteral)
+    expect(current.href).toBe('https://example.com/guide/v2/reference')
+  })
+
+  test('should preserve scheme when navigating with relative URL', () => {
+    const base = Urls.from('ftp://files.example.com/public')
+    const result = Urls.navigate(base, 'documents/readme.txt' as UrlLiteral)
+
+    expect(result.scheme).toBe('ftp')
+    expect(result.host?.value).toBe('files.example.com')
+    expect(result.location.pathSegments).toEqual(['public', 'documents', 'readme.txt'])
+  })
+
+  test('should handle navigation with complex query parameters', () => {
+    const base = Urls.from('https://api.example.com/search')
+    const result = Urls.navigate(base, {
+      location: {
+        pathSegments: ['results'],
+        parameters: {
+          filters: ['active', 'verified'],
+          sort: 'date',
+          limit: '50',
+        },
+      },
+      relative: true,
+    })
+
+    expect(result.location.pathSegments).toEqual(['search', 'results'])
+    expect(result.location.parameters).toEqual({
+      filters: ['active', 'verified'],
+      sort: 'date',
+      limit: '50',
+    })
+  })
+
+  test('should clear authentication when navigating to absolute URL on different host', () => {
+    const base = Urls.from('https://admin:secret@internal.example.com/admin')
+    const result = Urls.navigate(base, 'https://public.example.com/info' as UrlLiteral)
+
+    expect(result.authentication).toBeNull()
+  })
+
+  test('should update authentication when provided in navigation target', () => {
+    const base = Urls.from('https://example.com/page')
+    const result = Urls.navigate(base, {
       host: 'example.com',
-      location: '/absolute/path',
+      authentication: { principal: 'newuser', password: 'newpass' },
+      location: { path: '/secure' },
     })
 
-    const result = Urls.update(baseUrl, {
-      location: '/absolute/path',
-    })
-
-    expect(result.location.path).toEqual('absolute/path')
+    expect(result.authentication?.principal).toBe('newuser')
+    expect(result.authentication?.password).toBe('newpass')
   })
 })

@@ -1,3 +1,4 @@
+import * as Types from '@bessemer/cornerstone/types'
 import * as Objects from '@bessemer/cornerstone/object'
 import * as Functions from '@bessemer/cornerstone/function'
 import * as Arrays from '@bessemer/cornerstone/array'
@@ -72,6 +73,7 @@ import * as IpV4Addresses from '@bessemer/cornerstone/net/ipv4-address'
 import * as HttpMethods from '@bessemer/cornerstone/net/http-method'
 
 export {
+  Types,
   Objects,
   Functions,
   Arrays,

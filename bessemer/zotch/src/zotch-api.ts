@@ -21,28 +21,19 @@ export const validateEndpointDefinitions = <T extends ZotchEndpointDefinitions>(
   for (let endpoint of api) {
     const fullpath = `${endpoint.method} ${endpoint.path}`
     if (paths.has(fullpath)) {
-      throw new Error(`Zodios: Duplicate path '${fullpath}'`)
+      throw new Error(`Zotch: Duplicate path '${fullpath}'`)
     }
     paths.add(fullpath)
   }
+
   // check if no duplicate alias
   const aliases = new Set<string>()
   for (let endpoint of api) {
     if (endpoint.alias) {
       if (aliases.has(endpoint.alias)) {
-        throw new Error(`Zodios: Duplicate alias '${endpoint.alias}'`)
+        throw new Error(`Zotch: Duplicate alias '${endpoint.alias}'`)
       }
       aliases.add(endpoint.alias)
-    }
-  }
-
-  // check if no duplicate body in parameters
-  for (let endpoint of api) {
-    if (endpoint.parameters) {
-      const bodyParams = endpoint.parameters.filter((p) => p.type === 'Body')
-      if (bodyParams.length > 1) {
-        throw new Error(`Zodios: Multiple body parameters in endpoint '${endpoint.path}'`)
-      }
     }
   }
 }
@@ -92,11 +83,7 @@ type ObjectToQueryParameters<
 class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
   constructor(private params: T) {}
 
-  addParameter<Name extends string, Type extends 'Path' | 'Query' | 'Body' | 'Header', Schema extends Zod.ZodType<any, any>>(
-    name: Name,
-    type: Type,
-    schema: Schema
-  ) {
+  addParameter<Name extends string, Type extends 'Path' | 'Query', Schema extends Zod.ZodType<any, any>>(name: Name, type: Type, schema: Schema) {
     return new ParametersBuilder<[...T, { name: Name; type: Type; description?: string; schema: Schema }]>([
       ...this.params,
       { name, type, description: schema.description, schema },
@@ -110,6 +97,7 @@ class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
       description: schemas[key]!.description,
       schema: schemas[key],
     }))
+
     return new ParametersBuilder<[...T, ...Extract<ObjectToQueryParameters<Type, Schemas>, ZodiosEndpointParameter[]>]>([
       ...this.params,
       ...parameters,

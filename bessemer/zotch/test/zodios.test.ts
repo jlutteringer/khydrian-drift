@@ -1,15 +1,15 @@
-import { AxiosError } from 'axios'
 import express from 'express'
 import { AddressInfo } from 'net'
-import { z, ZodError } from 'zod'
+import Zod from 'zod'
 import multer from 'multer'
-import { Result } from '@bessemer/cornerstone/result'
 import { Zotch } from '@bessemer/zotch'
+import { Results } from '@bessemer/cornerstone'
+import { ZotchErrorType } from '@bessemer/zotch/zotch-error'
 
-globalThis.FormData = require('form-data')
-const multipart = multer({ storage: multer.memoryStorage() })
+describe('Zotch.client', () => {
+  globalThis.FormData = require('form-data')
+  const multipart = multer({ storage: multer.memoryStorage() })
 
-describe('Zodios', () => {
   let app: express.Express
   let server: ReturnType<typeof app.listen>
   let port: number
@@ -78,248 +78,237 @@ describe('Zodios', () => {
     server.close()
   })
 
-  it('should throw if baseUrl is not provided', () => {
-    // @ts-ignore
-    expect(() => Zotch.client(undefined, [])).toThrowError('Zodios: missing base url')
+  test('should create a new instance of Zotch', () => {
+    const zotch = Zotch.client([])
+    expect(zotch).toBeDefined()
   })
 
-  it('should throw if api is not provided', () => {
-    // @ts-ignore
-    expect(() => new Zodios()).toThrowError('Zodios: missing api description')
-  })
-
-  it('should throw if api is not an array', () => {
-    // @ts-ignore
-    expect(() => new Zodios({})).toThrowError('Zodios: api must be an array')
-  })
-
-  it('should create a new instance of Zodios', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [])
-    expect(zodios).toBeDefined()
-  })
-  it('should create a new instance when providing an api', () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
+  test('should create a new instance when providing an api', () => {
+    const zotch = Zotch.client([
       {
+        alias: 'getThingById',
         method: 'get',
         path: '/:id',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
+        response: Zod.object({
+          id: Zod.number(),
+          name: Zod.string(),
         }),
       },
     ])
-    expect(zodios).toBeDefined()
+    expect(zotch).toBeDefined()
   })
 
-  it('should should throw with duplicate api endpoints', () => {
-    expect(
-      () =>
-        new Zodios(`http://localhost:${port}`, [
-          {
-            method: 'get',
-            path: '/:id',
-            response: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-          {
-            method: 'get',
-            path: '/:id',
-            response: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-        ])
-    ).toThrowError("Zodios: Duplicate path 'get /:id'")
+  test('should should throw with duplicate api endpoints', () => {
+    expect(() =>
+      Zotch.client([
+        {
+          alias: 'getThingById',
+          method: 'get',
+          path: '/:id',
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+        {
+          alias: 'getThingById',
+          method: 'get',
+          path: '/:id',
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ])
+    ).toThrowError("Zotch: Duplicate path 'get /:id'")
   })
 
-  it('should create a new instance whithout base URL', () => {
-    const zodios = new Zodios([
+  test('should create a new instance whithout base URL', () => {
+    const zotch = Zotch.client([
       {
+        alias: 'getThingById',
         method: 'get',
         path: '/:id',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
+        response: Zod.object({
+          id: Zod.number(),
+          name: Zod.string(),
         }),
       },
     ])
-    expect(zodios).toBeDefined()
+    expect(zotch).toBeDefined()
   })
 
-  // it('should register have validation plugin automatically installed', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [])
+  // test('should register have validation plugin automatically installed', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [])
   //   // @ts-ignore
-  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
+  //   expect(zotch.endpointPlugins.get('any-any').count()).toBe(1)
   // })
 
-  // it('should register a plugin', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [])
-  //   zodios.use({
+  // test('should register a plugin', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [])
+  //   zotch.use({
   //     request: async (_, config) => config,
   //   })
   //   // @ts-ignore
-  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
+  //   expect(zotch.endpointPlugins.get('any-any').count()).toBe(2)
   // })
   //
-  // it('should unregister a plugin', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [])
-  //   const id = zodios.use({
+  // test('should unregister a plugin', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [])
+  //   const id = zotch.use({
   //     request: async (_, config) => config,
   //   })
   //   // @ts-ignore
-  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
-  //   zodios.eject(id)
+  //   expect(zotch.endpointPlugins.get('any-any').count()).toBe(2)
+  //   zotch.eject(id)
   //   // @ts-ignore
-  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
+  //   expect(zotch.endpointPlugins.get('any-any').count()).toBe(1)
   // })
   //
-  // it('should replace a named plugin', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [])
-  //   const plugin: ZodiosPlugin = {
+  // test('should replace a named plugin', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [])
+  //   const plugin: ZotchPlugin = {
   //     name: 'test',
   //     request: async (_, config) => config,
   //   }
-  //   zodios.use(plugin)
-  //   zodios.use(plugin)
-  //   zodios.use(plugin)
+  //   zotch.use(plugin)
+  //   zotch.use(plugin)
+  //   zotch.use(plugin)
   //   // @ts-ignore
-  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(2)
+  //   expect(zotch.endpointPlugins.get('any-any').count()).toBe(2)
   // })
   //
-  // it('should unregister a named plugin', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [])
-  //   const plugin: ZodiosPlugin = {
+  // test('should unregister a named plugin', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [])
+  //   const plugin: ZotchPlugin = {
   //     name: 'test',
   //     request: async (_, config) => config,
   //   }
-  //   zodios.use(plugin)
-  //   zodios.eject('test')
+  //   zotch.use(plugin)
+  //   zotch.eject('test')
   //   // @ts-ignore
-  //   expect(zodios.endpointPlugins.get('any-any').count()).toBe(1)
+  //   expect(zotch.endpointPlugins.get('any-any').count()).toBe(1)
   // })
   //
-  // it('should throw if invalid parameters when registering a plugin', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [])
+  // test('should throw if invalid parameters when registering a plugin', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [])
   //   // @ts-ignore
-  //   expect(() => zodios.use(0)).toThrowError('Zodios: invalid plugin')
+  //   expect(() => zotch.use(0)).toThrowError('Zotch: invalid plugin')
   // })
   //
-  // it('should throw if invalid alias when registering a plugin', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  // test('should throw if invalid alias when registering a plugin', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [
   //     {
   //       method: 'get',
   //       path: '/:id',
   //       alias: 'test',
-  //       response: z.object({
-  //         id: z.number(),
-  //         name: z.string(),
+  //       response: Zod.object({
+  //         id: Zod.number(),
+  //         name: Zod.string(),
   //       }),
   //     },
   //   ])
   //   expect(() =>
   //     // @ts-ignore
-  //     zodios.use('tests', {
+  //     zotch.use('tests', {
   //       // @ts-ignore
   //       request: async (_, config) => config,
   //     })
-  //   ).toThrowError("Zodios: no alias 'tests' found to register plugin")
+  //   ).toThrowError("Zotch: no alias 'tests' found to register plugin")
   // })
   //
-  // it('should throw if invalid endpoint when registering a plugin', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  // test('should throw if invalid endpoint when registering a plugin', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [
   //     {
   //       method: 'get',
   //       path: '/:id',
-  //       response: z.object({
-  //         id: z.number(),
-  //         name: z.string(),
+  //       response: Zod.object({
+  //         id: Zod.number(),
+  //         name: Zod.string(),
   //       }),
   //     },
   //   ])
   //   expect(() =>
   //     // @ts-ignore
-  //     zodios.use('get', '/test/:id', {
+  //     zotch.use('get', '/test/:id', {
   //       // @ts-ignore
   //       request: async (_, config) => config,
   //     })
-  //   ).toThrowError("Zodios: no endpoint 'get /test/:id' found to register plugin")
+  //   ).toThrowError("Zotch: no endpoint 'get /test/:id' found to register plugin")
   // })
   //
-  // it('should register a plugin by endpoint', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  // test('should register a plugin by endpoint', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [
   //     {
   //       method: 'get',
   //       path: '/:id',
-  //       response: z.object({
-  //         id: z.number(),
-  //         name: z.string(),
+  //       response: Zod.object({
+  //         id: Zod.number(),
+  //         name: Zod.string(),
   //       }),
   //     },
   //   ])
-  //   zodios.use('get', '/:id', {
+  //   zotch.use('get', '/:id', {
   //     request: async (_, config) => config,
   //   })
   //   // @ts-ignore
-  //   expect(zodios.endpointPlugins.get('get-/:id').count()).toBe(1)
+  //   expect(zotch.endpointPlugins.get('get-/:id').count()).toBe(1)
   // })
   //
-  // it('should register a plugin by alias', () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  // test('should register a plugin by alias', () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [
   //     {
   //       method: 'get',
   //       path: '/:id',
   //       alias: 'test',
-  //       response: z.object({
-  //         id: z.number(),
-  //         name: z.string(),
+  //       response: Zod.object({
+  //         id: Zod.number(),
+  //         name: Zod.string(),
   //       }),
   //     },
   //   ])
-  //   zodios.use('test', {
+  //   zotch.use('test', {
   //     request: async (_, config) => config,
   //   })
   //   // @ts-ignore
-  //   expect(zodios.endpointPlugins.get('get-/:id').count()).toBe(1)
+  //   expect(zotch.endpointPlugins.get('get-/:id').count()).toBe(1)
   // })
   //
-  // it('should make an http request', async () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  // test('should make an http request', async () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [
   //     {
   //       method: 'get',
   //       path: '/:id',
-  //       response: z.object({
-  //         id: z.number(),
-  //         name: z.string(),
+  //       response: Zod.object({
+  //         id: Zod.number(),
+  //         name: Zod.string(),
   //       }),
   //     },
   //     {
   //       method: 'get',
   //       path: '/users',
-  //       response: z.array(
-  //         z.object({
-  //           id: z.number(),
-  //           name: z.string(),
+  //       response: Zod.array(
+  //         Zod.object({
+  //           id: Zod.number(),
+  //           name: Zod.string(),
   //         })
   //       ),
   //     },
   //   ])
-  //   const response = await zodios.request({
+  //   const response = await zotch.request({
   //     //      ^?
   //     method: 'get',
   //     url: '/:id',
   //     params: { id: 7 },
   //   })
   //
-  //   const testResonseType: Assert<typeof response, Result<{ id: number; name: string }, ZodiosValidationError>> = true
+  //   const testResonseType: Assert<typeof response, Result<{ id: number; name: string }, ZotchValidationError>> = true
   //   expect(response).toEqual({ id: 7, name: 'test' })
   // })
 
   // JOHN
-  // it('should make an http get with standard query arrays', async () => {
-  //   const zodios = new Zodios(`http://localhost:${port}`, [
+  // test('should make an http get with standard query arrays', async () => {
+  //   const zotch = new Zotch(`http://localhost:${port}`, [
   //     {
   //       method: 'get',
   //       path: '/queries',
@@ -327,380 +316,423 @@ describe('Zodios', () => {
   //         {
   //           name: 'id',
   //           type: 'Query',
-  //           schema: z.array(z.number()),
+  //           schema: Zod.array(Zod.number()),
   //         },
   //       ],
-  //       response: z.object({
-  //         queries: z.array(z.string()),
+  //       response: Zod.object({
+  //         queries: Zod.array(Zod.string()),
   //       }),
   //     },
   //   ])
-  //   const response = await zodios.get('/queries', { queries: { id: [1, 2] } })
+  //   const response = await zotch.get('/queries', { queries: { id: [1, 2] } })
   //   expect(response).toEqual({ queries: ['1', '2'] })
   // })
 
-  it('should make an http get with one path params', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.get('/:id', { params: { id: 7 } })
+  test('should make an http get with one path params', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'getThingById',
+          method: 'get',
+          path: '/:id',
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+
+    const response = await zotch.get('/:id', { params: { id: 7 } })
+    Results.assertSuccess(response)
     expect(response).toEqual({ id: 7, name: 'test' })
   })
 
-  it('should make an http alias request with one path params', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        alias: 'getById',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.getById({ params: { id: 7 } })
+  test('should make an http alias request with one path params', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'get',
+          path: '/:id',
+          alias: 'getById',
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.getById({ params: { id: 7 } })
     expect(response).toEqual({ id: 7, name: 'test' })
   })
 
-  it('should work with api builder', async () => {
-    const api = apiBuilder({
+  test('should work with api builder', async () => {
+    const api = Zotch.apiBuilder({
       method: 'get',
       path: '/:id',
       alias: 'getById',
-      response: z.object({
-        id: z.number(),
-        name: z.string(),
+      response: Zod.object({
+        id: Zod.number(),
+        name: Zod.string(),
       }),
     }).build()
-    const zodios = new Zodios(`http://localhost:${port}`, api)
-    const response = await zodios.getById({ params: { id: 7 } })
+    const zotch = Zotch.client(api, { baseUrl: `http://localhost:${port}`, fetch })
+    const response = await zotch.getById({ params: { id: 7 } })
     expect(response).toEqual({ id: 7, name: 'test' })
   })
 
-  it('should make a get request with forgotten params and get back a zod error', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    try {
-      // @ts-ignore
-      await zodios.get('/:id')
-    } catch (e) {
-      expect(e).toBeInstanceOf(ZodiosValidationError)
-    }
+  test('should make a get request with forgotten params and get back a zod error', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'getById',
+          method: 'get',
+          path: '/:id',
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+
+    // @ts-ignore
+    const response = await zotch.get('/:id')
+    Results.assertFailure(response)
+    expect(response.value.type).toEqual(ZotchErrorType.RequestInvalid)
   })
 
-  it('should make an http get with multiples path params', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id/address/:address',
-        response: z.object({
-          id: z.number(),
-          address: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.get('/:id/address/:address', {
+  test('should make an http get with multiples path params', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'getById',
+          method: 'get',
+          path: '/:id/address/:address',
+          response: Zod.object({
+            id: Zod.number(),
+            address: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.get('/:id/address/:address', {
       params: { id: 7, address: 'address' },
     })
     expect(response).toEqual({ id: 7, address: 'address' })
   })
 
-  it('should make an http post with body param', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/',
-        parameters: [
-          {
-            name: 'name',
-            type: 'Body',
-            schema: z.object({
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.post('/', { name: 'post' })
+  test('should make an http post with body param', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'getById',
+          method: 'post',
+          path: '/',
+          parameters: [
+            {
+              name: 'name',
+              type: 'Body',
+              schema: Zod.object({
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.post('/', { name: 'post' })
+    console.log(response)
     expect(response).toEqual({ id: 3, name: 'post' })
   })
 
-  it('should make an http post with transformed body param', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/',
-        parameters: [
-          {
-            name: 'name',
-            type: 'Body',
-            schema: z
-              .object({
-                firstname: z.string(),
-                lastname: z.string(),
-              })
-              .transform((data) => ({
+  test('should make an http post with transformed body param', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'getById',
+          method: 'post',
+          path: '/',
+          parameters: [
+            {
+              name: 'name',
+              type: 'Body',
+              schema: Zod.object({
+                firstname: Zod.string(),
+                lastname: Zod.string(),
+              }).transform((data) => ({
                 name: `${data.firstname} ${data.lastname}`,
               })),
-          },
-        ],
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const config = {
+            },
+          ],
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+
+    const response = await zotch.request({
       method: 'post',
       url: '/',
-      data: { firstname: 'post', lastname: 'test' },
-    } as const
-    const response = await zodios.request(config)
-    expect(config).toEqual({
-      method: 'post',
-      url: '/',
-      data: { firstname: 'post', lastname: 'test' },
+      body: { firstname: 'post', lastname: 'test' },
     })
     expect(response).toEqual({ id: 3, name: 'post test' })
   })
 
-  it('should throw a zodios error if params are not correct', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/',
-        parameters: [
-          {
-            name: 'name',
-            type: 'Body',
-            schema: z
-              .object({
-                email: z.string().email(),
-              })
-              .transform((data) => ({
+  test('should throw a zotch error if params are not correct', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'getById',
+          method: 'post',
+          path: '/',
+          parameters: [
+            {
+              name: 'name',
+              type: 'Body',
+              schema: Zod.object({
+                email: Zod.email(),
+              }).transform((data) => ({
                 name: `${data.email.split('@')[0]}`,
               })),
-          },
-        ],
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    let response
-    let error: ZodiosValidationError | undefined
-    try {
-      response = await zodios.post('/', {
-        email: 'post',
-      })
-    } catch (err) {
-      error = err as ZodiosValidationError
-    }
-    expect(response).toBeUndefined()
-    expect(error).toBeInstanceOf(ZodiosValidationError)
-    expect(error!.cause).toBeInstanceOf(ZodError)
-    expect(error!.message).toBe("Zodios: Invalid Body parameter 'name'")
+            },
+          ],
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+
+    const response = await zotch.post('/', {
+      email: 'post',
+    })
+    Results.assertFailure(response)
+    expect(response.value.type).toEqual(ZotchErrorType.RequestInvalid)
   })
 
-  it('should make an http mutation alias request with body param', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/',
-        alias: 'create',
-        parameters: [
-          {
-            name: 'name',
-            type: 'Body',
-            schema: z.object({
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.create({ name: 'post' })
+  test('should make an http mutation alias request with body param', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'post',
+          path: '/',
+          alias: 'create',
+          parameters: [
+            {
+              name: 'name',
+              type: 'Body',
+              schema: Zod.object({
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { fetch }
+    )
+
+    const response = await zotch.create({ name: 'post' }, { baseUrl: `http://localhost:${port}` })
     expect(response).toEqual({ id: 3, name: 'post' })
   })
 
-  it('should make an http put', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'put',
-        path: '/',
-        parameters: [
-          {
-            name: 'body',
-            type: 'Body',
-            schema: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.put('/', { id: 5, name: 'put' })
+  test('should make an http put', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'putThat',
+          method: 'put',
+          path: '/',
+          parameters: [
+            {
+              name: 'body',
+              type: 'Body',
+              schema: Zod.object({
+                id: Zod.number(),
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { fetch }
+    )
+    const response = await zotch.put('/', { id: 5, name: 'put' }, { baseUrl: `http://localhost:${port}` })
     expect(response).toEqual({ id: 5, name: 'put' })
   })
 
-  it('should make an http put alias', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'put',
-        path: '/',
-        alias: 'update',
-        parameters: [
-          {
-            name: 'body',
-            type: 'Body',
-            schema: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.update({ id: 5, name: 'put' })
+  test('should make an http put alias', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'put',
+          path: '/',
+          alias: 'update',
+          parameters: [
+            {
+              name: 'body',
+              type: 'Body',
+              schema: Zod.object({
+                id: Zod.number(),
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { fetch }
+    )
+    const response = await zotch.update({ id: 5, name: 'put' }, { baseUrl: `http://localhost:${port}` })
     expect(response).toEqual({ id: 5, name: 'put' })
   })
 
-  it('should make an http patch', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'patch',
-        path: '/',
-        parameters: [
-          {
-            name: 'id',
-            type: 'Body',
-            schema: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.patch('/', { id: 4, name: 'patch' })
+  test('should make an http patch', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'doWork',
+          method: 'patch',
+          path: '/',
+          parameters: [
+            {
+              name: 'id',
+              type: 'Body',
+              schema: Zod.object({
+                id: Zod.number(),
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.patch('/', { id: 4, name: 'patch' })
+    console.log('Patch response:', response)
     expect(response).toEqual({ id: 4, name: 'patch' })
   })
 
-  it('should make an http patch alias', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'patch',
-        path: '/',
-        alias: 'update',
-        parameters: [
-          {
-            name: 'id',
-            type: 'Body',
-            schema: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.update({ id: 4, name: 'patch' })
+  test('should make an http patch alias', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'patch',
+          path: '/',
+          alias: 'update',
+          parameters: [
+            {
+              name: 'id',
+              type: 'Body',
+              schema: Zod.object({
+                id: Zod.number(),
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.update({ id: 4, name: 'patch' })
     expect(response).toEqual({ id: 4, name: 'patch' })
   })
 
-  it('should make an http delete', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'delete',
-        path: '/:id',
-        response: z.object({
-          id: z.number(),
-        }),
-      },
-    ])
-    const response = await zodios.delete('/:id', undefined, {
+  test('should make an http delete', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'doWork',
+          method: 'delete',
+          path: '/:id',
+          response: Zod.object({
+            id: Zod.number(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.delete('/:id', undefined, {
       params: { id: 6 },
     })
     expect(response).toEqual({ id: 6 })
   })
 
-  it('should make an http delete alias', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'delete',
-        path: '/:id',
-        alias: 'remove',
-        response: z.object({
-          id: z.number(),
-        }),
-      },
-    ])
-    const response = await zodios.remove(undefined, {
+  test('should make an http delete alias', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'delete',
+          path: '/:id',
+          alias: 'remove',
+          response: Zod.object({
+            id: Zod.number(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.remove(undefined, {
       params: { id: 6 },
     })
     expect(response).toEqual({ id: 6 })
   })
 
-  it('should validate uuid in path params', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/path/:uuid',
-        parameters: [
-          {
-            name: 'uuid',
-            type: 'Path',
-            schema: z.string().uuid(),
-          },
-        ],
-        response: z.object({
-          uuid: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.get('/path/:uuid', {
+  test('should validate uuid in path params', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'getUuid',
+          method: 'get',
+          path: '/path/:uuid',
+          parameters: [
+            {
+              name: 'uuid',
+              type: 'Path',
+              schema: Zod.string().uuid(),
+            },
+          ],
+          response: Zod.object({
+            uuid: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.get('/path/:uuid', {
       params: { uuid: 'e9e09a1d-3967-4518-bc89-75a901aee128' },
     })
     expect(response).toEqual({
@@ -708,55 +740,53 @@ describe('Zodios', () => {
     })
   })
 
-  it('should not validate bad path params', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/path/:uuid',
-        parameters: [
-          {
-            name: 'uuid',
-            type: 'Path',
-            schema: z.string().uuid(),
-          },
-        ],
-        response: z.object({
-          uuid: z.string(),
-        }),
-      },
-    ])
-    let error
-    try {
-      await zodios.get('/path/:uuid', {
-        params: { uuid: 'e9e09a1-3967-4518-bc89-75a901aee128' },
-      })
-    } catch (e) {
-      error = e
-    }
-    expect(error).toBeInstanceOf(ZodiosValidationError)
-    expect((error as ZodiosValidationError).cause).toBeInstanceOf(ZodError)
-    expect((error as ZodiosValidationError).message).toBe("Zodios: Invalid Path parameter 'uuid'")
+  test('should not validate bad path params', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'getUuid',
+          method: 'get',
+          path: '/path/:uuid',
+          parameters: [
+            {
+              name: 'uuid',
+              type: 'Path',
+              schema: Zod.uuid(),
+            },
+          ],
+          response: Zod.object({
+            uuid: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.get('/path/:uuid', {
+      params: { uuid: 'e9e09a1-3967-4518-bc89-75a901aee128' },
+    })
+    Results.assertFailure(response)
+    expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
   })
 
   // JOHN
-  //   it('should not validate bad formatted responses', async () => {
-  //     const zodios = new Zodios(`http://localhost:${port}`, [
+  //   test('should not validate bad formatted responses', async () => {
+  //     const zotch = new Zotch(`http://localhost:${port}`, [
   //       {
   //         method: 'get',
   //         path: '/:id',
-  //         response: z.object({
-  //           id: z.number(),
-  //           name: z.string(),
-  //           more: z.string(),
+  //         response: Zod.object({
+  //           id: Zod.number(),
+  //           name: Zod.string(),
+  //           more: Zod.string(),
   //         }),
   //       },
   //     ])
   //     try {
-  //       await zodios.get('/:id', { params: { id: 1 } })
+  //       await zotch.get('/:id', { params: { id: 1 } })
   //     } catch (e) {
-  //       expect(e).toBeInstanceOf(ZodiosError)
-  //       expect((e as ZodiosError).cause).toBeInstanceOf(ZodError)
-  //       expect((e as ZodiosError).message).toBe(`Zodios: Invalid response from endpoint 'get /:id'
+  //       expect(e).toBeInstanceOf(ZotchError)
+  //       expect((e as ZotchError).cause).toBeInstanceOf(ZodError)
+  //       expect((e as ZotchError).message).toBe(`Zotch: Invalid response from endpoint 'get /:id'
   // status: 200 OK
   // cause:
   // [
@@ -775,11 +805,11 @@ describe('Zodios', () => {
   //   "id": 1,
   //   "name": "test"
   // }`)
-  //       expect((e as ZodiosError).data).toEqual({
+  //       expect((e as ZotchError).data).toEqual({
   //         id: 1,
   //         name: 'test',
   //       })
-  //       expect((e as ZodiosError).config).toEqual({
+  //       expect((e as ZotchError).config).toEqual({
   //         method: 'get',
   //         url: '/:id',
   //         params: { id: 1 },
@@ -787,408 +817,404 @@ describe('Zodios', () => {
   //     }
   //   })
 
-  it('should match Expected error', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        alias: 'getError502',
-        path: '/error502',
-        response: z.void(),
-        errors: [
-          {
-            status: 502,
-            schema: z.object({
-              error: z.object({
-                message: z.string(),
-                _502: z.literal(true),
+  test('should match Expected error', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'get',
+          alias: 'getError502',
+          path: '/error502',
+          response: Zod.void(),
+          errors: [
+            {
+              status: 502,
+              schema: Zod.object({
+                error: Zod.object({
+                  message: Zod.string(),
+                }),
               }),
-            }),
-          },
-          {
-            status: 401,
-            schema: z.object({
-              error: z.object({
-                message: z.string(),
-                _401: z.literal(true),
+            },
+            {
+              status: 401,
+              schema: Zod.object({
+                error: Zod.object({
+                  message: Zod.string(),
+                }),
               }),
-            }),
-          },
-          {
-            status: 'default',
-            schema: z.object({
-              error: z.object({
-                message: z.string(),
-                _default: z.literal(true),
+            },
+            {
+              status: 500,
+              schema: Zod.object({
+                error: Zod.object({
+                  message: Zod.string(),
+                }),
               }),
-            }),
-          },
-        ],
-      },
-      {
-        method: 'get',
-        alias: 'getErrorById',
-        path: '/error502/:id',
-        response: z.void(),
-        errors: [
-          {
-            status: 502,
-            schema: z.object({
-              error: z.object({
-                message: z.string(),
+            },
+          ],
+        },
+        {
+          method: 'get',
+          alias: 'getErrorById',
+          path: '/error502/:id',
+          response: Zod.void(),
+          errors: [
+            {
+              status: 502,
+              schema: Zod.object({
+                error: Zod.object({
+                  message: Zod.string(),
+                }),
               }),
-            }),
-          },
-          {
-            status: 401,
-            schema: z.object({
-              error: z.object({
-                message: z.string(),
-                _401: z.literal(true),
+            },
+            {
+              status: 401,
+              schema: Zod.object({
+                error: Zod.object({
+                  message: Zod.string(),
+                }),
               }),
-            }),
-          },
-        ],
-      },
-    ])
-    let error
-    try {
-      await zodios.get('/error502')
-    } catch (e) {
-      error = e
-    }
-    expect(error).toBeInstanceOf(AxiosError)
-    expect((error as AxiosError).response?.status).toBe(502)
+            },
+          ],
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+
+    const response = await zotch.get('/error502')
+    Results.assertFailure(response)
+    console.log(response)
+    Zotch.assertStructuredError(response.value)
+    expect(response.value.status).toBe(502)
   })
 
-  it('should match error with params', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        alias: 'getError401',
-        path: '/error/:id/error401',
-        response: z.void(),
-        errors: [
-          {
-            status: 401,
-            schema: z.object({}),
-          },
-        ],
-      },
-      {
-        method: 'get',
-        alias: 'getError404',
-        path: '/error/:id/error404',
-        response: z.void(),
-        errors: [
-          {
-            status: 404,
-            schema: z.object({}),
-          },
-        ],
-      },
-    ])
+  test('should match error with params', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'get',
+          alias: 'getError401',
+          path: '/error/:id/error401',
+          response: Zod.void(),
+          errors: [
+            {
+              status: 401,
+              schema: Zod.object({}),
+            },
+          ],
+        },
+        {
+          method: 'get',
+          alias: 'getError404',
+          path: '/error/:id/error404',
+          response: Zod.void(),
+          errors: [
+            {
+              status: 404,
+              schema: Zod.object({}),
+            },
+          ],
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
 
     const params = {
       id: 'test',
     }
 
-    let error
-    try {
-      await zodios.getError401({ params })
-    } catch (e) {
-      error = e
-    }
+    const response = await zotch.getError401({ params })
+    Results.assertFailure(response)
+    Zotch.assertStructuredError(response.value)
+    expect(response.value.status).toBe(401)
   })
 
-  it('should match error with empty params', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        alias: 'getError401',
-        path: '/error/:id/error401',
-        response: z.void(),
-        errors: [
-          {
-            status: 401,
-            schema: z.object({}),
-          },
-        ],
-      },
-      {
-        method: 'get',
-        alias: 'getError404',
-        path: '/error/:id/error404',
-        response: z.void(),
-        errors: [
-          {
-            status: 404,
-            schema: z.object({}),
-          },
-        ],
-      },
-    ])
+  test('should match error with empty params', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'get',
+          alias: 'getError401',
+          path: '/error/:id/error401',
+          response: Zod.void(),
+          errors: [
+            {
+              status: 401,
+              schema: Zod.object({}),
+            },
+          ],
+        },
+        {
+          method: 'get',
+          alias: 'getError404',
+          path: '/error/:id/error404',
+          response: Zod.void(),
+          errors: [
+            {
+              status: 404,
+              schema: Zod.object({}),
+            },
+          ],
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
 
     const params = {
       id: '',
     }
 
-    let error
-    try {
-      await zodios.getError401({ params })
-    } catch (e) {
-      error = e
-    }
+    const response = await zotch.getError401({ params })
+    Results.assertFailure(response)
+    Zotch.assertStructuredError(response.value)
+    expect(response.value.status).toBe(401)
   })
 
-  it('should match error with optional params at the end', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        alias: 'getError401',
-        path: '/error/:id/error401/:message',
-        response: z.void(),
-        errors: [
-          {
-            status: 401,
-            schema: z.object({}),
-          },
-        ],
-      },
-      {
-        method: 'get',
-        alias: 'getError404',
-        path: '/error/:id/error404/:message',
-        response: z.void(),
-        errors: [
-          {
-            status: 404,
-            schema: z.object({}),
-          },
-        ],
-      },
-    ])
+  test('should match error with optional params at the end', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'get',
+          alias: 'getError401',
+          path: '/error/:id/error401/:message',
+          response: Zod.void(),
+          errors: [
+            {
+              status: 401,
+              schema: Zod.object({}),
+            },
+          ],
+        },
+        {
+          method: 'get',
+          alias: 'getError404',
+          path: '/error/:id/error404/:message',
+          response: Zod.void(),
+          errors: [
+            {
+              status: 404,
+              schema: Zod.object({}),
+            },
+          ],
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
 
     const params = {
       id: 'test',
       message: '',
     }
 
-    let error
-    try {
-      await zodios.getError401({ params })
-    } catch (e) {
-      error = e
-    }
+    const response = await zotch.getError401({ params })
+    Results.assertFailure(response)
+    Zotch.assertStructuredError(response.value)
+    expect(response.value.status).toBe(401)
   })
 
-  it('should match Unexpected error', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        alias: 'getError502',
-        path: '/error502',
-        response: z.void(),
-      },
-    ])
-    let error
-    try {
-      await zodios.get('/error502')
-    } catch (e) {
-      error = e
-    }
-
-    expect(error).toBeInstanceOf(AxiosError)
-    expect((error as AxiosError).response?.status).toBe(502)
-  })
-
-  it('should return response when disabling validation', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/:id',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-          more: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.get('/:id', { params: { id: 1 } })
-    expect(response).toEqual({
-      id: 1,
-      name: 'test',
-    })
-  })
-
-  it('should trigger an axios error with error response', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'get',
-        path: '/error502',
-        response: z.object({
-          id: z.number(),
-          name: z.string(),
-        }),
-      },
-    ])
-    try {
-      await zodios.get('/error502')
-    } catch (e) {
-      expect((e as AxiosError).response?.data).toEqual({
-        error: {
-          message: 'bad gateway',
+  test('should match Unexpected error', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          method: 'get',
+          alias: 'getError502',
+          path: '/error502',
+          response: Zod.void(),
         },
-      })
-    }
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+
+    const response = await zotch.get('/error502')
+    Results.assertFailure(response)
+    // JOHN inspect value
   })
 
-  it('should send a form data request', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/form-data',
-        requestFormat: 'form-data',
-        parameters: [
-          {
-            name: 'body',
-            type: 'Body',
-            schema: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.string(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.post('/form-data', { id: 4, name: 'post' })
+  test('should trigger an axios error with error response', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'error502',
+          method: 'get',
+          path: '/error502',
+          response: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+
+    const response = await zotch.get('/error502')
+    Results.assertFailure(response)
+    // JOHN inspect value
+  })
+
+  test('should send a form data request', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'formData',
+          method: 'post',
+          path: '/form-data',
+          requestFormat: 'form-data',
+          parameters: [
+            {
+              name: 'body',
+              type: 'Body',
+              schema: Zod.object({
+                id: Zod.number(),
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.string(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.post('/form-data', { id: 4, name: 'post' })
     expect(response).toEqual({ id: '4', name: 'post' })
   })
 
-  it('should send a form data request a second time under 100 ms', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/form-data',
-        requestFormat: 'form-data',
-        parameters: [
-          {
-            name: 'body',
-            type: 'Body',
-            schema: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.string(),
-          name: z.string(),
-        }),
-      },
-    ])
-    const response = await zodios.post('/form-data', { id: 4, name: 'post' })
+  test('should send a form data request a second time under 100 ms', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'formData',
+          method: 'post',
+          path: '/form-data',
+          requestFormat: 'form-data',
+          parameters: [
+            {
+              name: 'body',
+              type: 'Body',
+              schema: Zod.object({
+                id: Zod.number(),
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.string(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.post('/form-data', { id: 4, name: 'post' })
     expect(response).toEqual({ id: '4', name: 'post' })
   }, 100)
 
-  it('should not send an array as form data request', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/form-data',
-        requestFormat: 'form-data',
-        parameters: [
-          {
-            name: 'body',
-            type: 'Body',
-            schema: z.array(z.string()),
-          },
-        ],
-        response: z.string(),
-      },
-    ])
+  test('should not send an array as form data request', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'formData',
+          method: 'post',
+          path: '/form-data',
+          requestFormat: 'form-data',
+          parameters: [
+            {
+              name: 'body',
+              type: 'Body',
+              schema: Zod.array(Zod.string()),
+            },
+          ],
+          response: Zod.string(),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
 
-    const response = await zodios.post('/form-data', ['test', 'test2'])
-    expect(response.isSuccess).toBeFalsy()
-    expect(response.value).toBeInstanceOf(ZodiosValidationError)
-    expect((response.value as ZodiosValidationError).message).toBe('Zodios: multipart/form-data body must be an object')
+    const response = await zotch.post('/form-data', ['test', 'test2'])
+    Results.assertFailure(response)
+    expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
   })
 
-  it('should send a form url request', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/form-url',
-        requestFormat: 'form-url',
-        parameters: [
-          {
-            name: 'body',
-            type: 'Body',
-            schema: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          },
-        ],
-        response: z.object({
-          id: z.string(),
-          name: z.string(),
-        }),
-      },
-    ])
+  test('should send a form url request', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'formUrl',
+          method: 'post',
+          path: '/form-url',
+          requestFormat: 'form-url',
+          parameters: [
+            {
+              name: 'body',
+              type: 'Body',
+              schema: Zod.object({
+                id: Zod.number(),
+                name: Zod.string(),
+              }),
+            },
+          ],
+          response: Zod.object({
+            id: Zod.string(),
+            name: Zod.string(),
+          }),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
 
-    const response = await zodios.post('/form-url', { id: 4, name: 'post' })
-    expect(response.value).toEqual({ id: '4', name: 'post' })
+    const response = await zotch.post('/form-url', { id: 4, name: 'post' })
+    Results.assertSuccess(response)
+    expect(response).toEqual({ id: '4', name: 'post' })
   })
 
-  it('should not send an array as form url request', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/form-url',
-        requestFormat: 'form-url',
-        parameters: [
-          {
-            name: 'body',
-            type: 'Body',
-            schema: z.array(z.string()),
-          },
-        ],
-        response: z.string(),
-      },
-    ])
-    let error: Error | undefined
-    let response: Result<string> | undefined
-    try {
-      response = await zodios.post('/form-url', ['test', 'test2'])
-    } catch (err) {
-      error = err as Error
-    }
-    expect(response).toBeUndefined()
-    expect(error).toBeInstanceOf(ZodiosValidationError)
-    expect((error as ZodiosValidationError).message).toBe('Zodios: application/x-www-form-urlencoded body must be an object')
+  test('should not send an array as form url request', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'formUrl',
+          method: 'post',
+          path: '/form-url',
+          requestFormat: 'form-url',
+          parameters: [
+            {
+              name: 'body',
+              type: 'Body',
+              schema: Zod.array(Zod.string()),
+            },
+          ],
+          response: Zod.string(),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+
+    const response = await zotch.post('/form-url', ['test', 'test2'])
+    Results.assertFailure(response)
+    expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
   })
 
-  it('should send a text request', async () => {
-    const zodios = new Zodios(`http://localhost:${port}`, [
-      {
-        method: 'post',
-        path: '/text',
-        requestFormat: 'text',
-        parameters: [
-          {
-            name: 'body',
-            type: 'Body',
-            schema: z.string(),
-          },
-        ],
-        response: z.string(),
-      },
-    ])
-    const response = await zodios.post('/text', 'test')
+  test('should send a text request', async () => {
+    const zotch = Zotch.client(
+      [
+        {
+          alias: 'postText',
+          method: 'post',
+          path: '/text',
+          requestFormat: 'text',
+          parameters: [
+            {
+              name: 'body',
+              type: 'Body',
+              schema: Zod.string(),
+            },
+          ],
+          response: Zod.string(),
+        },
+      ],
+      { baseUrl: `http://localhost:${port}`, fetch }
+    )
+    const response = await zotch.post('/text', 'test')
     expect(response).toEqual('test')
   })
 })

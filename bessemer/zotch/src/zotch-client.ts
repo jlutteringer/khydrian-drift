@@ -9,6 +9,7 @@ import {
   ZotchPayloadTypeByPath,
   ZotchPlugin,
   ZotchRequest,
+  ZotchRequestDto,
   ZotchRequestOptions,
   ZotchRequestOptionsByPath,
   ZotchResponseByPath,
@@ -20,7 +21,7 @@ import { ReadonlyDeep, RequiredKeys, UndefinedIfNever } from '@bessemer/zotch/zo
 import { PluginId, ZotchPlugins } from '@bessemer/zotch/plugins/zotch-plugins'
 import { headerPlugin } from '@bessemer/zotch/plugins/header-plugin'
 import { formDataPlugin } from '@bessemer/zotch/plugins/form-data-plugin'
-import { Arrays, Assertions, Entries, Errors, Json, Objects, Results, Strings, Urls, ZodUtil } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Entries, Errors, Json, Objects, Results, Strings, Types, Urls, ZodUtil } from '@bessemer/cornerstone'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
 import { FetchFunction, FetchPayload } from '@bessemer/cornerstone/net/fetch'
@@ -28,9 +29,10 @@ import { ZotchErrorType, ZotchRequestInvalidError, ZotchResponseInvalidError } f
 import Zod from 'zod'
 import { formUrlPlugin } from '@bessemer/zotch/plugins/form-url-plugin'
 import { validateEndpointDefinitions } from '@bessemer/zotch/zotch-api'
+import { createDraft, finishDraft } from 'immer'
 
 const ZotchClientPropsSchema = Zod.object({
-  baseUrl: Zod.string().optional(),
+  baseUrl: Zod.string().default(''),
   fetch: Zod.custom<FetchFunction>().default(fetch),
   sendDefaults: Zod.boolean().optional(),
 })
@@ -143,7 +145,15 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
       ? ReadonlyDeep<ZotchRequestOptions<Api, M, Path>>
       : ReadonlyDeep<ZotchRequestOptions<Api, M, ZotchPathsByMethod<Api, M>>>
   ): Promise<ZotchResultByPath<Api, M, Path>> {
-    let request = initialRequest as unknown as ZotchRequest
+    Types.cast<ZotchRequest>(initialRequest)
+
+    let request: ZotchRequestDto = {
+      ...initialRequest,
+      params: initialRequest.params ?? {},
+      method: initialRequest.method ?? {},
+      headers: initialRequest.headers ?? {},
+    }
+
     const anyPlugin = this.getAnyEndpointPlugins()!
     const endpointPlugin = this.findEnpointPlugins(request.method, request.url)
 
@@ -173,22 +183,44 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
 
     let response: ZotchResultByPath<Api, M, Path>
 
-    const { baseUrl, url, params, queries, body, ...fetchOptions } = request
+    const { baseUrl, url, params, queries, body, method, ...fetchOptions } = request
 
     // JOHN how to handle arrays of params? and does just calling toString on the value here present a robust solution...
     const queryParams = Object.fromEntries(Object.entries(queries ?? {}).map(([key, value]) => Entries.of(key, `${value}`)))
 
-    const urlLiteral = Urls.toLiteral(
-      Urls.merge(Urls.from(request.baseUrl ?? this.props.baseUrl ?? ''), Urls.from(replacePathParams(url, params)), {
-        location: { parameters: queryParams },
+    const baseUrlResult = Urls.parseString(request.baseUrl ?? this.props.baseUrl)
+    if (Results.isFailure(baseUrlResult)) {
+      return Results.failure({
+        type: ZotchErrorType.RequestInvalid,
+        message: baseUrlResult.value.message,
+        endpoint,
+        request,
+        value: request.baseUrl ?? this.props.baseUrl,
       })
+    }
+
+    const targetUrlString = replacePathParams(url, params)
+    const targetUrlResult = Urls.parseString(targetUrlString)
+    if (Results.isFailure(targetUrlResult)) {
+      return Results.failure({
+        type: ZotchErrorType.RequestInvalid,
+        message: targetUrlResult.value.message,
+        endpoint,
+        request,
+        value: targetUrlString,
+      })
+    }
+
+    const urlLiteral = Urls.toLiteral(
+      Urls.navigate(baseUrlResult, Urls.update(targetUrlResult, { location: { parameters: queryParams }, relative: true }))
     )
 
     const fetchPayload: FetchPayload = {
       ...fetchOptions,
       url: urlLiteral,
+      method: method.toUpperCase(),
       body: JSON.stringify(request.body),
-      headers: request.headers,
+      headers: { 'Content-Type': 'application/json', ...request.headers },
     }
 
     try {
@@ -256,53 +288,53 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
 
   async post<Path extends ZotchPathsByMethod<Api, 'post'>, TConfig extends ZotchRequestOptionsByPath<Api, 'post', Path>>(
     path: Path,
-    data: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'post', Path>>>,
+    body: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'post', Path>>>,
     ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
   ): Promise<ZotchResponseByPath<Api, 'post', Path>> {
     return this.request({
       ...config,
       method: 'post',
       url: path,
-      data,
+      body,
     } as any)
   }
 
   async put<Path extends ZotchPathsByMethod<Api, 'put'>, TConfig extends ZotchRequestOptionsByPath<Api, 'put', Path>>(
     path: Path,
-    data: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'put', Path>>>,
+    body: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'put', Path>>>,
     ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
   ): Promise<ZotchResponseByPath<Api, 'put', Path>> {
     return this.request({
       ...config,
       method: 'put',
       url: path,
-      data,
+      body,
     } as any)
   }
 
   async patch<Path extends ZotchPathsByMethod<Api, 'patch'>, TConfig extends ZotchRequestOptionsByPath<Api, 'patch', Path>>(
     path: Path,
-    data: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'patch', Path>>>,
+    body: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'patch', Path>>>,
     ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
   ): Promise<ZotchResponseByPath<Api, 'patch', Path>> {
     return this.request({
       ...config,
       method: 'patch',
       url: path,
-      data,
+      body,
     } as any)
   }
 
   async delete<Path extends ZotchPathsByMethod<Api, 'delete'>, TConfig extends ZotchRequestOptionsByPath<Api, 'delete', Path>>(
     path: Path,
-    data: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'delete', Path>>>,
+    body: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'delete', Path>>>,
     ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
   ): Promise<ZotchResponseByPath<Api, 'delete', Path>> {
     return this.request({
       ...config,
       method: 'delete',
       url: path,
-      data,
+      body,
     } as any)
   }
 }
@@ -310,48 +342,49 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
 export type ZotchClient<Api extends ZotchEndpointDefinitions> = ZotchClientClass<Api> & ZotchAliases<Api>
 export type ApiOf<Z> = Z extends ZotchClient<infer Api> ? Api : never
 
-const validateRequest = async (endpoint: ZotchEndpointDefinition, request: ZotchRequest): AsyncResult<ZotchRequest, ZotchRequestInvalidError> => {
-  const { parameters } = endpoint
-  if (Objects.isNil(parameters)) {
-    return Results.success(request)
+const validateRequest = async (
+  endpoint: ZotchEndpointDefinition,
+  initialRequest: ZotchRequestDto
+): AsyncResult<ZotchRequestDto, ZotchRequestInvalidError> => {
+  const { body, params, headers, queries } = endpoint
+
+  const request = createDraft(initialRequest)
+  if (Objects.isNil(request.headers)) {
+    request.headers = {}
+  }
+  if (Objects.isNil(request.queries)) {
+    request.queries = {}
+  }
+  if (Objects.isNil(request.params)) {
+    request.params = {}
   }
 
-  const conf = {
-    ...request,
-    queries: {
-      ...request.queries,
-    },
-    headers: {
-      ...request.headers,
-    },
-    params: {
-      ...request.params,
-    },
+  if (Objects.isPresent(body)) {
+    const parsed = await ZodUtil.parseAsync(body.schema, request.body)
+
+    if (Results.isFailure(parsed)) {
+      return Results.failure({
+        type: ZotchErrorType.RequestInvalid,
+        message: `Zotch: Invalid Body'`,
+        endpoint,
+        request,
+        value: request.body,
+        cause: parsed.value,
+      })
+    }
+
+    request.body = parsed
   }
 
-  const paramsOf = {
-    Query: (name: string) => conf.queries?.[name],
-    Body: (_: string) => conf.body,
-    Header: (name: string) => conf.headers?.[name],
-    Path: (name: string) => conf.params?.[name],
-  }
-
-  const setParamsOf = {
-    Query: (name: string, value: any) => (conf.queries![name] = value),
-    Body: (_: string, value: any) => (conf.body = value),
-    Header: (name: string, value: any) => (conf.headers![name] = value),
-    Path: (name: string, value: any) => (conf.params![name] = value),
-  }
-
-  for (const parameter of parameters) {
-    const { name, schema, type } = parameter
-    const value = paramsOf[type](name)
+  for (const parameter of params ?? []) {
+    const { name, schema } = parameter
+    const value = request.params?.[name]
 
     const parsed = await schema.safeParseAsync(value)
     if (!parsed.success) {
       return Results.failure({
         type: ZotchErrorType.RequestInvalid,
-        message: `Zotch: Invalid ${type} parameter '${name}'`,
+        message: `Zotch: Invalid path parameter '${name}'`,
         endpoint,
         request,
         value,
@@ -359,10 +392,48 @@ const validateRequest = async (endpoint: ZotchEndpointDefinition, request: Zotch
       })
     }
 
-    setParamsOf[type](name, parsed.data)
+    request.params[name] = parsed.data
   }
 
-  return Results.success(conf)
+  for (const query of queries ?? []) {
+    const { name, schema } = query
+    const value = request.queries?.[name]
+
+    const parsed = await schema.safeParseAsync(value)
+    if (!parsed.success) {
+      return Results.failure({
+        type: ZotchErrorType.RequestInvalid,
+        message: `Zotch: Invalid query '${name}'`,
+        endpoint,
+        request,
+        value,
+        cause: parsed.error,
+      })
+    }
+
+    request.queries[name] = parsed.data
+  }
+
+  for (const header of headers ?? []) {
+    const { name, schema } = header
+    const value = request.headers?.[name]
+
+    const parsed = await schema.safeParseAsync(value)
+    if (!parsed.success) {
+      return Results.failure({
+        type: ZotchErrorType.RequestInvalid,
+        message: `Zotch: Invalid header '${name}'`,
+        endpoint,
+        request,
+        value,
+        cause: parsed.error,
+      })
+    }
+
+    request.headers[name] = parsed.data as string
+  }
+
+  return Results.success(finishDraft(request))
 }
 
 const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, M extends HttpMethod, Path extends string>(
@@ -425,7 +496,7 @@ const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, M ext
   }
 
   const endpointErrorUnion = Zod.union(endpointErrors.map((it) => it.schema))
-  const parseResult = await ZodUtil.parseAsync(endpointErrorUnion, body)
+  const parseResult = await ZodUtil.parseAsync(endpointErrorUnion, jsonValue)
 
   if (Results.isFailure(parseResult)) {
     return Results.failure({

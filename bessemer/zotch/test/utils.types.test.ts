@@ -1,4 +1,4 @@
-import type { Assert, FilterArrayByKey, FilterArrayByValue, PathParamNames } from '@bessemer/zodios/utils.types'
+import { Assert, FilterArrayByKey, FilterArrayByValue, PathParamNames } from '@bessemer/zotch/zotch-type-utils'
 
 describe('utils.types', () => {
   describe('FilterArrayByValue', () => {

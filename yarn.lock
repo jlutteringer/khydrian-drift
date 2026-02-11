@@ -552,7 +552,7 @@ __metadata:
     "@js-temporal/polyfill": "npm:0.5.1"
     "@types/lodash-es": "npm:4.17.12"
     expect-type: "npm:1.2.2"
-    immer: "npm:10.1.1"
+    immer: "npm:11.1.4"
     lodash-es: "npm:4.17.21"
     minimatch: "npm:10.0.1"
     pino: "npm:9.6.0"
@@ -4454,10 +4454,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immer@npm:10.1.1":
-  version: 10.1.1
-  resolution: "immer@npm:10.1.1"
-  checksum: 10c0/b749e10d137ccae91788f41bd57e9387f32ea6d6ea8fd7eb47b23fd7766681575efc7f86ceef7fe24c3bc9d61e38ff5d2f49c2663b2b0c056e280a4510923653
+"immer@npm:11.1.4":
+  version: 11.1.4
+  resolution: "immer@npm:11.1.4"
+  checksum: 10c0/77beca6b0a4e361b30414189d63c64beb7df40ac1d8cbf524308fcbabe755e9aa49db3c6e95a6e412911416fec621f2c8470be5ec79feedc6abd6e4f7f18a9ce
   languageName: node
   linkType: hard
 

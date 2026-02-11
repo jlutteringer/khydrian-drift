@@ -2,6 +2,8 @@ import { ObjectPath } from '@bessemer/cornerstone/object/object-path'
 import { ConstrainTypePath, ObjectPathType, TypePathGet, TypePathType } from '@bessemer/cornerstone/object/type-path-type'
 import { matches as typePathMatches, TypePath } from '@bessemer/cornerstone/object/type-path'
 
+// JOHN CHECK JSON PATCH INSTEAD!!! https://jsonpatch.com/
+
 export enum ObjectDiffType {
   Add = 'Add',
   Remove = 'Remove',

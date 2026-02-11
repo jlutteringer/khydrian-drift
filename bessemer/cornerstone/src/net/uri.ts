@@ -780,6 +780,10 @@ export const format = (uriLike: UriLike, excludedUriComponents: Array<UriCompone
   return formatInternal(from(uriLike), excludedUriComponents)
 }
 
+export const isComplete = (uri: Uri): boolean => {
+  return Objects.isPresent(uri.scheme) && Objects.isPresent(uri.host)
+}
+
 const formatInternal = (uri: UriStructure, excludedUriComponents: Array<UriComponentType> = []): UriLiteral => {
   let urlString = ''
   if (Objects.isPresent(uri.scheme) && !Arrays.contains(excludedUriComponents, UriComponentType.Scheme)) {

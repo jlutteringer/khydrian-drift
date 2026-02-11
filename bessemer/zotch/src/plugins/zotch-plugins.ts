@@ -1,4 +1,4 @@
-import { ZotchPlugin, ZotchRequest, ZotchRequestContext, ZotchResponseContext } from '@bessemer/zotch/zotch-types'
+import { ZotchPlugin, ZotchRequestContext, ZotchRequestDto, ZotchResponseContext } from '@bessemer/zotch/zotch-types'
 import { AsyncResult, Result } from '@bessemer/cornerstone/result'
 import { Objects, Results } from '@bessemer/cornerstone'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
@@ -53,7 +53,7 @@ export class ZotchPlugins {
     return { key: this.key, value: this.plugins.length - 1 }
   }
 
-  async interceptRequest(context: ZotchRequestContext): AsyncResult<ZotchRequest, ZotchRequestInvalidError> {
+  async interceptRequest(context: ZotchRequestContext): AsyncResult<ZotchRequestDto, ZotchRequestInvalidError> {
     for (const plugin of this.plugins) {
       if (Objects.isPresent(plugin.processRequest)) {
         const result = await plugin.processRequest(context)

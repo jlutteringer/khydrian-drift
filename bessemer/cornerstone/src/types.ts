@@ -1,5 +1,7 @@
 import { Instant } from '@bessemer/cornerstone/temporal/instant'
 
+export function cast<T>(value: unknown): asserts value is T {}
+
 declare const __type: unique symbol
 
 export type NominalTyping<NominalType> = { [__type]: NominalType }

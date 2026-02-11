@@ -1,4 +1,4 @@
-import { omit, pick } from '@bessemer/zodios/utils'
+import { omit, pick } from '@bessemer/zotch/zotch-utils'
 
 describe('omit', () => {
   it('should be defined', () => {

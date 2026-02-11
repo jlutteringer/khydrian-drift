@@ -13,12 +13,10 @@ import { Zotch } from '@bessemer/zotch'
 export const ContextHeadersSchema = [
   {
     name: 'X-Api-Key',
-    type: 'Header',
     schema: Zod.string().optional(),
   },
   {
     name: 'Content-Type',
-    type: 'Header',
     schema: Zod.literal('application/json').default('application/json'),
   },
 ] as const
@@ -27,7 +25,6 @@ export const UserProfileContextHeadersSchema = [
   ...ContextHeadersSchema,
   {
     name: 'Authorization',
-    type: 'Header',
     schema: Zod.string(),
   },
 ] as const
@@ -36,7 +33,6 @@ export const AccountContextHeadersSchema = [
   ...ContextHeadersSchema,
   {
     name: 'X-Account-Id',
-    type: 'Header',
     schema: Zod.uuid(),
   },
 ] as const
@@ -57,17 +53,18 @@ export const RequestApi = Zotch.makeApi([
     method: 'get',
     path: 'requests/:requestId',
     response: RequestSchema,
+    headers: [...ContextHeadersSchema],
+    queries: [
+      {
+        name: 'cache',
+        schema: Zod.boolean().default(true),
+      },
+    ],
     parameters: [
-      ...ContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',
         schema: Zod.string(),
-      },
-      {
-        name: 'cache',
-        type: 'Query',
-        schema: Zod.boolean().default(true),
       },
     ],
     errors: [UnauthorizedErrorSchema, NotFoundErrorSchema],
@@ -77,7 +74,7 @@ export const RequestApi = Zotch.makeApi([
     method: 'get',
     path: '/requests/cart',
     response: RequestSchema,
-    parameters: [...AccountContextHeadersSchema],
+    headers: [...AccountContextHeadersSchema],
     errors: [NotFoundErrorSchema, UnauthorizedErrorSchema],
   },
   {
@@ -85,14 +82,11 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/quotes',
     response: RequestSchema,
-    parameters: [
-      ...AccountContextHeadersSchema,
-      {
-        name: 'CreateQuoteDto',
-        type: 'Body',
-        schema: CreateRequestSchema,
-      },
-    ],
+    body: {
+      name: 'CreateQuoteDto',
+      schema: CreateRequestSchema,
+    },
+    headers: [...AccountContextHeadersSchema],
     errors: [UnauthorizedErrorSchema],
   },
   {
@@ -100,17 +94,16 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/quotes/:requestId',
     response: RequestSchema,
+    body: {
+      name: 'UpdateQuoteDto',
+      schema: UpdateRequestSchema,
+    },
+    headers: [...AccountContextHeadersSchema],
     parameters: [
-      ...AccountContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',
         schema: Zod.string(),
-      },
-      {
-        name: 'UpdateQuoteDto',
-        type: 'Body',
-        schema: UpdateRequestSchema,
       },
     ],
     errors: [UnauthorizedErrorSchema],
@@ -120,14 +113,11 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/quotes/transfer-items',
     response: RequestSchema,
-    parameters: [
-      ...AccountContextHeadersSchema,
-      {
-        name: 'TransferQuoteItemsDto',
-        type: 'Body',
-        schema: TransferQuoteItemsSchema,
-      },
-    ],
+    body: {
+      name: 'TransferQuoteItemsDto',
+      schema: TransferQuoteItemsSchema,
+    },
+    headers: [...AccountContextHeadersSchema],
     errors: [UnauthorizedErrorSchema],
   },
   {
@@ -135,17 +125,16 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/:requestId/submit',
     response: RequestSchema,
+    body: {
+      name: 'SubmitQuoteDto',
+      schema: SubmitQuoteSchema,
+    },
+    headers: [...AccountContextHeadersSchema],
     parameters: [
-      ...AccountContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',
         schema: Zod.string(),
-      },
-      {
-        name: 'SubmitQuoteDto',
-        type: 'Body',
-        schema: SubmitQuoteSchema,
       },
     ],
     errors: [UnauthorizedErrorSchema],
@@ -155,17 +144,16 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/:requestId/reject',
     response: RequestSchema,
+    body: {
+      name: 'WithNoteDto',
+      schema: WithNoteSchema,
+    },
+    headers: [...AccountContextHeadersSchema],
     parameters: [
-      ...AccountContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',
         schema: Zod.string(),
-      },
-      {
-        name: 'WithNoteDto',
-        type: 'Body',
-        schema: WithNoteSchema,
       },
     ],
     errors: [UnauthorizedErrorSchema],
@@ -177,8 +165,8 @@ export const RequestApi = Zotch.makeApi([
     response: Zod.object({
       request: RequestSchema,
     }),
+    headers: [...AccountContextHeadersSchema],
     parameters: [
-      ...AccountContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',
@@ -192,13 +180,12 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/:requestId/remind',
     response: RequestSchema,
+    body: {
+      name: 'WithNoteDto',
+      schema: WithOptionalNoteSchema,
+    },
+    headers: [...AccountContextHeadersSchema],
     parameters: [
-      ...AccountContextHeadersSchema,
-      {
-        name: 'WithNoteDto',
-        type: 'Body',
-        schema: WithOptionalNoteSchema,
-      },
       {
         name: 'requestId',
         type: 'Path',
@@ -214,17 +201,16 @@ export const RequestApi = Zotch.makeApi([
     response: Zod.object({
       request: RequestSchema,
     }),
+    body: {
+      name: 'SubmitQuoteDto',
+      schema: SubmitQuoteSchema,
+    },
+    headers: [...AccountContextHeadersSchema],
     parameters: [
-      ...AccountContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',
         schema: Zod.string(),
-      },
-      {
-        name: 'SubmitQuoteDto',
-        type: 'Body',
-        schema: SubmitQuoteSchema,
       },
     ],
     errors: [UnauthorizedErrorSchema],
@@ -234,17 +220,16 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/:requestId/cancel',
     response: RequestSchema,
+    body: {
+      name: 'WithNoteDto',
+      schema: WithOptionalNoteSchema,
+    },
+    headers: [...AccountContextHeadersSchema],
     parameters: [
-      ...AccountContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',
         schema: Zod.string(),
-      },
-      {
-        name: 'WithNoteDto',
-        type: 'Body',
-        schema: WithOptionalNoteSchema,
       },
     ],
     errors: [UnauthorizedErrorSchema],
@@ -254,8 +239,8 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/:requestId/create-proposal',
     response: RequestSchema,
+    headers: [...UserProfileContextHeadersSchema],
     parameters: [
-      ...UserProfileContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',
@@ -269,8 +254,8 @@ export const RequestApi = Zotch.makeApi([
     method: 'post',
     path: '/requests/:requestId/recall',
     response: RequestSchema,
+    headers: [...AccountContextHeadersSchema],
     parameters: [
-      ...AccountContextHeadersSchema,
       {
         name: 'requestId',
         type: 'Path',

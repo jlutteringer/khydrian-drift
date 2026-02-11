@@ -1,5 +1,5 @@
 import Zod from 'zod'
-import { makeApi, OpenApi } from '@bessemer/zodios'
+import { OpenApi, Zotch } from '@bessemer/zotch'
 
 const user = Zod.object({
   id: Zod.string(),
@@ -7,7 +7,7 @@ const user = Zod.object({
   email: Zod.email(),
 })
 
-const api = makeApi([
+const api = Zotch.makeApi([
   {
     method: 'get',
     path: '/users?filter=:filter#fragment',
@@ -43,7 +43,7 @@ const api = makeApi([
         status: 404,
       },
       {
-        status: 'default',
+        status: 500,
         schema: Zod.object({
           message: Zod.string(),
         }).describe('Default error'),

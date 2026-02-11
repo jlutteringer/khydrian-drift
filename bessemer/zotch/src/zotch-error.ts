@@ -1,6 +1,8 @@
 import { FetchPayload } from '@bessemer/cornerstone/net/fetch'
 import { ZotchRequestContext, ZotchResponseContext } from '@bessemer/zotch/zotch-types'
 
+// JOHN consider making our error regime serializable
+
 export enum ZotchErrorType {
   RequestInvalid = 'RequestInvalid',
   ResponseInvalid = 'ResponseInvalid',

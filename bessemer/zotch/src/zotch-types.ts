@@ -18,6 +18,7 @@ import { AsyncResult, Result } from '@bessemer/cornerstone/result'
 import { ZotchError, ZotchRequestInvalidError } from '@bessemer/zotch/zotch-error'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
 import { FetchPayload, FetchRequest, FetchResponse } from '@bessemer/cornerstone/net/fetch'
+import { SetRequired } from 'type-fest'
 
 export type ZotchRequest<D = any> = Omit<FetchRequest, 'body' | 'method' | 'headers'> & {
   baseUrl?: string
@@ -28,6 +29,8 @@ export type ZotchRequest<D = any> = Omit<FetchRequest, 'body' | 'method' | 'head
   headers?: Record<string, string>
   body?: D
 }
+
+export type ZotchRequestDto<D = any> = SetRequired<ZotchRequest, 'params' | 'method' | 'headers'>
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata'
 
@@ -67,24 +70,31 @@ export type ZotchPayloadTypeByPath<
   Path extends ZotchPathsByMethod<Api, M>
 > = z.output<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['response']>
 
-export type ZotchErrorTypeByPath<Api extends Array<ZotchEndpointDefinition>, M extends HttpMethod, Path extends ZotchPathsByMethod<Api, M>> = {
-  status: NonNullable<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors']>[number]['status']
-  value: z.output<NonNullable<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors']>[number]['schema']>
-}
+export type ZotchErrorTypeByPath<
+  Api extends Array<ZotchEndpointDefinition>,
+  M extends HttpMethod,
+  Path extends ZotchPathsByMethod<Api, M>,
+  ExpandType extends boolean = true
+> = ExpandType extends true
+  ? {
+      status: NonNullable<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors']>[number]['status']
+      value: z.output<NonNullable<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors']>[number]['schema']>
+    }
+  : never
 
-export type ZotchResultByPath<Api extends Array<ZotchEndpointDefinition>, M extends HttpMethod, Path extends ZotchPathsByMethod<Api, M>> = Result<
-  ZotchPayloadTypeByPath<Api, M, Path>,
-  ZotchError<ZotchErrorTypeByPath<Api, M, Path>>
->
+export type ZotchResultByPath<
+  Api extends Array<ZotchEndpointDefinition>,
+  M extends HttpMethod,
+  Path extends ZotchPathsByMethod<Api, M>,
+  ExpandType extends boolean = true
+> = ExpandType extends true ? Result<ZotchPayloadTypeByPath<Api, M, Path>, ZotchError<ZotchErrorTypeByPath<Api, M, Path>>> : never
 
 export type ZotchResponseByPath<
   Api extends Array<ZotchEndpointDefinition>,
   M extends HttpMethod,
   Path extends ZotchPathsByMethod<Api, M>,
-  Frontend extends boolean = true
-> = Frontend extends true
-  ? ZotchResultByPath<Api, M, Path>
-  : Result<z.input<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['response']>, ZotchError<ZotchErrorTypeByPath<Api, M, Path>>>
+  ExpandType extends boolean = true
+> = ExpandType extends true ? ZotchResultByPath<Api, M, Path> : never
 
 export type ZodiosErrorTypeByAlias<Api extends Array<ZotchEndpointDefinition>, Alias extends string> = NonNullable<
   ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['errors']
@@ -100,10 +110,10 @@ export type ZodiosErrorTypeByAlias<Api extends Array<ZotchEndpointDefinition>, A
 export type ZodiosResponseByAlias<
   Api extends Array<ZotchEndpointDefinition>,
   Alias extends string,
-  Frontend extends boolean = true
-> = Frontend extends true
+  ExpandType extends boolean = true
+> = ExpandType extends true
   ? Result<z.output<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['response']>, ZotchError<ZodiosErrorTypeByAlias<Api, Alias>>>
-  : Result<z.input<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['response']>, ZotchError<ZodiosErrorTypeByAlias<Api, Alias>>>
+  : never
 
 // export type ZodiosDefaultErrorForEndpoint<Endpoint extends ZodiosEndpointDefinition> = FilterArrayByValue<
 //   Endpoint['errors'],
@@ -224,16 +234,11 @@ export type ZodiosResponseByAlias<
 //       >
 //     >
 
-export type BodySchemaForEndpoint<Endpoint extends ZotchEndpointDefinition> = FilterArrayByValue<
-  Endpoint['parameters'],
-  { type: 'Body' }
->[number]['schema']
+export type BodySchemaForEndpoint<Endpoint extends ZotchEndpointDefinition> = NonNullable<Endpoint['body']>['schema']
 
-export type BodySchema<
-  Api extends Array<ZotchEndpointDefinition>,
-  M extends HttpMethod,
-  Path extends ZotchPathsByMethod<Api, M>
-> = FilterArrayByValue<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['parameters'], { type: 'Body' }>[number]['schema']
+export type BodySchema<Api extends Array<ZotchEndpointDefinition>, M extends HttpMethod, Path extends ZotchPathsByMethod<Api, M>> = NonNullable<
+  ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['body']
+>['schema']
 
 export type ZodiosBodyForEndpoint<Endpoint extends ZotchEndpointDefinition, Frontend extends boolean = true> = Frontend extends true
   ? z.input<BodySchemaForEndpoint<Endpoint>>
@@ -246,10 +251,9 @@ export type ZotchBodyByPath<
   Frontend extends boolean = true
 > = Frontend extends true ? z.input<BodySchema<Api, M, Path>> : z.output<BodySchema<Api, M, Path>>
 
-export type BodySchemaByAlias<Api extends Array<ZotchEndpointDefinition>, Alias extends string> = FilterArrayByValue<
-  ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['parameters'],
-  { type: 'Body' }
->[number]['schema']
+export type BodySchemaByAlias<Api extends Array<ZotchEndpointDefinition>, Alias extends string> = NonNullable<
+  ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['body']
+>['schema']
 
 export type ZodiosBodyByAlias<
   Api extends Array<ZotchEndpointDefinition>,
@@ -258,7 +262,7 @@ export type ZodiosBodyByAlias<
 > = Frontend extends true ? z.input<BodySchemaByAlias<Api, Alias>> : z.output<BodySchemaByAlias<Api, Alias>>
 
 export type ZodiosQueryParamsForEndpoint<Endpoint extends ZotchEndpointDefinition, Frontend extends boolean = true> = NeverIfEmpty<
-  UndefinedToOptional<MapSchemaParameters<FilterArrayByValue<Endpoint['parameters'], { type: 'Query' }>, Frontend>>
+  UndefinedToOptional<MapSchemaParameters<Endpoint['queries'], Frontend>>
 >
 
 export type ZodiosQueryParamsByPath<
@@ -266,21 +270,13 @@ export type ZodiosQueryParamsByPath<
   M extends HttpMethod,
   Path extends ZotchPathsByMethod<Api, M>,
   Frontend extends boolean = true
-> = NeverIfEmpty<
-  UndefinedToOptional<
-    MapSchemaParameters<FilterArrayByValue<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['parameters'], { type: 'Query' }>, Frontend>
-  >
->
+> = NeverIfEmpty<UndefinedToOptional<MapSchemaParameters<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['queries'], Frontend>>>
 
 export type ZodiosQueryParamsByAlias<
   Api extends Array<ZotchEndpointDefinition>,
   Alias extends string,
   Frontend extends boolean = true
-> = NeverIfEmpty<
-  UndefinedToOptional<
-    MapSchemaParameters<FilterArrayByValue<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['parameters'], { type: 'Query' }>, Frontend>
-  >
->
+> = NeverIfEmpty<UndefinedToOptional<MapSchemaParameters<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['queries'], Frontend>>>
 
 /**
  * @deprecated - use ZodiosQueryParamsByPath instead
@@ -290,7 +286,7 @@ export type ZodiosPathParams<Path extends string> = NeverIfEmpty<Record<PathPara
 export type ZodiosPathParamsForEndpoint<
   Endpoint extends ZotchEndpointDefinition,
   Frontend extends boolean = true,
-  PathParameters = UndefinedToOptional<MapSchemaParameters<FilterArrayByValue<Endpoint['parameters'], { type: 'Path' }>, Frontend>>
+  PathParameters = UndefinedToOptional<MapSchemaParameters<Endpoint['params'], Frontend>>
 > = NeverIfEmpty<
   Simplify<
     Omit<
@@ -311,9 +307,7 @@ export type ZodiosPathParamsByPath<
   M extends HttpMethod,
   Path extends ZotchPathsByMethod<Api, M>,
   Frontend extends boolean = true,
-  PathParameters = UndefinedToOptional<
-    MapSchemaParameters<FilterArrayByValue<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['parameters'], { type: 'Path' }>, Frontend>
-  >,
+  PathParameters = UndefinedToOptional<MapSchemaParameters<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['params'], Frontend>>,
   $PathParamNames extends string = PathParamNames<Path>
 > = NeverIfEmpty<
   Simplify<
@@ -336,7 +330,7 @@ export type ZodiosPathParamByAlias<
   Frontend extends boolean = true,
   EndpointDefinition extends ZotchEndpointDefinition = ZodiosEndpointDefinitionByAlias<Api, Alias>[number],
   Path = EndpointDefinition['path'],
-  PathParameters = UndefinedToOptional<MapSchemaParameters<FilterArrayByValue<EndpointDefinition['parameters'], { type: 'Path' }>, Frontend>>,
+  PathParameters = UndefinedToOptional<MapSchemaParameters<EndpointDefinition['params'], Frontend>>,
   $PathParamNames extends string = PathParamNames<Path>
 > = NeverIfEmpty<
   Simplify<
@@ -351,7 +345,7 @@ export type ZodiosPathParamByAlias<
 >
 
 export type ZodiosHeaderParamsForEndpoint<Endpoint extends ZotchEndpointDefinition, Frontend extends boolean = true> = NeverIfEmpty<
-  UndefinedToOptional<MapSchemaParameters<FilterArrayByValue<Endpoint['parameters'], { type: 'Header' }>, Frontend>>
+  UndefinedToOptional<MapSchemaParameters<Endpoint['headers'], Frontend>>
 >
 
 export type ZodiosHeaderParamsByPath<
@@ -359,21 +353,13 @@ export type ZodiosHeaderParamsByPath<
   M extends HttpMethod,
   Path extends ZotchPathsByMethod<Api, M>,
   Frontend extends boolean = true
-> = NeverIfEmpty<
-  UndefinedToOptional<
-    MapSchemaParameters<FilterArrayByValue<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['parameters'], { type: 'Header' }>, Frontend>
-  >
->
+> = NeverIfEmpty<UndefinedToOptional<MapSchemaParameters<ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['headers'], Frontend>>>
 
 export type ZodiosHeaderParamsByAlias<
   Api extends Array<ZotchEndpointDefinition>,
   Alias extends string,
   Frontend extends boolean = true
-> = NeverIfEmpty<
-  UndefinedToOptional<
-    MapSchemaParameters<FilterArrayByValue<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['parameters'], { type: 'Header' }>, Frontend>
-  >
->
+> = NeverIfEmpty<UndefinedToOptional<MapSchemaParameters<ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['headers'], Frontend>>>
 
 export type ZodiosRequestOptionsByAlias<Api extends Array<ZotchEndpointDefinition>, Alias extends string> = Merge<
   SetPropsOptionalIfChildrenAreOptional<
@@ -427,6 +413,24 @@ export type ZotchRequestOptions<Api extends Array<ZotchEndpointDefinition>, M ex
   ZotchRequestOptionsByPath<Api, M, Path>
 >
 
+export type ZodiosBodyParameter<T = unknown> = {
+  /**
+   * name of the parameter
+   */
+  name: string
+
+  /**
+   * optional description of the parameter
+   */
+  description?: string
+
+  /**
+   * zod schema of the parameter
+   * you can use zod `transform` to transform the value of the parameter before sending it to the server
+   */
+  schema: z.ZodType<T>
+}
+
 export type ZodiosEndpointParameter<T = unknown> = {
   /**
    * name of the parameter
@@ -439,7 +443,7 @@ export type ZodiosEndpointParameter<T = unknown> = {
   /**
    * type of the parameter: Query, Body, Header, Path
    */
-  type: 'Query' | 'Body' | 'Header' | 'Path'
+  type: 'Path'
   /**
    * zod schema of the parameter
    * you can use zod `transform` to transform the value of the parameter before sending it to the server
@@ -481,10 +485,11 @@ export interface ZotchEndpointDefinition<R = unknown> {
    */
   requestFormat?: RequestFormat
 
-  /**
-   * optional parameters of the endpoint
-   */
-  parameters?: Array<ZodiosEndpointParameter>
+  body?: ZodiosBodyParameter
+  headers?: Array<ZodiosBodyParameter>
+  queries?: Array<ZodiosBodyParameter>
+  params?: Array<ZodiosBodyParameter>
+
   /**
    * response of the endpoint
    * you can use zod `transform` to transform the value of the response before returning it
@@ -507,7 +512,7 @@ export type ZotchEndpointDefinitions = Array<ZotchEndpointDefinition>
 
 export type ZotchRequestContext = {
   endpoint: ZotchEndpointDefinition
-  request: ZotchRequest
+  request: ZotchRequestDto
 }
 
 export type ZotchResponseContext = ZotchRequestContext & {
@@ -517,6 +522,6 @@ export type ZotchResponseContext = ZotchRequestContext & {
 
 export type ZotchPlugin = {
   name?: string
-  processRequest?: (context: ZotchRequestContext) => AsyncResult<ZotchRequest, ZotchRequestInvalidError>
+  processRequest?: (context: ZotchRequestContext) => AsyncResult<ZotchRequestDto, ZotchRequestInvalidError>
   processResponse?: <T>(response: Result<T, ZotchError>, context: ZotchResponseContext) => AsyncResult<T, ZotchError>
 }

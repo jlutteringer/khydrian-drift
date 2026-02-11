@@ -21,7 +21,6 @@ export const decode = Uris.decode
 export type UrlLiteral = NominalType<UriLiteral, typeof Namespace>
 
 export interface UrlLocation extends UriLocation {
-  relative: boolean
   pathSegments: Array<string>
   parameters: Dictionary<string | Array<string>>
 }
@@ -30,12 +29,13 @@ export interface Url extends Uri {
   _type: typeof Namespace
   location: UrlLocation
   href: UrlLiteral
+  relative: boolean
 }
 
 export const Namespace = Uris.UrlNamespace
 export const EqualBy: Equalitor<Url> = Equalitors.deepNatural()
 
-type UrlBuilderPathPart = MergeExclusive<{ path?: string | null }, { pathSegments?: Array<string>; relative?: boolean }>
+type UrlBuilderPathPart = MergeExclusive<{ path?: string | null }, { pathSegments?: Array<string> }>
 type UrlBuilderQueryPart = MergeExclusive<{ query?: string | null }, { parameters?: Dictionary<string | Array<string>> }>
 type UrlBuilderLocationPart = UrlBuilderPathPart &
   UrlBuilderQueryPart & {
@@ -44,9 +44,10 @@ type UrlBuilderLocationPart = UrlBuilderPathPart &
 
 export type UrlBuilder = UriBuilder & {
   location?: UrlBuilderLocationPart | null | undefined
+  relative?: boolean
 }
 
-export type UrlLike = Url | Uri | UriLiteral | UrlLiteral | UrlBuilder
+export type UrlLike = Url | Uri | UrlBuilder | UriLiteral | UrlLiteral
 
 export const parseString = (value: string, mode: UriParseMode = UriParseMode.Strict): Result<Url, ErrorEvent> => {
   return Results.map(Uris.parseString(value, mode), (it) => Results.success(fromUri(it)))
@@ -99,10 +100,10 @@ export const empty = (): Url => {
     href: result.href as UrlLiteral,
     location: {
       ...result.location,
-      relative: true,
       pathSegments: [],
       parameters: {},
     },
+    relative: true,
   }
 }
 
@@ -117,6 +118,8 @@ export const isUrl = (value: unknown): value is Url => {
 
 export const update = (element: UrlLike, builder: UrlBuilder): Url => {
   const url = from(element)
+
+  const buildRelative = builder.relative === true
 
   let location: UrlBuilderLocationPart | null | undefined
   if (Strings.isString(builder.location) || Objects.isNull(builder.location)) {
@@ -136,47 +139,43 @@ export const update = (element: UrlLike, builder: UrlBuilder): Url => {
     }
   }
 
-  const uriBuilder: UriBuilder = {
-    scheme: Objects.isUndefined(builder.scheme) ? url.scheme : builder.scheme,
-    host: Objects.isUndefined(builder.host) ? url.host : builder.host,
-    authentication: Objects.isUndefined(builder.authentication) ? url.authentication : builder.authentication,
+  const uriBuilder: UrlBuilder = {
+    scheme: Objects.isUndefined(builder.scheme) && !buildRelative ? url.scheme : builder.scheme,
+    host: Objects.isUndefined(builder.host) && !buildRelative ? url.host : builder.host,
+    authentication: Objects.isUndefined(builder.authentication) && !buildRelative ? url.authentication : builder.authentication,
     location,
+    relative: buildRelative,
   }
 
   return from(uriBuilder)
 }
 
-export const merge = (...urls: UrlLike[]): Url => {
-  if (urls.length === 0) {
-    return empty()
+export const navigate = (base: UrlLike, next: UrlLike): Url => {
+  const baseUrl = from(base)
+  const nextUrl = from(next)
+
+  const isOnlyFragment = nextUrl.relative && Objects.isNil(nextUrl.location.path) && Objects.isNil(nextUrl.location.query)
+
+  const builder: UrlBuilder = {
+    scheme: nextUrl.scheme ?? undefined,
+    host: nextUrl.host ?? undefined,
+    authentication: Objects.isPresent(nextUrl.host) ? nextUrl.authentication : undefined,
+    location: {
+      pathSegments: nextUrl.relative ? [...baseUrl.location.pathSegments, ...nextUrl.location.pathSegments] : nextUrl.location.pathSegments,
+      query: isOnlyFragment ? undefined : nextUrl.location.query,
+      fragment: nextUrl.location.fragment,
+    },
   }
-  if (urls.length === 1) {
-    return from(urls[0]!)
-  }
 
-  return urls.reduce<Url>((aggregate, next) => {
-    const nextUri = from(next)
-
-    const builder: UrlBuilder = {
-      scheme: nextUri.scheme ?? undefined,
-      host: nextUri.host ?? undefined,
-      authentication: nextUri.authentication ?? undefined,
-      location: {
-        path: nextUri.location.path ?? undefined,
-        query: nextUri.location.query ?? undefined,
-        fragment: nextUri.location.fragment ?? undefined,
-      },
-    }
-
-    const uri = update(aggregate, builder)
-    return uri
-  }, from(urls[0]!))
+  const uri = update(baseUrl, builder)
+  return uri
 }
 
 export const format = Uris.format
+export const isComplete = Uris.isComplete
 
 const build = (builder: UrlBuilder): Url => {
-  if ((builder.location?.relative ?? false) && Objects.isPresent(builder.host)) {
+  if ((builder.relative ?? false) && Objects.isPresent(builder.host)) {
     throw new Error(`[${Namespace}]: Unable to construct a relative url with a non-null host: ${builder}`)
   }
 
@@ -190,7 +189,7 @@ const convertUrlBuilderToUriBuilder = (builder: UrlBuilder): UriBuilder => {
     if (Objects.isNil(builder.host)) {
       return {
         ...builder,
-        location: { path: '/' },
+        location: { path: builder.relative === true ? '' : '/' },
       }
     }
 
@@ -201,8 +200,8 @@ const convertUrlBuilderToUriBuilder = (builder: UrlBuilder): UriBuilder => {
     return builder
   }
 
-  const relative = builder.location.relative ?? false
-  let path = builder.location.path
+  const relative = builder.relative ?? false
+  let path = relative ? Strings.removeStart(builder.location.path ?? '', '/') : builder.location.path
   if (Objects.isPresent(builder.location.pathSegments)) {
     path = formatPathSegments(builder.location.pathSegments, Objects.isPresent(builder.host), relative)
   }
@@ -266,13 +265,13 @@ const fromUri = (uri: Uri): Url => {
     _type: Namespace,
     location: {
       path: formatPathSegments(pathSegments, Objects.isPresent(uri.host), relative),
-      relative,
       pathSegments,
       query: formatQueryParameters(parameters),
       parameters,
       fragment: uri.location.fragment,
     },
     href: uri.href as UrlLiteral,
+    relative,
   }
 
   url.href = format(url) as UrlLiteral
