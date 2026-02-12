@@ -1,6 +1,7 @@
-import Zod from 'zod'
+import Zod, { ZodType } from 'zod'
 import {
   CreateRequestSchema,
+  RequestDto,
   RequestSchema,
   SubmitQuoteSchema,
   TransferQuoteItemsSchema,
@@ -32,35 +33,31 @@ export const NotFoundErrorSchema = {
   schema: Zod.unknown(),
 } as const
 
-export const RequestApi = Zotch.makeApi([
-  {
-    alias: 'fetchRequestById',
+export const RequestApi = Zotch.makeApi({
+  fetchRequestById: {
     method: 'get',
     path: 'requests/:requestId',
-    response: RequestSchema,
+    response: RequestSchema as ZodType<RequestDto>,
     headers: ContextHeadersSchema,
     queries: { cache: Zod.boolean().default(true) },
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema, NotFoundErrorSchema],
   },
-  {
-    alias: 'fetchPublicRequestById',
+  fetchPublicRequestById: {
     method: 'get',
     path: 'requests/:requestId/public',
     response: RequestSchema,
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema, NotFoundErrorSchema],
   },
-  {
-    alias: 'fetchCart',
+  fetchCart: {
     method: 'get',
     path: '/requests/cart',
     response: RequestSchema,
     headers: AccountContextHeadersSchema,
     errors: [NotFoundErrorSchema, UnauthorizedErrorSchema],
   },
-  {
-    alias: 'createQuote',
+  createQuote: {
     method: 'post',
     path: '/requests/quotes',
     response: RequestSchema,
@@ -68,8 +65,7 @@ export const RequestApi = Zotch.makeApi([
     headers: AccountContextHeadersSchema,
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'updateQuote',
+  updateQuote: {
     method: 'post',
     path: '/requests/quotes/:requestId',
     response: RequestSchema,
@@ -78,8 +74,7 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'transferQuoteItems',
+  transferQuoteItems: {
     method: 'post',
     path: '/requests/quotes/transfer-items',
     response: RequestSchema,
@@ -87,8 +82,7 @@ export const RequestApi = Zotch.makeApi([
     headers: AccountContextHeadersSchema,
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'submitQuote',
+  submitQuote: {
     method: 'post',
     path: '/requests/:requestId/submit',
     response: RequestSchema,
@@ -97,8 +91,7 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'rejectQuote',
+  rejectQuote: {
     method: 'post',
     path: '/requests/:requestId/reject',
     response: RequestSchema,
@@ -107,8 +100,7 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'confirmQuote',
+  confirmQuote: {
     method: 'post',
     path: '/requests/:requestId/confirm',
     response: Zod.object({
@@ -118,8 +110,7 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'remindQuote',
+  remindQuote: {
     method: 'post',
     path: '/requests/:requestId/remind',
     response: RequestSchema,
@@ -128,8 +119,7 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'submitAndConfirmQuote',
+  submitAndConfirmQuote: {
     method: 'post',
     path: '/requests/:requestId/submit-confirm',
     response: Zod.object({
@@ -140,8 +130,7 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'cancelQuote',
+  cancelQuote: {
     method: 'post',
     path: '/requests/:requestId/cancel',
     response: RequestSchema,
@@ -150,8 +139,7 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'createProposalContent',
+  createProposalContent: {
     method: 'post',
     path: '/requests/:requestId/create-proposal',
     response: RequestSchema,
@@ -159,8 +147,7 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-  {
-    alias: 'recallQuote',
+  recallQuote: {
     method: 'post',
     path: '/requests/:requestId/recall',
     response: RequestSchema,
@@ -168,4 +155,4 @@ export const RequestApi = Zotch.makeApi([
     params: { requestId: Zod.string() },
     errors: [UnauthorizedErrorSchema],
   },
-])
+})

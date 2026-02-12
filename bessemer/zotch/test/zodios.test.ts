@@ -332,7 +332,7 @@ describe('Zotch.client', () => {
     const zotch = Zotch.client(
       [
         {
-          alias: 'getThingById',
+          alias: 'fetchById',
           method: 'get',
           path: '/:id',
           response: Zod.object({
@@ -344,7 +344,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.get('/:id', { params: { id: 7 } })
+    const response = await zotch.fetchById({ params: { id: 7 } })
     Results.assertSuccess(response)
     expect(response).toEqual({ id: 7, name: 'test' })
   })
@@ -387,7 +387,7 @@ describe('Zotch.client', () => {
     const zotch = Zotch.client(
       [
         {
-          alias: 'getById',
+          alias: 'fetchById',
           method: 'get',
           path: '/:id',
           response: Zod.object({
@@ -400,7 +400,7 @@ describe('Zotch.client', () => {
     )
 
     // @ts-ignore
-    const response = await zotch.get('/:id')
+    const response = await zotch.fetchById('/:id')
     Results.assertFailure(response)
     expect(response.value.type).toEqual(ZotchErrorType.RequestInvalid)
   })
@@ -409,7 +409,7 @@ describe('Zotch.client', () => {
     const zotch = Zotch.client(
       [
         {
-          alias: 'getById',
+          alias: 'fetchById',
           method: 'get',
           path: '/:id/address/:address',
           response: Zod.object({
@@ -420,7 +420,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.get('/:id/address/:address', {
+    const response = await zotch.fetchById({
       params: { id: 7, address: 'address' },
     })
     expect(response).toEqual({ id: 7, address: 'address' })
@@ -430,7 +430,7 @@ describe('Zotch.client', () => {
     const zotch = Zotch.client(
       [
         {
-          alias: 'getById',
+          alias: 'updateById',
           method: 'post',
           path: '/',
           parameters: [
@@ -450,7 +450,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.post('/', { name: 'post' })
+    const response = await zotch.updateById({ name: 'post' })
     console.log(response)
     expect(response).toEqual({ id: 3, name: 'post' })
   })
@@ -459,7 +459,7 @@ describe('Zotch.client', () => {
     const zotch = Zotch.client(
       [
         {
-          alias: 'getById',
+          alias: 'updateById',
           method: 'post',
           path: '/',
           parameters: [
@@ -483,11 +483,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.request({
-      method: 'post',
-      url: '/',
-      body: { firstname: 'post', lastname: 'test' },
-    })
+    const response = await zotch.updateById({ firstname: 'post', lastname: 'test' })
     expect(response).toEqual({ id: 3, name: 'post test' })
   })
 
@@ -495,7 +491,7 @@ describe('Zotch.client', () => {
     const zotch = Zotch.client(
       [
         {
-          alias: 'getById',
+          alias: 'updateById',
           method: 'post',
           path: '/',
           parameters: [
@@ -518,7 +514,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.post('/', {
+    const response = await zotch.updateById({
       email: 'post',
     })
     Results.assertFailure(response)
@@ -579,7 +575,7 @@ describe('Zotch.client', () => {
       ],
       { fetch }
     )
-    const response = await zotch.put('/', { id: 5, name: 'put' }, { baseUrl: `http://localhost:${port}` })
+    const response = await zotch.putThat({ id: 5, name: 'put' }, { baseUrl: `http://localhost:${port}` })
     expect(response).toEqual({ id: 5, name: 'put' })
   })
 
@@ -616,7 +612,7 @@ describe('Zotch.client', () => {
     const zotch = Zotch.client(
       [
         {
-          alias: 'doWork',
+          alias: 'patchThat',
           method: 'patch',
           path: '/',
           parameters: [
@@ -637,7 +633,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.patch('/', { id: 4, name: 'patch' })
+    const response = await zotch.patchThat({ id: 4, name: 'patch' })
     console.log('Patch response:', response)
     expect(response).toEqual({ id: 4, name: 'patch' })
   })
@@ -675,7 +671,7 @@ describe('Zotch.client', () => {
     const zotch = Zotch.client(
       [
         {
-          alias: 'doWork',
+          alias: 'deleteById',
           method: 'delete',
           path: '/:id',
           response: Zod.object({
@@ -685,7 +681,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.delete('/:id', undefined, {
+    const response = await zotch.deleteById(undefined, {
       params: { id: 6 },
     })
     expect(response).toEqual({ id: 6 })
@@ -732,7 +728,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.get('/path/:uuid', {
+    const response = await zotch.getUuid({
       params: { uuid: 'e9e09a1d-3967-4518-bc89-75a901aee128' },
     })
     expect(response).toEqual({
@@ -761,7 +757,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.get('/path/:uuid', {
+    const response = await zotch.getUuid({
       params: { uuid: 'e9e09a1-3967-4518-bc89-75a901aee128' },
     })
     Results.assertFailure(response)
@@ -880,7 +876,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.get('/error502')
+    const response = await zotch.getError502()
     Results.assertFailure(response)
     console.log(response)
     Zotch.assertStructuredError(response.value)
@@ -1024,7 +1020,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.get('/error502')
+    const response = await zotch.getError502()
     Results.assertFailure(response)
     // JOHN inspect value
   })
@@ -1045,7 +1041,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.get('/error502')
+    const response = await zotch.error502()
     Results.assertFailure(response)
     // JOHN inspect value
   })
@@ -1076,7 +1072,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.post('/form-data', { id: 4, name: 'post' })
+    const response = await zotch.formData({ id: 4, name: 'post' })
     expect(response).toEqual({ id: '4', name: 'post' })
   })
 
@@ -1106,7 +1102,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.post('/form-data', { id: 4, name: 'post' })
+    const response = await zotch.formData({ id: 4, name: 'post' })
     expect(response).toEqual({ id: '4', name: 'post' })
   }, 100)
 
@@ -1131,7 +1127,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.post('/form-data', ['test', 'test2'])
+    const response = await zotch.formData(['test', 'test2'])
     Results.assertFailure(response)
     expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
   })
@@ -1163,7 +1159,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.post('/form-url', { id: 4, name: 'post' })
+    const response = await zotch.formUrl({ id: 4, name: 'post' })
     Results.assertSuccess(response)
     expect(response).toEqual({ id: '4', name: 'post' })
   })
@@ -1189,7 +1185,7 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const response = await zotch.post('/form-url', ['test', 'test2'])
+    const response = await zotch.formUrl(['test', 'test2'])
     Results.assertFailure(response)
     expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
   })
@@ -1214,7 +1210,7 @@ describe('Zotch.client', () => {
       ],
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.post('/text', 'test')
+    const response = await zotch.postText('test')
     expect(response).toEqual('test')
   })
 })

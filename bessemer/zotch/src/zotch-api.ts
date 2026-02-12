@@ -1,4 +1,4 @@
-import { ZodiosEndpointError, ZodiosEndpointParameter, ZotchEndpointDefinition, ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
+import { ZodiosEndpointError, ZodiosEndpointParameter, ZotchEndpointDefinitionEntry, ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
 import Zod from 'zod'
 import { Narrow, TupleFlat, UnionToTuple } from '@bessemer/zotch/zotch-type-utils'
 import { Assertions, Strings } from '@bessemer/cornerstone'
@@ -18,23 +18,14 @@ export const client = <Api extends ZotchEndpointDefinitions>(api: Narrow<Api>, p
 export const validateEndpointDefinitions = <T extends ZotchEndpointDefinitions>(api: T) => {
   // check if no duplicate path
   const paths = new Set<string>()
-  for (let endpoint of api) {
+  for (const endpoint of Object.values(api)) {
     const fullpath = `${endpoint.method} ${endpoint.path}`
+
     if (paths.has(fullpath)) {
       throw new Error(`Zotch: Duplicate path '${fullpath}'`)
     }
-    paths.add(fullpath)
-  }
 
-  // check if no duplicate alias
-  const aliases = new Set<string>()
-  for (let endpoint of api) {
-    if (endpoint.alias) {
-      if (aliases.has(endpoint.alias)) {
-        throw new Error(`Zotch: Duplicate alias '${endpoint.alias}'`)
-      }
-      aliases.add(endpoint.alias)
-    }
+    paths.add(fullpath)
   }
 }
 
@@ -45,7 +36,7 @@ export const validateEndpointDefinitions = <T extends ZotchEndpointDefinitions>(
  * @param api - api definitions
  * @returns the api definitions
  */
-export const makeApi = <Api extends ZotchEndpointDefinitions>(api: Narrow<Api>): Api => {
+export const makeApi = <T extends string, Api extends ZotchEndpointDefinitions<T>>(api: Narrow<Api>): Api => {
   validateEndpointDefinitions(api as ZotchEndpointDefinitions)
   return api as Api
 }
@@ -141,43 +132,43 @@ export const makeErrors = <ErrorDescription extends ZodiosEndpointError[]>(error
   return errors as ErrorDescription
 }
 
-export const makeEndpoint = <T extends ZotchEndpointDefinition<any>>(endpoint: Narrow<T>): T => {
+export const makeEndpoint = <T extends ZotchEndpointDefinitionEntry<any>>(endpoint: Narrow<T>): T => {
   return endpoint as T
 }
 
-export class Builder<T extends ZotchEndpointDefinitions> {
-  constructor(private api: T) {}
-
-  addEndpoint<E extends ZotchEndpointDefinition>(endpoint: Narrow<E>): Builder<[...T, E]> {
-    if (this.api.length === 0) {
-      this.api = [endpoint] as T
-      return this as any
-    }
-    this.api = [...this.api, endpoint] as any
-    return this as any
-  }
-
-  build(): T {
-    validateEndpointDefinitions(this.api!)
-    return this.api!
-  }
-}
-
-/**
- * Advanced helper to build your api definitions
- * compared to `makeApi()` you'll have better autocompletion experience and better error messages,
- * @param endpoint
- * @returns - a builder to build your api definitions
- */
-export function apiBuilder(): Builder<[]>
-export function apiBuilder<T extends ZotchEndpointDefinition<any>>(endpoint: Narrow<T>): Builder<[T]>
-export function apiBuilder(endpoint?: any) {
-  if (!endpoint) {
-    return new Builder([])
-  }
-
-  return new Builder([endpoint])
-}
+// export class Builder<T extends ZotchEndpointDefinitions> {
+//   constructor(private api: T) {}
+//
+//   addEndpoint<E extends ZotchEndpointDefinitionEntry>(endpoint: Narrow<E>): Builder<[...T, E]> {
+//     if (this.api.length === 0) {
+//       this.api = [endpoint] as T
+//       return this as any
+//     }
+//     this.api = [...this.api, endpoint] as any
+//     return this as any
+//   }
+//
+//   build(): T {
+//     validateEndpointDefinitions(this.api!)
+//     return this.api!
+//   }
+// }
+//
+// /**
+//  * Advanced helper to build your api definitions
+//  * compared to `makeApi()` you'll have better autocompletion experience and better error messages,
+//  * @param endpoint
+//  * @returns - a builder to build your api definitions
+//  */
+// export function apiBuilder(): Builder<[]>
+// export function apiBuilder<T extends ZotchEndpointDefinitionEntry<any>>(endpoint: Narrow<T>): Builder<[T]>
+// export function apiBuilder(endpoint?: any) {
+//   if (!endpoint) {
+//     return new Builder([])
+//   }
+//
+//   return new Builder([endpoint])
+// }
 
 /**
  * Helper to generate a basic CRUD api for a given resource
@@ -189,62 +180,41 @@ export const makeCrudApi = <T extends string, S extends Zod.ZodObject<Zod.ZodRaw
   type Schema = Zod.input<S>
   const capitalizedResource = Strings.capitalize(resource)
 
-  return makeApi([
-    {
+  return makeApi({
+    [`get${capitalizedResource}`]: {
       method: 'get',
-      // @ts-expect-error
       path: `/${resource}s/:id`,
-      // @ts-expect-error
-      alias: `get${capitalizedResource}`,
       description: `Get a ${resource}`,
-      // @ts-expect-error
       response: schema,
     },
-    {
+    [`create${capitalizedResource}`]: {
       method: 'post',
-      // @ts-expect-error
       path: `/${resource}s`,
-      // @ts-expect-error
-      alias: `create${capitalizedResource}`,
       description: `Create a ${resource}`,
       body: schema.partial(),
-      // @ts-expect-error
       response: schema,
     },
-    {
+    [`update${capitalizedResource}`]: {
       method: 'put',
-      // @ts-expect-error
       path: `/${resource}s/:id`,
-      // @ts-expect-error
-      alias: `update${capitalizedResource}`,
       description: `Update a ${resource}`,
-      // @ts-expect-error
       body: schema,
-      // @ts-expect-error
       response: schema,
     },
-    {
+    [`patch${capitalizedResource}`]: {
       method: 'patch',
-      // @ts-expect-error
       path: `/${resource}s/:id`,
-      // @ts-expect-error
-      alias: `patch${capitalizedResource}`,
       description: `Patch a ${resource}`,
       body: schema.partial(),
-      // @ts-expect-error
       response: schema,
     },
-    {
+    [`delete${capitalizedResource}`]: {
       method: 'delete',
-      // @ts-expect-error
       path: `/${resource}s/:id`,
-      // @ts-expect-error
-      alias: `delete${capitalizedResource}`,
       description: `Delete a ${resource}`,
-      // @ts-expect-error
       response: schema,
     },
-  ])
+  })
 }
 
 type CleanPath<Path extends string> = Path extends `${infer PClean}/` ? PClean : Path
@@ -263,7 +233,7 @@ type MapApiPath<Path extends string, Api, Acc extends unknown[] = []> = Api exte
   : Acc
 
 type MergeApis<
-  Apis extends Record<string, ZotchEndpointDefinition[]>,
+  Apis extends Record<string, ZotchEndpointDefinitionEntry[]>,
   MergedPathApis = UnionToTuple<
     {
       [K in keyof Apis]: K extends string ? MapApiPath<K, Apis[K]> : never
@@ -281,7 +251,7 @@ const cleanPath = (path: string) => {
  * @param api - the api to prefix
  * @returns the prefixed api
  */
-export const prefixApi = <Prefix extends string, Api extends ZotchEndpointDefinition[]>(prefix: Prefix, api: Api): MapApiPath<Prefix, Api> => {
+export const prefixApi = <Prefix extends string, Api extends ZotchEndpointDefinitionEntry[]>(prefix: Prefix, api: Api): MapApiPath<Prefix, Api> => {
   return api.map((endpoint) => ({
     ...endpoint,
     path: cleanPath(`${prefix}${endpoint.path}`),
@@ -301,7 +271,7 @@ export const prefixApi = <Prefix extends string, Api extends ZotchEndpointDefini
  * });
  * ```
  */
-export const mergeApis = <Apis extends Record<string, ZotchEndpointDefinition[]>>(apis: Apis): MergeApis<Apis> => {
+export const mergeApis = <Apis extends Record<string, ZotchEndpointDefinitionEntry[]>>(apis: Apis): MergeApis<Apis> => {
   return Object.keys(apis).flatMap((key) => prefixApi(key, apis[key]!)) as any
 }
 

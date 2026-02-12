@@ -3,36 +3,3 @@ import * as OpenApi from '@bessemer/zotch/open-api'
 
 export type { ZotchClient, ZotchClientProps } from '@bessemer/zotch/zotch-client'
 export { Zotch, OpenApi }
-
-export type {
-  ZotchRequest,
-  ZodiosBodyForEndpoint,
-  ZotchBodyByPath,
-  ZodiosBodyByAlias,
-  ZodiosHeaderParamsForEndpoint,
-  ZodiosHeaderParamsByPath,
-  ZodiosHeaderParamsByAlias,
-  ZodiosPathParams,
-  ZodiosPathParamsForEndpoint,
-  ZodiosPathParamsByPath,
-  ZodiosPathParamByAlias,
-  ZotchPathsByMethod,
-  ZodiosResponseForEndpoint,
-  ZotchResponseByPath,
-  ZodiosResponseByAlias,
-  ZodiosQueryParamsForEndpoint,
-  ZodiosQueryParamsByPath,
-  ZodiosQueryParamsByAlias,
-  ZodiosEndpointDefinitionByPath,
-  ZodiosEndpointDefinitionByAlias,
-  ZotchEndpointDefinition,
-  ZotchEndpointDefinitions,
-  ZodiosEndpointParameter,
-  ZodiosEndpointParameters,
-  ZodiosEndpointError,
-  ZodiosEndpointErrors,
-  ZotchRequestOptions,
-  ZotchRequestOptionsByPath,
-  ZodiosRequestOptionsByAlias,
-  ZotchPlugin,
-} from '@bessemer/zotch/zotch-types'

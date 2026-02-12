@@ -1,4 +1,4 @@
-import { ZodiosEndpointError, ZotchEndpointDefinition, ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
+import { ZodiosEndpointError, ZotchEndpointDefinitionEntry } from '@bessemer/zotch/zotch-types'
 import { Objects } from '@bessemer/cornerstone'
 import { FetchResponse } from '@bessemer/cornerstone/net/fetch'
 
@@ -42,11 +42,7 @@ export const replacePathParams = (url: string, params: Record<string, unknown> |
   return result
 }
 
-export const findEndpoint = (api: ZotchEndpointDefinitions, method: string, path: string) => {
-  return api.find((e) => e.method === method && e.path === path)
-}
-
-export const findEndpointErrors = (endpoint: ZotchEndpointDefinition, err: FetchResponse): ZodiosEndpointError[] => {
+export const findEndpointErrors = (endpoint: ZotchEndpointDefinitionEntry, err: FetchResponse): ZodiosEndpointError[] => {
   const matchingErrors = endpoint.errors?.filter((error) => error.status === err.status)
   if (matchingErrors && matchingErrors.length > 0) {
     return matchingErrors

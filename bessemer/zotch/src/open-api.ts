@@ -98,7 +98,7 @@ const makeOpenApi = (options: {
     }
   }
   for (let api of options.apis) {
-    for (let endpoint of api.definitions) {
+    for (let [alias, endpoint] of Object.entries(api.definitions)) {
       const responses: OpenAPIV3.ResponsesObject = {
         [`${endpoint.status ?? 200}`]: {
           description: endpoint.responseDescription ?? endpoint.response.description ?? 'Success',
@@ -109,6 +109,7 @@ const makeOpenApi = (options: {
           },
         },
       }
+
       for (let error of endpoint.errors ?? []) {
         responses[`${error.status}`] = {
           description: error.description ?? error.schema.description ?? 'Error',
@@ -119,6 +120,7 @@ const makeOpenApi = (options: {
           },
         }
       }
+
       const parameters: OpenAPIV3.ParameterObject[] = []
       // extract path parameters from endpoint path
       const pathParams = endpoint.path.match(pathRegExp)
@@ -173,8 +175,8 @@ const makeOpenApi = (options: {
       const body = endpoint.body
 
       const operation: OpenAPIV3.OperationObject = {
-        operationId: endpoint.alias,
-        summary: endpoint.alias,
+        operationId: alias,
+        summary: alias,
         description: endpoint.description,
         tags: tagsFromPath(endpoint.path),
         security: 'scheme' in api && api.scheme ? [{ [api.scheme]: api.securityRequirement ?? ([] as string[]) }] : undefined,

@@ -1,5 +1,5 @@
 import { Results } from '@bessemer/cornerstone'
-import { ZotchPlugin } from '@bessemer/zotch'
+import { ZotchPlugin } from '@bessemer/zotch/zotch-types'
 
 export const headerPlugin = (key: string, value: string): ZotchPlugin => {
   return {

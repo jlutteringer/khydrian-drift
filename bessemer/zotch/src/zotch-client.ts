@@ -1,23 +1,18 @@
 import {
   Aliases,
   ZotchAliases,
-  ZotchBodyByPath,
-  ZotchEndpointDefinition,
+  ZotchEndpointDefinitionEntry,
   ZotchEndpointDefinitions,
-  ZotchErrorTypeByPath,
-  ZotchPathsByMethod,
-  ZotchPayloadTypeByPath,
+  ZotchErrorTypeByAlias,
+  ZotchPayloadTypeByAlias,
   ZotchPlugin,
   ZotchRequest,
   ZotchRequestDto,
   ZotchRequestOptions,
-  ZotchRequestOptionsByPath,
-  ZotchResponseByPath,
+  ZotchResponseByAlias,
   ZotchResponseContext,
-  ZotchResultByPath,
 } from '@bessemer/zotch/zotch-types'
-import { findEndpoint, findEndpointErrors, replacePathParams } from './zotch-utils'
-import { ReadonlyDeep, RequiredKeys, UndefinedIfNever } from '@bessemer/zotch/zotch-type-utils'
+import { findEndpointErrors, replacePathParams } from './zotch-utils'
 import { PluginId, ZotchPlugins } from '@bessemer/zotch/plugins/zotch-plugins'
 import { headerPlugin } from '@bessemer/zotch/plugins/header-plugin'
 import { formDataPlugin } from '@bessemer/zotch/plugins/form-data-plugin'
@@ -41,9 +36,9 @@ export type ZotchClientProps = Zod.input<typeof ZotchClientPropsSchema>
 export type ZotchClientPropsDto = Zod.output<typeof ZotchClientPropsSchema>
 
 export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
-  public readonly props: ZotchClientPropsDto
-  public readonly api: Api
-  private endpointPlugins: Map<string, ZotchPlugins> = new Map()
+  private readonly props: ZotchClientPropsDto
+  private readonly api: Api
+  private readonly endpointPlugins: Map<string, ZotchPlugins> = new Map()
 
   constructor(api: Api, props?: ZotchClientProps) {
     validateEndpointDefinitions(api)
@@ -58,7 +53,7 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
   private initPlugins() {
     this.endpointPlugins.set('any-any', new ZotchPlugins('any', 'any'))
 
-    this.api.forEach((endpoint) => {
+    Object.values(this.api).forEach((endpoint) => {
       const plugins = new ZotchPlugins(endpoint.method, endpoint.path)
       switch (endpoint.requestFormat) {
         case 'binary':
@@ -74,6 +69,7 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
           plugins.use(headerPlugin('Content-Type', 'text/plain'))
           break
       }
+
       this.endpointPlugins.set(`${endpoint.method}-${endpoint.path}`, plugins)
     })
   }
@@ -83,11 +79,12 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
   }
 
   private findAliasEndpointPlugins(alias: string) {
-    const endpoint = this.api.find((endpoint) => endpoint.alias === alias)
-    if (Objects.isPresent(endpoint)) {
-      return this.endpointPlugins.get(`${endpoint.method}-${endpoint.path}`)
+    const endpoint = this.api[alias]
+    if (Objects.isNil(endpoint)) {
+      return undefined
     }
-    return undefined
+
+    return this.endpointPlugins.get(`${endpoint.method}-${endpoint.path}`)
   }
 
   private findEnpointPlugins(method: HttpMethod, path: string) {
@@ -96,7 +93,6 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
 
   use(plugin: ZotchPlugin): PluginId
   use<Alias extends Aliases<Api>>(alias: Alias, plugin: ZotchPlugin): PluginId
-  use<M extends HttpMethod, Path extends ZotchPathsByMethod<Api, M>>(method: M, path: Path, plugin: ZotchPlugin): PluginId
   use(...args: unknown[]) {
     if (typeof args[0] === 'object') {
       const plugins = this.getAnyEndpointPlugins()!
@@ -118,33 +114,30 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
   }
 
   private injectAliasEndpoints() {
-    this.api.forEach((endpoint) => {
-      if (endpoint.alias) {
-        if (['post', 'put', 'patch', 'delete'].includes(endpoint.method)) {
-          ;(this as any)[endpoint.alias] = (body: any, config: any) =>
-            this.request({
-              ...config,
-              method: endpoint.method,
-              url: endpoint.path,
-              body,
-            })
-        } else {
-          ;(this as any)[endpoint.alias] = (config: any) =>
-            this.request({
-              ...config,
-              method: endpoint.method,
-              url: endpoint.path,
-            })
-        }
+    Object.entries(this.api).forEach(([alias, endpoint]) => {
+      if (['post', 'put', 'patch', 'delete'].includes(endpoint.method)) {
+        ;(this as any)[alias] = (body: any, config: any) =>
+          this.request(alias, {
+            ...config,
+            method: endpoint.method,
+            url: endpoint.path,
+            body,
+          })
+      } else {
+        ;(this as any)[alias] = (config: any) =>
+          this.request(alias, {
+            ...config,
+            method: endpoint.method,
+            url: endpoint.path,
+          })
       }
     })
   }
 
-  async request<M extends HttpMethod, Path extends string>(
-    initialRequest: Path extends ZotchPathsByMethod<Api, M>
-      ? ReadonlyDeep<ZotchRequestOptions<Api, M, Path>>
-      : ReadonlyDeep<ZotchRequestOptions<Api, M, ZotchPathsByMethod<Api, M>>>
-  ): Promise<ZotchResultByPath<Api, M, Path>> {
+  private async request<Alias extends string>(
+    alias: Alias,
+    initialRequest: ZotchRequestOptions<Api, Alias>
+  ): Promise<ZotchResponseByAlias<Api, Alias>> {
     Types.cast<ZotchRequest>(initialRequest)
 
     let request: ZotchRequestDto = {
@@ -157,7 +150,7 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
     const anyPlugin = this.getAnyEndpointPlugins()!
     const endpointPlugin = this.findEnpointPlugins(request.method, request.url)
 
-    const endpoint = findEndpoint(this.api, request.method, request.url)
+    const endpoint = this.api[alias]
     Assertions.assertPresent(endpoint, () => `No endpoint found for ${request.method} ${request.url}`)
 
     const validatedRequest = await validateRequest(endpoint, request)
@@ -181,7 +174,7 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
       request = endpointPluginResult
     }
 
-    let response: ZotchResultByPath<Api, M, Path>
+    let response: ZotchResponseByAlias<Api, Alias>
 
     const { baseUrl, url, params, queries, body, method, ...fetchOptions } = request
 
@@ -244,11 +237,12 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
               ...responseContext,
             })
           } else {
+            // JOHN cast :(
             response = Results.failure({
               type: ZotchErrorType.Structured,
               ...responseContext,
               ...validatedError,
-            })
+            }) as any
           }
         } else {
           response = validatedError
@@ -274,76 +268,13 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
     // response = await anyPlugin.interceptResponse(this.api, request, response)
     return response
   }
-
-  async get<Path extends ZotchPathsByMethod<Api, 'get'>, TConfig extends ZotchRequestOptionsByPath<Api, 'get', Path>>(
-    path: Path,
-    ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
-  ): Promise<ZotchResponseByPath<Api, 'get', Path>> {
-    return this.request({
-      ...config,
-      method: 'get',
-      url: path,
-    } as any)
-  }
-
-  async post<Path extends ZotchPathsByMethod<Api, 'post'>, TConfig extends ZotchRequestOptionsByPath<Api, 'post', Path>>(
-    path: Path,
-    body: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'post', Path>>>,
-    ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
-  ): Promise<ZotchResponseByPath<Api, 'post', Path>> {
-    return this.request({
-      ...config,
-      method: 'post',
-      url: path,
-      body,
-    } as any)
-  }
-
-  async put<Path extends ZotchPathsByMethod<Api, 'put'>, TConfig extends ZotchRequestOptionsByPath<Api, 'put', Path>>(
-    path: Path,
-    body: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'put', Path>>>,
-    ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
-  ): Promise<ZotchResponseByPath<Api, 'put', Path>> {
-    return this.request({
-      ...config,
-      method: 'put',
-      url: path,
-      body,
-    } as any)
-  }
-
-  async patch<Path extends ZotchPathsByMethod<Api, 'patch'>, TConfig extends ZotchRequestOptionsByPath<Api, 'patch', Path>>(
-    path: Path,
-    body: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'patch', Path>>>,
-    ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
-  ): Promise<ZotchResponseByPath<Api, 'patch', Path>> {
-    return this.request({
-      ...config,
-      method: 'patch',
-      url: path,
-      body,
-    } as any)
-  }
-
-  async delete<Path extends ZotchPathsByMethod<Api, 'delete'>, TConfig extends ZotchRequestOptionsByPath<Api, 'delete', Path>>(
-    path: Path,
-    body: ReadonlyDeep<UndefinedIfNever<ZotchBodyByPath<Api, 'delete', Path>>>,
-    ...[config]: RequiredKeys<TConfig> extends never ? [config?: ReadonlyDeep<TConfig>] : [config: ReadonlyDeep<TConfig>]
-  ): Promise<ZotchResponseByPath<Api, 'delete', Path>> {
-    return this.request({
-      ...config,
-      method: 'delete',
-      url: path,
-      body,
-    } as any)
-  }
 }
 
 export type ZotchClient<Api extends ZotchEndpointDefinitions> = ZotchClientClass<Api> & ZotchAliases<Api>
 export type ApiOf<Z> = Z extends ZotchClient<infer Api> ? Api : never
 
 const validateRequest = async (
-  endpoint: ZotchEndpointDefinition,
+  endpoint: ZotchEndpointDefinitionEntry,
   initialRequest: ZotchRequestDto
 ): AsyncResult<ZotchRequestDto, ZotchRequestInvalidError> => {
   const { body, params, headers, queries } = endpoint
@@ -429,9 +360,9 @@ const validateRequest = async (
   return Results.success(finishDraft(request))
 }
 
-const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, M extends HttpMethod, Path extends string>(
+const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, Alias extends string>(
   context: ZotchResponseContext
-): AsyncResult<ZotchPayloadTypeByPath<Api, M, Path>, ZotchResponseInvalidError> => {
+): AsyncResult<ZotchPayloadTypeByAlias<Api, Alias>, ZotchResponseInvalidError> => {
   const { endpoint, response } = context
   const body = await response.text()
   const jsonResult = Json.parse(body)
@@ -458,12 +389,12 @@ const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, M e
     })
   }
 
-  return Results.success(parseResult as ZotchPayloadTypeByPath<Api, M, Path>)
+  return Results.success(parseResult as ZotchPayloadTypeByAlias<Api, Alias>)
 }
 
-const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, M extends HttpMethod, Path extends string>(
+const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, Alias extends string>(
   context: ZotchResponseContext
-): AsyncResult<ZotchErrorTypeByPath<Api, M, Path> | null, ZotchResponseInvalidError> => {
+): AsyncResult<ZotchErrorTypeByAlias<Api, Alias> | null, ZotchResponseInvalidError> => {
   const { endpoint, response } = context
   const endpointErrors = findEndpointErrors(endpoint, response)
   if (Arrays.isEmpty(endpointErrors)) {
@@ -503,5 +434,5 @@ const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, M ext
     })
   }
 
-  return Results.success({ status: response.status, value: parseResult } as ZotchErrorTypeByPath<Api, M, Path>)
+  return Results.success({ status: response.status, value: parseResult } as ZotchErrorTypeByAlias<Api, Alias>)
 }
