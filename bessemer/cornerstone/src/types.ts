@@ -42,3 +42,38 @@ export type JoinPath<T extends readonly string[]> = T extends readonly [infer Fi
       : never
     : never
   : ''
+
+/**
+ * filter an array type by a predicate value
+ * @param T - array type
+ * @param C - predicate object to match
+ * @details - this is using tail recursion type optimization from typescript 4.5
+ */
+export type FilterArrayByValue<T extends unknown[] | undefined, C, Acc extends unknown[] = []> = T extends [infer Head, ...infer Tail]
+  ? Head extends C
+    ? FilterArrayByValue<Tail, C, [...Acc, Head]>
+    : FilterArrayByValue<Tail, C, Acc>
+  : Acc
+
+/**
+ * filter an array type by key
+ * @param T - array type
+ * @param K - key to match
+ * @details - this is using tail recursion type optimization from typescript 4.5
+ */
+export type FilterArrayByKey<T extends unknown[], K extends string, Acc extends unknown[] = []> = T extends [infer Head, ...infer Tail]
+  ? Head extends { [Key in K]: unknown }
+    ? FilterArrayByKey<Tail, K, [...Acc, Head]>
+    : FilterArrayByKey<Tail, K, Acc>
+  : Acc
+
+/**
+ * filter an array type by removing undefined values
+ * @param T - array type
+ * @details - this is using tail recursion type optimization from typescript 4.5
+ */
+export type DefinedArray<T extends unknown[], Acc extends unknown[] = []> = T extends [infer Head, ...infer Tail]
+  ? Head extends undefined
+    ? DefinedArray<Tail, Acc>
+    : DefinedArray<Tail, [Head, ...Acc]>
+  : Acc

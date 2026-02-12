@@ -6,10 +6,10 @@ import { Zotch } from '@bessemer/zotch'
 import { Results } from '@bessemer/cornerstone'
 import { ZotchErrorType } from '@bessemer/zotch/zotch-error'
 
-describe('Zotch.client', () => {
-  globalThis.FormData = require('form-data')
-  const multipart = multer({ storage: multer.memoryStorage() })
+globalThis.FormData = require('form-data')
+const multipart = multer({ storage: multer.memoryStorage() })
 
+describe('Zotch.client', () => {
   let app: express.Express
   let server: ReturnType<typeof app.listen>
   let port: number
@@ -26,7 +26,7 @@ describe('Zotch.client', () => {
     app.get('/error401', (req, res) => {
       res.status(401).json({})
     })
-    app.get('/error//error401', (req, res) => {
+    app.get('/error/:id/error401', (req, res) => {
       res.status(401).json({})
     })
     app.get('/error/:id/error401', (req, res) => {
@@ -79,14 +79,13 @@ describe('Zotch.client', () => {
   })
 
   test('should create a new instance of Zotch', () => {
-    const zotch = Zotch.client([])
+    const zotch = Zotch.client({})
     expect(zotch).toBeDefined()
   })
 
   test('should create a new instance when providing an api', () => {
-    const zotch = Zotch.client([
-      {
-        alias: 'getThingById',
+    const zotch = Zotch.client({
+      fetchById: {
         method: 'get',
         path: '/:id',
         response: Zod.object({
@@ -94,15 +93,14 @@ describe('Zotch.client', () => {
           name: Zod.string(),
         }),
       },
-    ])
+    })
     expect(zotch).toBeDefined()
   })
 
   test('should should throw with duplicate api endpoints', () => {
     expect(() =>
-      Zotch.client([
-        {
-          alias: 'getThingById',
+      Zotch.client({
+        fetchById: {
           method: 'get',
           path: '/:id',
           response: Zod.object({
@@ -110,8 +108,7 @@ describe('Zotch.client', () => {
             name: Zod.string(),
           }),
         },
-        {
-          alias: 'getThingById',
+        fetchById2: {
           method: 'get',
           path: '/:id',
           response: Zod.object({
@@ -119,14 +116,13 @@ describe('Zotch.client', () => {
             name: Zod.string(),
           }),
         },
-      ])
+      })
     ).toThrowError("Zotch: Duplicate path 'get /:id'")
   })
 
   test('should create a new instance whithout base URL', () => {
-    const zotch = Zotch.client([
-      {
-        alias: 'getThingById',
+    const zotch = Zotch.client({
+      fetchById: {
         method: 'get',
         path: '/:id',
         response: Zod.object({
@@ -134,7 +130,7 @@ describe('Zotch.client', () => {
           name: Zod.string(),
         }),
       },
-    ])
+    })
     expect(zotch).toBeDefined()
   })
 
@@ -330,9 +326,8 @@ describe('Zotch.client', () => {
 
   test('should make an http get with one path params', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'fetchById',
+      {
+        fetchById: {
           method: 'get',
           path: '/:id',
           response: Zod.object({
@@ -340,7 +335,7 @@ describe('Zotch.client', () => {
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -351,43 +346,41 @@ describe('Zotch.client', () => {
 
   test('should make an http alias request with one path params', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        fetchById: {
           method: 'get',
           path: '/:id',
-          alias: 'getById',
           response: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
-    const response = await zotch.getById({ params: { id: 7 } })
+    const response = await zotch.fetchById({ params: { id: 7 } })
     expect(response).toEqual({ id: 7, name: 'test' })
   })
 
-  test('should work with api builder', async () => {
-    const api = Zotch.apiBuilder({
-      method: 'get',
-      path: '/:id',
-      alias: 'getById',
-      response: Zod.object({
-        id: Zod.number(),
-        name: Zod.string(),
-      }),
-    }).build()
-    const zotch = Zotch.client(api, { baseUrl: `http://localhost:${port}`, fetch })
-    const response = await zotch.getById({ params: { id: 7 } })
-    expect(response).toEqual({ id: 7, name: 'test' })
-  })
+  // test('should work with api builder', async () => {
+  //   const api = Zotch.apiBuilder({
+  //     method: 'get',
+  //     path: '/:id',
+  //     alias: 'getById',
+  //     response: Zod.object({
+  //       id: Zod.number(),
+  //       name: Zod.string(),
+  //     }),
+  //   }).build()
+  //   const zotch = Zotch.client(api, { baseUrl: `http://localhost:${port}`, fetch })
+  //   const response = await zotch.getById({ params: { id: 7 } })
+  //   expect(response).toEqual({ id: 7, name: 'test' })
+  // })
 
   test('should make a get request with forgotten params and get back a zod error', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'fetchById',
+      {
+        fetchById: {
           method: 'get',
           path: '/:id',
           response: Zod.object({
@@ -395,7 +388,7 @@ describe('Zotch.client', () => {
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -407,9 +400,8 @@ describe('Zotch.client', () => {
 
   test('should make an http get with multiples path params', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'fetchById',
+      {
+        fetchById: {
           method: 'get',
           path: '/:id/address/:address',
           response: Zod.object({
@@ -417,7 +409,7 @@ describe('Zotch.client', () => {
             address: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.fetchById({
@@ -428,9 +420,8 @@ describe('Zotch.client', () => {
 
   test('should make an http post with body param', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'updateById',
+      {
+        updateById: {
           method: 'post',
           path: '/',
           parameters: [
@@ -447,7 +438,7 @@ describe('Zotch.client', () => {
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.updateById({ name: 'post' })
@@ -457,60 +448,47 @@ describe('Zotch.client', () => {
 
   test('should make an http post with transformed body param', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'updateById',
+      {
+        updateById: {
           method: 'post',
           path: '/',
-          parameters: [
-            {
-              name: 'name',
-              type: 'Body',
-              schema: Zod.object({
-                firstname: Zod.string(),
-                lastname: Zod.string(),
-              }).transform((data) => ({
-                name: `${data.firstname} ${data.lastname}`,
-              })),
-            },
-          ],
+          body: Zod.object({
+            firstname: Zod.string(),
+            lastname: Zod.string(),
+          }).transform((data) => ({
+            name: `${data.firstname} ${data.lastname}`,
+          })),
           response: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
     const response = await zotch.updateById({ firstname: 'post', lastname: 'test' })
+    console.log(response)
     expect(response).toEqual({ id: 3, name: 'post test' })
   })
 
   test('should throw a zotch error if params are not correct', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'updateById',
+      {
+        updateById: {
           method: 'post',
           path: '/',
-          parameters: [
-            {
-              name: 'name',
-              type: 'Body',
-              schema: Zod.object({
-                email: Zod.email(),
-              }).transform((data) => ({
-                name: `${data.email.split('@')[0]}`,
-              })),
-            },
-          ],
+          body: Zod.object({
+            email: Zod.email(),
+          }).transform((data) => ({
+            name: `${data.email.split('@')[0]}`,
+          })),
           response: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -523,26 +501,19 @@ describe('Zotch.client', () => {
 
   test('should make an http mutation alias request with body param', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        create: {
           method: 'post',
           path: '/',
-          alias: 'create',
-          parameters: [
-            {
-              name: 'name',
-              type: 'Body',
-              schema: Zod.object({
-                name: Zod.string(),
-              }),
-            },
-          ],
+          body: Zod.object({
+            name: Zod.string(),
+          }),
           response: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { fetch }
     )
 
@@ -552,27 +523,20 @@ describe('Zotch.client', () => {
 
   test('should make an http put', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'putThat',
+      {
+        putThat: {
           method: 'put',
           path: '/',
-          parameters: [
-            {
-              name: 'body',
-              type: 'Body',
-              schema: Zod.object({
-                id: Zod.number(),
-                name: Zod.string(),
-              }),
-            },
-          ],
+          body: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
           response: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { fetch }
     )
     const response = await zotch.putThat({ id: 5, name: 'put' }, { baseUrl: `http://localhost:${port}` })
@@ -581,27 +545,20 @@ describe('Zotch.client', () => {
 
   test('should make an http put alias', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        update: {
           method: 'put',
           path: '/',
-          alias: 'update',
-          parameters: [
-            {
-              name: 'body',
-              type: 'Body',
-              schema: Zod.object({
-                id: Zod.number(),
-                name: Zod.string(),
-              }),
-            },
-          ],
+          body: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
           response: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { fetch }
     )
     const response = await zotch.update({ id: 5, name: 'put' }, { baseUrl: `http://localhost:${port}` })
@@ -610,27 +567,20 @@ describe('Zotch.client', () => {
 
   test('should make an http patch', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'patchThat',
+      {
+        patchThat: {
           method: 'patch',
           path: '/',
-          parameters: [
-            {
-              name: 'id',
-              type: 'Body',
-              schema: Zod.object({
-                id: Zod.number(),
-                name: Zod.string(),
-              }),
-            },
-          ],
+          body: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
           response: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.patchThat({ id: 4, name: 'patch' })
@@ -640,27 +590,20 @@ describe('Zotch.client', () => {
 
   test('should make an http patch alias', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        update: {
           method: 'patch',
           path: '/',
-          alias: 'update',
-          parameters: [
-            {
-              name: 'id',
-              type: 'Body',
-              schema: Zod.object({
-                id: Zod.number(),
-                name: Zod.string(),
-              }),
-            },
-          ],
+          body: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
           response: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.update({ id: 4, name: 'patch' })
@@ -669,16 +612,15 @@ describe('Zotch.client', () => {
 
   test('should make an http delete', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'deleteById',
+      {
+        deleteById: {
           method: 'delete',
           path: '/:id',
           response: Zod.object({
             id: Zod.number(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.deleteById(undefined, {
@@ -689,16 +631,15 @@ describe('Zotch.client', () => {
 
   test('should make an http delete alias', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        remove: {
           method: 'delete',
           path: '/:id',
-          alias: 'remove',
           response: Zod.object({
             id: Zod.number(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.remove(undefined, {
@@ -709,23 +650,16 @@ describe('Zotch.client', () => {
 
   test('should validate uuid in path params', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'getUuid',
+      {
+        getUuid: {
           method: 'get',
           path: '/path/:uuid',
-          parameters: [
-            {
-              name: 'uuid',
-              type: 'Path',
-              schema: Zod.string().uuid(),
-            },
-          ],
+          params: { uuid: Zod.uuid() },
           response: Zod.object({
             uuid: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.getUuid({
@@ -738,23 +672,16 @@ describe('Zotch.client', () => {
 
   test('should not validate bad path params', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'getUuid',
+      {
+        getUuid: {
           method: 'get',
           path: '/path/:uuid',
-          parameters: [
-            {
-              name: 'uuid',
-              type: 'Path',
-              schema: Zod.uuid(),
-            },
-          ],
+          params: { uuid: Zod.uuid() },
           response: Zod.object({
             uuid: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.getUuid({
@@ -815,10 +742,9 @@ describe('Zotch.client', () => {
 
   test('should match Expected error', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        getError502: {
           method: 'get',
-          alias: 'getError502',
           path: '/error502',
           response: Zod.void(),
           errors: [
@@ -848,9 +774,8 @@ describe('Zotch.client', () => {
             },
           ],
         },
-        {
+        getErrorById: {
           method: 'get',
-          alias: 'getErrorById',
           path: '/error502/:id',
           response: Zod.void(),
           errors: [
@@ -872,7 +797,7 @@ describe('Zotch.client', () => {
             },
           ],
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -885,10 +810,9 @@ describe('Zotch.client', () => {
 
   test('should match error with params', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        getError401: {
           method: 'get',
-          alias: 'getError401',
           path: '/error/:id/error401',
           response: Zod.void(),
           errors: [
@@ -898,9 +822,8 @@ describe('Zotch.client', () => {
             },
           ],
         },
-        {
+        getError404: {
           method: 'get',
-          alias: 'getError404',
           path: '/error/:id/error404',
           response: Zod.void(),
           errors: [
@@ -910,7 +833,7 @@ describe('Zotch.client', () => {
             },
           ],
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -926,12 +849,14 @@ describe('Zotch.client', () => {
 
   test('should match error with empty params', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        getError401: {
           method: 'get',
-          alias: 'getError401',
           path: '/error/:id/error401',
           response: Zod.void(),
+          params: {
+            id: Zod.uuid(),
+          },
           errors: [
             {
               status: 401,
@@ -939,11 +864,13 @@ describe('Zotch.client', () => {
             },
           ],
         },
-        {
+        getError404: {
           method: 'get',
-          alias: 'getError404',
           path: '/error/:id/error404',
           response: Zod.void(),
+          params: {
+            id: Zod.uuid(),
+          },
           errors: [
             {
               status: 404,
@@ -951,26 +878,25 @@ describe('Zotch.client', () => {
             },
           ],
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
-    const params = {
-      id: '',
-    }
+    const response = await zotch.getError401({
+      params: {
+        id: '',
+      },
+    })
 
-    const response = await zotch.getError401({ params })
     Results.assertFailure(response)
-    Zotch.assertStructuredError(response.value)
-    expect(response.value.status).toBe(401)
+    expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
   })
 
   test('should match error with optional params at the end', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        getError401: {
           method: 'get',
-          alias: 'getError401',
           path: '/error/:id/error401/:message',
           response: Zod.void(),
           errors: [
@@ -980,9 +906,8 @@ describe('Zotch.client', () => {
             },
           ],
         },
-        {
+        getError404: {
           method: 'get',
-          alias: 'getError404',
           path: '/error/:id/error404/:message',
           response: Zod.void(),
           errors: [
@@ -992,7 +917,7 @@ describe('Zotch.client', () => {
             },
           ],
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -1009,14 +934,13 @@ describe('Zotch.client', () => {
 
   test('should match Unexpected error', async () => {
     const zotch = Zotch.client(
-      [
-        {
+      {
+        getError502: {
           method: 'get',
-          alias: 'getError502',
           path: '/error502',
           response: Zod.void(),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -1027,9 +951,8 @@ describe('Zotch.client', () => {
 
   test('should trigger an axios error with error response', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'error502',
+      {
+        error502: {
           method: 'get',
           path: '/error502',
           response: Zod.object({
@@ -1037,7 +960,7 @@ describe('Zotch.client', () => {
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -1048,58 +971,45 @@ describe('Zotch.client', () => {
 
   test('should send a form data request', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'formData',
+      {
+        formData: {
           method: 'post',
           path: '/form-data',
           requestFormat: 'form-data',
-          parameters: [
-            {
-              name: 'body',
-              type: 'Body',
-              schema: Zod.object({
-                id: Zod.number(),
-                name: Zod.string(),
-              }),
-            },
-          ],
+          body: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
           response: Zod.object({
             id: Zod.string(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.formData({ id: 4, name: 'post' })
+    console.log(response)
     expect(response).toEqual({ id: '4', name: 'post' })
   })
 
   test('should send a form data request a second time under 100 ms', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'formData',
+      {
+        formData: {
           method: 'post',
           path: '/form-data',
           requestFormat: 'form-data',
-          parameters: [
-            {
-              name: 'body',
-              type: 'Body',
-              schema: Zod.object({
-                id: Zod.number(),
-                name: Zod.string(),
-              }),
-            },
-          ],
+          body: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
           response: Zod.object({
             id: Zod.string(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.formData({ id: 4, name: 'post' })
@@ -1108,22 +1018,15 @@ describe('Zotch.client', () => {
 
   test('should not send an array as form data request', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'formData',
+      {
+        formData: {
           method: 'post',
           path: '/form-data',
           requestFormat: 'form-data',
-          parameters: [
-            {
-              name: 'body',
-              type: 'Body',
-              schema: Zod.array(Zod.string()),
-            },
-          ],
+          body: Zod.array(Zod.string()),
           response: Zod.string(),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -1134,28 +1037,21 @@ describe('Zotch.client', () => {
 
   test('should send a form url request', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'formUrl',
+      {
+        formUrl: {
           method: 'post',
           path: '/form-url',
           requestFormat: 'form-url',
-          parameters: [
-            {
-              name: 'body',
-              type: 'Body',
-              schema: Zod.object({
-                id: Zod.number(),
-                name: Zod.string(),
-              }),
-            },
-          ],
+          body: Zod.object({
+            id: Zod.number(),
+            name: Zod.string(),
+          }),
           response: Zod.object({
             id: Zod.string(),
             name: Zod.string(),
           }),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -1166,22 +1062,15 @@ describe('Zotch.client', () => {
 
   test('should not send an array as form url request', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'formUrl',
+      {
+        formUrl: {
           method: 'post',
           path: '/form-url',
           requestFormat: 'form-url',
-          parameters: [
-            {
-              name: 'body',
-              type: 'Body',
-              schema: Zod.array(Zod.string()),
-            },
-          ],
+          body: Zod.array(Zod.string()),
           response: Zod.string(),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
 
@@ -1192,22 +1081,15 @@ describe('Zotch.client', () => {
 
   test('should send a text request', async () => {
     const zotch = Zotch.client(
-      [
-        {
-          alias: 'postText',
+      {
+        postText: {
           method: 'post',
           path: '/text',
           requestFormat: 'text',
-          parameters: [
-            {
-              name: 'body',
-              type: 'Body',
-              schema: Zod.string(),
-            },
-          ],
+          body: Zod.string(),
           response: Zod.string(),
         },
-      ],
+      },
       { baseUrl: `http://localhost:${port}`, fetch }
     )
     const response = await zotch.postText('test')

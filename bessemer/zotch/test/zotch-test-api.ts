@@ -8,7 +8,7 @@ import {
   UpdateRequestSchema,
   WithNoteSchema,
   WithOptionalNoteSchema,
-} from './zod-test-schema'
+} from './schema/test-request'
 import { Zotch } from '@bessemer/zotch'
 
 export const ContextHeadersSchema = {
