@@ -1,29 +1,27 @@
 import {
   Aliases,
+  ZodiosEndpointError,
   ZotchAliases,
   ZotchEndpointDefinitionEntry,
   ZotchEndpointDefinitions,
   ZotchErrorTypeByAlias,
   ZotchPayloadTypeByAlias,
-  ZotchPlugin,
   ZotchRequest,
   ZotchRequestDto,
   ZotchRequestOptions,
   ZotchResponseByAlias,
   ZotchResponseContext,
 } from '@bessemer/zotch/zotch-types'
-import { findEndpointErrors, replacePathParams } from './zotch-utils'
-import { PluginId, ZotchPlugins } from '@bessemer/zotch/plugins/zotch-plugins'
+import { PluginId, ZotchPlugin, ZotchPlugins } from '@bessemer/zotch/plugins/zotch-plugins'
 import { headerPlugin } from '@bessemer/zotch/plugins/header-plugin'
 import { formDataPlugin } from '@bessemer/zotch/plugins/form-data-plugin'
 import { Arrays, Assertions, Entries, Errors, Json, Objects, Results, Strings, Types, Urls, ZodUtil } from '@bessemer/cornerstone'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
-import { FetchFunction, FetchPayload } from '@bessemer/cornerstone/net/fetch'
+import { FetchFunction, FetchPayload, FetchResponse } from '@bessemer/cornerstone/net/fetch'
 import { ZotchErrorType, ZotchRequestInvalidError, ZotchResponseInvalidError } from '@bessemer/zotch/zotch-error'
 import Zod from 'zod'
 import { formUrlPlugin } from '@bessemer/zotch/plugins/form-url-plugin'
-import { validateEndpointDefinitions } from '@bessemer/zotch/zotch-api'
 import { createDraft, finishDraft } from 'immer'
 
 const ZotchClientPropsSchema = Zod.object({
@@ -435,4 +433,37 @@ const validateErrorResponse = async <Api extends ZotchEndpointDefinitions, Alias
   }
 
   return Results.success({ status: response.status, value: parseResult } as ZotchErrorTypeByAlias<Api, Alias>)
+}
+
+export const validateEndpointDefinitions = <T extends ZotchEndpointDefinitions>(api: T) => {
+  // check if no duplicate path
+  const paths = new Set<string>()
+  for (const endpoint of Object.values(api)) {
+    const fullpath = `${endpoint.method} ${endpoint.path}`
+
+    if (paths.has(fullpath)) {
+      throw new Error(`Zotch: Duplicate path '${fullpath}'`)
+    }
+
+    paths.add(fullpath)
+  }
+}
+
+const paramsRegExp = /:([a-zA-Z_][a-zA-Z0-9_]*)/g
+
+const replacePathParams = (url: string, params: Record<string, unknown> | undefined) => {
+  let result = url
+  if (Objects.isPresent(params)) {
+    result = result.replace(paramsRegExp, (match, key) => (key in params ? `${params[key]}` : match))
+  }
+  return result
+}
+
+const findEndpointErrors = (endpoint: ZotchEndpointDefinitionEntry, err: FetchResponse): ZodiosEndpointError[] => {
+  const matchingErrors = endpoint.errors?.filter((error) => error.status === err.status)
+  if (matchingErrors && matchingErrors.length > 0) {
+    return matchingErrors
+  }
+
+  return []
 }

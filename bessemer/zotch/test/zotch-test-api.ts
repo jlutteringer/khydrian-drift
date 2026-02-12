@@ -33,7 +33,7 @@ export const NotFoundErrorSchema = {
   schema: Zod.unknown(),
 } as const
 
-export const RequestApi = Zotch.makeApi({
+export const RequestApi = Zotch.api({
   fetchRequestById: {
     method: 'get',
     path: 'requests/:requestId',

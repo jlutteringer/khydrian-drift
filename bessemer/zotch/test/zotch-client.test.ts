@@ -1,6 +1,6 @@
 import { RequestApi } from './zotch-test-api'
 import { Instants, Results, Uuid4 } from '@bessemer/cornerstone'
-import { CreateRequestDto, CreateRequestInput, RequestDto, RequestStatus } from './zod-test-schema'
+import { CreateRequestDto, CreateRequestInput, RequestDto, RequestStatus } from './schema/test-request'
 import { expectTypeOf } from 'expect-type'
 import { Result } from '@bessemer/cornerstone/result'
 import { Zotch } from '@bessemer/zotch'

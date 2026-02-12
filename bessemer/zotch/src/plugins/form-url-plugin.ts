@@ -1,6 +1,6 @@
-import type { ZotchPlugin } from '@bessemer/zotch/zotch-types'
 import { Objects, Results } from '@bessemer/cornerstone'
 import { ZotchErrorType } from '@bessemer/zotch/zotch-error'
+import { ZotchPlugin } from '@bessemer/zotch/plugins/zotch-plugins'
 
 const plugin: ZotchPlugin = {
   name: 'form-url',

@@ -1,4 +1,6 @@
-import Zod, { ZodType } from 'zod'
+import { ZodType } from 'zod'
+
+type NarrowTry<A, B, C> = A extends B ? A : C
 
 type NarrowRaw<T> =
   | (T extends Function ? T : never)
@@ -8,7 +10,7 @@ type NarrowRaw<T> =
       [K in keyof T]: K extends 'description' ? T[K] : NarrowNotZod<T[K]>
     }
 
-type NarrowNotZod<T> = T extends ZodType ? T : NarrowRaw<T>
+type NarrowNotZod<T> = NarrowTry<T, ZodType, NarrowRaw<T>>
 
 /**
  * Utility to infer the embedded primitive type of any type
@@ -16,7 +18,7 @@ type NarrowNotZod<T> = T extends ZodType ? T : NarrowRaw<T>
  * @param T - type to infer the embedded type of
  * @see - thank you tannerlinsley for this idea
  */
-export type Narrow<T> = T extends [] ? T : NarrowNotZod<T>
+export type Narrow<T> = NarrowTry<T, [], NarrowNotZod<T>>
 
 /**
  * get all required properties from an object type
@@ -114,53 +116,6 @@ export type OptionalChildProps<T> = {
  * @param T - object type
  */
 export type SetPropsOptionalIfChildrenAreOptional<T> = Merge<Pick<Partial<T>, OptionalChildProps<T>>, Pick<T, RequiredChildProps<T>>>
-
-/**
- * transform an array type into a readonly array type
- * @param T - array type
- */
-interface ReadonlyArrayDeep<T> extends ReadonlyArray<ReadonlyDeep<T>> {}
-
-/**
- * transform an object type into a readonly object type
- * @param T - object type
- */
-export type DeepReadonlyObject<T> = {
-  readonly [P in keyof T]: ReadonlyDeep<T[P]>
-}
-
-/**
- * transform a type into a readonly type
- * @param T - type
- */
-export type ReadonlyDeep<T> = T extends (infer R)[] ? ReadonlyArrayDeep<R> : T extends Function ? T : T extends object ? DeepReadonlyObject<T> : T
-
-export type MaybeReadonly<T> = T | ReadonlyDeep<T>
-
-/**
- * Map a type an api description parameter to a zod infer type
- * @param T - array of api description parameters
- * @details -  this is using tail recursion type optimization from typescript 4.5
- */
-export type MapSchemaParameters<T, Frontend extends boolean = true, Acc = {}> = T extends [infer Head, ...infer Tail]
-  ? Head extends {
-      name: infer Name
-      schema: infer Schema
-    }
-    ? Name extends string
-      ? MapSchemaParameters<
-          Tail,
-          Frontend,
-          Merge<
-            {
-              [Key in Name]: Schema extends ZodType<any, any> ? (Frontend extends true ? Zod.input<Schema> : Zod.output<Schema>) : never
-            },
-            Acc
-          >
-        >
-      : Acc
-    : Acc
-  : Acc
 
 /**
  * Split string into a tuple, using a simple string literal separator

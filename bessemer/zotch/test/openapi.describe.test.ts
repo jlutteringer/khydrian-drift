@@ -7,33 +7,18 @@ const user = Zod.object({
   email: Zod.email(),
 })
 
-const api = Zotch.makeApi([
-  {
+const api = Zotch.api({
+  getUsers: {
     method: 'get',
     path: '/users?filter=:filter#fragment',
-    alias: 'getUsers',
     description: 'Get all users',
-    parameters: [
-      {
-        name: 'limit',
-        type: 'Query',
-        schema: Zod.number().positive().default(10).describe('Limit the number of users'),
-      },
-      {
-        name: 'offset',
-        type: 'Query',
-
-        schema: Zod.number().positive().optional().describe('Offset the number of users'),
-      },
-      {
-        name: 'filter',
-        type: 'Query',
-
-        schema: Zod.array(Zod.string())
-          .refine((a) => new Set(a).size === a.length, 'No duplicates allowed')
-          .describe('Filter users by name'),
-      },
-    ],
+    queries: {
+      limit: Zod.number().positive().default(10).describe('Limit the number of users'),
+      offset: Zod.number().positive().optional().describe('Offset the number of users'),
+      filter: Zod.array(Zod.string())
+        .refine((a) => new Set(a).size === a.length, 'No duplicates allowed')
+        .describe('Filter users by name'),
+    },
     response: Zod.array(user),
     errors: [
       {
@@ -50,51 +35,33 @@ const api = Zotch.makeApi([
       },
     ],
   },
-  {
+  getUser: {
     method: 'get',
     path: '/users/:id',
-    alias: 'getUser',
     description: 'Get a user by id',
     response: user,
   },
-  {
+  createUser: {
     method: 'post',
     path: '/users',
-    alias: 'createUser',
     description: 'Create a user',
-    parameters: [
-      {
-        name: 'user',
-        type: 'Body',
-        schema: user.omit({ id: true }).describe('The user to create'),
-      },
-    ],
+    body: user.omit({ id: true }).describe('The user to create'),
     response: user,
   },
-  {
+  updateUser: {
     method: 'put',
     path: '/users/:id',
-    alias: 'updateUser',
     description: 'Update a user',
-    parameters: [
-      {
-        name: 'user',
-        type: 'Body',
-
-        schema: user.describe('The user to update'),
-      },
-    ],
+    body: user.describe('The user to update'),
     response: user,
   },
-  {
+  deleteUser: {
     method: 'delete',
     path: '/users/:id',
-    alias: 'deleteUser',
-
     response: Zod.unknown().describe('Delete a user'),
     status: 204,
   },
-])
+})
 
 describe('toOpenApi', () => {
   it('should generate bearer scheme', () => {

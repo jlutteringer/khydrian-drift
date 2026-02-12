@@ -220,3 +220,19 @@ export const getAttribute = <T extends RecordAttribute<unknown, string>>(record:
 export const coerceNil = <T>(value: T | null | undefined): T | undefined => {
   return isNil(value) ? undefined : value
 }
+
+export const omit = <T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> => {
+  const ret = { ...obj }
+  for (const key of keys) {
+    delete ret[key]
+  }
+  return ret
+}
+
+export const pick = <T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> => {
+  const ret = {} as Pick<T, K>
+  for (const key of keys) {
+    ret[key] = obj[key]
+  }
+  return ret
+}

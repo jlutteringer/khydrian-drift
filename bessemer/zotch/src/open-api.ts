@@ -3,21 +3,6 @@ import Zod from 'zod'
 import { ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
 import { Objects, ZodUtil } from '@bessemer/cornerstone'
 
-const pathRegExp = /:([a-zA-Z_][a-zA-Z0-9_]*)/g
-
-const pathWithoutParams = (path: string) => {
-  return path.indexOf('?') > -1 ? path.split('?')[0]! : path.indexOf('#') > -1 ? path.split('#')[0]! : path
-}
-
-const tagsFromPath = (path: string): string[] | undefined => {
-  const resources = pathWithoutParams(path)
-    .replace(pathRegExp, '')
-    .split('/')
-    .filter((part) => part !== '')
-
-  return resources ? [resources[0]!] : undefined
-}
-
 export const bearerAuthScheme = (description?: string): OpenAPIV3.SecuritySchemeObject => {
   return {
     type: 'http',
@@ -58,12 +43,6 @@ const makeJsonSchema = (schema: Zod.ZodType): OpenAPIV3.SchemaObject => {
   return Zod.toJSONSchema(schema, { unrepresentable: 'any' }) as OpenAPIV3.SchemaObject
 }
 
-/**
- * Create an openapi V3 document from a list of api definitions
- * Use this function if you want to define multiple apis protected by different security schemes
- * @param options  - the parameters to create the document
- * @returns - the openapi V3 document
- */
 const makeOpenApi = (options: {
   apis: Array<
     | {
@@ -79,7 +58,7 @@ const makeOpenApi = (options: {
   servers?: OpenAPIV3.ServerObject[]
   securitySchemes?: Record<string, OpenAPIV3.SecuritySchemeObject>
   tagsFromPathFn?: (path: string) => string[]
-}) => {
+}): OpenAPIV3.Document => {
   // JOHN
   // const { tagsFromPathFn = tagsFromPath } = options
   const openApi: OpenAPIV3.Document = {
@@ -289,4 +268,19 @@ export class OpenApiBuilder {
  */
 export const openApiBuilder = (info: OpenAPIV3.InfoObject) => {
   return new OpenApiBuilder(info)
+}
+
+const pathRegExp = /:([a-zA-Z_][a-zA-Z0-9_]*)/g
+
+const pathWithoutParams = (path: string) => {
+  return path.indexOf('?') > -1 ? path.split('?')[0]! : path.indexOf('#') > -1 ? path.split('#')[0]! : path
+}
+
+const tagsFromPath = (path: string): string[] | undefined => {
+  const resources = pathWithoutParams(path)
+    .replace(pathRegExp, '')
+    .split('/')
+    .filter((part) => part !== '')
+
+  return resources ? [resources[0]!] : undefined
 }

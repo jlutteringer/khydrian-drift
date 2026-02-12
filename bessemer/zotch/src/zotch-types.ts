@@ -3,7 +3,6 @@ import type {
   NeverIfEmpty,
   PathParamNames,
   PickDefined,
-  ReadonlyDeep,
   RequiredKeys,
   SetPropsOptionalIfChildrenAreOptional,
   Simplify,
@@ -11,11 +10,11 @@ import type {
 } from '@bessemer/zotch/zotch-type-utils'
 import z from 'zod'
 import Zod, { ZodType } from 'zod'
-import { AsyncResult, Result } from '@bessemer/cornerstone/result'
-import { ZotchError, ZotchRequestInvalidError } from '@bessemer/zotch/zotch-error'
+import { Result } from '@bessemer/cornerstone/result'
+import { ZotchError } from '@bessemer/zotch/zotch-error'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
 import { FetchPayload, FetchRequest, FetchResponse } from '@bessemer/cornerstone/net/fetch'
-import { PartialOnUndefinedDeep, SetRequired } from 'type-fest'
+import { PartialOnUndefinedDeep, ReadonlyDeep, SetRequired } from 'type-fest'
 import { Dictionary } from '@bessemer/cornerstone/types'
 
 export type ZotchRequest<D = any> = Omit<FetchRequest, 'body' | 'method' | 'headers'> & {
@@ -67,125 +66,6 @@ export type ZotchResponseByAlias<
   Alias extends string,
   ExpandType extends boolean = true
 > = ExpandType extends true ? Result<ZotchPayloadTypeByAlias<Api, Alias>, ZotchError<ZotchErrorTypeByAlias<Api, Alias>>> : never
-
-// export type ZodiosDefaultErrorForEndpoint<Endpoint extends ZodiosEndpointDefinition> = FilterArrayByValue<
-//   Endpoint['errors'],
-//   {
-//     status: 'default'
-//   }
-// >[number]['schema']
-//
-// type ZodiosDefaultErrorByPath<
-//   Api extends Array<ZodiosEndpointDefinition>,
-//   M extends HttpMethod,
-//   Path extends ZodiosPathsByMethod<Api, M>
-// > = FilterArrayByValue<
-//   ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors'],
-//   {
-//     status: 'default'
-//   }
-// >[number]['schema']
-//
-// type ZodiosDefaultErrorByAlias<Api extends Array<ZodiosEndpointDefinition>, Alias extends string> = FilterArrayByValue<
-//   ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['errors'],
-//   {
-//     status: 'default'
-//   }
-// >[number]['schema']
-//
-// type IfNever<E, A> = IfEquals<E, never, A, E>
-
-// export type ZodiosErrorForEndpoint<
-//   Endpoint extends ZodiosEndpointDefinition,
-//   Status extends number,
-//   Frontend extends boolean = true
-// > = Frontend extends true
-//   ? z.output<
-//       IfNever<
-//         FilterArrayByValue<
-//           Endpoint['errors'],
-//           {
-//             status: Status
-//           }
-//         >[number]['schema'],
-//         ZodiosDefaultErrorForEndpoint<Endpoint>
-//       >
-//     >
-//   : z.input<
-//       IfNever<
-//         FilterArrayByValue<
-//           Endpoint['errors'],
-//           {
-//             status: Status
-//           }
-//         >[number]['schema'],
-//         ZodiosDefaultErrorForEndpoint<Endpoint>
-//       >
-//     >
-
-// export type ZodiosErrorResponseByPath<
-//   Api extends Array<ZodiosEndpointDefinition>,
-//   M extends HttpMethod,
-//   Path extends ZodiosPathsByMethod<Api, M>,
-//   Status extends number,
-//   Frontend extends boolean = true
-// > = Frontend extends true
-//   ? z.output<
-//       IfNever<
-//         FilterArrayByValue<
-//           ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors'],
-//           {
-//             status: Status
-//           }
-//         >[number]['schema'],
-//         ZodiosDefaultErrorByPath<Api, M, Path>
-//       >
-//     >
-//   : z.input<
-//       IfNever<
-//         FilterArrayByValue<
-//           ZodiosEndpointDefinitionByPath<Api, M, Path>[number]['errors'],
-//           {
-//             status: Status
-//           }
-//         >[number]['schema'],
-//         ZodiosDefaultErrorByPath<Api, M, Path>
-//       >
-//     >
-
-// JOHN
-// export type AxiosError<T = unknown> = {
-//   response: T
-// }
-//
-// export type ZodiosErrorByAlias<
-//   Api extends Array<ZodiosEndpointDefinition>,
-//   Alias extends string,
-//   Status extends number,
-//   Frontend extends boolean = true
-// > = Frontend extends true
-//   ? z.output<
-//       IfNever<
-//         FilterArrayByValue<
-//           ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['errors'],
-//           {
-//             status: Status
-//           }
-//         >[number]['schema'],
-//         ZodiosDefaultErrorByAlias<Api, Alias>
-//       >
-//     >
-//   : z.input<
-//       IfNever<
-//         FilterArrayByValue<
-//           ZodiosEndpointDefinitionByAlias<Api, Alias>[number]['errors'],
-//           {
-//             status: Status
-//           }
-//         >[number]['schema'],
-//         ZodiosDefaultErrorByAlias<Api, Alias>
-//       >
-//     >
 
 export type BodySchemaForEndpoint<Endpoint extends ZotchEndpointDefinitionEntry> = NonNullable<Endpoint['body']>
 
@@ -289,26 +169,6 @@ export type ZotchAliases<Api extends ZotchEndpointDefinitions> = {
     : ZodiosAliasRequest<ZodiosRequestOptionsByAlias<Api, Alias>, ZotchResponseByAlias<Api, Alias>>
 }
 
-export type ZodiosEndpointParameter<T = unknown> = {
-  /**
-   * name of the parameter
-   */
-  name: string
-  /**
-   * optional description of the parameter
-   */
-  description?: string
-  /**
-   * type of the parameter: Query, Body, Header, Path
-   */
-  type: 'Path'
-  /**
-   * zod schema of the parameter
-   * you can use zod `transform` to transform the value of the parameter before sending it to the server
-   */
-  schema: z.ZodType<T>
-}
-
 export type ZodiosEndpointError<T = unknown> = {
   /**
    * status code of the error
@@ -325,8 +185,6 @@ export type ZodiosEndpointError<T = unknown> = {
    */
   schema: z.ZodType<T>
 }
-
-export type ZodiosEndpointErrors = Array<ZodiosEndpointError>
 
 /**
  * Zodios enpoint definition that should be used to create a new instance of Zodios
@@ -373,12 +231,6 @@ export type ZotchRequestContext = {
 export type ZotchResponseContext = ZotchRequestContext & {
   fetch: FetchPayload
   response: FetchResponse
-}
-
-export type ZotchPlugin = {
-  name?: string
-  processRequest?: (context: ZotchRequestContext) => AsyncResult<ZotchRequestDto, ZotchRequestInvalidError>
-  processResponse?: <T>(response: Result<T, ZotchError>, context: ZotchResponseContext) => AsyncResult<T, ZotchError>
 }
 
 export type ZotchRequestOptionsByAlias<Api extends ZotchEndpointDefinitions, Alias extends string> = Merge<
