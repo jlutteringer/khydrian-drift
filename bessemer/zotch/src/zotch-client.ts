@@ -360,8 +360,7 @@ const validateRequest = async (
   }
 
   if (Objects.isPresent(body)) {
-    const parsed = await ZodUtil.parseAsync(body.schema, request.body)
-
+    const parsed = await ZodUtil.parseAsync(body, request.body)
     if (Results.isFailure(parsed)) {
       return Results.failure({
         type: ZotchErrorType.RequestInvalid,
@@ -376,61 +375,55 @@ const validateRequest = async (
     request.body = parsed
   }
 
-  for (const parameter of params ?? []) {
-    const { name, schema } = parameter
+  for (const [name, schema] of Object.entries(params ?? {})) {
     const value = request.params?.[name]
-
-    const parsed = await schema.safeParseAsync(value)
-    if (!parsed.success) {
+    const parsed = await ZodUtil.parseAsync(schema, value)
+    if (Results.isFailure(parsed)) {
       return Results.failure({
         type: ZotchErrorType.RequestInvalid,
         message: `Zotch: Invalid path parameter '${name}'`,
         endpoint,
         request,
         value,
-        cause: parsed.error,
+        cause: parsed.value,
       })
     }
 
-    request.params[name] = parsed.data
+    request.params[name] = parsed
   }
 
-  for (const query of queries ?? []) {
-    const { name, schema } = query
+  for (const [name, schema] of Object.entries(queries ?? {})) {
     const value = request.queries?.[name]
-
-    const parsed = await schema.safeParseAsync(value)
-    if (!parsed.success) {
+    const parsed = await ZodUtil.parseAsync(schema, value)
+    if (Results.isFailure(parsed)) {
       return Results.failure({
         type: ZotchErrorType.RequestInvalid,
         message: `Zotch: Invalid query '${name}'`,
         endpoint,
         request,
         value,
-        cause: parsed.error,
+        cause: parsed.value,
       })
     }
 
-    request.queries[name] = parsed.data
+    request.queries[name] = parsed
   }
 
-  for (const header of headers ?? []) {
-    const { name, schema } = header
+  for (const [name, schema] of Object.entries(headers ?? {})) {
     const value = request.headers?.[name]
-
-    const parsed = await schema.safeParseAsync(value)
-    if (!parsed.success) {
+    const parsed = await ZodUtil.parseAsync(schema, value)
+    if (Results.isFailure(parsed)) {
       return Results.failure({
         type: ZotchErrorType.RequestInvalid,
         message: `Zotch: Invalid header '${name}'`,
         endpoint,
         request,
         value,
-        cause: parsed.error,
+        cause: parsed.value,
       })
     }
 
-    request.headers[name] = parsed.data as string
+    request.headers[name] = parsed as any as string
   }
 
   return Results.success(finishDraft(request))

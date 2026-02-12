@@ -6,7 +6,7 @@ import { ZotchError, ZotchErrorType, ZotchStructuredError, ZotchStructuredErrorP
 import { ZotchClient, ZotchClientClass, ZotchClientProps } from '@bessemer/zotch/zotch-client'
 
 export const client = <Api extends ZotchEndpointDefinitions>(api: Narrow<Api>, props?: ZotchClientProps): ZotchClient<Api> => {
-  return new ZotchClientClass(api, props) as any as ZotchClient<Api>
+  return new ZotchClientClass(api as ZotchEndpointDefinitions, props) as any as ZotchClient<Api>
 }
 
 /**
@@ -46,7 +46,7 @@ export const validateEndpointDefinitions = <T extends ZotchEndpointDefinitions>(
  * @returns the api definitions
  */
 export const makeApi = <Api extends ZotchEndpointDefinitions>(api: Narrow<Api>): Api => {
-  validateEndpointDefinitions(api)
+  validateEndpointDefinitions(api as ZotchEndpointDefinitions)
   return api as Api
 }
 
@@ -63,9 +63,9 @@ export const makeParameters = <ParameterDescriptions extends ZodiosEndpointParam
   return params as ParameterDescriptions
 }
 
-export const parametersBuilder = () => {
-  return new ParametersBuilder<[]>([])
-}
+// export const parametersBuilder = () => {
+//   return new ParametersBuilder<[]>([])
+// }
 
 type ObjectToQueryParameters<
   Type extends 'Query' | 'Path' | 'Header',
@@ -80,62 +80,62 @@ type ObjectToQueryParameters<
   }
 }
 
-class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
-  constructor(private params: T) {}
-
-  addParameter<Name extends string, Type extends 'Path' | 'Query', Schema extends Zod.ZodType<any, any>>(name: Name, type: Type, schema: Schema) {
-    return new ParametersBuilder<[...T, { name: Name; type: Type; description?: string; schema: Schema }]>([
-      ...this.params,
-      { name, type, description: schema.description, schema },
-    ])
-  }
-
-  addParameters<Type extends 'Query' | 'Path' | 'Header', Schemas extends Record<string, Zod.ZodType<any, any>>>(type: Type, schemas: Schemas) {
-    const parameters = Object.keys(schemas).map((key) => ({
-      name: key,
-      type,
-      description: schemas[key]!.description,
-      schema: schemas[key],
-    }))
-
-    return new ParametersBuilder<[...T, ...Extract<ObjectToQueryParameters<Type, Schemas>, ZodiosEndpointParameter[]>]>([
-      ...this.params,
-      ...parameters,
-    ] as any)
-  }
-
-  addBody<Schema extends Zod.ZodType<any, any>>(schema: Schema) {
-    return this.addParameter('body', 'Body', schema)
-  }
-
-  addQuery<Name extends string, Schema extends Zod.ZodType<any, any>>(name: Name, schema: Schema) {
-    return this.addParameter(name, 'Query', schema)
-  }
-
-  addPath<Name extends string, Schema extends Zod.ZodType<any, any>>(name: Name, schema: Schema) {
-    return this.addParameter(name, 'Path', schema)
-  }
-
-  addHeader<Name extends string, Schema extends Zod.ZodType<any, any>>(name: Name, schema: Schema) {
-    return this.addParameter(name, 'Header', schema)
-  }
-
-  addQueries<Schemas extends Record<string, Zod.ZodType<any, any>>>(schemas: Schemas) {
-    return this.addParameters('Query', schemas)
-  }
-
-  addPaths<Schemas extends Record<string, Zod.ZodType<any, any>>>(schemas: Schemas) {
-    return this.addParameters('Path', schemas)
-  }
-
-  addHeaders<Schemas extends Record<string, Zod.ZodType<any, any>>>(schemas: Schemas) {
-    return this.addParameters('Header', schemas)
-  }
-
-  build() {
-    return this.params
-  }
-}
+// class ParametersBuilder<T extends ZodiosEndpointParameter[]> {
+//   constructor(private params: T) {}
+//
+//   addParameter<Name extends string, Type extends 'Path' | 'Query', Schema extends Zod.ZodType<any, any>>(name: Name, type: Type, schema: Schema) {
+//     return new ParametersBuilder<[...T, { name: Name; type: Type; description?: string; schema: Schema }]>([
+//       ...this.params,
+//       { name, type, description: schema.description, schema },
+//     ])
+//   }
+//
+//   addParameters<Type extends 'Query' | 'Path' | 'Header', Schemas extends Record<string, Zod.ZodType<any, any>>>(type: Type, schemas: Schemas) {
+//     const parameters = Object.keys(schemas).map((key) => ({
+//       name: key,
+//       type,
+//       description: schemas[key]!.description,
+//       schema: schemas[key],
+//     }))
+//
+//     return new ParametersBuilder<[...T, ...Extract<ObjectToQueryParameters<Type, Schemas>, ZodiosEndpointParameter[]>]>([
+//       ...this.params,
+//       ...parameters,
+//     ] as any)
+//   }
+//
+//   addBody<Schema extends Zod.ZodType<any, any>>(schema: Schema) {
+//     return this.addParameter('body', 'Body', schema)
+//   }
+//
+//   addQuery<Name extends string, Schema extends Zod.ZodType<any, any>>(name: Name, schema: Schema) {
+//     return this.addParameter(name, 'Query', schema)
+//   }
+//
+//   addPath<Name extends string, Schema extends Zod.ZodType<any, any>>(name: Name, schema: Schema) {
+//     return this.addParameter(name, 'Path', schema)
+//   }
+//
+//   addHeader<Name extends string, Schema extends Zod.ZodType<any, any>>(name: Name, schema: Schema) {
+//     return this.addParameter(name, 'Header', schema)
+//   }
+//
+//   addQueries<Schemas extends Record<string, Zod.ZodType<any, any>>>(schemas: Schemas) {
+//     return this.addParameters('Query', schemas)
+//   }
+//
+//   addPaths<Schemas extends Record<string, Zod.ZodType<any, any>>>(schemas: Schemas) {
+//     return this.addParameters('Path', schemas)
+//   }
+//
+//   addHeaders<Schemas extends Record<string, Zod.ZodType<any, any>>>(schemas: Schemas) {
+//     return this.addParameters('Header', schemas)
+//   }
+//
+//   build() {
+//     return this.params
+//   }
+// }
 
 export const makeErrors = <ErrorDescription extends ZodiosEndpointError[]>(errors: Narrow<ErrorDescription>): ErrorDescription => {
   return errors as ErrorDescription
@@ -207,15 +207,7 @@ export const makeCrudApi = <T extends string, S extends Zod.ZodObject<Zod.ZodRaw
       // @ts-expect-error
       alias: `create${capitalizedResource}`,
       description: `Create a ${resource}`,
-      parameters: [
-        {
-          name: 'body',
-          type: 'Body',
-          description: 'The object to create',
-          // @ts-expect-error
-          schema: schema.partial() as Zod.Schema<Partial<Schema>>,
-        },
-      ],
+      body: schema.partial(),
       // @ts-expect-error
       response: schema,
     },
@@ -226,15 +218,8 @@ export const makeCrudApi = <T extends string, S extends Zod.ZodObject<Zod.ZodRaw
       // @ts-expect-error
       alias: `update${capitalizedResource}`,
       description: `Update a ${resource}`,
-      parameters: [
-        {
-          name: 'body',
-          type: 'Body',
-          description: 'The object to update',
-          // @ts-expect-error
-          schema: schema,
-        },
-      ],
+      // @ts-expect-error
+      body: schema,
       // @ts-expect-error
       response: schema,
     },
@@ -245,15 +230,7 @@ export const makeCrudApi = <T extends string, S extends Zod.ZodObject<Zod.ZodRaw
       // @ts-expect-error
       alias: `patch${capitalizedResource}`,
       description: `Patch a ${resource}`,
-      parameters: [
-        {
-          name: 'body',
-          type: 'Body',
-          description: 'The object to patch',
-          // @ts-expect-error
-          schema: schema.partial() as Zod.Schema<Partial<Schema>>,
-        },
-      ],
+      body: schema.partial(),
       // @ts-expect-error
       response: schema,
     },

@@ -46,10 +46,6 @@ export const findEndpoint = (api: ZotchEndpointDefinitions, method: string, path
   return api.find((e) => e.method === method && e.path === path)
 }
 
-export const findEndpointByAlias = (api: ZotchEndpointDefinitions, alias: string) => {
-  return api.find((e) => e.alias === alias)
-}
-
 export const findEndpointErrors = (endpoint: ZotchEndpointDefinition, err: FetchResponse): ZodiosEndpointError[] => {
   const matchingErrors = endpoint.errors?.filter((error) => error.status === err.status)
   if (matchingErrors && matchingErrors.length > 0) {
@@ -57,22 +53,4 @@ export const findEndpointErrors = (endpoint: ZotchEndpointDefinition, err: Fetch
   }
 
   return []
-}
-
-export const findEndpointErrorsByPath = (api: ZotchEndpointDefinitions, method: string, path: string, err: FetchResponse): ZodiosEndpointError[] => {
-  const endpoint = findEndpoint(api, method, path)
-  if (Objects.isNil(endpoint)) {
-    return []
-  }
-
-  return findEndpointErrors(endpoint, err)
-}
-
-export const findEndpointErrorsByAlias = (api: ZotchEndpointDefinitions, alias: string, err: FetchResponse): ZodiosEndpointError[] => {
-  const endpoint = findEndpointByAlias(api, alias)
-  if (Objects.isNil(endpoint)) {
-    return []
-  }
-
-  return findEndpointErrors(endpoint, err)
 }

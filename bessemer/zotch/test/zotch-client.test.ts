@@ -224,6 +224,31 @@ describe('ZotchClient.fetchRequestById', () => {
   })
 })
 
+describe('ZotchClient.fetchPublicRequestById', () => {
+  test('headers not required', async () => {
+    const requestId = Uuid4.generate()
+
+    const zotch = Zotch.client(RequestApi, {
+      baseUrl: 'https://localhost:8080/api/v1',
+      fetch: async (url, request) => {
+        expect(url).toContain(`https://localhost:8080/api/v1/requests/${requestId}/public`)
+        expect(request?.method).toBe('GET')
+
+        return new Response(JSON.stringify(emptyRequest), { status: 200 })
+      },
+    })
+
+    {
+      const response = await zotch.fetchPublicRequestById({
+        params: { requestId },
+      })
+
+      Results.assertSuccess(response)
+      expect(response).toEqual(emptyRequest)
+    }
+  })
+})
+
 describe('ZotchClient.createQuote', () => {
   test('test success', async () => {
     const apiKey = Uuid4.generate()

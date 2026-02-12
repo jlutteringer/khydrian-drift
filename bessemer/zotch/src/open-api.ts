@@ -1,9 +1,9 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import Zod from 'zod'
-import { ZotchEndpointDefinition, ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
+import { ZotchEndpointDefinitions } from '@bessemer/zotch/zotch-types'
+import { Objects, ZodUtil } from '@bessemer/cornerstone'
 
 const pathRegExp = /:([a-zA-Z_][a-zA-Z0-9_]*)/g
-const expludedParamTypes = ['Body', 'Path']
 
 const pathWithoutParams = (path: string) => {
   return path.indexOf('?') > -1 ? path.split('?')[0]! : path.indexOf('#') > -1 ? path.split('#')[0]! : path
@@ -54,10 +54,6 @@ export const oauth2Scheme = (flows: OpenAPIV3.OAuth2SecurityScheme['flows'], des
   }
 }
 
-const findPathParam = (endpoint: ZotchEndpointDefinition, paramName: string) => {
-  return endpoint.parameters?.find((param) => param.type === 'Path' && param.name === paramName)
-}
-
 const makeJsonSchema = (schema: Zod.ZodType): OpenAPIV3.SchemaObject => {
   return Zod.toJSONSchema(schema, { unrepresentable: 'any' }) as OpenAPIV3.SchemaObject
 }
@@ -89,12 +85,13 @@ const makeOpenApi = (options: {
   const openApi: OpenAPIV3.Document = {
     openapi: '3.0.0',
     info: options.info ?? {
-      title: "Zodios : add an info object to 'toOpenApi' options",
+      title: "Zotch : add an info object to 'toOpenApi' options",
       version: '1.0.0',
     },
     servers: options.servers,
     paths: {},
   }
+
   if (options.securitySchemes) {
     openApi.components = {
       securitySchemes: options.securitySchemes,
@@ -128,13 +125,13 @@ const makeOpenApi = (options: {
       if (pathParams) {
         for (let pathParam of pathParams) {
           const paramName = pathParam.slice(1)
-          const param = findPathParam(endpoint, paramName)
-          if (param) {
+          const schema = endpoint.params?.[paramName]
+          if (Objects.isPresent(schema)) {
             parameters.push({
               name: paramName,
-              description: param.description ?? param.schema.description,
+              description: schema.description,
               in: 'path',
-              schema: makeJsonSchema(param.schema),
+              schema: makeJsonSchema(schema),
               required: true,
             })
           } else {
@@ -149,30 +146,31 @@ const makeOpenApi = (options: {
           }
         }
       }
-      // extract all other parameters from endpoint
-      for (let param of endpoint.parameters ?? []) {
-        if (!expludedParamTypes.includes(param.type)) {
-          const required = !param.schema.safeParse(undefined).success
-          const schemaDesc = param.schema.description
-          // JOHN
-          // const schema =
-          //   required || !isZodType(param.schema, Zod.ZodOptional) ? param.schema : (param.schema as Zod.ZodOptional<Zod.ZodType>).unwrap()
 
-          parameters.push({
-            // JOHN
-            // name: param.type === 'Query' && isZodType(param.schema, Zod.ZodArray) ? `${param.name}[]` : param.name,
-            name: param.name,
-            in: param.type.toLowerCase(),
-            // JOHN
-            // schema: makeJsonSchema(schema),
-            schema: makeJsonSchema(param.schema),
-            description: param.description ?? schemaDesc,
-            required,
-          } as OpenAPIV3.ParameterObject)
-        }
+      for (const [name, schema] of Object.entries(endpoint.queries ?? {})) {
+        parameters.push({
+          // JOHN
+          // name: param.type === 'Query' && isZodType(param.schema, Zod.ZodArray) ? `${param.name}[]` : param.name,
+          name: name,
+          in: 'query',
+          schema: makeJsonSchema(schema),
+          description: schema.description,
+          required: ZodUtil.isRequired(schema),
+        })
       }
+
+      for (const [name, schema] of Object.entries(endpoint.headers ?? {})) {
+        parameters.push({
+          name,
+          in: 'header',
+          schema: makeJsonSchema(schema),
+          description: schema.description,
+          required: ZodUtil.isRequired(schema),
+        })
+      }
+
       const path = endpoint.path.replace(pathRegExp, '{$1}')
-      const body = endpoint.parameters?.find((param) => param.type === 'Body')
+      const body = endpoint.body
 
       const operation: OpenAPIV3.OperationObject = {
         operationId: endpoint.alias,
@@ -182,10 +180,10 @@ const makeOpenApi = (options: {
         security: 'scheme' in api && api.scheme ? [{ [api.scheme]: api.securityRequirement ?? ([] as string[]) }] : undefined,
         requestBody: body
           ? {
-              description: body.description ?? body.schema.description,
+              description: body.description,
               content: {
                 'application/json': {
-                  schema: makeJsonSchema(body.schema),
+                  schema: makeJsonSchema(body),
                 },
               },
             }

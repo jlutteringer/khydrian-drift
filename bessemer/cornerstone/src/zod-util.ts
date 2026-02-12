@@ -159,3 +159,7 @@ export enum ZodTypeKind {
 export const isType = (schema: ZodType, type: ZodTypeKind): boolean => {
   return unwrap(schema).type === type
 }
+
+export const isRequired = (schema: ZodType): boolean => {
+  return !schema.safeParse(undefined).success
+}

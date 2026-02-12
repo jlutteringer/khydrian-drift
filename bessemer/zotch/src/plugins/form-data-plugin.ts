@@ -1,11 +1,10 @@
-import { ZotchPlugin, ZotchRequest } from '@bessemer/zotch/zotch-types'
+import { ZotchPlugin } from '@bessemer/zotch/zotch-types'
 import { Objects, Results } from '@bessemer/cornerstone'
-import { ZotchErrorType, ZotchRequestInvalidError } from '@bessemer/zotch/zotch-error'
-import { AsyncResult } from '@bessemer/cornerstone/result'
+import { ZotchErrorType } from '@bessemer/zotch/zotch-error'
 
 const plugin: ZotchPlugin = {
   name: 'form-data',
-  processRequest: async (context): AsyncResult<ZotchRequest, ZotchRequestInvalidError> => {
+  processRequest: async (context) => {
     if (!Objects.isObject(context.request.body)) {
       return Results.failure({
         type: ZotchErrorType.RequestInvalid,
