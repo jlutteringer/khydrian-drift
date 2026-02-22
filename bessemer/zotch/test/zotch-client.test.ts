@@ -38,7 +38,7 @@ describe('ZotchClient.fetchRequestById', () => {
 
         expect(request?.method).toBe('GET')
 
-        return new Response(JSON.stringify(emptyRequest), { status: 200 })
+        return Response.json(emptyRequest, { status: 200 })
       },
     })
 
@@ -46,7 +46,7 @@ describe('ZotchClient.fetchRequestById', () => {
       const response = await zotch.fetchRequestById({
         params: { requestId },
         queries: { cache: true },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        headers: { 'X-Api-Key': apiKey },
       })
 
       Results.assertSuccess(response)
@@ -79,7 +79,7 @@ describe('ZotchClient.fetchRequestById', () => {
       const response = await zotch.fetchRequestById({
         params: { requestId },
         queries: { cache: true },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        headers: { 'X-Api-Key': apiKey },
       })
 
       Results.assertFailure(response)
@@ -102,7 +102,7 @@ describe('ZotchClient.fetchRequestById', () => {
       const response = await zotch.fetchRequestById({
         params: { requestId },
         queries: { cache: true },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        headers: { 'X-Api-Key': apiKey },
       })
 
       Results.assertFailure(response)
@@ -125,7 +125,7 @@ describe('ZotchClient.fetchRequestById', () => {
       const response = await zotch.fetchRequestById({
         params: { requestId: null! },
         queries: { cache: true },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        headers: { 'X-Api-Key': apiKey },
       })
 
       Results.assertFailure(response)
@@ -136,7 +136,7 @@ describe('ZotchClient.fetchRequestById', () => {
     {
       const response = await zotch.confirmQuote({
         params: { requestId: null! },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' } as any,
+        headers: { 'X-Api-Key': apiKey } as any,
       })
 
       Results.assertFailure(response)
@@ -152,14 +152,14 @@ describe('ZotchClient.fetchRequestById', () => {
     {
       const zotch = Zotch.client(RequestApi, {
         fetch: async () => {
-          return new Response('This is an invalid response body!', { status: 200 })
+          return Response.json('This is an invalid response body!', { status: 200 })
         },
       })
 
       const response = await zotch.fetchRequestById({
         params: { requestId },
         queries: { cache: true },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        headers: { 'X-Api-Key': apiKey },
       })
 
       Results.assertFailure(response)
@@ -169,14 +169,14 @@ describe('ZotchClient.fetchRequestById', () => {
     {
       const zotch = Zotch.client(RequestApi, {
         fetch: async () => {
-          return new Response(JSON.stringify({ key: 'invalid', value: 'response' }), { status: 200 })
+          return Response.json({ key: 'invalid', value: 'response' }, { status: 200 })
         },
       })
 
       const response = await zotch.fetchRequestById({
         params: { requestId },
         queries: { cache: true },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        headers: { 'X-Api-Key': apiKey },
       })
 
       Results.assertFailure(response)
@@ -191,14 +191,14 @@ describe('ZotchClient.fetchRequestById', () => {
     {
       const zotch = Zotch.client(RequestApi, {
         fetch: async () => {
-          return new Response('hello', { status: 401 })
+          return Response.json('hello', { status: 401 })
         },
       })
 
       const response = await zotch.fetchRequestById({
         params: { requestId },
         queries: { cache: true },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        headers: { 'X-Api-Key': apiKey },
       })
 
       Results.assertFailure(response)
@@ -215,7 +215,7 @@ describe('ZotchClient.fetchRequestById', () => {
       const response = await zotch.fetchRequestById({
         params: { requestId },
         queries: { cache: true },
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        headers: { 'X-Api-Key': apiKey },
       })
 
       Results.assertFailure(response)
@@ -234,7 +234,7 @@ describe('ZotchClient.fetchPublicRequestById', () => {
         expect(url).toContain(`https://localhost:8080/api/v1/requests/${requestId}/public`)
         expect(request?.method).toBe('GET')
 
-        return new Response(JSON.stringify(emptyRequest), { status: 200 })
+        return Response.json(emptyRequest, { status: 200 })
       },
     })
 
@@ -272,7 +272,7 @@ describe('ZotchClient.createQuote', () => {
         expect(body.public).toBe(false)
         expect(body.isProposal).toBe(false)
 
-        return new Response(JSON.stringify(emptyRequest), { status: 200 })
+        return Response.json(emptyRequest, { status: 200 })
       },
     })
 

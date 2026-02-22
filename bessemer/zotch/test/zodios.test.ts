@@ -333,8 +333,6 @@ describe('Zotch.client', () => {
     )
 
     const fetchResponse = await fetch(`http://localhost:${port}/7`)
-    console.log('fetchResponse', await fetchResponse.json())
-
     const response = await zotch.fetchById({ params: { id: 7 } })
     Results.assertSuccess(response)
     expect(response).toEqual({ id: 7, name: 'test' })
@@ -357,21 +355,6 @@ describe('Zotch.client', () => {
     const response = await zotch.fetchById({ params: { id: 7 } })
     expect(response).toEqual({ id: 7, name: 'test' })
   })
-
-  // test('should work with api builder', async () => {
-  //   const api = Zotch.apiBuilder({
-  //     method: 'get',
-  //     path: '/:id',
-  //     alias: 'getById',
-  //     response: Zod.object({
-  //       id: Zod.number(),
-  //       name: Zod.string(),
-  //     }),
-  //   }).build()
-  //   const zotch = Zotch.client(api, { baseUrl: `http://localhost:${port}`, fetch })
-  //   const response = await zotch.getById({ params: { id: 7 } })
-  //   expect(response).toEqual({ id: 7, name: 'test' })
-  // })
 
   test('should make a get request with forgotten params and get back a zod error', async () => {
     const zotch = Zotch.client(
@@ -438,7 +421,6 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}` }
     )
     const response = await zotch.updateById({ body: { name: 'post' } })
-    console.log(response)
     expect(response).toEqual({ id: 3, name: 'post' })
   })
 
@@ -464,7 +446,6 @@ describe('Zotch.client', () => {
     )
 
     const response = await zotch.updateById({ body: { firstname: 'post', lastname: 'test' } })
-    console.log(response)
     expect(response).toEqual({ id: 3, name: 'post test' })
   })
 
@@ -573,7 +554,6 @@ describe('Zotch.client', () => {
       { baseUrl: `http://localhost:${port}` }
     )
     const response = await zotch.patchThat({ body: { id: 4, name: 'patch' } })
-    console.log('Patch response:', response)
     expect(response).toEqual({ id: 4, name: 'patch' })
   })
 
@@ -792,7 +772,6 @@ describe('Zotch.client', () => {
 
     const response = await zotch.getError502()
     Results.assertFailure(response)
-    console.log(response)
     Zotch.assertStructuredError(response.value)
     expect(response.value.status).toBe(502)
   })

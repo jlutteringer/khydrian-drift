@@ -13,7 +13,6 @@ import { Zotch } from '@bessemer/zotch'
 
 export const ContextHeadersSchema = {
   ['X-Api-Key']: Zod.string().optional(),
-  ['Content-Type']: Zod.literal('application/json').default('application/json'),
 } as const
 
 export const UserProfileContextHeadersSchema = {

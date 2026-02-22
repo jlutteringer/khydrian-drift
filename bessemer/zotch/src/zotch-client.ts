@@ -22,6 +22,7 @@ import { ZotchErrorType, ZotchRequestInvalidError, ZotchResponseInvalidError } f
 import Zod from 'zod'
 import { formUrlPlugin } from '@bessemer/zotch/plugins/form-url-plugin'
 import { createDraft, finishDraft } from 'immer'
+import { MimeLiteral } from '@bessemer/cornerstone/mime-type'
 
 const ZotchClientPropsSchema = Zod.object({
   baseUrl: Zod.string().default(''),
@@ -356,27 +357,36 @@ const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, Ali
   context: ZotchResponseContext
 ): AsyncResult<ZotchPayloadTypeByAlias<Api, Alias>, ZotchResponseInvalidError> => {
   const { endpoint, response } = context
+
+  const contentTypeHeader = response.headers.get('Content-Type')
+  const contentType = (contentTypeHeader?.split(';')[0]?.trim() as MimeLiteral) ?? MimeTypes.Json
+
   const body = await response.text()
-  const jsonResult = Json.parse(body)
-  if (Results.isFailure(jsonResult)) {
-    return Results.failure({
-      type: ZotchErrorType.ResponseInvalid,
-      ...context,
-      message: `Zotch: Unable to parse JSON from endpoint '${endpoint.method} ${endpoint.path}'\nstatus: ${response.status} ${response.statusText}\ncause:\n${jsonResult.value.message}\nreceived:\n${body}`,
-      value: body,
-      cause: jsonResult.value,
-    })
+  let bodyContent: unknown = body
+  if (contentType === MimeTypes.Json) {
+    const jsonResult = Json.parse(body)
+    if (Results.isFailure(jsonResult)) {
+      return Results.failure({
+        type: ZotchErrorType.ResponseInvalid,
+        ...context,
+        message: `Zotch: Unable to parse JSON from endpoint '${endpoint.method} ${endpoint.path}'\nstatus: ${response.status} ${response.statusText}\ncause:\n${jsonResult.value.message}\nreceived:\n${body}`,
+        value: body,
+        cause: jsonResult.value,
+      })
+    }
+
+    bodyContent = jsonResult
   }
 
-  const parseResult = await ZodUtil.parseAsync(endpoint.response, jsonResult)
+  const parseResult = await ZodUtil.parseAsync(endpoint.response, bodyContent)
   if (Results.isFailure(parseResult)) {
     return Results.failure({
       type: ZotchErrorType.ResponseInvalid,
       ...context,
       message: `Zotch: Invalid response from endpoint '${endpoint.method} ${endpoint.path}'\nstatus: ${response.status} ${
         response.statusText
-      }\ncause:\n${parseResult.value.message}\nreceived:\n${JSON.stringify(jsonResult, null, 2)}`,
-      value: jsonResult,
+      }\ncause:\n${parseResult.value.message}\nreceived:\n${JSON.stringify(bodyContent, null, 2)}`,
+      value: bodyContent,
       cause: parseResult.value,
     })
   }
