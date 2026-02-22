@@ -7,15 +7,14 @@ import {
   ZotchErrorTypeByAlias,
   ZotchPayloadTypeByAlias,
   ZotchRequest,
+  ZotchRequestByAlias,
   ZotchRequestDto,
-  ZotchRequestOptions,
   ZotchResponseByAlias,
   ZotchResponseContext,
 } from '@bessemer/zotch/zotch-types'
 import { PluginId, ZotchPlugin, ZotchPlugins } from '@bessemer/zotch/plugins/zotch-plugins'
-import { headerPlugin } from '@bessemer/zotch/plugins/header-plugin'
 import { formDataPlugin } from '@bessemer/zotch/plugins/form-data-plugin'
-import { Arrays, Assertions, Entries, Errors, Json, Objects, Results, Strings, Types, Urls, ZodUtil } from '@bessemer/cornerstone'
+import { Arrays, Assertions, Entries, Errors, Json, MimeTypes, Objects, Results, Strings, Types, Urls, ZodUtil } from '@bessemer/cornerstone'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
 import { FetchFunction, FetchPayload, FetchResponse } from '@bessemer/cornerstone/net/fetch'
@@ -26,7 +25,7 @@ import { createDraft, finishDraft } from 'immer'
 
 const ZotchClientPropsSchema = Zod.object({
   baseUrl: Zod.string().default(''),
-  fetch: Zod.custom<FetchFunction>().default(fetch),
+  fetch: Zod.custom<FetchFunction>().default(() => fetch),
   sendDefaults: Zod.boolean().optional(),
 })
 
@@ -53,18 +52,14 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
 
     Object.values(this.api).forEach((endpoint) => {
       const plugins = new ZotchPlugins(endpoint.method, endpoint.path)
-      switch (endpoint.requestFormat) {
-        case 'binary':
-          plugins.use(headerPlugin('Content-Type', 'application/octet-stream'))
-          break
-        case 'form-data':
+
+      const requestFormat = endpoint.requestFormat ?? MimeTypes.Json
+      switch (requestFormat) {
+        case MimeTypes.FormData:
           plugins.use(formDataPlugin())
           break
-        case 'form-url':
+        case MimeTypes.FormUrl:
           plugins.use(formUrlPlugin())
-          break
-        case 'text':
-          plugins.use(headerPlugin('Content-Type', 'text/plain'))
           break
       }
 
@@ -113,28 +108,18 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
 
   private injectAliasEndpoints() {
     Object.entries(this.api).forEach(([alias, endpoint]) => {
-      if (['post', 'put', 'patch', 'delete'].includes(endpoint.method)) {
-        ;(this as any)[alias] = (body: any, config: any) =>
-          this.request(alias, {
-            ...config,
-            method: endpoint.method,
-            url: endpoint.path,
-            body,
-          })
-      } else {
-        ;(this as any)[alias] = (config: any) =>
-          this.request(alias, {
-            ...config,
-            method: endpoint.method,
-            url: endpoint.path,
-          })
-      }
+      ;(this as any)[alias] = (request: any) =>
+        this.request(alias, {
+          ...request,
+          method: endpoint.method,
+          url: endpoint.path,
+        })
     })
   }
 
   private async request<Alias extends string>(
     alias: Alias,
-    initialRequest: ZotchRequestOptions<Api, Alias>
+    initialRequest: ZotchRequestByAlias<Api, Alias>
   ): Promise<ZotchResponseByAlias<Api, Alias>> {
     Types.cast<ZotchRequest>(initialRequest)
 
@@ -206,12 +191,21 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
       Urls.navigate(baseUrlResult, Urls.update(targetUrlResult, { location: { parameters: queryParams }, relative: true }))
     )
 
+    let headers = request.headers
+
+    const requestFormat = endpoint.requestFormat ?? MimeTypes.Json
+    if (requestFormat !== MimeTypes.FormData) {
+      headers = { 'Content-Type': requestFormat, ...headers }
+    }
+
+    const serializedBody = requestFormat === MimeTypes.Json ? JSON.stringify(request.body) : request.body
+
     const fetchPayload: FetchPayload = {
       ...fetchOptions,
       url: urlLiteral,
       method: method.toUpperCase(),
-      body: JSON.stringify(request.body),
-      headers: { 'Content-Type': 'application/json', ...request.headers },
+      body: serializedBody,
+      headers,
     }
 
     try {

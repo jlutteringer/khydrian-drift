@@ -79,8 +79,8 @@ const makeOpenApi = (options: {
   for (let api of options.apis) {
     for (let [alias, endpoint] of Object.entries(api.definitions)) {
       const responses: OpenAPIV3.ResponsesObject = {
-        [`${endpoint.status ?? 200}`]: {
-          description: endpoint.responseDescription ?? endpoint.response.description ?? 'Success',
+        [`200`]: {
+          description: endpoint.response.description ?? 'Success',
           content: {
             'application/json': {
               schema: makeJsonSchema(endpoint.response),
@@ -91,7 +91,7 @@ const makeOpenApi = (options: {
 
       for (let error of endpoint.errors ?? []) {
         responses[`${error.status}`] = {
-          description: error.description ?? error.schema.description ?? 'Error',
+          description: error.schema.description ?? 'Error',
           content: {
             'application/json': {
               schema: makeJsonSchema(error.schema),

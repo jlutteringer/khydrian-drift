@@ -214,7 +214,6 @@ describe('TimeZoneOffsets.fromTimeZone', () => {
   test('should return correct offset for America/New_York in summer (EDT)', () => {
     const instant = Instants.from('2024-07-15T12:00:00Z') // Summer time
     const offset = TimeZoneOffsets.fromTimeZone(TimeZoneIds.from('America/New_York'), instant)
-    console.log('TimeZoneOffsets.fromDuration(Durations.fromHours(-4))', TimeZoneOffsets.fromDuration(Durations.fromHours(-4)))
     expect(offset).toBe(TimeZoneOffsets.fromDuration({ hours: -4 })) // EDT is UTC-4
   })
 

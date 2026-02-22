@@ -14,11 +14,11 @@ const plugin: ZotchPlugin = {
       })
     }
 
-    const data = getFormDataStream(context.request.body as any)
+    const body = getFormDataStream(context.request.body as any)
 
     return Results.success({
       ...context.request,
-      data,
+      body,
     })
   },
 }

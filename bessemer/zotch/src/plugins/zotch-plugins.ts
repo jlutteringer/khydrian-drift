@@ -69,4 +69,6 @@ export class ZotchPlugins {
 
     return pluginResponse
   }
+
+  length = () => this.plugins.length
 }

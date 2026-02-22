@@ -16,7 +16,7 @@ const plugin: ZotchPlugin = {
 
     return Results.success({
       ...context.request,
-      data: new URLSearchParams(context.request.body as any).toString(),
+      body: new URLSearchParams(context.request.body as any).toString(),
       headers: {
         ...context.request.headers,
         'Content-Type': 'application/x-www-form-urlencoded',

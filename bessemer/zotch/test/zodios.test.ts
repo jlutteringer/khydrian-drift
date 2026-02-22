@@ -3,10 +3,9 @@ import { AddressInfo } from 'net'
 import Zod from 'zod'
 import multer from 'multer'
 import { Zotch } from '@bessemer/zotch'
-import { Results } from '@bessemer/cornerstone'
+import { MimeTypes, Results } from '@bessemer/cornerstone'
 import { ZotchErrorType } from '@bessemer/zotch/zotch-error'
 
-globalThis.FormData = require('form-data')
 const multipart = multer({ storage: multer.memoryStorage() })
 
 describe('Zotch.client', () => {
@@ -61,7 +60,7 @@ describe('Zotch.client', () => {
     app.delete('/:id', (req, res) => {
       res.status(200).json({ id: Number(req.params.id) })
     })
-    app.post('/form-data', multipart.none() as any, (req, res) => {
+    app.post('/form-data', multipart.none(), (req, res) => {
       res.status(200).json(req.body)
     })
     app.post('/form-url', express.urlencoded({ extended: false }), (req, res) => {
@@ -134,21 +133,15 @@ describe('Zotch.client', () => {
     expect(zotch).toBeDefined()
   })
 
-  // test('should register have validation plugin automatically installed', () => {
-  //   const zotch = new Zotch(`http://localhost:${port}`, [])
-  //   // @ts-ignore
-  //   expect(zotch.endpointPlugins.get('any-any').count()).toBe(1)
-  // })
+  test('should register a plugin', () => {
+    const zotch = Zotch.client({})
+    zotch.use({
+      processRequest: async (it) => Results.success(it.request),
+    })
+    // @ts-ignore
+    expect(zotch.endpointPlugins.get('any-any')!.length()).toBe(1)
+  })
 
-  // test('should register a plugin', () => {
-  //   const zotch = new Zotch(`http://localhost:${port}`, [])
-  //   zotch.use({
-  //     request: async (_, config) => config,
-  //   })
-  //   // @ts-ignore
-  //   expect(zotch.endpointPlugins.get('any-any').count()).toBe(2)
-  // })
-  //
   // test('should unregister a plugin', () => {
   //   const zotch = new Zotch(`http://localhost:${port}`, [])
   //   const id = zotch.use({
@@ -336,8 +329,11 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
+
+    const fetchResponse = await fetch(`http://localhost:${port}/7`)
+    console.log('fetchResponse', await fetchResponse.json())
 
     const response = await zotch.fetchById({ params: { id: 7 } })
     Results.assertSuccess(response)
@@ -356,7 +352,7 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
     const response = await zotch.fetchById({ params: { id: 7 } })
     expect(response).toEqual({ id: 7, name: 'test' })
@@ -389,7 +385,7 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
     // @ts-ignore
@@ -410,7 +406,7 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
     const response = await zotch.fetchById({
       params: { id: 7, address: 'address' },
@@ -439,9 +435,9 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
-    const response = await zotch.updateById({ name: 'post' })
+    const response = await zotch.updateById({ body: { name: 'post' } })
     console.log(response)
     expect(response).toEqual({ id: 3, name: 'post' })
   })
@@ -464,10 +460,10 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
-    const response = await zotch.updateById({ firstname: 'post', lastname: 'test' })
+    const response = await zotch.updateById({ body: { firstname: 'post', lastname: 'test' } })
     console.log(response)
     expect(response).toEqual({ id: 3, name: 'post test' })
   })
@@ -489,79 +485,72 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
     const response = await zotch.updateById({
-      email: 'post',
+      body: {
+        email: 'post',
+      },
     })
     Results.assertFailure(response)
     expect(response.value.type).toEqual(ZotchErrorType.RequestInvalid)
   })
 
   test('should make an http mutation alias request with body param', async () => {
-    const zotch = Zotch.client(
-      {
-        create: {
-          method: 'post',
-          path: '/',
-          body: Zod.object({
-            name: Zod.string(),
-          }),
-          response: Zod.object({
-            id: Zod.number(),
-            name: Zod.string(),
-          }),
-        },
+    const zotch = Zotch.client({
+      create: {
+        method: 'post',
+        path: '/',
+        body: Zod.object({
+          name: Zod.string(),
+        }),
+        response: Zod.object({
+          id: Zod.number(),
+          name: Zod.string(),
+        }),
       },
-      { fetch }
-    )
+    })
 
-    const response = await zotch.create({ name: 'post' }, { baseUrl: `http://localhost:${port}` })
+    const response = await zotch.create({ body: { name: 'post' }, baseUrl: `http://localhost:${port}` })
     expect(response).toEqual({ id: 3, name: 'post' })
   })
 
   test('should make an http put', async () => {
-    const zotch = Zotch.client(
-      {
-        putThat: {
-          method: 'put',
-          path: '/',
-          body: Zod.object({
-            id: Zod.number(),
-            name: Zod.string(),
-          }),
-          response: Zod.object({
-            id: Zod.number(),
-            name: Zod.string(),
-          }),
-        },
+    const zotch = Zotch.client({
+      putThat: {
+        method: 'put',
+        path: '/',
+        body: Zod.object({
+          id: Zod.number(),
+          name: Zod.string(),
+        }),
+        response: Zod.object({
+          id: Zod.number(),
+          name: Zod.string(),
+        }),
       },
-      { fetch }
-    )
-    const response = await zotch.putThat({ id: 5, name: 'put' }, { baseUrl: `http://localhost:${port}` })
+    })
+    const response = await zotch.putThat({ body: { id: 5, name: 'put' }, baseUrl: `http://localhost:${port}` })
     expect(response).toEqual({ id: 5, name: 'put' })
   })
 
   test('should make an http put alias', async () => {
-    const zotch = Zotch.client(
-      {
-        update: {
-          method: 'put',
-          path: '/',
-          body: Zod.object({
-            id: Zod.number(),
-            name: Zod.string(),
-          }),
-          response: Zod.object({
-            id: Zod.number(),
-            name: Zod.string(),
-          }),
-        },
+    const zotch = Zotch.client({
+      update: {
+        method: 'put',
+        path: '/',
+        body: Zod.object({
+          id: Zod.number(),
+          name: Zod.string(),
+        }),
+        response: Zod.object({
+          id: Zod.number(),
+          name: Zod.string(),
+        }),
       },
-      { fetch }
-    )
-    const response = await zotch.update({ id: 5, name: 'put' }, { baseUrl: `http://localhost:${port}` })
+    })
+    const response = await zotch.update({ body: { id: 5, name: 'put' }, baseUrl: `http://localhost:${port}` })
     expect(response).toEqual({ id: 5, name: 'put' })
   })
 
@@ -581,9 +570,9 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
-    const response = await zotch.patchThat({ id: 4, name: 'patch' })
+    const response = await zotch.patchThat({ body: { id: 4, name: 'patch' } })
     console.log('Patch response:', response)
     expect(response).toEqual({ id: 4, name: 'patch' })
   })
@@ -604,9 +593,9 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
-    const response = await zotch.update({ id: 4, name: 'patch' })
+    const response = await zotch.update({ body: { id: 4, name: 'patch' } })
     expect(response).toEqual({ id: 4, name: 'patch' })
   })
 
@@ -621,9 +610,9 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
-    const response = await zotch.deleteById(undefined, {
+    const response = await zotch.deleteById({
       params: { id: 6 },
     })
     expect(response).toEqual({ id: 6 })
@@ -640,9 +629,9 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
-    const response = await zotch.remove(undefined, {
+    const response = await zotch.remove({
       params: { id: 6 },
     })
     expect(response).toEqual({ id: 6 })
@@ -660,7 +649,7 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
     const response = await zotch.getUuid({
       params: { uuid: 'e9e09a1d-3967-4518-bc89-75a901aee128' },
@@ -682,7 +671,7 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
     const response = await zotch.getUuid({
       params: { uuid: 'e9e09a1-3967-4518-bc89-75a901aee128' },
@@ -798,7 +787,7 @@ describe('Zotch.client', () => {
           ],
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
     const response = await zotch.getError502()
@@ -834,7 +823,7 @@ describe('Zotch.client', () => {
           ],
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
     const params = {
@@ -879,7 +868,7 @@ describe('Zotch.client', () => {
           ],
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
     const response = await zotch.getError401({
@@ -918,7 +907,7 @@ describe('Zotch.client', () => {
           ],
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
     const params = {
@@ -941,7 +930,7 @@ describe('Zotch.client', () => {
           response: Zod.void(),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
     const response = await zotch.getError502()
@@ -961,7 +950,7 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
     const response = await zotch.error502()
@@ -975,7 +964,7 @@ describe('Zotch.client', () => {
         formData: {
           method: 'post',
           path: '/form-data',
-          requestFormat: 'form-data',
+          requestFormat: MimeTypes.FormData,
           body: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
@@ -986,10 +975,9 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
-    const response = await zotch.formData({ id: 4, name: 'post' })
-    console.log(response)
+    const response = await zotch.formData({ body: { id: 4, name: 'post' } })
     expect(response).toEqual({ id: '4', name: 'post' })
   })
 
@@ -999,7 +987,7 @@ describe('Zotch.client', () => {
         formData: {
           method: 'post',
           path: '/form-data',
-          requestFormat: 'form-data',
+          requestFormat: MimeTypes.FormData,
           body: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
@@ -1010,9 +998,9 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
-    const response = await zotch.formData({ id: 4, name: 'post' })
+    const response = await zotch.formData({ body: { id: 4, name: 'post' } })
     expect(response).toEqual({ id: '4', name: 'post' })
   }, 100)
 
@@ -1022,15 +1010,15 @@ describe('Zotch.client', () => {
         formData: {
           method: 'post',
           path: '/form-data',
-          requestFormat: 'form-data',
+          requestFormat: MimeTypes.FormData,
           body: Zod.array(Zod.string()),
           response: Zod.string(),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
-    const response = await zotch.formData(['test', 'test2'])
+    const response = await zotch.formData({ body: ['test', 'test2'] })
     Results.assertFailure(response)
     expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
   })
@@ -1041,7 +1029,7 @@ describe('Zotch.client', () => {
         formUrl: {
           method: 'post',
           path: '/form-url',
-          requestFormat: 'form-url',
+          requestFormat: MimeTypes.FormUrl,
           body: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
@@ -1052,10 +1040,10 @@ describe('Zotch.client', () => {
           }),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
-    const response = await zotch.formUrl({ id: 4, name: 'post' })
+    const response = await zotch.formUrl({ body: { id: 4, name: 'post' } })
     Results.assertSuccess(response)
     expect(response).toEqual({ id: '4', name: 'post' })
   })
@@ -1066,15 +1054,15 @@ describe('Zotch.client', () => {
         formUrl: {
           method: 'post',
           path: '/form-url',
-          requestFormat: 'form-url',
+          requestFormat: MimeTypes.FormUrl,
           body: Zod.array(Zod.string()),
           response: Zod.string(),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
 
-    const response = await zotch.formUrl(['test', 'test2'])
+    const response = await zotch.formUrl({ body: ['test', 'test2'] })
     Results.assertFailure(response)
     expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
   })
@@ -1085,14 +1073,14 @@ describe('Zotch.client', () => {
         postText: {
           method: 'post',
           path: '/text',
-          requestFormat: 'text',
+          requestFormat: MimeTypes.Text,
           body: Zod.string(),
           response: Zod.string(),
         },
       },
-      { baseUrl: `http://localhost:${port}`, fetch }
+      { baseUrl: `http://localhost:${port}` }
     )
-    const response = await zotch.postText('test')
+    const response = await zotch.postText({ body: 'test' })
     expect(response).toEqual('test')
   })
 })

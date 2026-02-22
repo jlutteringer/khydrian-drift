@@ -134,7 +134,7 @@ describe('ZotchClient.fetchRequestById', () => {
     }
 
     {
-      const response = await zotch.confirmQuote(undefined, {
+      const response = await zotch.confirmQuote({
         params: { requestId: null! },
         headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' } as any,
       })
@@ -283,8 +283,9 @@ describe('ZotchClient.createQuote', () => {
         organizerId: emptyRequest.organizerId,
       }
 
-      const response = await zotch.createQuote(request, {
+      const response = await zotch.createQuote({
         headers: { 'X-Api-Key': apiKey, 'X-Account-Id': emptyRequest.organizerId },
+        body: request,
       })
 
       Results.assertSuccess(response)

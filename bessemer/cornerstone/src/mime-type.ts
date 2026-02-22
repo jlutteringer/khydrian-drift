@@ -52,10 +52,10 @@ export const AudioTypes = [Mp3, OggAudio, Wav]
 export const Pdf = 'application/pdf' as MimeLiteral
 export const Json = 'application/json' as MimeLiteral
 export const Csv = 'text/csv' as MimeLiteral
-export const PlainText = 'text/plain' as MimeLiteral
+export const Text = 'text/plain' as MimeLiteral
 export const Html = 'text/html' as MimeLiteral
 export const Xml = 'application/xml' as MimeLiteral
-export const DocumentTypes = [Pdf, Json, Csv, PlainText, Html, Xml]
+export const DocumentTypes = [Pdf, Json, Csv, Text, Html, Xml]
 
 // Fonts
 export const Woff = 'font/woff' as MimeLiteral
@@ -73,5 +73,6 @@ export const CompressionTypes = [Zip, Gzip, Tar, Brotli]
 
 // Misc
 export const FormData = 'multipart/form-data' as MimeLiteral
+export const FormUrl = 'application/x-www-form-urlencoded' as MimeLiteral
 export const Javascript = 'application/javascript' as MimeLiteral
-export const OctetStream = 'application/octet-stream' as MimeLiteral
+export const Binary = 'application/octet-stream' as MimeLiteral
