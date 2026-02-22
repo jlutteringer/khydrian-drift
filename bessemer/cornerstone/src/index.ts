@@ -71,6 +71,7 @@ import * as HexCodes from '@bessemer/cornerstone/hex-code'
 import * as IpV6Addresses from '@bessemer/cornerstone/net/ipv6-address'
 import * as IpV4Addresses from '@bessemer/cornerstone/net/ipv4-address'
 import * as HttpMethods from '@bessemer/cornerstone/net/http-method'
+import * as ContentTypes from '@bessemer/cornerstone/net/content-type'
 
 export {
   Types,
@@ -145,4 +146,5 @@ export {
   IpV6Addresses,
   IpV4Addresses,
   HttpMethods,
+  ContentTypes,
 }

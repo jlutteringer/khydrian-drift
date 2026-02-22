@@ -14,7 +14,21 @@ import {
 } from '@bessemer/zotch/zotch-types'
 import { PluginId, ZotchPlugin, ZotchPlugins } from '@bessemer/zotch/plugins/zotch-plugins'
 import { formDataPlugin } from '@bessemer/zotch/plugins/form-data-plugin'
-import { Arrays, Assertions, Entries, Errors, Json, MimeTypes, Objects, Results, Strings, Types, Urls, ZodUtil } from '@bessemer/cornerstone'
+import {
+  Arrays,
+  Assertions,
+  ContentTypes,
+  Entries,
+  Errors,
+  Json,
+  MimeTypes,
+  Objects,
+  Results,
+  Strings,
+  Types,
+  Urls,
+  ZodUtil,
+} from '@bessemer/cornerstone'
 import { AsyncResult } from '@bessemer/cornerstone/result'
 import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
 import { FetchFunction, FetchPayload, FetchResponse } from '@bessemer/cornerstone/net/fetch'
@@ -22,7 +36,6 @@ import { ZotchErrorType, ZotchRequestInvalidError, ZotchResponseInvalidError } f
 import Zod from 'zod'
 import { formUrlPlugin } from '@bessemer/zotch/plugins/form-url-plugin'
 import { createDraft, finishDraft } from 'immer'
-import { MimeLiteral } from '@bessemer/cornerstone/mime-type'
 
 const ZotchClientPropsSchema = Zod.object({
   baseUrl: Zod.string().default(''),
@@ -54,8 +67,8 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
     Object.values(this.api).forEach((endpoint) => {
       const plugins = new ZotchPlugins(endpoint.method, endpoint.path)
 
-      const requestFormat = endpoint.requestFormat ?? MimeTypes.Json
-      switch (requestFormat) {
+      const contentType = ContentTypes.from(endpoint.contentType ?? MimeTypes.Json)
+      switch (contentType.mimeType) {
         case MimeTypes.FormData:
           plugins.use(formDataPlugin())
           break
@@ -194,12 +207,12 @@ export class ZotchClientClass<Api extends ZotchEndpointDefinitions> {
 
     let headers = request.headers
 
-    const requestFormat = endpoint.requestFormat ?? MimeTypes.Json
-    if (requestFormat !== MimeTypes.FormData) {
-      headers = { 'Content-Type': requestFormat, ...headers }
+    const contentType = ContentTypes.from(endpoint.contentType ?? MimeTypes.Json)
+    if (contentType.mimeType !== MimeTypes.FormData) {
+      headers = { 'Content-Type': ContentTypes.toLiteral(contentType), ...headers }
     }
 
-    const serializedBody = requestFormat === MimeTypes.Json ? JSON.stringify(request.body) : request.body
+    const serializedBody = contentType.mimeType === MimeTypes.Json ? JSON.stringify(request.body) : request.body
 
     const fetchPayload: FetchPayload = {
       ...fetchOptions,
@@ -359,11 +372,11 @@ const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, Ali
   const { endpoint, response } = context
 
   const contentTypeHeader = response.headers.get('Content-Type')
-  const contentType = (contentTypeHeader?.split(';')[0]?.trim() as MimeLiteral) ?? MimeTypes.Json
+  const contentType = ContentTypes.from(contentTypeHeader) ?? ContentTypes.from(MimeTypes.Json)
 
   const body = await response.text()
   let bodyContent: unknown = body
-  if (contentType === MimeTypes.Json) {
+  if (contentType.mimeType === MimeTypes.Json) {
     const jsonResult = Json.parse(body)
     if (Results.isFailure(jsonResult)) {
       return Results.failure({

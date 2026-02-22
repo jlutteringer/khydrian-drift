@@ -15,7 +15,7 @@ import { HttpMethod } from '@bessemer/cornerstone/net/http-method'
 import { FetchPayload, FetchRequest, FetchResponse } from '@bessemer/cornerstone/net/fetch'
 import { PartialOnUndefinedDeep, SetRequired } from 'type-fest'
 import { Dictionary } from '@bessemer/cornerstone/types'
-import { MimeLiteral } from '@bessemer/cornerstone/mime-type'
+import { ContentTypeLike } from '@bessemer/cornerstone/net/content-type'
 
 export type ZotchRequest<D = any> = Omit<FetchRequest, 'body' | 'method' | 'headers'> & {
   baseUrl?: string
@@ -162,7 +162,7 @@ export interface ZotchEndpointDefinitionEntry<R = unknown> {
   method: HttpMethod
   path: string
   description?: string
-  requestFormat?: MimeLiteral
+  contentType?: ContentTypeLike
 
   body?: ZodType
   headers?: Dictionary<ZodType>

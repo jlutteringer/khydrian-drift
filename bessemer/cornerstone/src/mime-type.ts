@@ -8,7 +8,9 @@ import { structuredTransform } from '@bessemer/cornerstone/zod-util'
 export const Namespace = createNamespace('mime-type')
 export type MimeLiteral = NominalType<string, typeof Namespace>
 
-export const parseString = (value: string): Result<MimeLiteral, ErrorEvent> => {
+export const parseString = (initialValue: string): Result<MimeLiteral, ErrorEvent> => {
+  const value = initialValue.trim().toLowerCase()
+
   if (!/^[\w-]+\/[\w.+-]+$/.test(value)) {
     return failure(invalidValue(value, { namespace: Namespace, message: `Invalid MIME type format.` }))
   }

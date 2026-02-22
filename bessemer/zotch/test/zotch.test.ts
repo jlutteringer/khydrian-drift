@@ -943,7 +943,7 @@ describe('Zotch.client', () => {
         formData: {
           method: 'post',
           path: '/form-data',
-          requestFormat: MimeTypes.FormData,
+          contentType: MimeTypes.FormData,
           body: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
@@ -966,7 +966,7 @@ describe('Zotch.client', () => {
         formData: {
           method: 'post',
           path: '/form-data',
-          requestFormat: MimeTypes.FormData,
+          contentType: MimeTypes.FormData,
           body: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
@@ -989,7 +989,7 @@ describe('Zotch.client', () => {
         formData: {
           method: 'post',
           path: '/form-data',
-          requestFormat: MimeTypes.FormData,
+          contentType: MimeTypes.FormData,
           body: Zod.array(Zod.string()),
           response: Zod.string(),
         },
@@ -1008,7 +1008,7 @@ describe('Zotch.client', () => {
         formUrl: {
           method: 'post',
           path: '/form-url',
-          requestFormat: MimeTypes.FormUrl,
+          contentType: MimeTypes.FormUrl,
           body: Zod.object({
             id: Zod.number(),
             name: Zod.string(),
@@ -1033,7 +1033,7 @@ describe('Zotch.client', () => {
         formUrl: {
           method: 'post',
           path: '/form-url',
-          requestFormat: MimeTypes.FormUrl,
+          contentType: MimeTypes.FormUrl,
           body: Zod.array(Zod.string()),
           response: Zod.string(),
         },
@@ -1052,7 +1052,7 @@ describe('Zotch.client', () => {
         postText: {
           method: 'post',
           path: '/text',
-          requestFormat: MimeTypes.Text,
+          contentType: MimeTypes.Text,
           body: Zod.string(),
           response: Zod.string(),
         },
