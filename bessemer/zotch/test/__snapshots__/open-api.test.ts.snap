@@ -19,6 +19,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
               "schema": {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "additionalProperties": false,
+                "description": "The user to create.",
                 "properties": {
                   "email": {
                     "format": "email",
@@ -37,7 +38,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
               },
             },
           },
-          "description": "The user to create",
+          "description": "The user to create.",
         },
         "responses": {
           "200": {
@@ -94,7 +95,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
         ],
         "requestBody": undefined,
         "responses": {
-          "204": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -176,36 +177,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
             },
           },
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "additionalProperties": false,
-                "properties": {
-                  "email": {
-                    "format": "email",
-                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
-                    "type": "string",
-                  },
-                  "id": {
-                    "type": "string",
-                  },
-                  "name": {
-                    "type": "string",
-                  },
-                },
-                "required": [
-                  "id",
-                  "name",
-                  "email",
-                ],
-                "type": "object",
-              },
-            },
-          },
-          "description": "The user to update",
-        },
+        "requestBody": undefined,
         "responses": {
           "200": {
             "content": {
@@ -266,6 +238,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
             "schema": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "default": 10,
+              "description": "Limit the number of users",
               "exclusiveMinimum": 0,
               "type": "number",
             },
@@ -277,6 +250,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
             "required": false,
             "schema": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "description": "Offset the number of users",
               "exclusiveMinimum": 0,
               "type": "number",
             },
@@ -288,6 +262,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
             "required": true,
             "schema": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "description": "Filter users by name",
               "items": {
                 "type": "string",
               },
@@ -349,9 +324,9 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
                 },
               },
             },
-            "description": "No users found",
+            "description": "Error",
           },
-          "default": {
+          "500": {
             "content": {
               "application/json": {
                 "schema": {
@@ -369,7 +344,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
                 },
               },
             },
-            "description": "Default error",
+            "description": "Error",
           },
         },
         "security": undefined,
@@ -413,6 +388,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
               "schema": {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "additionalProperties": false,
+                "description": "The user to create.",
                 "properties": {
                   "email": {
                     "format": "email",
@@ -431,7 +407,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
               },
             },
           },
-          "description": "The user to create",
+          "description": "The user to create.",
         },
         "responses": {
           "200": {
@@ -492,7 +468,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
         ],
         "requestBody": undefined,
         "responses": {
-          "204": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -582,36 +558,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             },
           },
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "additionalProperties": false,
-                "properties": {
-                  "email": {
-                    "format": "email",
-                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
-                    "type": "string",
-                  },
-                  "id": {
-                    "type": "string",
-                  },
-                  "name": {
-                    "type": "string",
-                  },
-                },
-                "required": [
-                  "id",
-                  "name",
-                  "email",
-                ],
-                "type": "object",
-              },
-            },
-          },
-          "description": "The user to update",
-        },
+        "requestBody": undefined,
         "responses": {
           "200": {
             "content": {
@@ -676,6 +623,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             "schema": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "default": 10,
+              "description": "Limit the number of users",
               "exclusiveMinimum": 0,
               "type": "number",
             },
@@ -687,6 +635,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             "required": false,
             "schema": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "description": "Offset the number of users",
               "exclusiveMinimum": 0,
               "type": "number",
             },
@@ -698,6 +647,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             "required": true,
             "schema": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "description": "Filter users by name",
               "items": {
                 "type": "string",
               },
@@ -759,9 +709,9 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
                 },
               },
             },
-            "description": "No users found",
+            "description": "Error",
           },
-          "default": {
+          "500": {
             "content": {
               "application/json": {
                 "schema": {
@@ -779,7 +729,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
                 },
               },
             },
-            "description": "Default error",
+            "description": "Error",
           },
         },
         "security": [

@@ -95,7 +95,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
         ],
         "requestBody": undefined,
         "responses": {
-          "204": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -358,7 +358,7 @@ exports[`toOpenApi should convert to openapi with builder 1`] = `
             },
             "description": "No users found",
           },
-          "default": {
+          "500": {
             "content": {
               "application/json": {
                 "schema": {
@@ -501,7 +501,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
         ],
         "requestBody": undefined,
         "responses": {
-          "204": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -776,7 +776,7 @@ exports[`toOpenApi should convert to openapi with builder with security 1`] = `
             },
             "description": "No users found",
           },
-          "default": {
+          "500": {
             "content": {
               "application/json": {
                 "schema": {

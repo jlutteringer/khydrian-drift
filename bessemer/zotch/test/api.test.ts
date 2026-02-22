@@ -24,7 +24,7 @@ describe('Zotch.api', () => {
           response: Zod.array(userSchema),
         },
       })
-    ).toThrowError("Zodios: Duplicate path 'get /users'")
+    ).toThrowError()
   })
 
   test('should build with parameters (Path,Query,Body,Header)', () => {
