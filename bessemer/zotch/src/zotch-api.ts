@@ -13,7 +13,7 @@ export const api = <Api extends ZotchEndpointDefinitions>(api: Narrow<Api>): Api
   return api as Api
 }
 
-export const isStructuredError = (error: ZotchError): boolean => {
+export const isStructuredError = (error: ZotchError): error is ZotchStructuredError => {
   return error.type === ZotchErrorType.Structured
 }
 

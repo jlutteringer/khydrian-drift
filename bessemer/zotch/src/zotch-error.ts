@@ -128,7 +128,12 @@ export type ZotchStructuredErrorProps = {
   value: unknown
 }
 
-export type ZotchStructuredError<T extends ZotchStructuredErrorProps> = {
+export type ZotchStructuredError<
+  T extends ZotchStructuredErrorProps = {
+    status: number
+    value: unknown
+  }
+> = {
   type: ZotchErrorType.Structured
 } & T
 

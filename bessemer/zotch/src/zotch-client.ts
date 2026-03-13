@@ -48,7 +48,7 @@ import { createDraft, finishDraft } from 'immer'
 
 const ZotchClientPropsSchema = Zod.object({
   baseUrl: Zod.string().default(''),
-  fetch: Zod.custom<FetchFunction>().default(() => fetch),
+  fetch: Zod.custom<FetchFunction>().default(() => fetch.bind(globalThis)),
   sendDefaults: Zod.boolean().optional(),
 })
 
