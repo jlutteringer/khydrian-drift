@@ -51,6 +51,7 @@ describe('ZotchClient.fetchRequestById', () => {
 
       Results.assertSuccess(response)
       expect(response).toEqual(emptyRequest)
+      JSON.stringify(response)
     }
 
     {
@@ -62,6 +63,7 @@ describe('ZotchClient.fetchRequestById', () => {
       expectTypeOf(response).toExtend<Result<RequestDto, ZotchError<{ status: 404; value: unknown } | { status: 401; value: number }>>>()
       Results.assertSuccess(response)
       expect(response).toEqual(emptyRequest)
+      JSON.stringify(response)
     }
   })
 
@@ -85,6 +87,7 @@ describe('ZotchClient.fetchRequestById', () => {
       Results.assertFailure(response)
       Zotch.assertStructuredError(response.value)
       expect(response.value.status).toBe(404)
+      JSON.stringify(response)
     }
   })
 
@@ -107,6 +110,7 @@ describe('ZotchClient.fetchRequestById', () => {
 
       Results.assertFailure(response)
       expect(response.value.type).toBe(ZotchErrorType.FetchFailed)
+      JSON.stringify(response)
     }
   })
 
@@ -131,6 +135,7 @@ describe('ZotchClient.fetchRequestById', () => {
       Results.assertFailure(response)
       expect(fetchInvoked).toBe(false)
       expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
+      JSON.stringify(response)
     }
 
     {
@@ -142,6 +147,7 @@ describe('ZotchClient.fetchRequestById', () => {
       Results.assertFailure(response)
       expect(fetchInvoked).toBe(false)
       expect(response.value.type).toBe(ZotchErrorType.RequestInvalid)
+      JSON.stringify(response)
     }
   })
 
@@ -164,6 +170,7 @@ describe('ZotchClient.fetchRequestById', () => {
 
       Results.assertFailure(response)
       expect(response.value.type).toBe(ZotchErrorType.ResponseInvalid)
+      JSON.stringify(response)
     }
 
     {
@@ -181,6 +188,7 @@ describe('ZotchClient.fetchRequestById', () => {
 
       Results.assertFailure(response)
       expect(response.value.type).toBe(ZotchErrorType.ResponseInvalid)
+      JSON.stringify(response)
     }
   })
 
@@ -203,6 +211,7 @@ describe('ZotchClient.fetchRequestById', () => {
 
       Results.assertFailure(response)
       expect(response.value.type).toBe(ZotchErrorType.ResponseInvalid)
+      JSON.stringify(response)
     }
 
     {
@@ -220,6 +229,7 @@ describe('ZotchClient.fetchRequestById', () => {
 
       Results.assertFailure(response)
       expect(response.value.type).toBe(ZotchErrorType.ResponseInvalid)
+      JSON.stringify(response)
     }
   })
 })
@@ -245,6 +255,7 @@ describe('ZotchClient.fetchPublicRequestById', () => {
 
       Results.assertSuccess(response)
       expect(response).toEqual(emptyRequest)
+      JSON.stringify(response)
     }
   })
 })
@@ -290,6 +301,7 @@ describe('ZotchClient.createQuote', () => {
 
       Results.assertSuccess(response)
       expect(response).toEqual(emptyRequest)
+      JSON.stringify(response)
     }
   })
 })

@@ -17,7 +17,7 @@ import { PartialOnUndefinedDeep, SetRequired } from 'type-fest'
 import { Dictionary } from '@bessemer/cornerstone/types'
 import { ContentTypeLike } from '@bessemer/cornerstone/net/content-type'
 
-export type ZotchRequest<D = any> = Omit<FetchRequest, 'body' | 'method' | 'headers'> & {
+export type ZotchRequestInput<D = any> = Omit<FetchRequest, 'body' | 'method' | 'headers'> & {
   baseUrl?: string
   url: string
   method: HttpMethod
@@ -26,7 +26,16 @@ export type ZotchRequest<D = any> = Omit<FetchRequest, 'body' | 'method' | 'head
   headers?: Record<string, string>
 } & (undefined extends D ? { body?: D } : { body: D })
 
-export type ZotchRequestDto<D = any> = SetRequired<ZotchRequest, 'params' | 'method' | 'headers'>
+export type ZotchRequest<D = any> = SetRequired<ZotchRequestInput<D>, 'method' | 'params' | 'queries' | 'headers'>
+
+export type ZotchRequestDto = {
+  baseUrl: string | null
+  url: string
+  method: HttpMethod
+  params: Record<string, unknown>
+  queries: Record<string, unknown>
+  headers: Record<string, string>
+}
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata'
 
@@ -142,7 +151,7 @@ export type ZotchRequestByAlias<Api extends ZotchEndpointDefinitions, Alias exte
       headers: ZodiosHeaderParamsByAlias<Api, Alias>
     }>
   >,
-  Omit<ZotchRequest<ZodiosBodyByAlias<Api, Alias>>, 'params' | 'queries' | 'headers' | 'method' | 'url'>
+  Omit<ZotchRequestInput<ZodiosBodyByAlias<Api, Alias>>, 'params' | 'queries' | 'headers' | 'method' | 'url'>
 >
 
 type ZotchAliasRequest<RequestType, ResponseType> = RequiredKeys<RequestType> extends never
@@ -176,8 +185,9 @@ export interface ZotchEndpointDefinitionEntry<R = unknown> {
 export type ZotchEndpointDefinitions<T extends string = string> = Record<T, ZotchEndpointDefinitionEntry>
 
 export type ZotchRequestContext = {
+  alias: string
   endpoint: ZotchEndpointDefinitionEntry
-  request: ZotchRequestDto
+  request: ZotchRequest
 }
 
 export type ZotchResponseContext = ZotchRequestContext & {

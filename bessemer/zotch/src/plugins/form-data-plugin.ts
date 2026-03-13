@@ -1,17 +1,18 @@
 import { Objects, Results } from '@bessemer/cornerstone'
-import { ZotchErrorType } from '@bessemer/zotch/zotch-error'
+import { requestInvalid } from '@bessemer/zotch/zotch-error'
 import { ZotchPlugin } from '@bessemer/zotch/plugins/zotch-plugins'
 
 const plugin: ZotchPlugin = {
   name: 'form-data',
   processRequest: async (context) => {
     if (!Objects.isObject(context.request.body)) {
-      return Results.failure({
-        type: ZotchErrorType.RequestInvalid,
-        ...context,
-        message: 'Zotch: multipart/form-data body must be an object',
-        value: context.request.body,
-      })
+      return Results.failure(
+        requestInvalid({
+          message: 'Zotch: multipart/form-data body must be an object',
+          value: context.request.body,
+          ...context,
+        })
+      )
     }
 
     const body = getFormDataStream(context.request.body as any)

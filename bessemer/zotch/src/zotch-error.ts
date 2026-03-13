@@ -1,7 +1,8 @@
-import { FetchPayload } from '@bessemer/cornerstone/net/fetch'
-import { ZotchRequestContext, ZotchResponseContext } from '@bessemer/zotch/zotch-types'
-
-// JOHN consider making our error regime serializable
+import * as Fetching from '@bessemer/cornerstone/net/fetch'
+import { FetchPayload, FetchRequestDto, FetchResponseDto } from '@bessemer/cornerstone/net/fetch'
+import { ZotchRequest, ZotchRequestContext, ZotchRequestDto, ZotchResponseContext } from '@bessemer/zotch/zotch-types'
+import { ErrorDto } from '@bessemer/cornerstone/error/error'
+import { Errors, Objects } from '@bessemer/cornerstone'
 
 export enum ZotchErrorType {
   RequestInvalid = 'RequestInvalid',
@@ -11,28 +12,115 @@ export enum ZotchErrorType {
   Structured = 'Structured',
 }
 
-export type ZotchRequestInvalidError = ZotchRequestContext & {
+export type ZotchErrorRequestContext = {
+  endpoint: string
+  request: ZotchRequestDto
+}
+
+export type ZotchErrorResponseContext = ZotchErrorRequestContext & {
+  fetch: FetchRequestDto
+  response: FetchResponseDto
+}
+
+export type ZotchRequestInvalidError = ZotchErrorRequestContext & {
   type: ZotchErrorType.RequestInvalid
   message: string
   value: unknown
-  cause?: Error
+  cause: ErrorDto | null
 }
 
-export type ZotchResponseInvalidError = ZotchResponseContext & {
-  type: ZotchErrorType.ResponseInvalid
+const serializeRequest = (request: ZotchRequest): ZotchRequestDto => {
+  return {
+    baseUrl: request.baseUrl ?? null,
+    url: request.url,
+    method: request.method,
+    params: request.params,
+    queries: request.queries,
+    headers: request.headers,
+  }
+}
+
+export const requestInvalid = ({
+  message,
+  value,
+  cause,
+  alias,
+  request,
+}: {
   message: string
   value: unknown
   cause?: Error
+} & ZotchRequestContext): ZotchRequestInvalidError => {
+  return {
+    type: ZotchErrorType.RequestInvalid,
+    message,
+    value,
+    cause: Objects.isPresent(cause) ? Errors.serialize(cause) : null,
+    endpoint: alias,
+    request: serializeRequest(request),
+  }
 }
 
-export type ZotchFetchFailedError = ZotchRequestContext & {
+export type ZotchResponseInvalidError = ZotchErrorResponseContext & {
+  type: ZotchErrorType.ResponseInvalid
+  message: string
+  value: unknown
+  cause: ErrorDto | null
+}
+
+export const responseInvalid = ({
+  message,
+  value,
+  cause,
+  alias,
+  request,
+  fetch,
+  response,
+}: {
+  message: string
+  value: unknown
+  cause?: Error
+} & ZotchResponseContext): ZotchResponseInvalidError => {
+  return {
+    type: ZotchErrorType.ResponseInvalid,
+    message,
+    value,
+    cause: Objects.isPresent(cause) ? Errors.serialize(cause) : null,
+    endpoint: alias,
+    request: serializeRequest(request),
+    fetch: Fetching.serializeRequest(fetch),
+    response: Fetching.serializeResponse(response),
+  }
+}
+
+export type ZotchFetchFailedError = ZotchErrorRequestContext & {
   type: ZotchErrorType.FetchFailed
-  fetch: FetchPayload
-  cause: Error
+  fetch: FetchRequestDto
+  cause: ErrorDto
 }
 
-export type ZotchUnstructuredError = ZotchResponseContext & {
+export const fetchFailed = ({ alias, request, fetch, cause }: { fetch: FetchPayload; cause: Error } & ZotchRequestContext): ZotchFetchFailedError => {
+  return {
+    type: ZotchErrorType.FetchFailed,
+    fetch: Fetching.serializeRequest(fetch),
+    cause: Errors.serialize(cause),
+    endpoint: alias,
+    request: serializeRequest(request),
+  }
+}
+
+export type ZotchUnstructuredError = ZotchErrorResponseContext & {
   type: ZotchErrorType.Unstructured
+}
+
+export const unstructured = ({ alias, request, fetch, response }: ZotchResponseContext): ZotchUnstructuredError => {
+  return {
+    type: ZotchErrorType.Unstructured,
+    endpoint: alias,
+    request: serializeRequest(request),
+    fetch: Fetching.serializeRequest(fetch),
+    response: Fetching.serializeResponse(response),
+  }
 }
 
 export type ZotchStructuredErrorProps = {

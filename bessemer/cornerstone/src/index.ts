@@ -72,6 +72,7 @@ import * as IpV6Addresses from '@bessemer/cornerstone/net/ipv6-address'
 import * as IpV4Addresses from '@bessemer/cornerstone/net/ipv4-address'
 import * as HttpMethods from '@bessemer/cornerstone/net/http-method'
 import * as ContentTypes from '@bessemer/cornerstone/net/content-type'
+import * as Proxies from '@bessemer/cornerstone/proxy'
 import * as Generators from '@bessemer/cornerstone/generators'
 
 export {
@@ -148,5 +149,6 @@ export {
   IpV4Addresses,
   HttpMethods,
   ContentTypes,
+  Proxies,
   Generators,
 }

@@ -32,6 +32,17 @@ export const take = <T>(array: Array<T>, elementsToSkip: number = 1): Array<T> =
   return array.slice(elementsToSkip)
 }
 
+export const takeWhile = <T>(array: Array<T>, predicate: (item: T, index: number) => boolean): T[] => {
+  const result: T[] = []
+  for (let i = 0; i < array.length; i++) {
+    if (!predicate(array[i]!, i)) {
+      break
+    }
+    result.push(array[i]!)
+  }
+  return result
+}
+
 /**
  * Determines if two arrays are equal by comparing each element using an Equalitor.
  * Returns `true` if all corresponding elements are equal according to the provided

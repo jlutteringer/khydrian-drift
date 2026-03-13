@@ -1,17 +1,18 @@
 import { Objects, Results } from '@bessemer/cornerstone'
-import { ZotchErrorType } from '@bessemer/zotch/zotch-error'
+import { requestInvalid } from '@bessemer/zotch/zotch-error'
 import { ZotchPlugin } from '@bessemer/zotch/plugins/zotch-plugins'
 
 const plugin: ZotchPlugin = {
   name: 'form-url',
   processRequest: async (context) => {
     if (!Objects.isObject(context.request.body)) {
-      return Results.failure({
-        type: ZotchErrorType.RequestInvalid,
-        ...context,
-        message: 'Zotch: application/x-www-form-urlencoded body must be an object',
-        value: context.request.body,
-      })
+      return Results.failure(
+        requestInvalid({
+          message: 'Zotch: application/x-www-form-urlencoded body must be an object',
+          value: context.request.body,
+          ...context,
+        })
+      )
     }
 
     return Results.success({

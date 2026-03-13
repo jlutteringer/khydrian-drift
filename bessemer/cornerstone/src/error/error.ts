@@ -40,21 +40,25 @@ export const findInCausalChain = (error: Error, predicate: (error: Error) => boo
   return getCausalChain(error).find(predicate)
 }
 
-const serializeError = (error: Throwable): any => {
-  if (!isPresent(error)) {
-    return undefined
-  }
+export type ErrorDto = {
+  name: string
+  message: string
+  stack: string | null
+  cause: ErrorDto | null
+}
 
+export const serialize = (error: Throwable): ErrorDto => {
   if (!isError(error)) {
-    return error
+    // JOHN
+    return { name: " Can't serialize error", message: 'Error is not an instance of Error', stack: null, cause: null }
   }
 
-  const cause = isPresent(error.cause) ? serializeError(error.cause) : undefined
+  const cause = isPresent(error.cause) ? serialize(error.cause) : null
 
-  const serialized = {
+  const serialized: ErrorDto = {
     name: error.name,
     message: error.message,
-    stack: error.stack,
+    stack: error.stack ?? null,
     cause,
   }
 
