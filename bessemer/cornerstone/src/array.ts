@@ -4,19 +4,23 @@ import { Either, split } from '@bessemer/cornerstone/either'
 import { Comparator, compareBy, natural as naturalComparison } from '@bessemer/cornerstone/comparator'
 import { Arrayable } from 'type-fest'
 import { isNil } from '@bessemer/cornerstone/object'
-import { FiniteNumericBounds } from '@bessemer/cornerstone/range'
-import { assert } from '@bessemer/cornerstone/assertion'
+import * as Assertions from '@bessemer/cornerstone/assertion'
+import * as Maths from '@bessemer/cornerstone/math'
+import { FiniteBounds } from '@bessemer/cornerstone/range'
 
 export const makeBy = <T>(n: number, f: (i: number) => T): Array<T> => {
-  const max = Math.max(1, Math.floor(n))
-  const out = new Array(max)
-  for (let i = 0; i < max; i++) {
+  Assertions.assert(Maths.isWhole(n))
+  Assertions.assert(n >= 0)
+
+  const out = new Array(n)
+  for (let i = 0; i < n; i++) {
     out[i] = f(i)
   }
+
   return out
 }
 
-export const range = ([start, end]: FiniteNumericBounds): Array<number> => {
+export const range = ([start, end]: FiniteBounds<number>): Array<number> => {
   return start <= end ? makeBy(end - start + 1, (i) => start + i) : [start]
 }
 
@@ -38,6 +42,7 @@ export const takeWhile = <T>(array: Array<T>, predicate: (item: T, index: number
     if (!predicate(array[i]!, i)) {
       break
     }
+
     result.push(array[i]!)
   }
   return result
@@ -258,7 +263,7 @@ export const first = <T>(array: Array<T>): T | undefined => {
 }
 
 export const only = <T>(array: Array<T>): T => {
-  assert(array.length === 1)
+  Assertions.assert(array.length === 1)
   return first(array)!
 }
 

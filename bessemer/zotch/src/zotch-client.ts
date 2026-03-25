@@ -318,7 +318,9 @@ const validateRequest = async (context: ZotchRequestContext): AsyncResult<ZotchR
       return Results.failure(requestInvalid({ message: `Zotch: Invalid query '${name}'`, value, cause: parsed.value, ...context }))
     }
 
-    request.queries[name] = parsed
+    if (Objects.isPresent(parsed)) {
+      request.queries[name] = parsed
+    }
   }
 
   for (const [name, schema] of Object.entries(headers ?? {})) {
@@ -328,7 +330,9 @@ const validateRequest = async (context: ZotchRequestContext): AsyncResult<ZotchR
       return Results.failure(requestInvalid({ message: `Zotch: Invalid header '${name}'`, value, cause: parsed.value, ...context }))
     }
 
-    request.headers[name] = parsed as any as string
+    if (Objects.isPresent(parsed)) {
+      request.headers[name] = parsed as any as string
+    }
   }
 
   return Results.success(finishDraft(request))

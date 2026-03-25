@@ -10,6 +10,8 @@ export const isEven = (d: number) => d % 2 === 0
 
 export const isOdd = (d: number) => d % 2 !== 0
 
+export const isWhole = (n: number) => n % 1 === 0
+
 export enum RoundingMode {
   Nearest = 'Nearest',
   Down = 'Down',

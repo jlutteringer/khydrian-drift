@@ -14,7 +14,6 @@ export type NumericBounds = Bounds<number>
 export const NumericSchema = schema(Zod.number())
 
 export type FiniteBounds<T> = [T, T]
-export type FiniteNumericBounds = FiniteBounds<number>
 
 export const of = <T>(bounds: BoundsInput<T>): Bounds<T> => {
   if (isUndefined(bounds[1])) {

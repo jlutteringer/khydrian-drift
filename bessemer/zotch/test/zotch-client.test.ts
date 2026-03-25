@@ -67,6 +67,25 @@ describe('ZotchClient.fetchRequestById', () => {
     }
   })
 
+  test('test optional headers', async () => {
+    const requestId = Uuid4.generate()
+
+    const zotch = Zotch.client(RequestApi, {
+      fetch: async (_, request) => {
+        const headers = new Headers(request?.headers)
+        expect(headers.get('X-Api-Key')).toBe(undefined)
+        return Response.json(emptyRequest, { status: 200 })
+      },
+    })
+
+    {
+      await zotch.fetchRequestById({
+        params: { requestId },
+        queries: { cache: true },
+      })
+    }
+  })
+
   test('test not found error', async () => {
     const requestId = Uuid4.generate()
     const apiKey = Uuid4.generate()

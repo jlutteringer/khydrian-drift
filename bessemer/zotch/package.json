@@ -1,7 +1,7 @@
 {
   "name": "@bessemer/zotch",
   "type": "module",
-  "version": "0.5.111",
+  "version": "0.5.113",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
