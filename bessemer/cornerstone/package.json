@@ -19,7 +19,8 @@
     "build": "tsup && tsc --project tsconfig.build.json --emitDeclarationOnly",
     "test": "jest",
     "prettier-fix": "prettier --write .",
-    "clean": "rm -rf dist && rm -rf .turbo"
+    "clean": "rm -rf dist && rm -rf .turbo",
+    "docgen": "docgen"
   },
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",
@@ -38,5 +39,6 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "homepage": "https://lutteringer.github.io/bessemer"
 }

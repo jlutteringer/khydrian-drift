@@ -9,12 +9,15 @@
     "dev": "turbo watch build",
     "build": "turbo run build",
     "test": "turbo run test",
+    "docgen": "yarn workspaces foreach --all --exclude bessemer run docgen && node scripts/docs.mjs",
     "clean": "turbo run clean && rm -rf .turbo",
     "clean-install": "turbo run clean && rm -rf node_modules && rm -rf .turbo"
   },
   "devDependencies": {
     "@babel/core": "7.26.10",
     "@babel/runtime": "7.27.0",
+    "@effect/docgen": "^0.5.2",
+    "@effect/markdown-toc": "^0.1.0",
     "@types/jest": "29.5.14",
     "@types/node": "22.10.5",
     "@types/react": "19.0.3",
@@ -24,6 +27,7 @@
     "prettier": "2.7.1",
     "ts-jest": "29.2.5",
     "tsup": "8.5.0",
+    "tsx": "^4.21.0",
     "turbo": "2.5.5",
     "typescript": "5.9.2"
   }

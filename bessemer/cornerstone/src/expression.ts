@@ -6,7 +6,24 @@ import { TaggedType } from '@bessemer/cornerstone/types'
 import { Signable } from '@bessemer/cornerstone/signature'
 import { UnknownRecord } from 'type-fest'
 
-export { Expressions, NumericExpressions, StringExpressions, ArrayExpressions }
+export {
+  /**
+   * @since 2.0.0
+   */
+  Expressions,
+  /**
+   * @since 2.0.0
+   */
+  NumericExpressions,
+  /**
+   * @since 2.0.0
+   */
+  StringExpressions,
+  /**
+   * @since 2.0.0
+   */
+  ArrayExpressions,
+}
 
 export type ExpressionKey<ReturnType, ArgumentType extends Array<unknown>> = TaggedType<string, ['ExpressionKey', ReturnType, ArgumentType]>
 
