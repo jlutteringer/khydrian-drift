@@ -1,107 +1,58 @@
-#!/usr/bin/env node
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import * as Fs from 'node:fs'
+import * as Path from 'node:path'
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const rootDir = join(__dirname, '..');
-const bessemerDir = join(rootDir, 'bessemer');
-const docsDir = join(rootDir, 'docs');
-
-// Clean docs directory
-if (existsSync(docsDir)) {
-  rmSync(docsDir, { recursive: true, force: true });
+function packages() {
+  return Fs.readdirSync('bessemer').filter((_) => Fs.existsSync(Path.join('bessemer', _, 'docs/modules')))
 }
-mkdirSync(docsDir, { recursive: true });
 
-// Get all packages
-const packages = readdirSync(bessemerDir, { withFileTypes: true })
-  .filter(dirent => dirent.isDirectory())
-  .map(dirent => dirent.name);
+function pkgName(pkg) {
+  const packageJson = Fs.readFileSync(Path.join('bessemer', pkg, 'package.json'))
+  return JSON.parse(packageJson).name
+}
 
-console.log(`Found ${packages.length} packages to process...`);
+function copyFiles(pkg) {
+  const name = pkgName(pkg)
+  const docs = Path.join('bessemer', pkg, 'docs/modules')
+  const dest = Path.join('docs', pkg)
+  const files = Fs.readdirSync(docs, { withFileTypes: true })
 
-// Process each package
-const processedPackages = [];
-for (const pkg of packages) {
-  const packageDocsDir = join(bessemerDir, pkg, 'docs');
+  function handleFiles(root, files) {
+    for (const file of files) {
+      const path = Path.join(docs, root, file.name)
+      const destPath = Path.join(dest, root, file.name)
 
-  if (!existsSync(packageDocsDir)) {
-    console.log(`  ⊘ Skipping ${pkg} (no docs generated)`);
-    continue;
+      if (file.isDirectory()) {
+        Fs.mkdirSync(destPath, { recursive: true })
+        handleFiles(Path.join(root, file.name), Fs.readdirSync(path, { withFileTypes: true }))
+        continue
+      }
+
+      const content = Fs.readFileSync(path, 'utf8').replace(/^parent: Modules$/m, `parent: "${name}"`)
+      Fs.writeFileSync(destPath, content)
+    }
   }
 
-  console.log(`  ✓ Processing ${pkg}...`);
-
-  // Create destination directory
-  const destDir = join(docsDir, pkg);
-  mkdirSync(destDir, { recursive: true });
-
-  // Copy all files from package docs to root docs
-  const copyRecursive = (src, dest) => {
-    if (!existsSync(src)) return;
-
-    const entries = readdirSync(src, { withFileTypes: true });
-    for (const entry of entries) {
-      const srcPath = join(src, entry.name);
-      const destPath = join(dest, entry.name);
-
-      if (entry.isDirectory()) {
-        mkdirSync(destPath, { recursive: true });
-        copyRecursive(srcPath, destPath);
-      } else {
-        let content = readFileSync(srcPath, 'utf-8');
-
-        // Update frontmatter to set parent to package name
-        if (entry.name.endsWith('.md')) {
-          content = content.replace(
-            /^---\n/,
-            `---\nparent: ${pkg}\n`
-          );
-        }
-
-        writeFileSync(destPath, content);
-      }
-    }
-  };
-
-  copyRecursive(packageDocsDir, destDir);
-  processedPackages.push(pkg);
+  Fs.rmSync(dest, { recursive: true, force: true })
+  Fs.mkdirSync(dest, { recursive: true })
+  handleFiles('', files)
 }
 
-// Create index page for each package
-for (const pkg of processedPackages) {
-  const indexPath = join(docsDir, pkg, 'index.md');
-  const indexContent = `---
-title: ${pkg}
+function generateIndex(pkg, order) {
+  const name = pkgName(pkg)
+  const content = `---
+title: "${name}"
 has_children: true
-nav_order: ${processedPackages.indexOf(pkg) + 1}
+permalink: /docs/${pkg}
+nav_order: ${order}
 ---
+`
 
-# ${pkg}
-
-Documentation for the \`@bessemer/${pkg}\` package.
-`;
-
-  writeFileSync(indexPath, indexContent);
+  Fs.writeFileSync(Path.join('docs', pkg, 'index.md'), content)
 }
 
-// Create main index page
-const mainIndexContent = `---
-title: Home
-nav_order: 1
----
-
-# Bessemer Documentation
-
-Welcome to the Bessemer documentation.
-
-## Packages
-
-${processedPackages.map(pkg => `- [${pkg}](${pkg}/)`).join('\n')}
-`;
-
-writeFileSync(join(docsDir, 'index.md'), mainIndexContent);
-
-console.log(`\n✓ Documentation aggregation complete!`);
-console.log(`  Processed ${processedPackages.length} packages: ${processedPackages.join(', ')}`);
+packages().forEach((pkg, i) => {
+  Fs.rmSync(Path.join('docs', pkg), { recursive: true, force: true })
+  Fs.mkdirSync(Path.join('docs', pkg), { recursive: true })
+  copyFiles(pkg)
+  generateIndex(pkg, i + 2)
+})

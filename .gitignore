@@ -45,4 +45,9 @@ node_modules
 .turbo
 dist
 .yarnrc.yml
-docs/
+
+# Documentation (generated)
+docs/*
+!docs/index.md
+!docs/_config.yml
+bessemer/*/docs
