@@ -73,16 +73,38 @@ describe('ZotchClient.fetchRequestById', () => {
     const zotch = Zotch.client(RequestApi, {
       fetch: async (_, request) => {
         const headers = new Headers(request?.headers)
-        expect(headers.get('X-Api-Key')).toBe(undefined)
+        expect(headers.get('X-Api-Key')).toBe(null)
         return Response.json(emptyRequest, { status: 200 })
       },
     })
 
     {
-      await zotch.fetchRequestById({
+      const response = await zotch.fetchRequestById({
         params: { requestId },
         queries: { cache: true },
       })
+
+      Results.assertSuccess(response)
+    }
+  })
+
+  test('test optional queries', async () => {
+    const requestId = Uuid4.generate()
+
+    const zotch = Zotch.client(RequestApi, {
+      fetch: async (url, _) => {
+        expect(url).not.toContain('optional')
+        return Response.json(emptyRequest, { status: 200 })
+      },
+    })
+
+    {
+      const response = await zotch.fetchRequestById({
+        params: { requestId },
+        queries: { cache: true, optional: undefined },
+      })
+
+      Results.assertSuccess(response)
     }
   })
 
@@ -320,6 +342,37 @@ describe('ZotchClient.createQuote', () => {
 
       Results.assertSuccess(response)
       expect(response).toEqual(emptyRequest)
+      JSON.stringify(response)
+    }
+  })
+})
+
+describe('ZotchClient.deleteQuote', () => {
+  test('test success', async () => {
+    const apiKey = Uuid4.generate()
+    const requestId = Uuid4.generate()
+
+    const zotch = Zotch.client(RequestApi, {
+      fetch: async (url, request) => {
+        expect(url).toBe(`/requests/${requestId}`)
+
+        const headers = new Headers(request?.headers)
+        expect(headers.get('X-Api-Key')).toBe(apiKey)
+        expect(headers.get('Content-Type')).toBe('application/json')
+        expect(headers.get('X-Account-Id')).toBe(emptyRequest.organizerId)
+
+        expect(request?.method).toBe('DELETE')
+        return new Response(null, { status: 204 })
+      },
+    })
+
+    {
+      const response = await zotch.deleteQuote({
+        headers: { 'X-Api-Key': apiKey, 'X-Account-Id': emptyRequest.organizerId },
+        params: { requestId: requestId },
+      })
+
+      Results.assertSuccess(response)
       JSON.stringify(response)
     }
   })

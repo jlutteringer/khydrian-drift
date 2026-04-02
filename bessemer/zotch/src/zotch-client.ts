@@ -314,12 +314,15 @@ const validateRequest = async (context: ZotchRequestContext): AsyncResult<ZotchR
   for (const [name, schema] of Object.entries(queries ?? {})) {
     const value = request.queries?.[name]
     const parsed = await ZodUtil.parseAsync(schema, value)
+
     if (Results.isFailure(parsed)) {
       return Results.failure(requestInvalid({ message: `Zotch: Invalid query '${name}'`, value, cause: parsed.value, ...context }))
     }
 
     if (Objects.isPresent(parsed)) {
       request.queries[name] = parsed
+    } else {
+      delete request.queries[name]
     }
   }
 
@@ -332,6 +335,8 @@ const validateRequest = async (context: ZotchRequestContext): AsyncResult<ZotchR
 
     if (Objects.isPresent(parsed)) {
       request.headers[name] = parsed as any as string
+    } else {
+      delete request.headers[name]
     }
   }
 
@@ -344,11 +349,11 @@ const validateSuccessResponse = async <Api extends ZotchEndpointDefinitions, Ali
   const { endpoint, response } = context
 
   const contentTypeHeader = response.headers.get('Content-Type')
-  const contentType = ContentTypes.from(contentTypeHeader) ?? ContentTypes.from(MimeTypes.Json)
+  const contentType = ContentTypes.from(contentTypeHeader)
 
   const body = await response.text()
-  let bodyContent: unknown = body
-  if (contentType.mimeType === MimeTypes.Json) {
+  let bodyContent: unknown = Strings.isEmpty(body) ? undefined : body
+  if (contentType?.mimeType === MimeTypes.Json && !Strings.isEmpty(body)) {
     const jsonResult = Json.parse(body)
     if (Results.isFailure(jsonResult)) {
       return Results.failure(
